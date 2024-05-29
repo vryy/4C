@@ -38,8 +38,8 @@ namespace XFEM
     on the point position.
 
      */
-    void get_volume_cell_material(DRT::Element* actele,  // element for volume cell INPUT
-        Teuchos::RCP<CORE::MAT::Material>& mat,          // material of volume cell OUTPUT
+    void get_volume_cell_material(CORE::Elements::Element* actele,  // element for volume cell INPUT
+        Teuchos::RCP<CORE::MAT::Material>& mat,  // material of volume cell OUTPUT
         CORE::GEO::CUT::Point::PointPosition position =
             CORE::GEO::CUT::Point::outside  // position of volume cell INPUT to determine
                                             // position
@@ -60,7 +60,7 @@ namespace XFEM
     \brief Needs a column-vector to extract correctly in parallel
      */
     void ExtractQuantityAtElement(CORE::LINALG::SerialDenseMatrix::Base& element_vector,
-        const DRT::Element* element,
+        const CORE::Elements::Element* element,
         const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
         Teuchos::RCP<DRT::Discretization>& dis, const int nds_vector, const int nsd);
 

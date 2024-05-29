@@ -22,10 +22,10 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::evaluate_action(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const SCATRA::Action& action, DRT::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::evaluate_action(
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, const SCATRA::Action& action,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -66,7 +66,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::evaluate_action
  *----------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::check_elch_element_parameter(
-    DRT::Element* ele  //!< current element
+    CORE::Elements::Element* ele  //!< current element
 )
 {
   // safety checks
@@ -139,10 +139,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_curr
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
-    probdim>::calculate_electrode_soc_and_c_rate(const DRT::Element* const&
+    probdim>::calculate_electrode_soc_and_c_rate(const CORE::Elements::Element* const&
                                                      ele,  //!< the element we are dealing with
     const DRT::Discretization& discretization,             //!< discretization
-    DRT::Element::LocationArray& la,                       //!< location array
+    CORE::Elements::Element::LocationArray& la,            //!< location array
     CORE::LINALG::SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
 )
 {
@@ -300,8 +300,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_flux
  *----------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
-    probdim>::cal_error_compared_to_analyt_solution(const DRT::Element* ele,  //!< element
-    Teuchos::ParameterList& params,                                           //!< parameter list
+    probdim>::cal_error_compared_to_analyt_solution(const CORE::Elements::Element*
+                                                        ele,  //!< element
+    Teuchos::ParameterList& params,                           //!< parameter list
     CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
 )
 {
@@ -326,8 +327,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
-    probdim>::calculate_mean_electrode_concentration(const DRT::Element* const& ele,
-    const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    probdim>::calculate_mean_electrode_concentration(const CORE::Elements::Element* const& ele,
+    const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& conc)
 {
   // for complete 1D simulation of battery:

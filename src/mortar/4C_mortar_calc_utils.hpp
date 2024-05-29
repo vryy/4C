@@ -301,7 +301,7 @@ namespace MORTAR
      |  Get global coords for given local coords (ref pos)       farah 01/14|
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
-    bool LocalToGlobal(DRT::Element& ele, const double* xi, double* globcoord)
+    bool LocalToGlobal(CORE::Elements::Element& ele, const double* xi, double* globcoord)
     {
       // check input
       if (!xi) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
@@ -353,7 +353,7 @@ namespace MORTAR
      |  globcoord (out): global xyz coordinate in current configuration of "xi"  |
      *---------------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
-    bool LocalToCurrentGlobal(DRT::Element& ele, const int globdim, const double* xi,
+    bool LocalToCurrentGlobal(CORE::Elements::Element& ele, const int globdim, const double* xi,
         const std::vector<double> edisp, double* globcoord)
     {
       // check input
@@ -402,9 +402,9 @@ namespace MORTAR
      |  Get local coords for given global coords (ref position)  farah 01/14|
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
-    void GlobalToLocal(DRT::Element& ele,  // element (input)
-        double* xgl,                       // global position (input)
-        double* xi)                        // local position  (output)
+    void GlobalToLocal(CORE::Elements::Element& ele,  // element (input)
+        double* xgl,                                  // global position (input)
+        double* xi)                                   // local position  (output)
     {
       static constexpr int numnod = CORE::FE::num_nodes<distype>;
       static constexpr int ndim = CORE::FE::dim<distype>;
@@ -529,8 +529,8 @@ namespace MORTAR
      |  Get local coords for given global coords (ref position)  farah 01/14|
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
-    void GlobalToLocal(DRT::Element& ele,  // element (input)
-        double* xgl,                       // global position (input)
+    void GlobalToLocal(CORE::Elements::Element& ele,  // element (input)
+        double* xgl,                                  // global position (input)
         double* xi,
         bool& converged)  // converged solution ?
     {
@@ -654,7 +654,7 @@ namespace MORTAR
      |  Get local coords for given global coords (curr position) rauch 08/14|
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
-    void GlobalToCurrentLocal(DRT::Element& ele,  // element (input)
+    void GlobalToCurrentLocal(CORE::Elements::Element& ele,  // element (input)
         const double* targetdisp,
         double* xgl,  // global position (input)
         double* xi, bool& converged,

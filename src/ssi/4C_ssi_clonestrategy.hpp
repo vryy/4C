@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
 }
@@ -50,7 +50,7 @@ namespace SSI
     //!
     //! \param ele     element whose SCATRA::ImplType shall be determined
     //! \return        impltype of the scatra element
-    virtual INPAR::SCATRA::ImplType GetImplType(DRT::Element* ele);
+    virtual INPAR::SCATRA::ImplType GetImplType(CORE::Elements::Element* ele);
 
    protected:
     //! check material of cloned element
@@ -65,7 +65,7 @@ namespace SSI
     //! \param eletype      vector storing types of cloned elements
     //! \return
     virtual bool determine_ele_type(
-        DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+        CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
     //! provide cloned element with element specific data (material etc.)
     //!
@@ -73,8 +73,8 @@ namespace SSI
     //! \param oldele    current element on source discretization
     //! \param matid     material of cloned element
     //! \param isnurbs   nurbs flag
-    virtual void set_element_data(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele,
-        const int matid, const bool isnurbs);
+    virtual void set_element_data(Teuchos::RCP<CORE::Elements::Element> newele,
+        CORE::Elements::Element* oldele, const int matid, const bool isnurbs);
   };
 
   class ScatraStructureCloneStrategyManifold : public ScatraStructureCloneStrategy
@@ -82,8 +82,8 @@ namespace SSI
    public:
     std::map<std::string, std::string> conditions_to_copy() const override;
 
-    void set_element_data(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid,
-        const bool isnurbs) override;
+    void set_element_data(Teuchos::RCP<CORE::Elements::Element> newele,
+        CORE::Elements::Element* oldele, const int matid, const bool isnurbs) override;
   };
 
 }  // namespace SSI

@@ -93,7 +93,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Reset()
   {
     Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
 
-    std::vector<const DRT::Element*> element_ptr(2);
+    std::vector<const CORE::Elements::Element*> element_ptr(2);
 
     element_ptr[0] = elepairptr->Element1();
     element_ptr[1] = elepairptr->Element2();
@@ -592,7 +592,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::find_and_store_neighbori
   for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
   {
     int const elegid = ele_type_map_extractor_ptr()->BeamMap()->GID(rowele_i);
-    DRT::Element* currele = DiscretPtr()->gElement(elegid);
+    CORE::Elements::Element* currele = DiscretPtr()->gElement(elegid);
 
     // (unique) set of neighboring bins for all col bins assigned to current element
     std::set<int> neighboring_binIds;
@@ -615,7 +615,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::find_and_store_neighbori
     std::vector<int> glob_neighboring_binIds(neighboring_binIds.begin(), neighboring_binIds.end());
 
     // set of elements that lie in neighboring bins
-    std::set<DRT::Element*> neighboring_elements;
+    std::set<CORE::Elements::Element*> neighboring_elements;
     std::vector<BINSTRATEGY::UTILS::BinContentType> bc(2);
     bc[0] = BINSTRATEGY::UTILS::Beam;
     bc[1] = BINSTRATEGY::UTILS::RigidSphere;
@@ -632,17 +632,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::find_and_store_neighbori
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
     select_eles_to_be_considered_for_potential_evaluation(
-        DRT::Element* currele, std::set<DRT::Element*>& neighbors) const
+        CORE::Elements::Element* currele, std::set<CORE::Elements::Element*>& neighbors) const
 {
   check_init();
 
   // sort out elements that should not be considered in potential evaluation
-  std::set<DRT::Element*>::iterator eiter;
+  std::set<CORE::Elements::Element*>::iterator eiter;
   for (eiter = neighbors.begin(); eiter != neighbors.end();)
   {
     bool toerase = false;
 
-    DRT::Element* currneighborele = *eiter;
+    CORE::Elements::Element* currneighborele = *eiter;
 
     // 1) ensure each interaction is only evaluated once (keep in mind that we are
     //    using FEMatrices and FEvectors -> || (*eiter)->Owner() != myrank not necessary)
@@ -719,16 +719,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::create_beam_potential_el
   // Todo maybe keep existing pairs and reuse them ?
   beam_potential_element_pairs_.clear();
 
-  std::map<int, std::set<DRT::Element*>>::const_iterator nearbyeleiter;
+  std::map<int, std::set<CORE::Elements::Element*>>::const_iterator nearbyeleiter;
 
   for (nearbyeleiter = nearby_elements_map_.begin(); nearbyeleiter != nearby_elements_map_.end();
        ++nearbyeleiter)
   {
     const int elegid = nearbyeleiter->first;
-    std::vector<DRT::Element const*> ele_ptrs(2);
+    std::vector<CORE::Elements::Element const*> ele_ptrs(2);
     ele_ptrs[0] = DiscretPtr()->gElement(elegid);
 
-    std::set<DRT::Element*>::const_iterator secondeleiter;
+    std::set<CORE::Elements::Element*>::const_iterator secondeleiter;
     for (secondeleiter = nearbyeleiter->second.begin();
          secondeleiter != nearbyeleiter->second.end(); ++secondeleiter)
     {
@@ -795,8 +795,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
   // since only the nodes know about their conditions, we need this workaround
   // we assume that a linecharge condition is always applied to the entire physical beam, i.e. it is
   // sufficient to check only one node
-  const DRT::Element* ele1 = elementpair.Element1();
-  const DRT::Element* ele2 = elementpair.Element2();
+  const CORE::Elements::Element* ele1 = elementpair.Element1();
+  const CORE::Elements::Element* ele2 = elementpair.Element2();
 
   const DRT::Node* const* nodes1;
   const DRT::Node* const* nodes2;

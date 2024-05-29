@@ -39,7 +39,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::FluidHDGWeakCompType::Create(const std::ve
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidHDGWeakCompType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidHDGWeakCompType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDHDGWEAKCOMP")
@@ -53,7 +53,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidHDGWeakCompType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidHDGWeakCompType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidHDGWeakCompType::Create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::FluidHDGWeakComp(id, owner));
@@ -64,7 +64,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidHDGWeakCompType::Create(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidHDGWeakCompType::nodal_block_information(
-    Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
 
@@ -122,7 +122,7 @@ DRT::ELEMENTS::FluidHDGWeakComp::FluidHDGWeakComp(const DRT::ELEMENTS::FluidHDGW
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::FluidHDGWeakComp::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::FluidHDGWeakComp::Clone() const
 {
   DRT::ELEMENTS::FluidHDGWeakComp* newelement = new DRT::ELEMENTS::FluidHDGWeakComp(*this);
   return newelement;

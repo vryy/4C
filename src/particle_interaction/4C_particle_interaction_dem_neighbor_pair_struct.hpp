@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
 }
@@ -53,7 +53,7 @@ namespace PARTICLEINTERACTION
     PARTICLEENGINE::LocalIndexTuple tuple_i_;
 
     //! pointer to column wall element
-    DRT::Element* ele_;
+    CORE::Elements::Element* ele_;
 
     //! gap between particle and wall contact point
     double gap_;

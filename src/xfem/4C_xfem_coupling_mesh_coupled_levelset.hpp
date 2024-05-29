@@ -157,8 +157,8 @@ namespace XFEM
         double& full_stab,                             //< full NIT Penalty scaling
         const CORE::LINALG::Matrix<3, 1>& x,           //< Position x in global coordinates
         const CORE::Conditions::Condition* cond,       //< Condition
-        DRT::Element* ele,                             //< Element
-        DRT::Element* bele,                            //< Boundary Element
+        CORE::Elements::Element* ele,                  //< Element
+        CORE::Elements::Element* bele,                 //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element

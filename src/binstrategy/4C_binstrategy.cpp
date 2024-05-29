@@ -571,7 +571,7 @@ void BINSTRATEGY::BinningStrategy::determine_boundary_row_bins()
   const Epetra_Map* binrowmap = bindis_->ElementRowMap();
   for (int lid = 0; lid < binrowmap->NumMyElements(); ++lid)
   {
-    DRT::Element* currbin = bindis_->lRowElement(lid);
+    CORE::Elements::Element* currbin = bindis_->lRowElement(lid);
     std::vector<int> binvec;
     binvec.reserve(nummaxneighbors);
     // get neighboring bins
@@ -603,7 +603,7 @@ void BINSTRATEGY::BinningStrategy::determine_boundary_col_bins()
   if (boundaryrowbins_.size() == 0) determine_boundary_row_bins();
 
   // loop over boundary row bins and add neighbors
-  std::list<DRT::Element*>::const_iterator it;
+  std::list<CORE::Elements::Element*>::const_iterator it;
   for (it = boundaryrowbins_.begin(); it != boundaryrowbins_.end(); ++it)
   {
     std::vector<int> binvec;
@@ -675,7 +675,7 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
   // add elements and nodes
   for (int i = 0; i < bindis_->NumMyColElements(); ++i)
   {
-    DRT::Element* ele = bindis_->lColElement(i);
+    CORE::Elements::Element* ele = bindis_->lColElement(i);
     if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
 
     // get corner position as node positions
@@ -705,7 +705,7 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
     }
 
     // assign nodes to elements
-    Teuchos::RCP<DRT::Element> newele =
+    Teuchos::RCP<CORE::Elements::Element> newele =
         CORE::COMM::Factory("VELE3", "Polynomial", ele->Id(), myrank_);
     newele->SetNodeIds(nids.size(), nids.data());
     visbindis_->add_element(newele);
@@ -753,7 +753,7 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
       }
 
       // assign nodes to elements
-      Teuchos::RCP<DRT::Element> newele =
+      Teuchos::RCP<CORE::Elements::Element> newele =
           CORE::COMM::Factory("VELE3", "Polynomial", newelegid, myrank_);
       newele->SetNodeIds(nids.size(), nids.data());
       visbindis_->add_element(newele);
@@ -771,7 +771,7 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
       CORE::LINALG::CreateVector(*visbindis_->ElementRowMap(), true);
   for (int i = 0; i < visbindis_->NumMyRowElements(); ++i)
   {
-    DRT::Element* ele = visbindis_->lRowElement(i);
+    CORE::Elements::Element* ele = visbindis_->lRowElement(i);
 
     if (ele->Id() < maxgid)
       (*ownedghostsvec)[i] = 0;  // owned
@@ -822,7 +822,8 @@ void BINSTRATEGY::BinningStrategy::fill_bins_into_bin_discretization(
   for (int i = 0; i < rowbins->NumMyElements(); ++i)
   {
     const int gid = rowbins->GID(i);
-    Teuchos::RCP<DRT::Element> bin = CORE::COMM::Factory("MESHFREEMULTIBIN", "dummy", gid, myrank_);
+    Teuchos::RCP<CORE::Elements::Element> bin =
+        CORE::COMM::Factory("MESHFREEMULTIBIN", "dummy", gid, myrank_);
     bindis_->add_element(bin);
   }
 }
@@ -883,7 +884,8 @@ void BINSTRATEGY::BinningStrategy::addijk_to_axis_alignedijk_range_of_beam_eleme
 }
 
 void BINSTRATEGY::BinningStrategy::build_axis_alignedijk_range_for_rigid_sphere(
-    DRT::Element const* const sphereele, double currpos[3], int ijk[3], int ijk_range[6]) const
+    CORE::Elements::Element const* const sphereele, double currpos[3], int ijk[3],
+    int ijk_range[6]) const
 {
   double const& radius = dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(sphereele)->Radius();
 
@@ -906,7 +908,7 @@ void BINSTRATEGY::BinningStrategy::distribute_eles_to_bins(const DRT::Discretiza
   // exploit bounding box idea for elements and bins
   for (int lid = 0; lid < mortardis.NumMyColElements(); ++lid)
   {
-    DRT::Element* ele = mortardis.lColElement(lid);
+    CORE::Elements::Element* ele = mortardis.lColElement(lid);
     if (dynamic_cast<MORTAR::Element*>(ele)->IsSlave() == isslave)
     {
       DRT::Node** nodes = ele->Nodes();
@@ -963,7 +965,7 @@ void BINSTRATEGY::BinningStrategy::distribute_row_elements_to_bins_using_ele_aab
   // loop over all row elements
   for (int lid = 0; lid < discret->NumMyRowElements(); ++lid)
   {
-    DRT::Element* eleptr = discret->lRowElement(lid);
+    CORE::Elements::Element* eleptr = discret->lRowElement(lid);
     // get corresponding bin ids in ijk range
     std::vector<int> binIds;
     distribute_single_element_to_bins_using_ele_aabb(discret, eleptr, binIds, disnp);
@@ -985,7 +987,7 @@ void BINSTRATEGY::BinningStrategy::distribute_col_elements_to_bins_using_ele_aab
   // loop over all row elements
   for (int lid = 0; lid < discret->NumMyColElements(); ++lid)
   {
-    DRT::Element* eleptr = discret->lColElement(lid);
+    CORE::Elements::Element* eleptr = discret->lColElement(lid);
     // get corresponding bin ids in ijk range
     std::vector<int> binIds;
     distribute_single_element_to_bins_using_ele_aabb(discret, eleptr, binIds, disnp);
@@ -998,7 +1000,7 @@ void BINSTRATEGY::BinningStrategy::distribute_col_elements_to_bins_using_ele_aab
 }
 
 void BINSTRATEGY::BinningStrategy::distribute_single_element_to_bins_using_ele_aabb(
-    Teuchos::RCP<DRT::Discretization> const& discret, DRT::Element* eleptr,
+    Teuchos::RCP<DRT::Discretization> const& discret, CORE::Elements::Element* eleptr,
     std::vector<int>& binIds, Teuchos::RCP<const Epetra_Vector> const& disnp) const
 {
   binIds.clear();
@@ -1074,7 +1076,7 @@ void BINSTRATEGY::BinningStrategy::AssignElesToBins(Teuchos::RCP<DRT::Discretiza
   }
 }
 
-void BINSTRATEGY::BinningStrategy::GetBinContent(std::set<DRT::Element*>& eles,
+void BINSTRATEGY::BinningStrategy::GetBinContent(std::set<CORE::Elements::Element*>& eles,
     std::vector<BINSTRATEGY::UTILS::BinContentType> bincontent, std::vector<int>& binIds,
     bool roweles) const
 {
@@ -1094,7 +1096,7 @@ void BINSTRATEGY::BinningStrategy::GetBinContent(std::set<DRT::Element*>& eles,
     for (int bc_i = 0; bc_i < static_cast<int>(bincontent.size()); ++bc_i)
     {
       // gather elements of with specific bincontent type
-      DRT::Element** elements = bin->AssociatedEles(bincontent[bc_i]);
+      CORE::Elements::Element** elements = bin->AssociatedEles(bincontent[bc_i]);
       const int numeles = bin->NumAssociatedEle(bincontent[bc_i]);
       for (int iele = 0; iele < numeles; ++iele)
       {
@@ -1112,7 +1114,7 @@ void BINSTRATEGY::BinningStrategy::remove_specific_eles_from_bins(
   const int numcolbins = bindis_->NumMyColElements();
   for (int binlid = 0; binlid < numcolbins; ++binlid)
   {
-    DRT::Element* currentbin = bindis_->lColElement(binlid);
+    CORE::Elements::Element* currentbin = bindis_->lColElement(binlid);
     dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currentbin)
         ->remove_specific_associated_eles(bincontent);
   }
@@ -1124,7 +1126,7 @@ void BINSTRATEGY::BinningStrategy::remove_all_eles_from_bins()
   const int numcolbins = bindis_->NumMyColElements();
   for (int binlid = 0; binlid < numcolbins; ++binlid)
   {
-    DRT::Element* currentbin = bindis_->lColElement(binlid);
+    CORE::Elements::Element* currentbin = bindis_->lColElement(binlid);
     dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currentbin)->remove_all_associated_eles();
   }
 }
@@ -1245,7 +1247,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::
     std::set<int> nodes;
     for (int lid = 0; lid < extendedelecolmap->NumMyElements(); ++lid)
     {
-      DRT::Element* ele = discret[i]->gElement(extendedelecolmap->GID(lid));
+      CORE::Elements::Element* ele = discret[i]->gElement(extendedelecolmap->GID(lid));
       const int* nodeids = ele->NodeIds();
       for (int inode = 0; inode < ele->num_node(); ++inode) nodes.insert(nodeids[inode]);
     }
@@ -1775,7 +1777,7 @@ double BINSTRATEGY::BinningStrategy::
     // loop over row elements of each proc
     for (int i = 0; i < discret[ndis]->NumMyRowElements(); ++i)
     {
-      DRT::Element* ele = discret[ndis]->lRowElement(i);
+      CORE::Elements::Element* ele = discret[ndis]->lRowElement(i);
 
       // eleXAABB for each row element
       CORE::LINALG::Matrix<3, 2> eleXAABB(false);
@@ -1904,7 +1906,7 @@ void BINSTRATEGY::BinningStrategy::
   // loop over row elements of each proc
   for (int i = 0; i < discret->NumMyRowElements(); ++i)
   {
-    DRT::Element* ele = discret->lRowElement(i);
+    CORE::Elements::Element* ele = discret->lRowElement(i);
 
     // eleXAABB for each row element
     CORE::LINALG::Matrix<3, 2> eleXAABB(false);
@@ -1985,7 +1987,7 @@ void BINSTRATEGY::BinningStrategy::transfer_nodes_and_elements(
   bintorowelemap.clear();
 
   // store elements that need treatment
-  std::set<DRT::Element*> elestoupdate;
+  std::set<CORE::Elements::Element*> elestoupdate;
 
   double currpos[3] = {0.0, 0.0, 0.0};
   // loop over all column nodes and check ownership
@@ -2005,7 +2007,7 @@ void BINSTRATEGY::BinningStrategy::transfer_nodes_and_elements(
         // set new owner of node
         currnode->SetOwner(hostbinowner);
         // in case myrank is owner of associated element, add it to set
-        DRT::Element** curreles = currnode->Elements();
+        CORE::Elements::Element** curreles = currnode->Elements();
         for (int j = 0; j < currnode->NumElement(); ++j)
           if (curreles[j]->Owner() == myrank_) elestoupdate.insert(curreles[j]);
       }
@@ -2016,14 +2018,14 @@ void BINSTRATEGY::BinningStrategy::transfer_nodes_and_elements(
   }
 
   // store elements that need to be communicated
-  std::map<int, std::vector<DRT::Element*>> toranktosendeles;
+  std::map<int, std::vector<CORE::Elements::Element*>> toranktosendeles;
   std::map<int, std::vector<std::pair<int, std::vector<int>>>> toranktosendbinids;
 
   // loop over row elements whose ownership may need an update
-  std::set<DRT::Element*>::const_iterator eleiter;
+  std::set<CORE::Elements::Element*>::const_iterator eleiter;
   for (eleiter = elestoupdate.begin(); eleiter != elestoupdate.end(); ++eleiter)
   {
-    DRT::Element* currele = *eleiter;
+    CORE::Elements::Element* currele = *eleiter;
     DRT::Node** nodes = currele->Nodes();
     std::map<int, int> owner;
     for (int inode = 0; inode < currele->num_node(); ++inode) owner[nodes[inode]->Owner()] += 1;
@@ -2050,7 +2052,7 @@ void BINSTRATEGY::BinningStrategy::transfer_nodes_and_elements(
   // loop over all row elements
   for (int lid = 0; lid < discret->NumMyRowElements(); ++lid)
   {
-    DRT::Element* eleptr = discret->lRowElement(lid);
+    CORE::Elements::Element* eleptr = discret->lRowElement(lid);
 
     // check if owner did change
     if (eleptr->Owner() != myrank_) continue;

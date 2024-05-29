@@ -77,12 +77,12 @@ void CORE::GEO::SearchTree::insertElement(const int eid)
  | initialization of searchtree for SlipAle                 u.may 09/09 |
  *----------------------------------------------------------------------*/
 void CORE::GEO::SearchTree::initialize_tree_slide_ale(const CORE::LINALG::Matrix<3, 2>& nodeBox,
-    std::map<int, Teuchos::RCP<DRT::Element>>& elements, const TreeType treetype)
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& elements, const TreeType treetype)
 {
   tree_root_ = Teuchos::null;
   tree_root_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator elemiter;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
   {
     tree_root_->insertElement(-1, elemiter->first);
@@ -1086,7 +1086,8 @@ bool CORE::GEO::SearchTree::TreeNode::classify_kdop(
 /*----------------------------------------------------------------------*
  | classifiy element in node                               peder   07/08|
  *----------------------------------------------------------------------*/
-std::vector<int> CORE::GEO::SearchTree::TreeNode::classify_element(const DRT::Element* element,
+std::vector<int> CORE::GEO::SearchTree::TreeNode::classify_element(
+    const CORE::Elements::Element* element,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) const
 {
   const CORE::LINALG::SerialDenseMatrix xyze(
@@ -1102,7 +1103,7 @@ std::vector<int> CORE::GEO::SearchTree::TreeNode::classify_element(const DRT::El
  | classifiy element in tree node                           u.may   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> CORE::GEO::SearchTree::TreeNode::classify_element(
-    const Teuchos::RCP<DRT::Element> element,
+    const Teuchos::RCP<CORE::Elements::Element> element,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) const
 {
   const CORE::LINALG::SerialDenseMatrix xyze(
@@ -1118,7 +1119,8 @@ std::vector<int> CORE::GEO::SearchTree::TreeNode::classify_element(
  | classifiy element in tree node                          u.may   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> CORE::GEO::SearchTree::TreeNode::classify_element(
-    const DRT::Element* element, const CORE::LINALG::SerialDenseMatrix& xyze_element) const
+    const CORE::Elements::Element* element,
+    const CORE::LINALG::SerialDenseMatrix& xyze_element) const
 {
   CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);
   CORE::GEO::checkRoughGeoType(element, xyze_element, eleGeoType);

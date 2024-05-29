@@ -141,7 +141,8 @@ void XFEM::XfluidSemiLagrange::compute(
         {
           bool initial_elefound =
               false;  // true if the element for a point was found on the processor
-          DRT::Element* initial_ele = nullptr;  // pointer to the element where start point lies in
+          CORE::Elements::Element* initial_ele =
+              nullptr;  // pointer to the element where start point lies in
           CORE::LINALG::Matrix<nsd, 1> initial_xi(
               true);  // local transformed coordinates of x w.r.t found ele
 
@@ -209,7 +210,8 @@ void XFEM::XfluidSemiLagrange::compute(
 
           // Initialization
           bool elefound = false;  // true if the element for a point was found on the processor
-          DRT::Element* ele = nullptr;  // pointer to the element where start point lies in
+          CORE::Elements::Element* ele =
+              nullptr;  // pointer to the element where start point lies in
           CORE::LINALG::Matrix<nsd, 1> xi(
               true);  // local transformed coordinates of x w.r.t found ele
           CORE::LINALG::Matrix<nsd, 1> vel(true);  // velocity of the start point approximation
@@ -227,7 +229,7 @@ void XFEM::XfluidSemiLagrange::compute(
             IO::cout << "\n\t\t\t ... start point approximation found in element: " << ele->Id();
 #endif
             //----------------------------------------------
-            DRT::Element* initial_ele = nullptr;
+            CORE::Elements::Element* initial_ele = nullptr;
 
             if (!discret_->HaveGlobalElement(data->initial_eid_))
             {
@@ -477,11 +479,11 @@ void XFEM::XfluidSemiLagrange::compute(
 /*------------------------------------------------------------------------------------------------*
  * Main Newton loop of the Semi-Lagrangian Back-Tracking algorithm                   schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::newton_loop(DRT::Element*& ele,  /// pointer to element
-    TimeIntData* data,                                          /// current data
-    CORE::LINALG::Matrix<3, 1>& xi,                             /// local coordinates of point
-    CORE::LINALG::Matrix<3, 1>& vel,                            /// velocity at current point
-    bool& elefound                                              /// is element found ?
+void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// pointer to element
+    TimeIntData* data,                                                     /// current data
+    CORE::LINALG::Matrix<3, 1>& xi,   /// local coordinates of point
+    CORE::LINALG::Matrix<3, 1>& vel,  /// velocity at current point
+    bool& elefound                    /// is element found ?
 )
 {
 #ifdef DEBUG_SEMILAGRANGE
@@ -533,7 +535,7 @@ void XFEM::XfluidSemiLagrange::newton_loop(DRT::Element*& ele,  /// pointer to e
       IO::cout << "\n\t\t\t\t ... elefound " << ele->Id();
 #endif
 
-      DRT::Element* initial_ele = nullptr;
+      CORE::Elements::Element* initial_ele = nullptr;
 
       if (!discret_->HaveGlobalElement(data->initial_eid_))
       {
@@ -695,8 +697,9 @@ void XFEM::XfluidSemiLagrange::newton_loop(DRT::Element*& ele,  /// pointer to e
 /*------------------------------------------------------------------------------------------------*
  * One Newton iteration of the Semi-Lagrangian Back-Tracking algorithm               schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::newton_iter(DRT::Element*& ele,  /// pointer to element to be updated
-    TimeIntData* data,                                          /// current data to be updated
+void XFEM::XfluidSemiLagrange::newton_iter(
+    CORE::Elements::Element*& ele,         /// pointer to element to be updated
+    TimeIntData* data,                     /// current data to be updated
     CORE::LINALG::Matrix<3, 1>& xi,        /// local coordinates w.r.t ele to be updated
     CORE::LINALG::Matrix<3, 1>& residuum,  /// residual for semilagrangean backtracking
     CORE::LINALG::Matrix<3, 1>& incr,  /// computed increment for lagrangean origin to be updated
@@ -773,8 +776,8 @@ bool XFEM::XfluidSemiLagrange::global_newton_finished(int counter) const
  * Decide how or if to continue when the startpoint approximation changed the side  schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 bool XFEM::XfluidSemiLagrange::continue_for_changing_side(
-    TimeIntData* data,  ///< current data to be updated
-    DRT::Element* ele,  ///< pointer to element the current point lies in
+    TimeIntData* data,             ///< current data to be updated
+    CORE::Elements::Element* ele,  ///< pointer to element the current point lies in
     std::vector<int>&
         nds_curr  ///< nds-vector of current volumecell the current startpoint approximation lies in
 )
@@ -857,7 +860,8 @@ void XFEM::XfluidSemiLagrange::get_data_for_not_converged_nodes()
 #endif
 
       // Initialization
-      DRT::Element* ele = nullptr;  // pointer to the element where pseudo-Lagrangian origin lies in
+      CORE::Elements::Element* ele =
+          nullptr;  // pointer to the element where pseudo-Lagrangian origin lies in
       CORE::LINALG::Matrix<nsd, 1> xi(true);   // local coordinates of pseudo-Lagrangian origin
       CORE::LINALG::Matrix<nsd, 1> vel(true);  // velocity at pseudo-Lagrangian origin
       bool elefound = false;  // true if an element for a point was found on the processor
@@ -957,7 +961,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
 
     // determine the elements used for the nodal gradient computation
     // determine the corresponding nodal dofset vectors used for averaging the nodal gradients
-    std::vector<DRT::Element*> eles_avg;
+    std::vector<CORE::Elements::Element*> eles_avg;
     std::vector<std::vector<int>> eles_avg_nds;
 
 
@@ -984,7 +988,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
           FOUR_C_THROW("element %d for averaging not on proc %d", peid, myrank_);
 
         // get the element
-        DRT::Element* e = discret_->gElement(peid);
+        CORE::Elements::Element* e = discret_->gElement(peid);
         // get the vc's nds vector
         const std::vector<int> e_nds = vc->NodalDofSet();
 
@@ -996,7 +1000,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
 
     // check all surrounding elements
     int numele = node->NumElement();
-    DRT::Element** eles = node->Elements();
+    CORE::Elements::Element** eles = node->Elements();
 
     // add surrounding std uncut elements for that no elementhandle is available
     for (int i = 0; i < numele; i++)
@@ -1168,10 +1172,11 @@ void XFEM::XfluidSemiLagrange::reinitialize_data()
 /*------------------------------------------------------------------------------------------------*
  * call back-tracking of data at final Lagrangian origin of a point                  schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::call_back_tracking(DRT::Element*& ele,  /// pointer to element
-    TimeIntData* data,                                                 /// data
-    CORE::LINALG::Matrix<3, 1>& xi,                                    /// local coordinates
-    const char* backTrackingType                                       /// type of back_tracking
+void XFEM::XfluidSemiLagrange::call_back_tracking(
+    CORE::Elements::Element*& ele,   /// pointer to element
+    TimeIntData* data,               /// data
+    CORE::LINALG::Matrix<3, 1>& xi,  /// local coordinates
+    const char* backTrackingType     /// type of back_tracking
 )
 {
   switch (ele->Shape())
@@ -1199,10 +1204,11 @@ void XFEM::XfluidSemiLagrange::call_back_tracking(DRT::Element*& ele,  /// point
  * back-tracking of data at final Lagrangian origin of a point                       schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 template <const int numnode, CORE::FE::CellType DISTYPE>
-void XFEM::XfluidSemiLagrange::back_tracking(DRT::Element*& fittingele,  /// pointer to element
-    TimeIntData* data,                                                   /// data
-    CORE::LINALG::Matrix<3, 1>& xi,                                      /// local coordinates
-    const char* backTrackingType                                         /// type of back_tracking
+void XFEM::XfluidSemiLagrange::back_tracking(
+    CORE::Elements::Element*& fittingele,  /// pointer to element
+    TimeIntData* data,                     /// data
+    CORE::LINALG::Matrix<3, 1>& xi,        /// local coordinates
+    const char* backTrackingType           /// type of back_tracking
 )
 {
 #ifdef DEBUG_SEMILAGRANGE
@@ -1309,7 +1315,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(DRT::Element*& fittingele,  /// poi
     nodepresdata[index].Clear();
   }
 
-  DRT::Element* ele = fittingele;  // current element
+  CORE::Elements::Element* ele = fittingele;  // current element
 
   //---------------------------------------------------------------------------------
   // get shape functions and derivatives at local coordinates
@@ -1374,7 +1380,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(DRT::Element*& fittingele,  /// poi
 
     // determine the elements used for the nodal gradient computation
     // determine the corresponding nodal dofset vectors used for averaging the nodal gradients
-    std::vector<DRT::Element*> eles_avg;
+    std::vector<CORE::Elements::Element*> eles_avg;
     std::vector<std::vector<int>> eles_avg_nds;
 
 
@@ -1402,7 +1408,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(DRT::Element*& fittingele,  /// poi
           FOUR_C_THROW("element %d for averaging not on proc %d", peid, myrank_);
 
         // get the element
-        DRT::Element* e = discret_->gElement(peid);
+        CORE::Elements::Element* e = discret_->gElement(peid);
         // get the vc's nds vector
         const std::vector<int> e_nds = vc->NodalDofSet();
 
@@ -1414,7 +1420,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(DRT::Element*& fittingele,  /// poi
 
     // check all surrounding elements
     int numele = node->NumElement();
-    DRT::Element** eles = node->Elements();
+    CORE::Elements::Element** eles = node->Elements();
 
     // add surrounding std uncut elements for that no elementhandle is available
     for (int i = 0; i < numele; i++)
@@ -1526,9 +1532,10 @@ void XFEM::XfluidSemiLagrange::back_tracking(DRT::Element*& fittingele,  /// poi
 /*------------------------------------------------------------------------------------------------*
  * determine point's dofset in element ele w.r.t old or new interface position       schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::get_nodal_dof_set(DRT::Element* ele,  /// pointer to element
-    CORE::LINALG::Matrix<3, 1>& x,                                   /// global coordinates of point
-    std::vector<int>& nds,  /// determine the points dofset w.r.t old/new interface position
+void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
+    CORE::Elements::Element* ele,   /// pointer to element
+    CORE::LINALG::Matrix<3, 1>& x,  /// global coordinates of point
+    std::vector<int>& nds,          /// determine the points dofset w.r.t old/new interface position
     CORE::GEO::CUT::VolumeCell*& vc,  /// valid fluid volumecell the point x lies in
     bool step_np                      /// computation w.r.t old or new interface position?
 )
@@ -1669,9 +1676,10 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(DRT::Element* ele,  /// pointer
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidSemiLagrange::compute_nodal_gradient(
     const std::vector<Teuchos::RCP<Epetra_Vector>>&
-        colVectors,                    ///< all vectors for that we reconstruct the their gradients
-    DRT::Node* node,                   ///< node at which we reconstruct the gradients
-    std::vector<DRT::Element*>& eles,  ///< elements around node used for the reconstruction
+        colVectors,   ///< all vectors for that we reconstruct the their gradients
+    DRT::Node* node,  ///< node at which we reconstruct the gradients
+    std::vector<CORE::Elements::Element*>&
+        eles,                                ///< elements around node used for the reconstruction
     std::vector<std::vector<int>>& ele_nds,  ///< corresonding elements nodal dofset information
     XFEM::XFEMDofSet& dofset,                ///< XFEM dofset
     std::vector<CORE::LINALG::Matrix<3, 3>>&
@@ -1695,7 +1703,7 @@ void XFEM::XfluidSemiLagrange::compute_nodal_gradient(
 
   for (int iele = 0; iele < numele; iele++)
   {
-    DRT::Element* e = eles[iele];
+    CORE::Elements::Element* e = eles[iele];
 
     // xi coordinates of node w.r.t this element
     CORE::LINALG::Matrix<nsd, 1> tmp_xi(true);

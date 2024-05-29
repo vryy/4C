@@ -25,8 +25,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
-    probdim>::calculate_electrode_soc_and_c_rate(const DRT::Element* const& ele,
-    const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    probdim>::calculate_electrode_soc_and_c_rate(const CORE::Elements::Element* const& ele,
+    const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& scalars)
 {
   // safety check
@@ -83,8 +83,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
-    probdim>::calculate_mean_electrode_concentration(const DRT::Element* const& ele,
-    const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    probdim>::calculate_mean_electrode_concentration(const CORE::Elements::Element* const& ele,
+    const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& conc)
 {
   // safety check
@@ -139,8 +139,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::calculate_scalars(
-    const DRT::Element* ele, CORE::LINALG::SerialDenseVector& scalars, const bool inverting,
-    const bool calc_grad_phi)
+    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
+    const bool inverting, const bool calc_grad_phi)
 {
   my::calculate_scalars(ele, scalars, inverting, calc_grad_phi);
 
@@ -174,9 +174,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::calcu
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::evaluate_action(
-    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const SCATRA::Action& action, DRT::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, const SCATRA::Action& action,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,

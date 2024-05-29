@@ -51,12 +51,12 @@ namespace DRT
       //! Evaluate the element
       //!  This class does not provide a definition for this function, it
       //!  must be defined in TemperImpl.
-      virtual int Evaluate(const DRT::Element* ele,         //!< current element
-          Teuchos::ParameterList& params,                   //!< parameter list, containing e.g., dt
-          const DRT::Discretization& discretization,        //!< current discretisation
-          const DRT::Element::LocationArray& la,            //!< location array
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< conductivity matrix
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< capacity matrix
+      virtual int Evaluate(const CORE::Elements::Element* ele,  //!< current element
+          Teuchos::ParameterList& params,             //!< parameter list, containing e.g., dt
+          const DRT::Discretization& discretization,  //!< current discretisation
+          const CORE::Elements::Element::LocationArray& la,  //!< location array
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,   //!< conductivity matrix
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,   //!< capacity matrix
           CORE::LINALG::SerialDenseVector&
               elevec1_epetra,  //!< internal force, view on heat flux in x-direction
           CORE::LINALG::SerialDenseVector&
@@ -68,9 +68,9 @@ namespace DRT
       //!
       //!  This class does not provide a definition for this function, it
       //!  must be defined in TemperImpl.
-      virtual int evaluate_neumann(const DRT::Element* ele,  //!< current element
-          const Teuchos::ParameterList& params,              //!< parameter list
-          const DRT::Discretization& discretization,         //!< current discretisation
+      virtual int evaluate_neumann(const CORE::Elements::Element* ele,  //!< current element
+          const Teuchos::ParameterList& params,                         //!< parameter list
+          const DRT::Discretization& discretization,                    //!< current discretisation
           const std::vector<int>&
               lm,  //!< location vector, EvalNeumann is called only on own discretisation
           CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< view on external force vector
@@ -78,7 +78,7 @@ namespace DRT
           ) = 0;
 
       //! Internal implementation class for thermo elements
-      static TemperImplInterface* Impl(const DRT::Element* ele);
+      static TemperImplInterface* Impl(const CORE::Elements::Element* ele);
 
     };  // class TemperImplInterface
 
@@ -135,12 +135,12 @@ namespace DRT
       static constexpr int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
 
       //! Evaluate for multiple dofsets
-      int Evaluate(const DRT::Element* ele,                 //!< current element
-          Teuchos::ParameterList& params,                   //!< parameter list, containing e.g., dt
-          const DRT::Discretization& discretization,        //!< current discretisation
-          const DRT::Element::LocationArray& la,            //!< location array
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< conductivity matrix
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< capacity matrix
+      int Evaluate(const CORE::Elements::Element* ele,  //!< current element
+          Teuchos::ParameterList& params,               //!< parameter list, containing e.g., dt
+          const DRT::Discretization& discretization,    //!< current discretisation
+          const CORE::Elements::Element::LocationArray& la,  //!< location array
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,   //!< conductivity matrix
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,   //!< capacity matrix
           CORE::LINALG::SerialDenseVector&
               elevec1_epetra,  //!< internal force, view on heat flux in x-direction
           CORE::LINALG::SerialDenseVector&
@@ -149,9 +149,9 @@ namespace DRT
           ) override;
 
       //! Evaluate the element
-      int evaluate_neumann(const DRT::Element* ele,   //!< current element
-          const Teuchos::ParameterList& params,       //!< parameter list
-          const DRT::Discretization& discretization,  //!< current discretisation
+      int evaluate_neumann(const CORE::Elements::Element* ele,  //!< current element
+          const Teuchos::ParameterList& params,                 //!< parameter list
+          const DRT::Discretization& discretization,            //!< current discretisation
           const std::vector<int>&
               lm,  //!< location vector, EvalNeumann is called only on own discretisation
           CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< view on external force vector
@@ -165,8 +165,8 @@ namespace DRT
       //! calculate complete internal force, tangent matrix k_TT and capacity matrix
       //!
       //! builds quantitites from linear/nonlinear and thermo/TSI specific routines
-      void evaluate_tang_capa_fint(const Element* ele, const double time,
-          const Discretization& discretization, const Element::LocationArray& la,
+      void evaluate_tang_capa_fint(const CORE::Elements::Element* ele, const double time,
+          const Discretization& discretization, const CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* etang,
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapalin,
@@ -180,8 +180,8 @@ namespace DRT
        * @param etangcoupl matrix k_Td to be filled
        * @param params ParameterList of options
        */
-      void evaluate_coupled_tang(const Element* ele, const Discretization& discretization,
-          const Element::LocationArray& la,
+      void evaluate_coupled_tang(const CORE::Elements::Element* ele,
+          const Discretization& discretization, const CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_>* etangcoupl,
           Teuchos::ParameterList& params);
 
@@ -191,13 +191,13 @@ namespace DRT
        * @param time time for function evaluation
        * @param efext external force vector
        */
-      void evaluate_fext(const Element* ele, const double time,
+      void evaluate_fext(const CORE::Elements::Element* ele, const double time,
           CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& efext);
 
       //! Calculate element force vectors and a few matrices
       void linear_thermo_contribution(
-          const DRT::Element* ele,  //!< the element whose matrix is calculated
-          const double time,        //!< current time
+          const CORE::Elements::Element* ele,  //!< the element whose matrix is calculated
+          const double time,                   //!< current time
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
               econd,  //!< conductivity matrix
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
@@ -215,16 +215,17 @@ namespace DRT
 
       //! Calculate element vectors (internal/external) and a few matrices
       //! considering current displacement solution
-      void linear_disp_contribution(const DRT::Element* ele, const double time,
+      void linear_disp_contribution(const CORE::Elements::Element* ele, const double time,
           const std::vector<double>& disp, const std::vector<double>& vel,
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,
           CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,
           const Teuchos::ParameterList& params);
 
       //! calculate thermal-mechanical system matrix term needed in monolithic TSI
-      void linear_coupled_tang(const DRT::Element* ele,  //!< the element whose matrix is calculated
-          const std::vector<double>& disp,               //!< current displacements
-          const std::vector<double>& vel,                //!< current velocities
+      void linear_coupled_tang(
+          const CORE::Elements::Element* ele,  //!< the element whose matrix is calculated
+          const std::vector<double>& disp,     //!< current displacements
+          const std::vector<double>& vel,      //!< current velocities
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>*
               etangcoupl,  //!< k_Tu matrix
           const Teuchos::ParameterList& params);
@@ -239,14 +240,14 @@ namespace DRT
       //! Clausius-Duhem inequality is no longer = 0, but > 0:
       //! mechanical energy dissipates as heat
       void linear_dissipation_fint(
-          const DRT::Element* ele,  //!< the element whose matrix is calculated
+          const CORE::Elements::Element* ele,  //!< the element whose matrix is calculated
           CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
           Teuchos::ParameterList& params);
 
       //! calculate terms of dissipation for thermo-mechanical
       //! system matrix k_Td used in case of plastic material
       void linear_dissipation_coupled_tang(
-          const DRT::Element* ele,  // the element whose matrix is calculated
+          const CORE::Elements::Element* ele,  // the element whose matrix is calculated
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>*
               etangcoupl,  // k_Td
           Teuchos::ParameterList& params);
@@ -260,10 +261,10 @@ namespace DRT
       //! considering current displacement solution
       //! --> all terms are coupled to the displacements/velocities
       void nonlinear_thermo_disp_contribution(
-          const DRT::Element* ele,          //!< the element whose matrix is calculated
-          const double time,                //!< current time
-          const std::vector<double>& disp,  //!< current displacements
-          const std::vector<double>& vel,   //!< current velocities
+          const CORE::Elements::Element* ele,  //!< the element whose matrix is calculated
+          const double time,                   //!< current time
+          const std::vector<double>& disp,     //!< current displacements
+          const std::vector<double>& vel,      //!< current velocities
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
               econd,  //!< conductivity matrix
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
@@ -275,9 +276,9 @@ namespace DRT
 
       //! calculate thermal-mechanical system matrix k_Td needed in monolithic TSI
       void nonlinear_coupled_tang(
-          const DRT::Element* ele,          //!< current element whose terms are calculated
-          const std::vector<double>& disp,  //!< current displacements
-          const std::vector<double>& vel,   //!< current velocities
+          const CORE::Elements::Element* ele,  //!< current element whose terms are calculated
+          const std::vector<double>& disp,     //!< current displacements
+          const std::vector<double>& vel,      //!< current velocities
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>*
               etangcoupl,                 //!< k_Tu matrix
           Teuchos::ParameterList& params  //!< parameter list, containing e.g., dt,theta
@@ -320,8 +321,8 @@ namespace DRT
       //! Clausius-Duhem inequality is no longer = 0, but > 0:
       //! mechanical energy dissipates as heat
       void nonlinear_dissipation_fint_tang(
-          const DRT::Element* ele,          //!< the element whose matrix is calculated
-          const std::vector<double>& disp,  //!< current displacements
+          const CORE::Elements::Element* ele,  //!< the element whose matrix is calculated
+          const std::vector<double>& disp,     //!< current displacements
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
               econd,                                              //!< conductivity matrix
           CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
@@ -330,9 +331,9 @@ namespace DRT
       //! calculate terms of dissipation for thermo-mechanical system matrix k_Td
       //! used in case of plastic material within geometrically nonlinear analysis
       void nonlinear_dissipation_coupled_tang(
-          const DRT::Element* ele,          //!< the element whose matrix is calculated
-          const std::vector<double>& disp,  //!< current displacements
-          const std::vector<double>& vel,   //!< current velocities
+          const CORE::Elements::Element* ele,  //!< the element whose matrix is calculated
+          const std::vector<double>& disp,     //!< current displacements
+          const std::vector<double>& vel,      //!< current velocities
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>*
               etangcoupl,  //!< k_Td
           Teuchos::ParameterList& params);
@@ -340,8 +341,9 @@ namespace DRT
       /// @}
 
       //! get the body force
-      virtual void radiation(const DRT::Element* ele,  //!< current element we are dealing with
-          const double time                            //!< current times
+      virtual void radiation(
+          const CORE::Elements::Element* ele,  //!< current element we are dealing with
+          const double time                    //!< current times
       );
 
       //! build linear B-operator
@@ -352,7 +354,7 @@ namespace DRT
 
       //! get corresponding structural material
       Teuchos::RCP<CORE::MAT::Material> get_str_material(
-          const DRT::Element* ele  //!< the element whose matrix is calculated
+          const CORE::Elements::Element* ele  //!< the element whose matrix is calculated
       ) const;
 
       //! calculate reactive term
@@ -363,8 +365,8 @@ namespace DRT
 
       //! determine heat flux and conductivity tensor
       //! based on material law
-      virtual void materialize(const DRT::Element* ele,  //!< current element
-          int gp                                         //!< current GP id
+      virtual void materialize(const CORE::Elements::Element* ele,  //!< current element
+          int gp                                                    //!< current GP id
       );
 
       //! evaluate shape functions and their derivatives at current integration point
@@ -375,17 +377,17 @@ namespace DRT
       );
 
       //! compute heatflux and temperature gradient in linear case
-      void linear_heatflux_tempgrad(const Element* ele,   //!< the current element
+      void linear_heatflux_tempgrad(const CORE::Elements::Element* ele,  //!< the current element
           CORE::LINALG::Matrix<nquad_, nsd_>* eheatflux,  //!< [out] heat fluxes at Gauss points
           CORE::LINALG::Matrix<nquad_, nsd_>*
               etempgrad  //!< [out] temperature gradients at Gauss points
       );
 
       //! compute heatflux and temperature gradient in nonlinear case
-      void nonlinear_heatflux_tempgrad(const Element* ele,  //!< the current element
-          const std::vector<double>& disp,                  //!< element displacements
-          const std::vector<double>& vel,                   //!< element velocities
-          CORE::LINALG::Matrix<nquad_, nsd_>* eheatflux,    //!< [out] heat fluxes at Gauss points
+      void nonlinear_heatflux_tempgrad(const CORE::Elements::Element* ele,  //!< the current element
+          const std::vector<double>& disp,                //!< element displacements
+          const std::vector<double>& vel,                 //!< element velocities
+          CORE::LINALG::Matrix<nquad_, nsd_>* eheatflux,  //!< [out] heat fluxes at Gauss points
           CORE::LINALG::Matrix<nquad_, nsd_>*
               etempgrad,                  //!< [out] temperature gradients at Gauss points
           Teuchos::ParameterList& params  //!< parameters containing type of flux and grad
@@ -400,30 +402,31 @@ namespace DRT
 
       //! Compute the error compared to an analytical solution from input file
       virtual void compute_error(
-          const DRT::Element* ele,  //!< current element whose terms are calculated
+          const CORE::Elements::Element* ele,  //!< current element whose terms are calculated
           CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& elevec1,  //!< element vectorr
           Teuchos::ParameterList& params  //!< parameter list, containing analytical solution
       );
 
       //! Compute nodal position and velocity
-      inline void initial_and_current_nodal_position_velocity(const Element* ele,
+      inline void initial_and_current_nodal_position_velocity(const CORE::Elements::Element* ele,
           const std::vector<double>& disp, const std::vector<double>& vel,
           CORE::LINALG::Matrix<nen_, nsd_>& xcurr, CORE::LINALG::Matrix<nen_, nsd_>& xcurrrate);
 
       //! prepare the evaluation of NURBS shape functions
       virtual void prepare_nurbs_eval(
-          const DRT::Element* ele,                   //!< the element whose matrix is calculated
+          const CORE::Elements::Element* ele,        //!< the element whose matrix is calculated
           const DRT::Discretization& discretization  //!< current discretisation
       );
 
       //! integral of shape functions over the element
-      void integrate_shape_functions(const DRT::Element* ele,  //!< current element
-          CORE::LINALG::SerialDenseVector& elevec1,            //!< result vector (to be assembled)
+      void integrate_shape_functions(const CORE::Elements::Element* ele,  //!< current element
+          CORE::LINALG::SerialDenseVector& elevec1,         //!< result vector (to be assembled)
           const CORE::LINALG::IntSerialDenseVector& dofids  //!< for which dof we need to integrate?
       );
 
       //! extrapolate from Gauss points to nodes, needed for postprocessing
-      void extrapolate_from_gauss_points_to_nodes(const DRT::Element* ele,  //!< the actual element
+      void extrapolate_from_gauss_points_to_nodes(
+          const CORE::Elements::Element* ele,                    //!< the actual element
           const CORE::LINALG::Matrix<nquad_, nsd_>& gpheatflux,  //!< heat flux at each Gauss Point
           CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>&
               efluxx,  //!< element heat flux in x-direction
@@ -434,8 +437,9 @@ namespace DRT
       );
 
       //! extract displacement and velocity vector from discretization
-      void extract_disp_vel(const Discretization& discretization, const Element::LocationArray& la,
-          std::vector<double>& mydisp, std::vector<double>& myvel) const;
+      void extract_disp_vel(const Discretization& discretization,
+          const CORE::Elements::Element::LocationArray& la, std::vector<double>& mydisp,
+          std::vector<double>& myvel) const;
 
       //! copy matrix contents into character vector
       void copy_matrix_into_char_vector(
@@ -443,20 +447,21 @@ namespace DRT
 
       //! FDcheck of conductivity matrix on element level
       void fd_check_coupl_nln_fint_cond_capa(
-          const DRT::Element* ele,          //!< the element whose matrix is calculated
-          const double time,                //!< current time
-          const std::vector<double>& disp,  //!< current displacements
-          const std::vector<double>& vel,   //!< current velocities
+          const CORE::Elements::Element* ele,  //!< the element whose matrix is calculated
+          const double time,                   //!< current time
+          const std::vector<double>& disp,     //!< current displacements
+          const std::vector<double>& vel,      //!< current velocities
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
               etang,                                              //!< tangent conductivity matrix
           CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force);)
           Teuchos::ParameterList& params) const;
 
       //! FDcheck of linearized capacity matrix on element level
-      void fd_check_capalin(const DRT::Element* ele,  //!< the element whose matrix is calculated
-          const double time,                          //!< current time
-          const std::vector<double>& disp,            //!< current displacements
-          const std::vector<double>& vel,             //!< current velocities
+      void fd_check_capalin(
+          const CORE::Elements::Element* ele,  //!< the element whose matrix is calculated
+          const double time,                   //!< current time
+          const std::vector<double>& disp,     //!< current displacements
+          const std::vector<double>& vel,      //!< current velocities
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
               ecapa,  //!< capacity matrix
           CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*

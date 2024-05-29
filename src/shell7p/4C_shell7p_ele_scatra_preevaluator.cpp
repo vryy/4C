@@ -16,9 +16,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void DRT::ELEMENTS::SHELL::PreEvaluateScatraByElement(DRT::Element& ele,
+void DRT::ELEMENTS::SHELL::PreEvaluateScatraByElement(CORE::Elements::Element& ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& dof_index_array)
+    CORE::Elements::Element::LocationArray& dof_index_array)
 {
   switch (ele.Shape())
   {
@@ -45,8 +45,9 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatraByElement(DRT::Element& ele,
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::SHELL::PreEvaluateScatra(DRT::Element& ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& dof_index_array)
+void DRT::ELEMENTS::SHELL::PreEvaluateScatra(CORE::Elements::Element& ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    CORE::Elements::Element::LocationArray& dof_index_array)
 {
   CORE::FE::IntegrationPoints2D intpoints_midsurface_ =
       CreateGaussIntegrationPoints<distype>(get_gauss_rule<distype>());

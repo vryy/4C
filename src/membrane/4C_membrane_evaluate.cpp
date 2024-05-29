@@ -52,7 +52,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
   set_params_interface_ptr(params);
 
   // start with ActionType none
-  ELEMENTS::ActionType act = ELEMENTS::none;
+  CORE::Elements::ActionType act = CORE::Elements::none;
 
   if (IsParamsInterface())  // new structural time integration
   {
@@ -65,21 +65,21 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     if (action == "none")
       FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_nlnstiff")
-      act = ELEMENTS::struct_calc_nlnstiff;
+      act = CORE::Elements::struct_calc_nlnstiff;
     else if (action == "calc_struct_nlnstiffmass")
-      act = ELEMENTS::struct_calc_nlnstiffmass;
+      act = CORE::Elements::struct_calc_nlnstiffmass;
     else if (action == "calc_struct_update_istep")
-      act = ELEMENTS::struct_calc_update_istep;
+      act = CORE::Elements::struct_calc_update_istep;
     else if (action == "calc_struct_reset_istep")
-      act = ELEMENTS::struct_calc_reset_istep;
+      act = CORE::Elements::struct_calc_reset_istep;
     else if (action == "calc_struct_stress")
-      act = ELEMENTS::struct_calc_stress;
+      act = CORE::Elements::struct_calc_stress;
     else if (action == "calc_struct_thickness")
-      act = ELEMENTS::struct_calc_thickness;
+      act = CORE::Elements::struct_calc_thickness;
     else if (action == "calc_struct_energy")
-      act = ELEMENTS::struct_calc_energy;
+      act = CORE::Elements::struct_calc_energy;
     else if (action == "postprocess_thickness")
-      act = ELEMENTS::struct_postprocess_thickness;
+      act = CORE::Elements::struct_postprocess_thickness;
     else
     {
       FOUR_C_THROW("Unknown type of action for Membrane: %s", action.c_str());
@@ -91,7 +91,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     /*===============================================================================*
      | struct_calc_nlnstiff                                                          |
      *===============================================================================*/
-    case ELEMENTS::struct_calc_nlnstiff:
+    case CORE::Elements::struct_calc_nlnstiff:
     {
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -109,7 +109,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     /*===============================================================================*
      | struct_calc_nlnstiffmass                                                      |
      *===============================================================================*/
-    case ELEMENTS::struct_calc_nlnstiffmass:  // do mass, stiffness and internal forces
+    case CORE::Elements::struct_calc_nlnstiffmass:  // do mass, stiffness and internal forces
     {
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -127,7 +127,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     /*===============================================================================*
      | struct_calc_internalforce                                                     |
      *===============================================================================*/
-    case ELEMENTS::struct_calc_internalforce:
+    case CORE::Elements::struct_calc_internalforce:
     {
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -143,7 +143,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     /*===============================================================================*
      | struct_calc_update_istep                                                      |
      *===============================================================================*/
-    case ELEMENTS::struct_calc_update_istep:
+    case CORE::Elements::struct_calc_update_istep:
     {
       // Update materials
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     /*===============================================================================*
      | struct_calc_reset_istep                                                       |
      *===============================================================================*/
-    case ELEMENTS::struct_calc_reset_istep:
+    case CORE::Elements::struct_calc_reset_istep:
     {
       // Reset of history (if needed)
       SolidMaterial()->reset_step();
@@ -167,7 +167,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     /*===============================================================================*
      | struct_calc_stress                                                            |
      *===============================================================================*/
-    case ELEMENTS::struct_calc_stress:
+    case CORE::Elements::struct_calc_stress:
     {
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -232,7 +232,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     /*===============================================================================*
      | struct_calc_thickness                                                         |
      *===============================================================================*/
-    case ELEMENTS::struct_calc_thickness:
+    case CORE::Elements::struct_calc_thickness:
     {
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID() == Owner())
@@ -264,7 +264,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     /*===============================================================================*
      | struct_calc_energy                                                            |
      *===============================================================================*/
-    case ELEMENTS::struct_calc_energy:
+    case CORE::Elements::struct_calc_energy:
     {
       // initialization of internal energy
       double intenergy = 0.0;
@@ -362,7 +362,8 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         // standard evaluation (incompressible, plane stress)
         if (Material()->MaterialType() == CORE::Materials::m_membrane_elasthyper)
         {
-          Teuchos::rcp_dynamic_cast<MAT::MembraneElastHyper>(DRT::Element::Material(), true)
+          Teuchos::rcp_dynamic_cast<MAT::MembraneElastHyper>(
+              CORE::Elements::Element::Material(), true)
               ->StrainEnergy(cauchygreen_loc, psi, gp, Id());
         }
         else
@@ -393,7 +394,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     /*===============================================================================*
      | struct_postprocess_thickness                                                  |
      *===============================================================================*/
-    case ELEMENTS::struct_postprocess_thickness:
+    case CORE::Elements::struct_postprocess_thickness:
     {
       const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> gpthickmap =
           params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
@@ -440,13 +441,13 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     /*===============================================================================*
      | struct_calc_recover                                                           |
      *===============================================================================*/
-    case ELEMENTS::struct_calc_recover:
+    case CORE::Elements::struct_calc_recover:
     {
       // do nothing here
     }
     break;
 
-    case ELEMENTS::struct_calc_predict:
+    case CORE::Elements::struct_calc_predict:
     {
       // do nothing here
       break;
@@ -637,11 +638,14 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
   CORE::LINALG::Matrix<numnod_, noddof_> xcurr(true);
 
   auto material_local_coordinates =
-      Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialLocalCoordinates>(DRT::Element::Material());
+      Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialLocalCoordinates>(
+          CORE::Elements::Element::Material());
   auto material_global_coordinates =
-      Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialGlobalCoordinates>(DRT::Element::Material());
+      Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialGlobalCoordinates>(
+          CORE::Elements::Element::Material());
   auto material_inelastic_thickness =
-      Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialInelasticThickness>(DRT::Element::Material());
+      Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialInelasticThickness>(
+          CORE::Elements::Element::Material());
 
   mem_configuration(disp, xrefe, xcurr);
 
@@ -1184,7 +1188,7 @@ template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::Membrane<distype>::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (DRT::Element::VisData(name, data)) return true;
+  if (CORE::Elements::Element::VisData(name, data)) return true;
 
   if (name == "thickness")
   {
@@ -1544,10 +1548,10 @@ void DRT::ELEMENTS::Membrane<distype>::update_element(std::vector<double>& disp,
 
       auto material_local_coordinates =
           Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialLocalCoordinates>(
-              DRT::Element::Material());
+              CORE::Elements::Element::Material());
       auto material_global_coordinates =
           Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialGlobalCoordinates>(
-              DRT::Element::Material());
+              CORE::Elements::Element::Material());
       if (material_local_coordinates != Teuchos::null)
       {
         material_local_coordinates->UpdateMembrane(defgrd_loc, params, Q_localToGlobal, gp, Id());

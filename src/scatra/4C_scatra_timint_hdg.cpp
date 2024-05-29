@@ -307,7 +307,7 @@ namespace
         "action", SCATRA::Action::interpolate_hdg_to_node, eleparams);
     dis.set_state(0, "phiaf", traceValues);
     dis.set_state(nds_intvar_, "intphinp", interiorValues);
-    DRT::Element::LocationArray la(ndofs);
+    CORE::Elements::Element::LocationArray la(ndofs);
     CORE::LINALG::SerialDenseMatrix dummyMat;
     CORE::LINALG::SerialDenseVector dummyVec;
     CORE::LINALG::SerialDenseVector interpolVec;
@@ -317,7 +317,7 @@ namespace
 
     for (int el = 0; el < dis.NumMyColElements(); ++el)
     {
-      DRT::Element *ele = dis.lColElement(el);
+      CORE::Elements::Element *ele = dis.lColElement(el);
       ele->LocationVector(dis, la, false);
       interpolVec.size(ele->num_node() * (2 + ndim));
 
@@ -521,7 +521,7 @@ void SCATRA::TimIntHDG::SetInitialField(
 
       CORE::LINALG::SerialDenseMatrix dummyMat;
       CORE::LINALG::SerialDenseVector updateVec1, updateVec2, dummyVec;
-      DRT::Element::LocationArray la(discret_->NumDofSets());
+      CORE::Elements::Element::LocationArray la(discret_->NumDofSets());
 
       const Epetra_Map *dofrowmap = discret_->dof_row_map();
       const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
@@ -529,7 +529,7 @@ void SCATRA::TimIntHDG::SetInitialField(
 
       for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
       {
-        DRT::Element *ele = discret_->lColElement(iele);
+        CORE::Elements::Element *ele = discret_->lColElement(iele);
         ele->LocationVector(*discret_, la, false);
         if (static_cast<std::size_t>(updateVec1.numRows()) != la[0].lm_.size())
           updateVec1.size(la[0].lm_.size());
@@ -650,12 +650,12 @@ void SCATRA::TimIntHDG::update_interior_variables(Teuchos::RCP<Epetra_Vector> up
   CORE::LINALG::SerialDenseMatrix dummyMat;
   CORE::LINALG::SerialDenseVector dummyVec;
   CORE::LINALG::SerialDenseVector updateVec;
-  DRT::Element::LocationArray la(discret_->NumDofSets());
+  CORE::Elements::Element::LocationArray la(discret_->NumDofSets());
   const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
 
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
   {
-    DRT::Element *ele = discret_->lColElement(iele);
+    CORE::Elements::Element *ele = discret_->lColElement(iele);
     if (ele->Owner() != discret_->Comm().MyPID()) continue;
 
     ele->LocationVector(*discret_, la, false);
@@ -722,12 +722,12 @@ void SCATRA::TimIntHDG::fd_check()
   Teuchos::ParameterList eleparams;
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_mat_and_rhs, eleparams);
-  DRT::Element::LocationArray la(discret_->NumDofSets());
+  CORE::Elements::Element::LocationArray la(discret_->NumDofSets());
 
   // loop over elements
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
   {
-    DRT::Element *ele = discret_->lColElement(iele);
+    CORE::Elements::Element *ele = discret_->lColElement(iele);
     ele->LocationVector(*discret_, la, false);
 
     strategy.ClearElementStorage(la[0].Size(), la[0].Size());
@@ -793,11 +793,11 @@ void SCATRA::TimIntHDG::fd_check()
       CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
           "action", SCATRA::Action::calc_mat_and_rhs, eleparams);
 
-      DRT::Element::LocationArray la(discret_->NumDofSets());
+      CORE::Elements::Element::LocationArray la(discret_->NumDofSets());
 
       for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
       {
-        DRT::Element *ele = discret_->lColElement(iele);
+        CORE::Elements::Element *ele = discret_->lColElement(iele);
         ele->LocationVector(*discret_, la, false);
 
         strategy.ClearElementStorage(la[0].Size(), la[0].Size());
@@ -1015,7 +1015,7 @@ void SCATRA::TimIntHDG::calc_mat_initial()
       0, 0, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   strategy.Zero();
-  DRT::Element::LocationArray la(discret_->NumDofSets());
+  CORE::Elements::Element::LocationArray la(discret_->NumDofSets());
 
   //    // get cpu time
   //    const double tcmatinit = Teuchos::Time::wallTime();
@@ -1023,7 +1023,7 @@ void SCATRA::TimIntHDG::calc_mat_initial()
   // loop over elements
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
   {
-    DRT::Element *ele = discret_->lColElement(iele);
+    CORE::Elements::Element *ele = discret_->lColElement(iele);
 
     // if the element has only ghosted nodes it will not assemble -> skip evaluation
     if (ele->HasOnlyGhostNodes(discret_->Comm().MyPID())) continue;
@@ -1077,7 +1077,7 @@ void SCATRA::TimIntHDG::adapt_degree()
       Teuchos::rcp(new Epetra_IntVector(*discret_->ElementColMap()));
 
   // vector to store the location array of the dofsets before the adaption with the new order
-  std::vector<DRT::Element::LocationArray> la_old;
+  std::vector<CORE::Elements::Element::LocationArray> la_old;
 
   // copy the old face dof map and the old interior element dof map
   Teuchos::RCP<Epetra_Map> facedofs_old = Teuchos::rcp(new Epetra_Map(*discret_->DofColMap(0)));
@@ -1106,9 +1106,9 @@ void SCATRA::TimIntHDG::adapt_degree()
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
   {
     // add new location array in vector for each element
-    la_old.push_back(DRT::Element::LocationArray(discret_->NumDofSets()));
+    la_old.push_back(CORE::Elements::Element::LocationArray(discret_->NumDofSets()));
 
-    DRT::Element *ele = discret_->lColElement(iele);
+    CORE::Elements::Element *ele = discret_->lColElement(iele);
 
     // fill location array and store it for later use
     ele->LocationVector(*discret_, la_old[iele], false);
@@ -1271,7 +1271,7 @@ void SCATRA::TimIntHDG::adapt_degree()
 void SCATRA::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Epetra_Vector> phi_new,
     Teuchos::RCP<Epetra_Vector> phi_old, Teuchos::RCP<Epetra_Vector> intphi_new,
     Teuchos::RCP<Epetra_Vector> intphi_old, int nds_var_old, int nds_intvar_old,
-    std::vector<DRT::Element::LocationArray> la_old)
+    std::vector<CORE::Elements::Element::LocationArray> la_old)
 {
   // set action
   Teuchos::ParameterList eleparams;
@@ -1297,13 +1297,13 @@ void SCATRA::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Epetra_Vector> phi_ne
 
   // create location array for new and old dofsets (old ones are already filled and only copied to
   // the location array)
-  DRT::Element::LocationArray la(2 * discret_->NumDofSets());
+  CORE::Elements::Element::LocationArray la(2 * discret_->NumDofSets());
   // create location array for new dofsets
-  DRT::Element::LocationArray la_temp(discret_->NumDofSets());
+  CORE::Elements::Element::LocationArray la_temp(discret_->NumDofSets());
 
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
   {
-    DRT::Element *ele = discret_->lColElement(iele);
+    CORE::Elements::Element *ele = discret_->lColElement(iele);
 
     // if the element has only ghosted nodes it will not assemble -> skip evaluation
     if (ele->HasOnlyGhostNodes(discret_->Comm().MyPID())) continue;
@@ -1404,12 +1404,12 @@ void SCATRA::TimIntHDG::assemble_rhs()
 
   strategy.Zero();
 
-  DRT::Element::LocationArray la(discret_->NumDofSets());
+  CORE::Elements::Element::LocationArray la(discret_->NumDofSets());
 
   // loop over elements
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
   {
-    DRT::Element *ele = discret_->lColElement(iele);
+    CORE::Elements::Element *ele = discret_->lColElement(iele);
 
     // if the element has only ghosted nodes it will not assemble -> skip evaluation
     if (ele->HasOnlyGhostNodes(discret_->Comm().MyPID())) continue;

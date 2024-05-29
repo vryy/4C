@@ -48,13 +48,14 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       /// Setup element evaluation
-      int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) override;
+      int SetupCalc(CORE::Elements::Element* ele, DRT::Discretization& discretization) override;
 
      protected:
       //! extract element based or nodal values
       //  return extracted values of phinp
-      void extract_element_and_node_values(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la) override;
+      void extract_element_and_node_values(CORE::Elements::Element* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          CORE::Elements::Element::LocationArray& la) override;
 
       //! evaluate shape functions and their derivatives at current integration point
       double eval_shape_func_and_derivs_at_int_point(
@@ -181,7 +182,7 @@ namespace DRT
       };
 
       // Set the artery material in the scatra-Varmanager
-      void SetArteryMaterial(DRT::Element* ele)
+      void SetArteryMaterial(CORE::Elements::Element* ele)
       {
         // check if we actually have two materials
         if (ele->NumMaterial() < 2) FOUR_C_THROW("no second material available");

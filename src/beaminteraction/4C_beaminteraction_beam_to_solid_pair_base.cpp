@@ -60,7 +60,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
     if (beam::n_val_ == 2)
     {
       CORE::LINALG::Matrix<3, 1> tan;
-      const DRT::ElementType& eot = Element1()->ElementType();
+      const CORE::Elements::ElementType& eot = Element1()->ElementType();
 
       if (eot == DRT::ELEMENTS::Beam3rType::Instance())
       {

@@ -51,7 +51,7 @@ std::map<std::string, std::string> STI::ScatraThermoCloneStrategy::conditions_to
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
 bool STI::ScatraThermoCloneStrategy::determine_ele_type(
-    DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // set type of cloned element to transport type
   eletype.emplace_back("TRANSP");
@@ -62,8 +62,8 @@ bool STI::ScatraThermoCloneStrategy::determine_ele_type(
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-void STI::ScatraThermoCloneStrategy::set_element_data(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbs)
+void STI::ScatraThermoCloneStrategy::set_element_data(Teuchos::RCP<CORE::Elements::Element> newele,
+    CORE::Elements::Element* oldele, const int matid, const bool isnurbs)
 {
   // cast pointers to current element on source discretization and to current cloned element on
   // target discretization

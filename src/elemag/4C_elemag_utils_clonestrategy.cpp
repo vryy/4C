@@ -48,7 +48,8 @@ void ELEMAG::UTILS::ScatraCloneStrategy<sft>::check_material_type(const int mati
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::ShapeFunctionType sft>
 void ELEMAG::UTILS::ScatraCloneStrategy<sft>::set_element_data(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool nurbsdis)
+    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+    const bool nurbsdis)
 {
   auto Transport = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
   if (Transport != nullptr)
@@ -77,7 +78,7 @@ void ELEMAG::UTILS::ScatraCloneStrategy<sft>::set_element_data(
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::ShapeFunctionType sft>
 bool ELEMAG::UTILS::ScatraCloneStrategy<sft>::determine_ele_type(
-    DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // Clone it now.
   if (ismyele)

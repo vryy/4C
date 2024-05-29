@@ -35,7 +35,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
   set_params_interface_ptr(params);
 
   // start with "none"
-  ELEMENTS::ActionType act = ELEMENTS::none;
+  CORE::Elements::ActionType act = CORE::Elements::none;
 
   if (IsParamsInterface())
   {
@@ -48,25 +48,25 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
     if (action == "calc_none")
       FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_linstiff")
-      act = ELEMENTS::struct_calc_linstiff;
+      act = CORE::Elements::struct_calc_linstiff;
     else if (action == "calc_struct_nlnstiff")
-      act = ELEMENTS::struct_calc_nlnstiff;
+      act = CORE::Elements::struct_calc_nlnstiff;
     else if (action == "calc_struct_internalforce")
-      act = ELEMENTS::struct_calc_internalforce;
+      act = CORE::Elements::struct_calc_internalforce;
     else if (action == "calc_struct_linstiffmass")
-      act = ELEMENTS::struct_calc_linstiffmass;
+      act = CORE::Elements::struct_calc_linstiffmass;
     else if (action == "calc_struct_nlnstiffmass")
-      act = ELEMENTS::struct_calc_nlnstiffmass;
+      act = CORE::Elements::struct_calc_nlnstiffmass;
     else if (action == "calc_struct_nlnstifflmass")
-      act = ELEMENTS::struct_calc_nlnstifflmass;
+      act = CORE::Elements::struct_calc_nlnstifflmass;
     else if (action == "calc_struct_stress")
-      act = ELEMENTS::struct_calc_stress;
+      act = CORE::Elements::struct_calc_stress;
     else if (action == "calc_struct_update_istep")
-      act = ELEMENTS::struct_calc_update_istep;
+      act = CORE::Elements::struct_calc_update_istep;
     else if (action == "calc_struct_reset_istep")
-      act = ELEMENTS::struct_calc_reset_istep;
+      act = CORE::Elements::struct_calc_reset_istep;
     else if (action == "calc_struct_ptcstiff")
-      act = ELEMENTS::struct_calc_ptcstiff;
+      act = CORE::Elements::struct_calc_ptcstiff;
     else
     {
       std::cout << action << std::endl;
@@ -76,21 +76,21 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
 
   switch (act)
   {
-    case ELEMENTS::struct_calc_ptcstiff:
+    case CORE::Elements::struct_calc_ptcstiff:
     {
       // nothing to do
     }
     break;
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero
      dispalcement and residual values*/
-    case ELEMENTS::struct_calc_linstiff:
+    case CORE::Elements::struct_calc_linstiff:
     {
       // only nonlinear case implemented!
       FOUR_C_THROW("linear stiffness matrix called, but not implemented");
     }
     break;
     // calculate internal energy
-    case ELEMENTS::struct_calc_energy:
+    case CORE::Elements::struct_calc_energy:
     {
       // need current global displacement and get them from discretization
       // making use of the local-to-global map lm one can extract current displacemnet and residual
@@ -106,10 +106,10 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
 
     // nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is
     // required
-    case ELEMENTS::struct_calc_nlnstiffmass:
-    case ELEMENTS::struct_calc_nlnstifflmass:
-    case ELEMENTS::struct_calc_nlnstiff:
-    case ELEMENTS::struct_calc_internalforce:
+    case CORE::Elements::struct_calc_nlnstiffmass:
+    case CORE::Elements::struct_calc_nlnstifflmass:
+    case CORE::Elements::struct_calc_nlnstiff:
+    case CORE::Elements::struct_calc_internalforce:
     {
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacemnet and residual
@@ -134,13 +134,13 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
 
 
       // for engineering strains instead of total lagrange use t3_nlnstiffmass2
-      if (act == ELEMENTS::struct_calc_nlnstiffmass)
+      if (act == CORE::Elements::struct_calc_nlnstiffmass)
         t3_nlnstiffmass(mydisp, &elemat1, &elemat2, &elevec1);
-      else if (act == ELEMENTS::struct_calc_nlnstifflmass)
+      else if (act == CORE::Elements::struct_calc_nlnstifflmass)
         t3_nlnstiffmass(mydisp, &elemat1, &elemat2, &elevec1);
-      else if (act == ELEMENTS::struct_calc_nlnstiff)
+      else if (act == CORE::Elements::struct_calc_nlnstiff)
         t3_nlnstiffmass(mydisp, &elemat1, nullptr, &elevec1);
-      else if (act == ELEMENTS::struct_calc_internalforce)
+      else if (act == CORE::Elements::struct_calc_internalforce)
         t3_nlnstiffmass(mydisp, nullptr, nullptr, &elevec1);
 
 
@@ -228,17 +228,17 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
       */
     }
     break;
-    case ELEMENTS::struct_calc_update_istep:
-    case ELEMENTS::struct_calc_reset_istep:
-    case ELEMENTS::struct_calc_stress:
+    case CORE::Elements::struct_calc_update_istep:
+    case CORE::Elements::struct_calc_reset_istep:
+    case CORE::Elements::struct_calc_stress:
       break;
-    case ELEMENTS::struct_calc_recover:
+    case CORE::Elements::struct_calc_recover:
     {
       // do nothing here
       break;
     }
 
-    case ELEMENTS::struct_calc_predict:
+    case CORE::Elements::struct_calc_predict:
     {
       // do nothing here
       break;

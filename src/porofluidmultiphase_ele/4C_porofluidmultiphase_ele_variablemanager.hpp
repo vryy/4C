@@ -11,7 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_porofluidmultiphase_ele_action.hpp"
 
@@ -113,8 +113,8 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        virtual void extract_element_and_node_values(const DRT::Element& ele,
-            const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+        virtual void extract_element_and_node_values(const CORE::Elements::Element& ele,
+            const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
             CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) = 0;
 
         //! evaluate variables at gauss point
@@ -300,8 +300,8 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void extract_element_and_node_values(const DRT::Element& ele,
-            const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+        void extract_element_and_node_values(const CORE::Elements::Element& ele,
+            const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
             CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
 
         //! evaluate state vector at gauss point
@@ -479,8 +479,8 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void extract_element_and_node_values(const DRT::Element& ele,
-            const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+        void extract_element_and_node_values(const CORE::Elements::Element& ele,
+            const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
             CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
 
         //! evaluate variables at gauss point
@@ -551,8 +551,8 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void extract_element_and_node_values(const DRT::Element& ele,
-            const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+        void extract_element_and_node_values(const CORE::Elements::Element& ele,
+            const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
             CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
 
         //! evaluate variables at gauss point
@@ -637,8 +637,8 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void extract_element_and_node_values(const DRT::Element& ele,
-            const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+        void extract_element_and_node_values(const CORE::Elements::Element& ele,
+            const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
             CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
 
         void EvaluateGPVariables(
@@ -708,8 +708,8 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void extract_element_and_node_values(const DRT::Element& ele,
-            const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+        void extract_element_and_node_values(const CORE::Elements::Element& ele,
+            const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
             CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
 
         //! evaluate variables at gauss point

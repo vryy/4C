@@ -16,12 +16,12 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -42,7 +42,7 @@ namespace DRT
     // forward declarations
     class Wall1Line;
 
-    class Wall1Type : public DRT::ElementType
+    class Wall1Type : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Wall1Type"; }
@@ -51,13 +51,13 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, int const numdof, int const dimnsp) override;
@@ -140,7 +140,7 @@ namespace DRT
       ///
       /// The Clone() method is used from the virtual base class Element in cases
       /// where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /// Get shape type of element
       CORE::FE::CellType Shape() const override;
@@ -166,10 +166,10 @@ namespace DRT
       int NumSurface() const override { return 1; }
 
       /// Get vector of Teuchos::RCPs to the lines of this element
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /// Get vector of Teuchos::RCPs to the surfaces of this element
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       /// Return unique ParObject id
       ///
@@ -198,7 +198,7 @@ namespace DRT
       bool HaveEAS() const override { return (eastype_ != eas_vague); };
 
       /// Get number of degrees of freedom of a certain node
-      /// (implements pure virtual DRT::Element)
+      /// (implements pure virtual CORE::Elements::Element)
       ///
       /// The element decides how many degrees of freedom its nodes must have.
       /// As this may vary along a simulation, the element can redecide the
@@ -207,7 +207,7 @@ namespace DRT
       int NumDofPerNode(const DRT::Node& node) const override { return Wall1::noddof_; }
 
       /// Get number of degrees of freedom per element
-      /// (implements pure virtual DRT::Element)
+      /// (implements pure virtual CORE::Elements::Element)
       ///
       /// The element decides how many element degrees of freedom it has.
       /// It can redecide along the way of a simulation.
@@ -217,7 +217,7 @@ namespace DRT
       ///      element dofs that are condensed internally should NOT be considered.
       int num_dof_per_element() const override { return 0; }
 
-      DRT::ElementType& ElementType() const override { return Wall1Type::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override { return Wall1Type::Instance(); }
 
       //@}
 
@@ -699,17 +699,17 @@ namespace DRT
     //=======================================================================
     //=======================================================================
 
-    class Wall1LineType : public DRT::ElementType
+    class Wall1LineType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Wall1LineType"; }
 
       static Wall1LineType& Instance();
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -733,10 +733,11 @@ namespace DRT
      * \note This is a pure Neumann boundary condition element. It's only
      *      purpose is to evaluate line Neumann boundary conditions that might be
      *      adjacent to a parent wall1 element. It therefore does not implement
-     *      the DRT::Element::Evaluate method and does not have its own ElementRegister class.
+     *      the CORE::Elements::Element::Evaluate method and does not have its own ElementRegister
+     * class.
      *
      */
-    class Wall1Line : public DRT::FaceElement
+    class Wall1Line : public CORE::Elements::FaceElement
     {
      public:
       /// @name Constructors and destructors and related methods
@@ -762,7 +763,7 @@ namespace DRT
       ///
       /// The Clone() method is used from the virtual base class Element in cases
       /// where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
 
       /// Get shape type of element
@@ -795,7 +796,7 @@ namespace DRT
       //@{
 
       /// Get number of degrees of freedom of a certain node
-      /// (implements pure virtual DRT::Element)
+      /// (implements pure virtual CORE::Elements::Element)
       ///
       /// The element decides how many degrees of freedom its nodes must have.
       /// As this may vary along a simulation, the element can redecide the
@@ -807,7 +808,7 @@ namespace DRT
       }
 
       /// Get number of degrees of freedom per element
-      /// (implements pure virtual DRT::Element)
+      /// (implements pure virtual CORE::Elements::Element)
       ///
       /// The element decides how many element degrees of freedom it has.
       /// It can redecide along the way of a simulation.
@@ -820,7 +821,10 @@ namespace DRT
       /// Print this element
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return Wall1LineType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return Wall1LineType::Instance();
+      }
 
       //@}
 

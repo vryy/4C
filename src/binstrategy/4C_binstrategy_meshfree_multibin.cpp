@@ -29,22 +29,24 @@ CORE::COMM::ParObject* DRT::MESHFREE::MeshfreeMultiBinType::Create(const std::ve
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeMultiBinType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::MESHFREE::MeshfreeMultiBinType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MESHFREEMULTIBIN")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::MESHFREE::MeshfreeMultiBin(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        Teuchos::rcp(new DRT::MESHFREE::MeshfreeMultiBin(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeMultiBinType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::MESHFREE::MeshfreeMultiBinType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::MESHFREE::MeshfreeMultiBin(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele =
+      Teuchos::rcp(new DRT::MESHFREE::MeshfreeMultiBin(id, owner));
   return ele;
 }
 
@@ -54,7 +56,7 @@ Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeMultiBinType::Create(
  |  ctor                                               (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(int id, int owner)
-    : DRT::MESHFREE::MeshfreeBin<DRT::Element>(id, owner)
+    : DRT::MESHFREE::MeshfreeBin<CORE::Elements::Element>(id, owner)
 {
   return;
 }
@@ -63,7 +65,7 @@ DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(int id, int owner)
  |  copy-ctor                                          (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(const DRT::MESHFREE::MeshfreeMultiBin& old)
-    : DRT::MESHFREE::MeshfreeBin<DRT::Element>(old)
+    : DRT::MESHFREE::MeshfreeBin<CORE::Elements::Element>(old)
 {
   for (int i = 0; i < BINSTRATEGY::UTILS::enumsize; ++i)
   {
@@ -78,7 +80,7 @@ DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(const DRT::MESHFREE::MeshfreeM
 /*--------------------------------------------------------------------------*
  |  clone-ctor (public)                                          ghamm 04/13|
  *--------------------------------------------------------------------------*/
-DRT::Element* DRT::MESHFREE::MeshfreeMultiBin::Clone() const
+CORE::Elements::Element* DRT::MESHFREE::MeshfreeMultiBin::Clone() const
 {
   DRT::MESHFREE::MeshfreeMultiBin* newele = new DRT::MESHFREE::MeshfreeMultiBin(*this);
   return newele;
@@ -99,7 +101,7 @@ std::ostream& operator<<(std::ostream& os, const DRT::MESHFREE::MeshfreeMultiBin
 void DRT::MESHFREE::MeshfreeMultiBin::Print(std::ostream& os) const
 {
   os << "MeshfreeMultiBin ";
-  DRT::Element::Print(os);
+  CORE::Elements::Element::Print(os);
 
   const int ntranspele = NumAssociatedEle(BINSTRATEGY::UTILS::Scatra);
   const int* wtranspeleids = AssociatedEleIds(BINSTRATEGY::UTILS::Scatra);
@@ -201,7 +203,7 @@ void DRT::MESHFREE::MeshfreeMultiBin::remove_all_associated_eles()
  |  Build element pointers                             (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
 bool DRT::MESHFREE::MeshfreeMultiBin::BuildElePointers(
-    BINSTRATEGY::UTILS::BinContentType bin_content, DRT::Element** eles)
+    BINSTRATEGY::UTILS::BinContentType bin_content, CORE::Elements::Element** eles)
 {
   associatedele_[bin_content].resize(NumAssociatedEle(bin_content));
   for (int i = 0; i < NumAssociatedEle(bin_content); ++i) associatedele_[bin_content][i] = eles[i];
@@ -219,8 +221,8 @@ void DRT::MESHFREE::MeshfreeMultiBin::Pack(CORE::COMM::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
-  // add base class DRT::Element
-  DRT::Element::Pack(data);
+  // add base class CORE::Elements::Element
+  CORE::Elements::Element::Pack(data);
   // add vector associatedeleid_
   for (int i = 0; i < BINSTRATEGY::UTILS::enumsize; ++i) AddtoPack(data, associatedeleid_[i]);
 
@@ -236,10 +238,10 @@ void DRT::MESHFREE::MeshfreeMultiBin::Unpack(const std::vector<char>& data)
 
   CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  // extract base class DRT::Element
+  // extract base class CORE::Elements::Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::Element::Unpack(basedata);
+  CORE::Elements::Element::Unpack(basedata);
   // extract associatedeleid_
   for (int i = 0; i < BINSTRATEGY::UTILS::enumsize; ++i)
   {

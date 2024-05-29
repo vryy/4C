@@ -14,6 +14,7 @@
 #include "4C_discretization_condition.hpp"
 #include "4C_discretization_condition_periodic.hpp"
 #include "4C_discretization_dofset_transparent.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_xwall.hpp"
 #include "4C_fluid_implicit_integration.hpp"
@@ -23,7 +24,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linear_solver_method.hpp"
@@ -301,7 +301,7 @@ void FLD::XWall::init_x_wall_maps()
       bool enriched = false;
 
       // check if one of the surrounding elements is xwall element
-      DRT::Element** surrele = xwallnode->Elements();
+      CORE::Elements::Element** surrele = xwallnode->Elements();
       for (int k = 0; k < xwallnode->NumElement(); ++k)
       {
         DRT::ELEMENTS::FluidXWall* xwallele = dynamic_cast<DRT::ELEMENTS::FluidXWall*>(surrele[k]);
@@ -388,9 +388,9 @@ void FLD::XWall::init_wall_dist()
   // loop over all column elements of underlying problem discret and add
   for (int i = 0; i < (discret_->ElementColMap())->NumMyElements(); ++i)
   {
-    DRT::Element* node = discret_->lColElement(i);
+    CORE::Elements::Element* node = discret_->lColElement(i);
     if (!node) FOUR_C_THROW("Cannot find ele with lid %", i);
-    Teuchos::RCP<DRT::Element> newnode = Teuchos::rcp(node->Clone());
+    Teuchos::RCP<CORE::Elements::Element> newnode = Teuchos::rcp(node->Clone());
     commondis->add_element(newnode);
   }
 
@@ -411,7 +411,7 @@ void FLD::XWall::init_wall_dist()
     if (!xwallnode) FOUR_C_THROW("Cannot find node with lid %", i);
     int enriched = 0;
 
-    DRT::Element** surrele = xwallnode->Elements();
+    CORE::Elements::Element** surrele = xwallnode->Elements();
     for (int k = 0; k < xwallnode->NumElement(); ++k)
     {
       DRT::ELEMENTS::FluidXWall* xwallele = dynamic_cast<DRT::ELEMENTS::FluidXWall*>(surrele[k]);
@@ -522,7 +522,7 @@ void FLD::XWall::init_toggle_vector()
       if (not mortarcond.empty()) fullyenriched = false;
 
       // get all surrounding elements
-      DRT::Element** surrele = xwallnode->Elements();
+      CORE::Elements::Element** surrele = xwallnode->Elements();
       for (int k = 0; k < xwallnode->NumElement(); ++k)
       {
         DRT::ELEMENTS::FluidXWall* xwallele = dynamic_cast<DRT::ELEMENTS::FluidXWall*>(surrele[k]);
@@ -586,14 +586,14 @@ void FLD::XWall::setup_x_wall_dis()
   // loop over all column elements of underlying problem discret and add
   for (int i = 0; i < discret_->NumMyColElements(); ++i)
   {
-    DRT::Element* ele = discret_->lColElement(i);
+    CORE::Elements::Element* ele = discret_->lColElement(i);
     if (!ele) FOUR_C_THROW("Cannot find ele with lid %", i);
 
     DRT::ELEMENTS::FluidXWall* xwallele = dynamic_cast<DRT::ELEMENTS::FluidXWall*>(ele);
 
     if (!xwallele) continue;
 
-    Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
+    Teuchos::RCP<CORE::Elements::Element> newele = Teuchos::rcp(ele->Clone());
     xwdiscret_->add_element(newele);
   }
 
@@ -1036,7 +1036,7 @@ void FLD::XWall::calc_tau_w(
     // loop column elements: vector
     for (int i = 0; i < numele; ++i)
     {
-      DRT::Element* actele = xwdiscret_->lColElement(i);
+      CORE::Elements::Element* actele = xwdiscret_->lColElement(i);
 
       const int numnode = actele->num_node();
 
@@ -1183,7 +1183,7 @@ void FLD::XWall::l2_project_vector(Teuchos::RCP<Epetra_Vector> veln,
   // loop column elements
   for (int i = 0; i < numele; ++i)
   {
-    DRT::Element* actele = xwdiscret_->lColElement(i);
+    CORE::Elements::Element* actele = xwdiscret_->lColElement(i);
 
     const int numnode = actele->num_node();
     const int numdf = 3;
@@ -1505,7 +1505,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
               // the new node has to be on these as well
               //  std::vector<CORE::Conditions::Condition*> dircond;
               //    discret_->GetCondition("FluidStressCalc",dircond);
-              DRT::Element** surrele = xwallnode->Elements();
+              CORE::Elements::Element** surrele = xwallnode->Elements();
 
               // loop over all surrounding elements and find indices of node k, l which is closes
               // while fulfilling all criteria

@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ElemagBoundaryImplInterface* DRT::ELEMENTS::ElemagBoundaryImplInterface::Impl(
-    const DRT::Element* ele)
+    const CORE::Elements::Element* ele)
 {
   switch (ele->Shape())
   {
@@ -144,8 +144,8 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
     {
       const int* nodeids = ele->NodeIds();
 
-      DRT::Element* parent = ele->parent_element();
-      Teuchos::RCP<DRT::FaceElement>* faces = parent->Faces();
+      CORE::Elements::Element* parent = ele->parent_element();
+      Teuchos::RCP<CORE::Elements::FaceElement>* faces = parent->Faces();
       bool same = false;
       for (int i = 0; i < parent->NumFace(); ++i)
       {
@@ -228,8 +228,8 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
     {
       const int* nodeids = ele->NodeIds();
 
-      DRT::Element* parent = ele->parent_element();
-      Teuchos::RCP<DRT::FaceElement>* faces = parent->Faces();
+      CORE::Elements::Element* parent = ele->parent_element();
+      Teuchos::RCP<CORE::Elements::FaceElement>* faces = parent->Faces();
       bool same = false;
       for (int i = 0; i < parent->NumFace(); ++i)
       {

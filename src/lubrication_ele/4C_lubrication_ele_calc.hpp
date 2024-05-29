@@ -13,11 +13,11 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_boundary_integration.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_lubrication_ele_action.hpp"
 #include "4C_lubrication_ele_interface.hpp"
 
@@ -85,14 +85,14 @@ namespace DRT
       /// since only derived child classes are free to be allocated!!
 
       /// Setup element evaluation
-      int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) override;
+      int SetupCalc(CORE::Elements::Element* ele, DRT::Discretization& discretization) override;
 
       /// Evaluate the element
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      int Evaluate(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -100,8 +100,8 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       // Evaluate the off-diagonal coupling block of monotlitic EHL matrix
-      int EvaluateEHLMon(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      int EvaluateEHLMon(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -109,17 +109,18 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! evaluate action
-      virtual int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const LUBRICATION::Action& action,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::Elements::Element::LocationArray& la,
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
       //! evaluate service routine
-      int EvaluateService(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      int EvaluateService(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -146,18 +147,19 @@ namespace DRT
 
       //! extract element based or nodal values
       //  return extracted values of prenp
-      virtual void extract_element_and_node_values(DRT::Element* ele,
+      virtual void extract_element_and_node_values(CORE::Elements::Element* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la);
+          CORE::Elements::Element::LocationArray& la);
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
-      virtual void sysmat(DRT::Element* ele,      //!< the element we are dealing with
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
+      virtual void sysmat(CORE::Elements::Element* ele,  //!< the element we are dealing with
+          CORE::LINALG::SerialDenseMatrix& emat,         //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs          //!< element rhs to calculate
       );
 
       //! calculate element off-diagonal-matrix for height-linearization in monolithic EHL
-      virtual void matrixfor_ehl_mon(DRT::Element* ele,  //!< the element we are dealing with
+      virtual void matrixfor_ehl_mon(
+          CORE::Elements::Element* ele,  //!< the element we are dealing with
           CORE::LINALG::SerialDenseMatrix&
               ematheight,  //!< element matrix associated with the linearization of the film height
           CORE::LINALG::SerialDenseMatrix&
@@ -184,7 +186,7 @@ namespace DRT
       );
 
       //! read element coordinates
-      virtual void read_element_coordinates(const DRT::Element* ele);
+      virtual void read_element_coordinates(const CORE::Elements::Element* ele);
 
       //! evaluate shape functions and their derivatives at current integration point
       double eval_shape_func_and_derivs_at_int_point(
@@ -212,14 +214,14 @@ namespace DRT
 
       //! calculate error of numerical solution with respect to analytical solution
       void cal_error_compared_to_analyt_solution(
-          const DRT::Element* ele,                 //!< the element we are dealing with
+          const CORE::Elements::Element* ele,      //!< the element we are dealing with
           Teuchos::ParameterList& params,          //!< parameter list
           CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2-error norm
       );
 
       //! calculate pressure(s) and domain integral
       virtual void calculate_pressures(
-          const DRT::Element* ele,                     //!< the element we are dealing with
+          const CORE::Elements::Element* ele,          //!< the element we are dealing with
           CORE::LINALG::SerialDenseVector& pressures,  //!< pressure to be computed
           const bool inverting                         //!< bool indicating inversion
       );
@@ -231,13 +233,13 @@ namespace DRT
 
       //! get the material parameters
       virtual void get_material_params(
-          const DRT::Element* ele,  //!< the element we are dealing with
-          double& densn,            //!< density at t_(n)
-          double& densnp,           //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,           //!< density at t_(n+alpha_M)
-          double& visc,             //!< fluid viscosity
-          double& dvisc,            //!< derivative of the fluid viscosity
-          const int iquad = -1      //!< id of current gauss point (default = -1)
+          const CORE::Elements::Element* ele,  //!< the element we are dealing with
+          double& densn,                       //!< density at t_(n)
+          double& densnp,                      //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,                      //!< density at t_(n+alpha_M)
+          double& visc,                        //!< fluid viscosity
+          double& dvisc,                       //!< derivative of the fluid viscosity
+          const int iquad = -1                 //!< id of current gauss point (default = -1)
       );
 
       //! evaluate material
@@ -378,7 +380,7 @@ namespace DRT
       //! global element id
       int eid_;
       //! current element
-      DRT::Element* ele_;
+      CORE::Elements::Element* ele_;
       //! time step
       double Dt_;
 

@@ -78,7 +78,7 @@ namespace
 }  // namespace
 
 int DRT::ELEMENTS::Shell7pScatra::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
     CORE::LINALG::SerialDenseVector& elevec3)
@@ -87,13 +87,13 @@ int DRT::ELEMENTS::Shell7pScatra::Evaluate(Teuchos::ParameterList& params,
   // get params interface pointer
   set_params_interface_ptr(params);
 
-  const ELEMENTS::ActionType action = std::invoke(
+  const CORE::Elements::ActionType action = std::invoke(
       [&]()
       {
         if (IsParamsInterface())
           return str_params_interface().GetActionType();
         else
-          return String2ActionType(params.get<std::string>("action", "none"));
+          return CORE::Elements::String2ActionType(params.get<std::string>("action", "none"));
       });
 
   // in some cases we need to write/change some data before evaluating
@@ -103,42 +103,43 @@ int DRT::ELEMENTS::Shell7pScatra::Evaluate(Teuchos::ParameterList& params,
   switch (action)
   {
     // nonlinear stiffness and internal force vector
-    case ELEMENTS::struct_calc_nlnstiff:
+    case CORE::Elements::struct_calc_nlnstiff:
     {
       shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *SolidMaterial(),
           discretization, nodal_directors_, la[0].lm_, params, &elevec1, &elemat1, nullptr);
     }
     break;
-    case ELEMENTS::struct_calc_linstiff:
+    case CORE::Elements::struct_calc_linstiff:
     {
       shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *SolidMaterial(),
           discretization, nodal_directors_, la[0].lm_, params, &elevec1, &elemat1, &elemat2);
     }
     break;
-    case ELEMENTS::struct_calc_internalforce:
+    case CORE::Elements::struct_calc_internalforce:
     {
       shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *SolidMaterial(),
           discretization, nodal_directors_, la[0].lm_, params, &elevec1, nullptr, nullptr);
     }
     break;
-    case ELEMENTS::struct_calc_linstiffmass:
+    case CORE::Elements::struct_calc_linstiffmass:
     {
       FOUR_C_THROW("Case not yet implemented: struct_calc_linstiffmass");
     }
-    case ELEMENTS::struct_calc_nlnstiffmass:   // do mass, stiffness and internal forces
-    case ELEMENTS::struct_calc_nlnstifflmass:  // do lump mass, stiffness and internal forces
+    case CORE::Elements::struct_calc_nlnstiffmass:   // do mass, stiffness and internal forces
+    case CORE::Elements::struct_calc_nlnstifflmass:  // do lump mass, stiffness and internal forces
     {
       shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *SolidMaterial(),
           discretization, nodal_directors_, la[0].lm_, params, &elevec1, &elemat1, &elemat2);
-      if (action == ELEMENTS::struct_calc_nlnstifflmass) STR::UTILS::SHELL::LumpMassMatrix(elemat2);
+      if (action == CORE::Elements::struct_calc_nlnstifflmass)
+        STR::UTILS::SHELL::LumpMassMatrix(elemat2);
     }
     break;
-    case ELEMENTS::struct_calc_recover:
+    case CORE::Elements::struct_calc_recover:
     {
       shell_interface_->Recover(*this, discretization, la[0].lm_, params, str_params_interface());
     }
     break;
-    case ELEMENTS::struct_calc_stress:
+    case CORE::Elements::struct_calc_stress:
     {
       shell_interface_->calculate_stresses_strains(*this, *SolidMaterial(),
           ShellStressIO{GetIOStressType(*this, params), GetMutableStressData(*this, params)},
@@ -146,7 +147,7 @@ int DRT::ELEMENTS::Shell7pScatra::Evaluate(Teuchos::ParameterList& params,
           discretization, nodal_directors_, la[0].lm_, params);
     }
     break;
-    case DRT::ELEMENTS::struct_calc_energy:
+    case CORE::Elements::struct_calc_energy:
     {
       double int_energy = shell_interface_->calculate_internal_energy(
           *this, *SolidMaterial(), discretization, nodal_directors_, la[0].lm_, params);
@@ -165,21 +166,21 @@ int DRT::ELEMENTS::Shell7pScatra::Evaluate(Teuchos::ParameterList& params,
       }
     }
     break;
-    case ELEMENTS::struct_calc_update_istep:
+    case CORE::Elements::struct_calc_update_istep:
     {
       shell_interface_->Update(
           *this, *SolidMaterial(), discretization, nodal_directors_, la[0].lm_, params);
     }
     break;
-    case ELEMENTS::struct_calc_reset_istep:
+    case CORE::Elements::struct_calc_reset_istep:
     {
       // Reset of history (if needed)
       shell_interface_->reset_to_last_converged(*this, *SolidMaterial());
     }
     break;
-    case ELEMENTS::struct_calc_predict:
-    case ELEMENTS::struct_create_backup:
-    case ELEMENTS::struct_recover_from_backup:
+    case CORE::Elements::struct_calc_predict:
+    case CORE::Elements::struct_create_backup:
+    case CORE::Elements::struct_recover_from_backup:
     {
       // do nothing for now
     }

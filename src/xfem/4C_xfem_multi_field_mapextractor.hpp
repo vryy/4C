@@ -32,10 +32,14 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Discretization;
   class Node;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace CORE::LINALG
 {
   class SparseOperator;
@@ -203,7 +207,7 @@ namespace XFEM
     void IDof(const DRT::Node* inode, std::vector<int>& dofs) const;
 
     void IDof(std::vector<int>& dof, DRT::Node* inode, unsigned nodaldofset_id,
-        const DRT::Element* element) const;
+        const CORE::Elements::Element* element) const;
 
     /// @}
 

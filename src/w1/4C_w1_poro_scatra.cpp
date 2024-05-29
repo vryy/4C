@@ -41,7 +41,7 @@ DRT::ELEMENTS::Wall1PoroScatra<distype>::Wall1PoroScatra(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::Wall1PoroScatra<distype>::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Wall1PoroScatra<distype>::Clone() const
 {
   DRT::ELEMENTS::Wall1PoroScatra<distype>* newelement =
       new DRT::ELEMENTS::Wall1PoroScatra<distype>(*this);
@@ -100,7 +100,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1PoroScatra<distype>::Print(std::ostream& os) const
 {
   os << "Wall1_Poro_Scatra ";
-  Element::Print(os);
+  CORE::Elements::Element::Print(os);
   std::cout << std::endl;
   return;
 }

@@ -30,8 +30,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::LINALG
 {
@@ -112,7 +116,7 @@ namespace ADAPTER
         Teuchos::RCP<BEAMINTERACTION::BeamContactPair> interactionpair);
 
     /// Creates a fluid_beam_meshtying pair
-    virtual void CreatePair(std::vector<DRT::Element const*> elements,
+    virtual void CreatePair(std::vector<CORE::Elements::Element const*> elements,
         std::vector<double> beam_centerline_dofvec, std::vector<double> fluid_nodal_dofvec);
 
     // Get function for the meshtying pairs meshtying_pairs_

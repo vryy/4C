@@ -273,7 +273,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_rhs_pot_e
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::get_material_params(
-    const DRT::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
+    const CORE::Elements::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
     std::vector<double>& densam, double& visc, const int iquad)
 {
   // get material

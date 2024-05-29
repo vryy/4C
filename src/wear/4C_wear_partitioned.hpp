@@ -46,8 +46,13 @@ namespace ADAPTER
 namespace DRT
 {
   class LocationArray;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace ALE
 {
   class Ale;
@@ -109,11 +114,11 @@ namespace WEAR
     adjacent to considered node \param spatialtomaterial (in)  : true if considered node already has
     correct spatial coordinate and corresponding material coordinate is to be determined
      */
-    void advection_map(double* Xtarget,  // out
-        double* Xsource,                 // in
-        DRT::Element** ElementPtr,       // in
-        int numelements,                 // in
-        bool spatialtomaterial);         // in
+    void advection_map(double* Xtarget,        // out
+        double* Xsource,                       // in
+        CORE::Elements::Element** ElementPtr,  // in
+        int numelements,                       // in
+        bool spatialtomaterial);               // in
 
     // check convergence
     bool convergence_check(int iter);

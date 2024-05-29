@@ -24,7 +24,8 @@ CORE::COMM::ParObject* DRT::ELEMENTS::FluidBoundaryType::Create(const std::vecto
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidBoundaryType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidBoundaryType::Create(
+    const int id, const int owner)
 {
   return Teuchos::null;
 }
@@ -36,7 +37,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidBoundaryType::Create(const int id
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const int* nodeids,
     DRT::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface)
-    : DRT::FaceElement(id, owner), distype_(CORE::FE::CellType::dis_none), numdofpernode_(-1)
+    : CORE::Elements::FaceElement(id, owner),
+      distype_(CORE::FE::CellType::dis_none),
+      numdofpernode_(-1)
 {
   set_parent_master_element(parent, lsurface);
   SetNodeIds(nnode, nodeids);
@@ -59,7 +62,9 @@ DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const 
  |  ctor (private) - used by FluidBoundaryType                  ager 12/16|
  *-----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner)
-    : DRT::FaceElement(id, owner), distype_(CORE::FE::CellType::dis_none), numdofpernode_(-1)
+    : CORE::Elements::FaceElement(id, owner),
+      distype_(CORE::FE::CellType::dis_none),
+      numdofpernode_(-1)
 {
   return;
 }
@@ -68,7 +73,7 @@ DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner)
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundary::FluidBoundary(const DRT::ELEMENTS::FluidBoundary& old)
-    : DRT::FaceElement(old), distype_(old.distype_), numdofpernode_(old.numdofpernode_)
+    : CORE::Elements::FaceElement(old), distype_(old.distype_), numdofpernode_(old.numdofpernode_)
 {
   return;
 }
@@ -77,7 +82,7 @@ DRT::ELEMENTS::FluidBoundary::FluidBoundary(const DRT::ELEMENTS::FluidBoundary& 
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::FluidBoundary::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::FluidBoundary::Clone() const
 {
   DRT::ELEMENTS::FluidBoundary* newelement = new DRT::ELEMENTS::FluidBoundary(*this);
   return newelement;
@@ -143,7 +148,7 @@ void DRT::ELEMENTS::FluidBoundary::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidBoundary::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::FluidBoundary::Lines()
 {
   FOUR_C_THROW("Lines of FluidBoundary not implemented");
 }
@@ -151,7 +156,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidBoundary::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          ager 12/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidBoundary::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::FluidBoundary::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

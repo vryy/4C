@@ -90,8 +90,8 @@ void CORE::FE::ExtractMyValues(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::ExtractMyNodeBasedValues(
-    const DRT::Element* ele, std::vector<double>& local, const Epetra_MultiVector& global)
+void CORE::FE::ExtractMyNodeBasedValues(const CORE::Elements::Element* ele,
+    std::vector<double>& local, const Epetra_MultiVector& global)
 {
   const int numnode = ele->num_node();
   const int numcol = global.NumVectors();
@@ -118,7 +118,7 @@ void CORE::FE::ExtractMyNodeBasedValues(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::ExtractMyNodeBasedValues(const DRT::Element* ele,
+void CORE::FE::ExtractMyNodeBasedValues(const CORE::Elements::Element* ele,
     CORE::LINALG::SerialDenseVector& local, const Teuchos::RCP<Epetra_MultiVector>& global,
     const int nsd)
 {

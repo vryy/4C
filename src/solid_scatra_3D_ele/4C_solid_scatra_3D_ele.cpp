@@ -58,14 +58,15 @@ void DRT::ELEMENTS::SolidScatraType::setup_element_definition(
       GetDefaultLineDefinitionBuilder<CORE::FE::CellType::tet10>().Build();
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SolidScatraType::Create(
     const std::string eletype, const std::string elecelltype, const int id, const int owner)
 {
   if (eletype == "SOLIDSCATRA") return Create(id, owner);
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidScatraType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SolidScatraType::Create(
+    const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::SolidScatra(id, owner));
 }
@@ -78,7 +79,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SolidScatraType::Create(const std::vector<
 }
 
 void DRT::ELEMENTS::SolidScatraType::nodal_block_information(
-    Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   STR::UTILS::NodalBlockInformationSolid(dwele, numdf, dimns, nv, np);
 }
@@ -89,9 +90,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SolidScatraType::ComputeNullSpace
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-DRT::ELEMENTS::SolidScatra::SolidScatra(int id, int owner) : DRT::Element(id, owner) {}
+DRT::ELEMENTS::SolidScatra::SolidScatra(int id, int owner) : CORE::Elements::Element(id, owner) {}
 
-DRT::Element* DRT::ELEMENTS::SolidScatra::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::SolidScatra::Clone() const
 {
   return new DRT::ELEMENTS::SolidScatra(*this);
 }
@@ -111,12 +112,12 @@ int DRT::ELEMENTS::SolidScatra::NumVolume() const
   return CORE::FE::getNumberOfElementVolumes(celltype_);
 }
 
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SolidScatra::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SolidScatra::Lines()
 {
   return CORE::COMM::GetElementLines<StructuralLine, SolidScatra>(*this);
 }
 
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SolidScatra::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SolidScatra::Surfaces()
 {
   return CORE::COMM::GetElementSurfaces<StructuralSurface, SolidScatra>(*this);
 }
@@ -126,7 +127,7 @@ void DRT::ELEMENTS::SolidScatra::set_params_interface_ptr(const Teuchos::Paramet
   if (p.isParameter("interface"))
   {
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface"));
+        p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface"));
   }
   else
     interface_ptr_ = Teuchos::null;
@@ -162,7 +163,7 @@ void DRT::ELEMENTS::SolidScatra::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, UniqueParObjectId());
 
   // add base class Element
-  DRT::Element::Pack(data);
+  CORE::Elements::Element::Pack(data);
 
   AddtoPack(data, (int)celltype_);
 
@@ -183,7 +184,7 @@ void DRT::ELEMENTS::SolidScatra::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::Element::Unpack(basedata);
+  CORE::Elements::Element::Unpack(basedata);
 
   celltype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
@@ -202,21 +203,22 @@ void DRT::ELEMENTS::SolidScatra::Unpack(const std::vector<char>& data)
 
 void DRT::ELEMENTS::SolidScatra::VisNames(std::map<std::string, int>& names)
 {
-  DRT::Element::VisNames(names);
+  CORE::Elements::Element::VisNames(names);
   SolidMaterial().VisNames(names);
 }
 
 bool DRT::ELEMENTS::SolidScatra::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (DRT::Element::VisData(name, data)) return true;
+  if (CORE::Elements::Element::VisData(name, data)) return true;
 
   return SolidMaterial().VisData(name, data, Id());
 }
 
 MAT::So3Material& DRT::ELEMENTS::SolidScatra::SolidMaterial(int nummat) const
 {
-  return *Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat), true);
+  return *Teuchos::rcp_dynamic_cast<MAT::So3Material>(
+      CORE::Elements::Element::Material(nummat), true);
 }
 
 FOUR_C_NAMESPACE_CLOSE

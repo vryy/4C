@@ -678,7 +678,7 @@ void SCATRA::LevelSetAlgorithm::reinit_geo(
       if (elelid >= 0)
       {
         const int coordbase = 3 * numnodesperele * ivec;
-        const DRT::Element* ele = discret_->lRowElement(elelid);
+        const CORE::Elements::Element* ele = discret_->lRowElement(elelid);
         const DRT::Node* const* nodes = ele->Nodes();
         for (int inode = 0; inode < ele->num_node(); ++inode)
         {

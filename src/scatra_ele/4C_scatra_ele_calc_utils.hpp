@@ -14,9 +14,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_inpar_scatra.hpp"
-#include "4C_lib_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -1168,7 +1168,7 @@ namespace SCATRA
   );
 
   //! identify elements of inflow section
-  bool inflow_element(const DRT::Element* ele);
+  bool inflow_element(const CORE::Elements::Element* ele);
 
   //! convert implementation type of scalar transport elements into corresponding string for output
   //! purposes

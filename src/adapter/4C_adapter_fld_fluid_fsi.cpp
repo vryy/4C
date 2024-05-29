@@ -445,7 +445,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   for (int lid = 0; lid < discretization()->NumMyColElements(); lid++)
   {
     // get pointer to current element
-    DRT::Element* actele = discretization()->lColElement(lid);
+    CORE::Elements::Element* actele = discretization()->lColElement(lid);
 
     // get element location vector and ownerships
     std::vector<int> lm;

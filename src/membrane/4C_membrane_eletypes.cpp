@@ -31,27 +31,28 @@ CORE::COMM::ParObject* DRT::ELEMENTS::MembraneTri3Type::Create(const std::vector
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneTri3Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneTri3Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE3" && eledistype == "TRI3")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneTri3Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneTri3Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>(id, owner));
   return ele;
 }
 
 void DRT::ELEMENTS::MembraneTri3Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;  // number of degrees of freedom per node
   dimns = 3;  // number of nullspace vectors
@@ -99,27 +100,28 @@ CORE::COMM::ParObject* DRT::ELEMENTS::MembraneTri6Type::Create(const std::vector
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneTri6Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneTri6Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE6" && eledistype == "TRI6")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneTri6Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneTri6Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>(id, owner));
   return ele;
 }
 
 void DRT::ELEMENTS::MembraneTri6Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;  // number of degrees of freedom per node
   dimns = 3;  // number of nullspace vectors
@@ -167,27 +169,28 @@ CORE::COMM::ParObject* DRT::ELEMENTS::MembraneQuad4Type::Create(const std::vecto
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneQuad4Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneQuad4Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE4" && eledistype == "QUAD4")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneQuad4Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneQuad4Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>(id, owner));
   return ele;
 }
 
 void DRT::ELEMENTS::MembraneQuad4Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;  // number of degrees of freedom per node
   dimns = 3;  // number of nullspace vectors
@@ -235,27 +238,28 @@ CORE::COMM::ParObject* DRT::ELEMENTS::MembraneQuad9Type::Create(const std::vecto
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneQuad9Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneQuad9Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE9" && eledistype == "QUAD9")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneQuad9Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneQuad9Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>(id, owner));
   return ele;
 }
 
 void DRT::ELEMENTS::MembraneQuad9Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;  // number of degrees of freedom per node
   dimns = 3;  // number of nullspace vectors

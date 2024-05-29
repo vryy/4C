@@ -15,7 +15,7 @@ is handed to a c++ object mesh.
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <iostream>

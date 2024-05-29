@@ -29,27 +29,28 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Vele3Type::Create(const std::vector<char>&
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Vele3Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Vele3Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "VELE3")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Vele3(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Vele3(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Vele3Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Vele3Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Vele3(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Vele3(id, owner));
   return ele;
 }
 
 
 void DRT::ELEMENTS::Vele3Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
 
@@ -69,14 +70,16 @@ void DRT::ELEMENTS::Vele3Type::setup_element_definition(
   defs["HEX8"] = INPUT::LineDefinition::Builder().AddIntVector("HEX8", 8).Build();
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Vele3SurfaceType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Vele3SurfaceType::Create(
+    const int id, const int owner)
 {
   // return Teuchos::rcp( new Vele3Surface( id, owner ) );
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Vele3LineType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Vele3LineType::Create(
+    const int id, const int owner)
 {
   // return Teuchos::rcp( new Vele3Line( id, owner ) );
   return Teuchos::null;
@@ -85,17 +88,20 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Vele3LineType::Create(const int id, co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3::Vele3(int id, int owner) : DRT::Element(id, owner) { return; }
+DRT::ELEMENTS::Vele3::Vele3(int id, int owner) : CORE::Elements::Element(id, owner) { return; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3::Vele3(const DRT::ELEMENTS::Vele3& old) : DRT::Element(old) { return; }
+DRT::ELEMENTS::Vele3::Vele3(const DRT::ELEMENTS::Vele3& old) : CORE::Elements::Element(old)
+{
+  return;
+}
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Vele3::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Vele3::Clone() const
 {
   DRT::ELEMENTS::Vele3* newelement = new DRT::ELEMENTS::Vele3(*this);
   return newelement;
@@ -179,7 +185,7 @@ void DRT::ELEMENTS::Vele3::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Vele3::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<Vele3Line, Vele3>(CORE::COMM::buildLines, *this);
 }
@@ -188,7 +194,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                            gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Vele3::Surfaces()
 {
   return CORE::COMM::ElementBoundaryFactory<Vele3Surface, Vele3>(CORE::COMM::buildSurfaces, *this);
 }

@@ -13,15 +13,16 @@
 #include "4C_beamcontact_beam3contact.hpp"
 #include "4C_beamcontact_beam3contactnew.hpp"
 #include "4C_beaminteraction_beam_to_beam_contact_defines.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_inpar_beamcontact.hpp"
-#include "4C_lib_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Impl(
     const int numnodes, const int numnodalvalues, const DRT::Discretization& pdiscret,
     const DRT::Discretization& cdiscret, const std::map<int, int>& dofoffsetmap,
-    DRT::Element* element1, DRT::Element* element2, Teuchos::ParameterList& beamcontactparams)
+    CORE::Elements::Element* element1, CORE::Elements::Element* element2,
+    Teuchos::ParameterList& beamcontactparams)
 {
   // Decide, if beam contact with subsegment creation (beam3contact) or pure element based beam
   // contact (beam3contactnew) should be applied

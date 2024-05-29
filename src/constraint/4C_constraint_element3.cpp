@@ -28,28 +28,30 @@ CORE::COMM::ParObject* DRT::ELEMENTS::ConstraintElement3Type::Create(const std::
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ConstraintElement3Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ConstraintElement3Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "CONSTRELE3")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::ConstraintElement3(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::ConstraintElement3(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ConstraintElement3Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ConstraintElement3Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::ConstraintElement3(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::ConstraintElement3(id, owner));
   return ele;
 }
 
 
 void DRT::ELEMENTS::ConstraintElement3Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
 
@@ -64,7 +66,8 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ConstraintElement3Type::ComputeNu
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElement3::ConstraintElement3(int id, int owner) : DRT::Element(id, owner)
+DRT::ELEMENTS::ConstraintElement3::ConstraintElement3(int id, int owner)
+    : CORE::Elements::Element(id, owner)
 {
   return;
 }
@@ -72,14 +75,14 @@ DRT::ELEMENTS::ConstraintElement3::ConstraintElement3(int id, int owner) : DRT::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ConstraintElement3::ConstraintElement3(const DRT::ELEMENTS::ConstraintElement3& old)
-    : DRT::Element(old)
+    : CORE::Elements::Element(old)
 {
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::ConstraintElement3::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::ConstraintElement3::Clone() const
 {
   DRT::ELEMENTS::ConstraintElement3* newelement = new DRT::ELEMENTS::ConstraintElement3(*this);
   return newelement;

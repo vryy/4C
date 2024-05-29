@@ -55,8 +55,8 @@ void DRT::MESHFREE::MeshfreeBin<ELEMENT>::DeleteNode(int gid)
 /*--------------------------------------------------------------------------*
  | Explicit instantiations                                kronbichler 03/15 |
  *--------------------------------------------------------------------------*/
-template class DRT::MESHFREE::MeshfreeBin<DRT::Element>;
-template class DRT::MESHFREE::MeshfreeBin<DRT::FaceElement>;
+template class DRT::MESHFREE::MeshfreeBin<CORE::Elements::Element>;
+template class DRT::MESHFREE::MeshfreeBin<CORE::Elements::FaceElement>;
 template class DRT::MESHFREE::MeshfreeBin<MORTAR::Element>;
 
 FOUR_C_NAMESPACE_CLOSE

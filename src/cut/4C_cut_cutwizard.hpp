@@ -25,8 +25,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::LINALG
 {
@@ -83,7 +87,7 @@ namespace CORE::GEO
 
       virtual int NumMyColElements() const;
 
-      virtual const DRT::Element* lColElement(int lid) const;
+      virtual const CORE::Elements::Element* lColElement(int lid) const;
 
       inline bool IsBackDisp() const { return (not back_disp_col_.is_null()); }
 
@@ -235,7 +239,7 @@ namespace CORE::GEO
     CORE::GEO::CUT::ElementHandle* GetElement(const int eleid) const;
 
     //! Get this element from the cut libraries by element pointer
-    CORE::GEO::CUT::ElementHandle* GetElement(const DRT::Element* ele) const;
+    CORE::GEO::CUT::ElementHandle* GetElement(const CORE::Elements::Element* ele) const;
 
     //! Get this node from the cut libraries
     CORE::GEO::CUT::Node* GetNode(int nid);
@@ -264,7 +268,7 @@ namespace CORE::GEO
     Teuchos::RCP<const BackMesh> back_mesh_ptr() const { return back_mesh_.getConst(); }
 
     virtual void get_physical_nodal_coordinates(
-        const DRT::Element* element, CORE::LINALG::SerialDenseMatrix& xyze) const;
+        const CORE::Elements::Element* element, CORE::LINALG::SerialDenseMatrix& xyze) const;
 
     CORE::GEO::CUT::CombIntersection& intersection()
     {
@@ -298,12 +302,13 @@ namespace CORE::GEO
     );
 
     //! Add this cutting side element with given global coordinates to the intersection class
-    void add_mesh_cutting_side(int mi, DRT::Element* ele,
+    void add_mesh_cutting_side(int mi, CORE::Elements::Element* ele,
         const CORE::LINALG::SerialDenseMatrix& xyze, const int start_ele_gid);
 
     //! Add this background mesh element to the intersection class
-    void add_element(const DRT::Element* ele, const CORE::LINALG::SerialDenseMatrix& xyze,
-        double* myphinp = nullptr, bool lsv_only_plus_domain = false);
+    void add_element(const CORE::Elements::Element* ele,
+        const CORE::LINALG::SerialDenseMatrix& xyze, double* myphinp = nullptr,
+        bool lsv_only_plus_domain = false);
 
     //@}
 

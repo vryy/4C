@@ -459,7 +459,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
     for (unsigned j = 0; j < currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
-      std::map<int, Teuchos::RCP<DRT::Element>>& currele = currentgroup[j]->Geometry();
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& currele = currentgroup[j]->Geometry();
 
       // elements in a boundary condition have a unique id
       // but ids are not unique among 2 distinct conditions
@@ -473,10 +473,10 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
       int gsize = 0;
       Comm().SumAll(&lsize, &gsize, 1);
 
-      std::map<int, Teuchos::RCP<DRT::Element>>::iterator fool;
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator fool;
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
-        Teuchos::RCP<DRT::Element> ele = fool->second;
+        Teuchos::RCP<CORE::Elements::Element> ele = fool->second;
         Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(ele->Id() + ggsize,
             ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), isslave[j], nurbs));
 
@@ -487,8 +487,8 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
 
         if (algo == INPAR::MORTAR::algorithm_gpts)
         {
-          Teuchos::RCP<DRT::FaceElement> faceele =
-              Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
+          Teuchos::RCP<CORE::Elements::FaceElement> faceele =
+              Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(ele, true);
           if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
           if (faceele->parent_element() == nullptr) FOUR_C_THROW("face parent does not exist");
           if (Discret().ElementColMap()->LID(faceele->parent_element()->Id()) == -1)
@@ -1585,9 +1585,9 @@ void CONTACT::Manager::reconnect_parent_elements()
       {
         int gid = ielecolmap->GID(i);
 
-        DRT::Element* ele = interface->Discret().gElement(gid);
+        CORE::Elements::Element* ele = interface->Discret().gElement(gid);
         if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
-        DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+        CORE::Elements::FaceElement* faceele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
 
         int volgid = faceele->ParentElementId();
         if (elecolmap->LID(volgid) == -1)  // Volume discretization has not Element
@@ -1595,7 +1595,7 @@ void CONTACT::Manager::reconnect_parent_elements()
               "Manager::reconnect_parent_elements: Element %d does not exist on this Proc!",
               volgid);
 
-        DRT::Element* vele = discret_.gElement(volgid);
+        CORE::Elements::Element* vele = discret_.gElement(volgid);
         if (!vele) FOUR_C_THROW("Cannot find element with gid %", volgid);
 
         faceele->set_parent_master_element(vele, faceele->FaceParentNumber());
@@ -1608,13 +1608,14 @@ void CONTACT::Manager::reconnect_parent_elements()
  |  Set Parent Elements for Poro Face Elements                ager 11/15|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::set_poro_parent_element(int& slavetype, int& mastertype,
-    Teuchos::RCP<CONTACT::Element>& cele, Teuchos::RCP<DRT::Element>& ele)
+    Teuchos::RCP<CONTACT::Element>& cele, Teuchos::RCP<CORE::Elements::Element>& ele)
 {
   // ints to communicate decision over poro bools between processors on every interface
   // safety check - because there may not be mixed interfaces and structural slave elements
   // slavetype ... 1 poro, 0 struct, -1 default
   // mastertype ... 1 poro, 0 struct, -1 default
-  Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
+  Teuchos::RCP<CORE::Elements::FaceElement> faceele =
+      Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(ele, true);
   if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
   cele->PhysType() = MORTAR::Element::other;
   std::vector<Teuchos::RCP<CORE::Conditions::Condition>> porocondvec;
@@ -1623,7 +1624,7 @@ void CONTACT::Manager::set_poro_parent_element(int& slavetype, int& mastertype,
   {
     for (unsigned int i = 0; i < porocondvec.size(); ++i)
     {
-      std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator eleitergeometry;
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = porocondvec[i]->Geometry().begin();
            eleitergeometry != porocondvec[i]->Geometry().end(); ++eleitergeometry)
       {
@@ -1652,7 +1653,7 @@ void CONTACT::Manager::set_poro_parent_element(int& slavetype, int& mastertype,
   {
     for (unsigned int i = 0; i < porocondvec.size(); ++i)
     {
-      std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator eleitergeometry;
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = porocondvec[i]->Geometry().begin();
            eleitergeometry != porocondvec[i]->Geometry().end(); ++eleitergeometry)
       {

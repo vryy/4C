@@ -37,9 +37,10 @@ namespace DRT
       static ScaTraEleCalcLS<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::Elements::Element::LocationArray& la,
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -47,7 +48,7 @@ namespace DRT
 
      private:
       // calculate error compared to analytical solution
-      void cal_error_compared_to_analyt_solution(const DRT::Element* ele,
+      void cal_error_compared_to_analyt_solution(const CORE::Elements::Element* ele,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephizero,
           Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& errors);
 

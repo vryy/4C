@@ -55,8 +55,8 @@ void ADAPTER::CouplingPoroMortar::read_mortar_condition(Teuchos::RCP<DRT::Discre
     Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
     const std::string& couplingcond, Teuchos::ParameterList& input,
     std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
-    std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
-    std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements)
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements)
 {
   // Call Base Class
   CouplingNonLinMortar::read_mortar_condition(masterdis, slavedis, coupleddof, couplingcond, input,
@@ -93,8 +93,8 @@ void ADAPTER::CouplingPoroMortar::read_mortar_condition(Teuchos::RCP<DRT::Discre
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingPoroMortar::add_mortar_elements(Teuchos::RCP<DRT::Discretization> masterdis,
     Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
-    std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
-    std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements,
     Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof)
 {
   bool isnurbs = input.get<bool>("NURBS");
@@ -117,14 +117,15 @@ void ADAPTER::CouplingPoroMortar::add_mortar_elements(Teuchos::RCP<DRT::Discreti
   }
 
   // feeding master elements to the interface
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator elemiter;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator elemiter;
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
-    Teuchos::RCP<DRT::Element> ele = elemiter->second;
+    Teuchos::RCP<CORE::Elements::Element> ele = elemiter->second;
     Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
         ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), false, isnurbs));
 
-    Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
+    Teuchos::RCP<CORE::Elements::FaceElement> faceele =
+        Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(ele, true);
     if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
     cele->PhysType() = MORTAR::Element::other;
 
@@ -132,7 +133,7 @@ void ADAPTER::CouplingPoroMortar::add_mortar_elements(Teuchos::RCP<DRT::Discreti
     masterdis->GetCondition("PoroCoupling", porocondvec);
     for (unsigned int i = 0; i < porocondvec.size(); ++i)
     {
-      std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator eleitergeometry;
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = porocondvec[i]->Geometry().begin();
            eleitergeometry != porocondvec[i]->Geometry().end(); ++eleitergeometry)
       {
@@ -168,8 +169,8 @@ void ADAPTER::CouplingPoroMortar::add_mortar_elements(Teuchos::RCP<DRT::Discreti
       std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim);
       std::vector<CORE::LINALG::SerialDenseVector> mortarknots(dim - 1);
 
-      Teuchos::RCP<DRT::FaceElement> faceele =
-          Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
+      Teuchos::RCP<CORE::Elements::FaceElement> faceele =
+          Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(ele, true);
       double normalfac = 0.0;
       bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
           faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
@@ -186,12 +187,13 @@ void ADAPTER::CouplingPoroMortar::add_mortar_elements(Teuchos::RCP<DRT::Discreti
   // feeding slave elements to the interface
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
-    Teuchos::RCP<DRT::Element> ele = elemiter->second;
+    Teuchos::RCP<CORE::Elements::Element> ele = elemiter->second;
 
     Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
         ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), true, isnurbs));
 
-    Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
+    Teuchos::RCP<CORE::Elements::FaceElement> faceele =
+        Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(ele, true);
     if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
     cele->PhysType() = MORTAR::Element::other;
 
@@ -200,7 +202,7 @@ void ADAPTER::CouplingPoroMortar::add_mortar_elements(Teuchos::RCP<DRT::Discreti
 
     for (unsigned int i = 0; i < porocondvec.size(); ++i)
     {
-      std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator eleitergeometry;
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = porocondvec[i]->Geometry().begin();
            eleitergeometry != porocondvec[i]->Geometry().end(); ++eleitergeometry)
       {
@@ -235,8 +237,8 @@ void ADAPTER::CouplingPoroMortar::add_mortar_elements(Teuchos::RCP<DRT::Discreti
       std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim);
       std::vector<CORE::LINALG::SerialDenseVector> mortarknots(dim - 1);
 
-      Teuchos::RCP<DRT::FaceElement> faceele =
-          Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
+      Teuchos::RCP<CORE::Elements::FaceElement> faceele =
+          Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(ele, true);
       double normalfac = 0.0;
       bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
           faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());

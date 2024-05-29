@@ -57,11 +57,11 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action for off-diagonal system matrix block
-      int EvaluateActionOD(DRT::Element* ele,               //!< current element
+      int EvaluateActionOD(CORE::Elements::Element* ele,    //!< current element
           Teuchos::ParameterList& params,                   //!< parameter list
           DRT::Discretization& discretization,              //!< discretization
           const SCATRA::Action& action,                     //!< action parameter
-          DRT::Element::LocationArray& la,                  //!< location array
+          CORE::Elements::Element::LocationArray& la,       //!< location array
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
           CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
@@ -70,7 +70,7 @@ namespace DRT
           ) override;
 
       //! calculate element matrix and element right-hand side vector
-      void sysmat(DRT::Element* ele,                  ///< current element
+      void sysmat(CORE::Elements::Element* ele,       ///< current element
           CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix
           CORE::LINALG::SerialDenseVector& erhs,      ///< element right-hand side vector
           CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid diffusivity scaling vector
@@ -109,8 +109,8 @@ namespace DRT
           ) override;
 
       //! fill element matrix with linearizations of discrete thermo residuals w.r.t. scatra dofs
-      void sysmat_od_thermo_scatra(DRT::Element* ele,  //!< current element
-          CORE::LINALG::SerialDenseMatrix& emat        //!< element matrix
+      void sysmat_od_thermo_scatra(CORE::Elements::Element* ele,  //!< current element
+          CORE::LINALG::SerialDenseMatrix& emat                   //!< element matrix
       );
 
       //! provide element matrix with linearizations of Joule's heat term in discrete thermo
@@ -138,19 +138,19 @@ namespace DRT
           ) override;
 
       //! extract quantities for element evaluation
-      void extract_element_and_node_values(DRT::Element* ele,  //!< current element
-          Teuchos::ParameterList& params,                      //!< parameter list
-          DRT::Discretization& discretization,                 //!< discretization
-          DRT::Element::LocationArray& la                      //!< location array
+      void extract_element_and_node_values(CORE::Elements::Element* ele,  //!< current element
+          Teuchos::ParameterList& params,                                 //!< parameter list
+          DRT::Discretization& discretization,                            //!< discretization
+          CORE::Elements::Element::LocationArray& la                      //!< location array
           ) override;
 
       //! get material parameters
-      void get_material_params(const DRT::Element* ele,  //!< current element
-          std::vector<double>& densn,                    //!< density at t_(n)
-          std::vector<double>& densnp,                   //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,                   //!< density at t_(n+alpha_M)
-          double& visc,                                  //!< fluid viscosity
-          const int iquad = -1                           //!< ID of current integration point
+      void get_material_params(const CORE::Elements::Element* ele,  //!< current element
+          std::vector<double>& densn,                               //!< density at t_(n)
+          std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,  //!< density at t_(n+alpha_M)
+          double& visc,                 //!< fluid viscosity
+          const int iquad = -1          //!< ID of current integration point
           ) override;
 
       //! evaluate Soret material

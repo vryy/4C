@@ -118,9 +118,9 @@ void XFEM::XfluidTimeintBase::handle_vectors(
  *------------------------------------------------------------------------------------------------*/
 bool XFEM::XfluidTimeintBase::changed_side_same_time(
     const bool newTimeStep,          /// new/old timestep for both points x1 and x2
-    DRT::Element* ele1,              /// first element where x1 lies in
+    CORE::Elements::Element* ele1,   /// first element where x1 lies in
     CORE::LINALG::Matrix<3, 1>& x1,  /// global coordinates of point x1
-    DRT::Element* ele2,              /// second element where x2 lies in
+    CORE::Elements::Element* ele2,   /// second element where x2 lies in
     CORE::LINALG::Matrix<3, 1>& x2   /// global coordinates of point x2
 ) const
 {
@@ -206,11 +206,11 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
 
         const int numele = n->NumElement();
 
-        DRT::Element** elements = n->Elements();
+        CORE::Elements::Element** elements = n->Elements();
 
         for (int e_it = 0; e_it < numele; e_it++)
         {
-          DRT::Element* ele = elements[e_it];
+          CORE::Elements::Element* ele = elements[e_it];
 
           eids.insert(ele->Id());
 
@@ -257,7 +257,7 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
     // loop all found element
     for (std::set<int>::iterator e_it = eids.begin(); e_it != eids.end(); e_it++)
     {
-      DRT::Element* ele = discret_->gElement(*e_it);
+      CORE::Elements::Element* ele = discret_->gElement(*e_it);
 
       CORE::GEO::CUT::ElementHandle* eh = wizard->GetElement(ele);
 
@@ -333,7 +333,7 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
  * check if both element are neighbors sharing at least one common node              schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 bool XFEM::XfluidTimeintBase::neighbors(
-    DRT::Element* ele1, DRT::Element* ele2, std::set<int>& common_nodes) const
+    CORE::Elements::Element* ele1, CORE::Elements::Element* ele2, std::set<int>& common_nodes) const
 {
   bool is_neighbor = false;
 
@@ -465,11 +465,12 @@ bool XFEM::XfluidTimeintBase::call_side_edge_intersection_t(
 /*------------------------------------------------------------------------------------------------*
  * call the computation of local coordinates for an integration cell                 schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidTimeintBase::call_x_to_xi_coords(const DRT::Element* ele,  /// pointer to element
-    CORE::LINALG::Matrix<3, 1>& x,   /// global coordinates of point
-    CORE::LINALG::Matrix<3, 1>& xi,  /// determined local coordinates w.r.t ele
-    const std::string state,         ///< state dispn or dispnp?
-    bool& pointInDomain              /// lies point in element ?
+void XFEM::XfluidTimeintBase::call_x_to_xi_coords(
+    const CORE::Elements::Element* ele,  /// pointer to element
+    CORE::LINALG::Matrix<3, 1>& x,       /// global coordinates of point
+    CORE::LINALG::Matrix<3, 1>& xi,      /// determined local coordinates w.r.t ele
+    const std::string state,             ///< state dispn or dispnp?
+    bool& pointInDomain                  /// lies point in element ?
 ) const
 {
   CORE::LINALG::SerialDenseMatrix xyz(3, ele->num_node(), true);
@@ -484,7 +485,7 @@ void XFEM::XfluidTimeintBase::call_x_to_xi_coords(const DRT::Element* ele,  /// 
 
     std::vector<int> nds(nen, 0);
 
-    DRT::Element::LocationArray la(1);
+    CORE::Elements::Element::LocationArray la(1);
     ele->LocationVector(*discret_, nds, la, false);
 
     // extract local values of the global vectors
@@ -571,7 +572,8 @@ void XFEM::XfluidTimeintBase::x_to_xi_coords(
 
 //! data at an arbitrary point lying in an element
 template <const int numnode, CORE::FE::CellType DISTYPE>
-void XFEM::XfluidTimeintBase::eval_shape_and_deriv(DRT::Element* element,  /// pointer to element
+void XFEM::XfluidTimeintBase::eval_shape_and_deriv(
+    CORE::Elements::Element* element,            /// pointer to element
     CORE::LINALG::Matrix<3, 1>& xi,              /// local coordinates of point w.r.t element
     CORE::LINALG::Matrix<3, 3>& xji,             /// inverse of jacobian
     CORE::LINALG::Matrix<numnode, 1>& shapeFcn,  /// shape functions at point
@@ -607,7 +609,7 @@ void XFEM::XfluidTimeintBase::eval_shape_and_deriv(DRT::Element* element,  /// p
       int numdof = element->NumDofPerNode(*(element->Nodes()[0]));
 
       std::vector<int> nds(nen, 0);
-      DRT::Element::LocationArray la(1);
+      CORE::Elements::Element::LocationArray la(1);
       element->LocationVector(*discret_, nds, la, false);
 
       // extract local values of the global vectors
@@ -644,13 +646,13 @@ void XFEM::XfluidTimeintBase::eval_shape_and_deriv(DRT::Element* element,  /// p
 
 // explicit instantiations of this function...
 template void XFEM::XfluidTimeintBase::eval_shape_and_deriv<8, CORE::FE::CellType::hex8>(
-    DRT::Element*, CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&,
+    CORE::Elements::Element*, CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&,
     CORE::LINALG::Matrix<8, 1>&, CORE::LINALG::Matrix<3, 8>&, bool) const;
 template void XFEM::XfluidTimeintBase::eval_shape_and_deriv<20, CORE::FE::CellType::hex20>(
-    DRT::Element*, CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&,
+    CORE::Elements::Element*, CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&,
     CORE::LINALG::Matrix<20, 1>&, CORE::LINALG::Matrix<3, 20>&, bool) const;
 template void XFEM::XfluidTimeintBase::eval_shape_and_deriv<4, CORE::FE::CellType::tet4>(
-    DRT::Element*, CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&,
+    CORE::Elements::Element*, CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&,
     CORE::LINALG::Matrix<4, 1>&, CORE::LINALG::Matrix<3, 4>&, bool) const;
 
 
@@ -659,11 +661,11 @@ template void XFEM::XfluidTimeintBase::eval_shape_and_deriv<4, CORE::FE::CellTyp
  * add adjacent elements for a periodic boundary node                            winklmaier 05/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidTimeintBase::add_pb_celements(
-    const DRT::Node* node, std::vector<const DRT::Element*>& eles) const
+    const DRT::Node* node, std::vector<const CORE::Elements::Element*>& eles) const
 {
   FOUR_C_THROW("what to do in add_pb_celements?");
 
-  const DRT::Element* const* elements = node->Elements();  // element around current node
+  const CORE::Elements::Element* const* elements = node->Elements();  // element around current node
 
   for (int iele = 0; iele < node->NumElement(); iele++) eles.push_back(elements[iele]);
 
@@ -676,7 +678,7 @@ void XFEM::XfluidTimeintBase::add_pb_celements(
   if (pbcnodefound)
   {
     // get adjacent elements of this node
-    const DRT::Element* const* pbcelements = pbcnode->Elements();
+    const CORE::Elements::Element* const* pbcelements = pbcnode->Elements();
     // add elements to list
     for (int iele = 0; iele < pbcnode->NumElement(); iele++)  // = ptToNode->Elements();
     {
@@ -1016,7 +1018,7 @@ void XFEM::XfluidStd::compute(std::vector<Teuchos::RCP<Epetra_Vector>>& newRowVe
  * identify an element containing a point and additional data                        schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidStd::elementSearch(
-    DRT::Element*& ele,              /// pointer to element if point lies in a found element
+    CORE::Elements::Element*& ele,   /// pointer to element if point lies in a found element
     CORE::LINALG::Matrix<3, 1>& x,   /// global coordiantes of point
     CORE::LINALG::Matrix<3, 1>& xi,  /// determined local coordinates w.r.t ele
     bool& found                      /// is element found?
@@ -1031,7 +1033,7 @@ void XFEM::XfluidStd::elementSearch(
     startid =
         -1;  // pseudo-id so that id+1 will be 0 (for additional element check, if ele!=nullptr)
 
-  DRT::Element* currele = nullptr;  // current element
+  CORE::Elements::Element* currele = nullptr;  // current element
 
   // loop over elements
   for (int ieleid = startid; ieleid < discret_->NumMyRowElements(); ieleid++)
@@ -1063,16 +1065,16 @@ void XFEM::XfluidStd::elementSearch(
 /*------------------------------------------------------------------------------------------------*
  * interpolate velocity and derivatives for a point in an element                    schott 06/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidStd::getGPValues(DRT::Element* ele,  ///< pointer to element
-    CORE::LINALG::Matrix<3, 1>& xi,                   ///< local coordinates of point w.r.t element
-    std::vector<int>& nds,                            ///< nodal dofset of point for elemental nodes
-    XFEM::XFEMDofSet& dofset,                         ///< XFEM dofset
-    CORE::LINALG::Matrix<3, 1>& vel,                  ///< determine velocity at point
-    CORE::LINALG::Matrix<3, 3>& vel_deriv,            ///< determine velocity derivatives at point
-    double& pres,                                     ///< pressure
-    CORE::LINALG::Matrix<1, 3>& pres_deriv,           ///< pressure gradient
-    Teuchos::RCP<const Epetra_Vector> vel_vec,        ///< vector used for interpolating at gp
-    bool compute_deriv                                ///< shall derivatives be computed?
+void XFEM::XfluidStd::getGPValues(CORE::Elements::Element* ele,  ///< pointer to element
+    CORE::LINALG::Matrix<3, 1>& xi,             ///< local coordinates of point w.r.t element
+    std::vector<int>& nds,                      ///< nodal dofset of point for elemental nodes
+    XFEM::XFEMDofSet& dofset,                   ///< XFEM dofset
+    CORE::LINALG::Matrix<3, 1>& vel,            ///< determine velocity at point
+    CORE::LINALG::Matrix<3, 3>& vel_deriv,      ///< determine velocity derivatives at point
+    double& pres,                               ///< pressure
+    CORE::LINALG::Matrix<1, 3>& pres_deriv,     ///< pressure gradient
+    Teuchos::RCP<const Epetra_Vector> vel_vec,  ///< vector used for interpolating at gp
+    bool compute_deriv                          ///< shall derivatives be computed?
 ) const
 {
   switch (ele->Shape())
@@ -1100,8 +1102,8 @@ void XFEM::XfluidStd::getGPValues(DRT::Element* ele,  ///< pointer to element
 
 //! interpolate velocity and derivatives for a point in an element
 template <CORE::FE::CellType DISTYPE>
-void XFEM::XfluidStd::getGPValuesT(DRT::Element* ele,  ///< pointer to element
-    CORE::LINALG::Matrix<3, 1>& xi,                    ///< local coordinates of point w.r.t element
+void XFEM::XfluidStd::getGPValuesT(CORE::Elements::Element* ele,  ///< pointer to element
+    CORE::LINALG::Matrix<3, 1>& xi,             ///< local coordinates of point w.r.t element
     std::vector<int>& nds,                      ///< nodal dofset of point for elemental nodes
     XFEM::XFEMDofSet& dofset,                   ///< XFEM dofset
     CORE::LINALG::Matrix<3, 1>& vel,            ///< determine velocity at point
@@ -1295,7 +1297,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
       sides.insert(sid);
 
       // get the side
-      DRT::Element* side = boundarydis_->gElement(sid);
+      CORE::Elements::Element* side = boundarydis_->gElement(sid);
       int numnode = side->num_node();
       const int* side_nodes = side->NodeIds();
 
@@ -1318,7 +1320,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
     for (int i = 0; i < boundarydis_->NumMyColElements(); i++)
     {
       // get the side
-      DRT::Element* side = boundarydis_->lColElement(i);
+      CORE::Elements::Element* side = boundarydis_->lColElement(i);
       int numnode = side->num_node();
       const int* side_nodes = side->NodeIds();
 
@@ -1368,7 +1370,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
   {
     //-------------------------------------------------
 
-    DRT::Element* side = boundarydis_->gElement(*it);
+    CORE::Elements::Element* side = boundarydis_->gElement(*it);
 
     call_project_on_side(
         side, state, newNodeCoords, proj_sid, min_dist, proj_x_np, proj_xi_side, data.proj_);
@@ -1378,11 +1380,11 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
     //------------------------------------
 
     // loop all edges of current side
-    std::vector<Teuchos::RCP<DRT::Element>> lines = side->Lines();
+    std::vector<Teuchos::RCP<CORE::Elements::Element>> lines = side->Lines();
 
     int line_count = 0;
 
-    for (std::vector<Teuchos::RCP<DRT::Element>>::iterator line_it = lines.begin();
+    for (std::vector<Teuchos::RCP<CORE::Elements::Element>>::iterator line_it = lines.begin();
          line_it != lines.end(); line_it++)
     {
       call_project_on_line(side, &(**line_it),
@@ -1443,7 +1445,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
   // track back the projected points on structural surface from t^(n+1)->t^n
   if (data.proj_ == TimeIntData::onSide_)
   {
-    DRT::Element* side = boundarydis_->gElement(proj_sid);
+    CORE::Elements::Element* side = boundarydis_->gElement(proj_sid);
 
     if (side == nullptr) FOUR_C_THROW("side with id %d not found ", proj_sid);
 
@@ -1457,7 +1459,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
       std::copy(x, x + 3, &side_xyze(0, i));
     }
 
-    DRT::Element::LocationArray cutla(1);
+    CORE::Elements::Element::LocationArray cutla(1);
     side->LocationVector(*boundarydis_, cutla, false);
 
     compute_start_point_side(
@@ -1489,7 +1491,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
         sid_1 = sides[0];
 
         // find the second neighboring side
-        DRT::Element* side_1 = boundarydis_->gElement(sid_1);
+        CORE::Elements::Element* side_1 = boundarydis_->gElement(sid_1);
 
         DRT::Node** nodes = side_1->Nodes();
 
@@ -1497,7 +1499,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
 
         for (int i = 0; i < side_1->num_node(); i++)
         {
-          DRT::Element** surr_sides = nodes[i]->Elements();
+          CORE::Elements::Element** surr_sides = nodes[i]->Elements();
           for (int s = 0; s < nodes[i]->NumElement(); s++)
           {
             neighbor_sides.insert(surr_sides[s]->Id());
@@ -1507,11 +1509,12 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
         // check which neighbor side is the right one
         for (std::set<int>::iterator s = neighbor_sides.begin(); s != neighbor_sides.end(); s++)
         {
-          DRT::Element* side_tmp = boundarydis_->gElement(*s);
+          CORE::Elements::Element* side_tmp = boundarydis_->gElement(*s);
 
-          std::vector<Teuchos::RCP<DRT::Element>> lines_tmp = side_tmp->Lines();
+          std::vector<Teuchos::RCP<CORE::Elements::Element>> lines_tmp = side_tmp->Lines();
 
-          for (std::vector<Teuchos::RCP<DRT::Element>>::iterator line_it = lines_tmp.begin();
+          for (std::vector<Teuchos::RCP<CORE::Elements::Element>>::iterator line_it =
+                   lines_tmp.begin();
                line_it != lines_tmp.end(); line_it++)
           {
             DRT::Node** line_nodes = (*line_it)->Nodes();
@@ -1559,7 +1562,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
 
       //---------------------------------------------------------
       // side 1
-      DRT::Element* side_1 = boundarydis_->gElement(sid_1);
+      CORE::Elements::Element* side_1 = boundarydis_->gElement(sid_1);
 
       // side geometry at initial state t^0
       const int numnodes_1 = side_1->num_node();
@@ -1571,14 +1574,14 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
         std::copy(x, x + 3, &side_xyze_1(0, i));
       }
 
-      DRT::Element::LocationArray cutla_1(1);
+      CORE::Elements::Element::LocationArray cutla_1(1);
       side_1->LocationVector(*boundarydis_, cutla_1, false);
 
       //---------------------------------------------------------
       // side 2
-      DRT::Element* side_2;
+      CORE::Elements::Element* side_2;
       CORE::LINALG::SerialDenseMatrix side_xyze_2;
-      DRT::Element::LocationArray cutla_2(1);
+      CORE::Elements::Element::LocationArray cutla_2(1);
       if (sid_2 != -1)
       {
         side_2 = boundarydis_->gElement(sid_2);
@@ -1599,9 +1602,9 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
       }
       //---------------------------------------------------------
       // line geometry at initial state t^0
-      std::vector<Teuchos::RCP<DRT::Element>> lines = side_1->Lines();
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> lines = side_1->Lines();
 
-      Teuchos::RCP<DRT::Element> line_ele = lines[local_lineIds[0]];
+      Teuchos::RCP<CORE::Elements::Element> line_ele = lines[local_lineIds[0]];
 
       call_get_projxn_line(side_1, &*line_ele, proj_x_n, local_xi_line[0]);
 
@@ -1620,7 +1623,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
   }
   else if (data.proj_ == TimeIntData::onPoint_)
   {
-    std::vector<DRT::Element*> surr_sides;                         ///< pointer to side element
+    std::vector<CORE::Elements::Element*> surr_sides;              ///< pointer to side element
     std::vector<CORE::LINALG::SerialDenseMatrix> surr_sides_xyze;  ///< side's node coordinates
     std::vector<std::vector<int>> surr_sides_lm;                   ///< local map
 
@@ -1629,12 +1632,12 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
     DRT::Node* node = boundarydis_->gNode(proj_nid_np);
 
     // get all surrounding sides
-    DRT::Element** node_sides = node->Elements();
+    CORE::Elements::Element** node_sides = node->Elements();
 
     for (int s = 0; s < node->NumElement(); s++)
     {
       // side geometry at initial state t^0
-      DRT::Element* side = node_sides[s];
+      CORE::Elements::Element* side = node_sides[s];
       const int numnodes = side->num_node();
       DRT::Node** nodes = side->Nodes();
       CORE::LINALG::SerialDenseMatrix side_xyze(3, numnodes);
@@ -1644,7 +1647,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
         std::copy(x, x + 3, &side_xyze(0, i));
       }
 
-      DRT::Element::LocationArray cutla(1);
+      CORE::Elements::Element::LocationArray cutla(1);
       side->LocationVector(*boundarydis_, cutla, false);
 
       surr_sides.push_back(side);
@@ -1748,7 +1751,7 @@ bool XFEM::XfluidStd::find_nearest_surf_point(
     sides.insert(sid);
 
     // get the side
-    DRT::Element* side = boundarydis_->gElement(sid);
+    CORE::Elements::Element* side = boundarydis_->gElement(sid);
     int numnode = side->num_node();
     const int* side_nodes = side->NodeIds();
 
@@ -1817,7 +1820,7 @@ bool XFEM::XfluidStd::project_to_surface(
   {
     //-------------------------------------------------
 
-    DRT::Element* side = boundarydis_->gElement(*it);
+    CORE::Elements::Element* side = boundarydis_->gElement(*it);
 
     call_project_on_side(side, state, x, proj_sid, min_dist, proj_x, proj_xi_side, proj);
 
@@ -1826,11 +1829,11 @@ bool XFEM::XfluidStd::project_to_surface(
     //------------------------------------
 
     // loop all edges of current side
-    std::vector<Teuchos::RCP<DRT::Element>> lines = side->Lines();
+    std::vector<Teuchos::RCP<CORE::Elements::Element>> lines = side->Lines();
 
     int line_count = 0;
 
-    for (std::vector<Teuchos::RCP<DRT::Element>>::iterator line_it = lines.begin();
+    for (std::vector<Teuchos::RCP<CORE::Elements::Element>>::iterator line_it = lines.begin();
          line_it != lines.end(); line_it++)
     {
       call_project_on_line(side, &(**line_it),
@@ -1892,9 +1895,10 @@ bool XFEM::XfluidStd::project_to_surface(
 
 
 
-void XFEM::XfluidStd::compute_start_point_side(DRT::Element* side,  ///< pointer to side element
-    CORE::LINALG::SerialDenseMatrix& side_xyze,                     ///< side's node coordinates
-    const std::vector<int>& lm,                                     ///< local map
+void XFEM::XfluidStd::compute_start_point_side(
+    CORE::Elements::Element* side,               ///< pointer to side element
+    CORE::LINALG::SerialDenseMatrix& side_xyze,  ///< side's node coordinates
+    const std::vector<int>& lm,                  ///< local map
     CORE::LINALG::Matrix<2, 1>& xi_side,     ///< local coordinates of projected point w.r.t side
     double& dist,                            ///< distance from point to its projection
     CORE::LINALG::Matrix<3, 1>& proj_x_n,    ///< projected point at t^n
@@ -1911,15 +1915,16 @@ void XFEM::XfluidStd::compute_start_point_side(DRT::Element* side,  ///< pointer
   return;
 }
 
-void XFEM::XfluidStd::compute_start_point_line(DRT::Element* side1,  ///< pointer to side element
-    CORE::LINALG::SerialDenseMatrix& side1_xyze,                     ///< side's node coordinates
-    DRT::Element* side2,                                             ///< pointer to side element
-    CORE::LINALG::SerialDenseMatrix& side2_xyze,                     ///< side's node coordinates
-    const std::vector<int>& lm1,                                     ///< local map
-    const std::vector<int>& lm2,                                     ///< local map
-    double& dist,                            ///< distance from point to its projection
-    CORE::LINALG::Matrix<3, 1>& proj_x_n,    ///< projected point at t^n
-    CORE::LINALG::Matrix<3, 1>& start_point  ///< final start point
+void XFEM::XfluidStd::compute_start_point_line(
+    CORE::Elements::Element* side1,               ///< pointer to side element
+    CORE::LINALG::SerialDenseMatrix& side1_xyze,  ///< side's node coordinates
+    CORE::Elements::Element* side2,               ///< pointer to side element
+    CORE::LINALG::SerialDenseMatrix& side2_xyze,  ///< side's node coordinates
+    const std::vector<int>& lm1,                  ///< local map
+    const std::vector<int>& lm2,                  ///< local map
+    double& dist,                                 ///< distance from point to its projection
+    CORE::LINALG::Matrix<3, 1>& proj_x_n,         ///< projected point at t^n
+    CORE::LINALG::Matrix<3, 1>& start_point       ///< final start point
 )
 {
   CORE::LINALG::Matrix<3, 1> normal_avg(true);  // averaged normal vector
@@ -1973,7 +1978,7 @@ void XFEM::XfluidStd::compute_start_point_line(DRT::Element* side1,  ///< pointe
 
 
 void XFEM::XfluidStd::compute_start_point_avg(
-    const std::vector<DRT::Element*>& sides,                   ///< pointer to side element
+    const std::vector<CORE::Elements::Element*>& sides,        ///< pointer to side element
     std::vector<CORE::LINALG::SerialDenseMatrix>& sides_xyze,  ///< side's node coordinates
     const std::vector<std::vector<int>>& sides_lm,             ///< local map
     double& dist,                            ///< distance from point to its projection
@@ -1987,9 +1992,10 @@ void XFEM::XfluidStd::compute_start_point_avg(
   CORE::LINALG::Matrix<3, 1> normal_avg(true);  // averaged normal vector
 
   ///
-  for (std::vector<DRT::Element*>::const_iterator it = sides.begin(); it != sides.end(); it++)
+  for (std::vector<CORE::Elements::Element*>::const_iterator it = sides.begin(); it != sides.end();
+       it++)
   {
-    DRT::Element* side = *it;
+    CORE::Elements::Element* side = *it;
 
     CORE::LINALG::Matrix<2, 1> side_center(true);
 
@@ -2025,11 +2031,12 @@ void XFEM::XfluidStd::compute_start_point_avg(
 
 
 
-void XFEM::XfluidStd::callget_normal_side_tn(DRT::Element* side,  ///< pointer to side element
-    CORE::LINALG::Matrix<3, 1>& normal,                           ///< normal vector w.r.t side
-    CORE::LINALG::SerialDenseMatrix& side_xyze,                   ///< side's node coordinates
-    const std::vector<int>& lm,                                   ///< local map
-    CORE::LINALG::Matrix<3, 1>& proj_x_n,                         ///< projected point on side
+void XFEM::XfluidStd::callget_normal_side_tn(
+    CORE::Elements::Element* side,               ///< pointer to side element
+    CORE::LINALG::Matrix<3, 1>& normal,          ///< normal vector w.r.t side
+    CORE::LINALG::SerialDenseMatrix& side_xyze,  ///< side's node coordinates
+    const std::vector<int>& lm,                  ///< local map
+    CORE::LINALG::Matrix<3, 1>& proj_x_n,        ///< projected point on side
     CORE::LINALG::Matrix<2, 1>& xi_side  ///< local coordinates of projected point w.r.t side
 )
 {
@@ -2168,8 +2175,8 @@ void XFEM::XfluidStd::get_normal_side_tn(
  **
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidStd::call_get_projxn_line(
-    DRT::Element* side,  ///< pointer to structural side element
-    DRT::Element* line,  ///< pointer to structural line of side element
+    CORE::Elements::Element* side,  ///< pointer to structural side element
+    CORE::Elements::Element* line,  ///< pointer to structural line of side element
     CORE::LINALG::Matrix<3, 1>& proj_x_n, double& xi_line)
 {
   //-------------------------------------------------
@@ -2187,7 +2194,7 @@ void XFEM::XfluidStd::call_get_projxn_line(
   }
 
 
-  DRT::Element::LocationArray cutla(1);
+  CORE::Elements::Element::LocationArray cutla(1);
   line->LocationVector(*boundarydis_, cutla, false);
 
   // get number of dofs for this side element
@@ -2310,8 +2317,8 @@ void XFEM::XfluidStd::addeidisp(
  **
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidStd::call_project_on_side(
-    DRT::Element* side,       ///< pointer to structural side element
-    const std::string state,  ///< state n or np?
+    CORE::Elements::Element* side,  ///< pointer to structural side element
+    const std::string state,        ///< state n or np?
     CORE::LINALG::Matrix<3, 1>&
         newNodeCoords,                      ///< node coordinates of point that has to be projected
     int& proj_sid,                          ///< id of side when projection lies on side
@@ -2339,7 +2346,7 @@ void XFEM::XfluidStd::call_project_on_side(
   }
 
 
-  DRT::Element::LocationArray cutla(1);
+  CORE::Elements::Element::LocationArray cutla(1);
   side->LocationVector(*boundarydis_, cutla, false);
 
   // get number of dofs for this side element
@@ -2466,10 +2473,10 @@ void XFEM::XfluidStd::call_project_on_side(
  **
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidStd::call_project_on_line(
-    DRT::Element* side,       ///< pointer to structural side element
-    DRT::Element* line,       ///< pointer to structural line of side element
-    int line_count,           ///< local line id w.r.t side element
-    const std::string state,  ///< state n or np?
+    CORE::Elements::Element* side,  ///< pointer to structural side element
+    CORE::Elements::Element* line,  ///< pointer to structural line of side element
+    int line_count,                 ///< local line id w.r.t side element
+    const std::string state,        ///< state n or np?
     CORE::LINALG::Matrix<3, 1>&
         newNodeCoords,                      ///< node coordinates of point that has to be projected
     double& min_dist,                       ///< minimal distance, potentially updated
@@ -2505,7 +2512,7 @@ void XFEM::XfluidStd::call_project_on_line(
   }
 
 
-  DRT::Element::LocationArray cutla(1);
+  CORE::Elements::Element::LocationArray cutla(1);
   line->LocationVector(*boundarydis_, cutla, false);
 
   // get number of dofs for this side element

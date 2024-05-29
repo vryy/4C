@@ -253,7 +253,7 @@ bool STR::MODELEVALUATOR::BrownianDyn::apply_force_external()
   // Set to default value  as it is unnecessary for the
   // evaluate_neumann routine.
   // -------------------------------------------------------------------------
-  eval_data().SetActionType(DRT::ELEMENTS::none);
+  eval_data().SetActionType(CORE::Elements::none);
   // -------------------------------------------------------------------------
   // set vector values needed by elements
   // -------------------------------------------------------------------------
@@ -288,7 +288,7 @@ bool STR::MODELEVALUATOR::BrownianDyn::apply_force_brownian()
   // -------------------------------------------------------------------------
   // set action for elements
   // -------------------------------------------------------------------------
-  eval_data().SetActionType(DRT::ELEMENTS::struct_calc_brownianforce);
+  eval_data().SetActionType(CORE::Elements::struct_calc_brownianforce);
   // -------------------------------------------------------------------------
   // set vector values needed by elements
   // -------------------------------------------------------------------------
@@ -316,7 +316,7 @@ bool STR::MODELEVALUATOR::BrownianDyn::apply_force_stiff_external()
   // Set to default value, as it is unnecessary for the
   // evaluate_neumann routine.
   // -------------------------------------------------------------------------
-  eval_data().SetActionType(DRT::ELEMENTS::none);
+  eval_data().SetActionType(CORE::Elements::none);
   // -------------------------------------------------------------------------
   // set vector values needed by elements
   // -------------------------------------------------------------------------
@@ -352,7 +352,7 @@ bool STR::MODELEVALUATOR::BrownianDyn::apply_force_stiff_brownian()
   // -------------------------------------------------------------------------
   // set action for elements
   // -------------------------------------------------------------------------
-  eval_data().SetActionType(DRT::ELEMENTS::struct_calc_brownianstiff);
+  eval_data().SetActionType(CORE::Elements::struct_calc_brownianstiff);
   // -------------------------------------------------------------------------
   // set vector values needed by elements
   // -------------------------------------------------------------------------
@@ -375,7 +375,7 @@ void STR::MODELEVALUATOR::BrownianDyn::evaluate_brownian(
 
   // todo: just give params_interface to elements (not a parameter list)
   Teuchos::ParameterList p;
-  p.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", eval_data_ptr());
+  p.set<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface", eval_data_ptr());
   // -------------------------------------------------------------------------
   // Evaluate brownian (stochastic and damping) forces on element level
   // -------------------------------------------------------------------------
@@ -410,7 +410,7 @@ void STR::MODELEVALUATOR::BrownianDyn::evaluate_neumann_brownian_dyn(
   // -------------------------------------------------------------------------
   // get interface pointer
   // -------------------------------------------------------------------------
-  Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> interface_ptr = eval_data_ptr();
+  Teuchos::RCP<CORE::Elements::ParamsInterface> interface_ptr = eval_data_ptr();
   // -------------------------------------------------------------------------
   // evaluate brownian specific Neumann boundary conditions
   // -------------------------------------------------------------------------

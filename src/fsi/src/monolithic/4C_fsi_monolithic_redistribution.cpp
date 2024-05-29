@@ -58,8 +58,8 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
   std::map<int, DRT::Node*> fluidgnodes;
 
   // initialize maps for elements
-  std::map<int, Teuchos::RCP<DRT::Element>> structureelements;
-  std::map<int, Teuchos::RCP<DRT::Element>> fluidelements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> structureelements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> fluidelements;
 
 
   // access the discretizations
@@ -310,8 +310,8 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const INPAR::FSI::R
   std::map<int, DRT::Node*> fluidgnodes;
 
   // initialize maps for elements
-  std::map<int, Teuchos::RCP<DRT::Element>> structureelements;
-  std::map<int, Teuchos::RCP<DRT::Element>> fluidelements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> structureelements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> fluidelements;
 
 
   // access the discretizations

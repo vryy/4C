@@ -14,7 +14,7 @@
 #include "4C_beaminteraction_beam_to_beam_potential_pair.hpp"
 #include "4C_beaminteraction_beam_to_sphere_potential_pair.hpp"
 #include "4C_beaminteraction_potential_params.hpp"
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_rigidsphere.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -38,7 +38,7 @@ BEAMINTERACTION::BeamPotentialPair::BeamPotentialPair()
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialPair::Init(
     const Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> params_ptr,
-    const DRT::Element* element1, const DRT::Element* element2)
+    const CORE::Elements::Element* element1, const CORE::Elements::Element* element2)
 {
   issetup_ = false;
 
@@ -63,7 +63,7 @@ void BEAMINTERACTION::BeamPotentialPair::Setup()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialPair::Create(
-    std::vector<DRT::Element const*> const& ele_ptrs,
+    std::vector<CORE::Elements::Element const*> const& ele_ptrs,
     BEAMINTERACTION::BeamPotentialParams const& beam_potential_params)
 {
   // note: numnodes is to be interpreted as number of nodes used for centerline interpolation.

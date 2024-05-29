@@ -67,7 +67,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::RemoveAllLinker()
   const int numrowbin = BinStrategy()->BinDiscret()->NumMyColElements();
   for (int ibin = 0; ibin < numrowbin; ++ibin)
   {
-    DRT::Element* actele = BinStrategy()->BinDiscret()->lColElement(ibin);
+    CORE::Elements::Element* actele = BinStrategy()->BinDiscret()->lColElement(ibin);
     dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele)->DeleteNodes();
   }
 
@@ -454,7 +454,8 @@ bool BEAMINTERACTION::BeamCrosslinkerHandler::PlaceNodeCorrectly(Teuchos::RCP<DR
         dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(binstrategy_->BinDiscret()->gElement(binId));
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (currbin == nullptr)
-      FOUR_C_THROW("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
+      FOUR_C_THROW(
+          "dynamic cast from CORE::Elements::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
     // check whether it is a row bin
     if (currbin->Owner() == myrank_)  // row bin
@@ -638,13 +639,13 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::
 {
   colbins.clear();
 
-  std::list<DRT::Element*> const boundaryrowbins = binstrategy_->BoundaryRowBins();
+  std::list<CORE::Elements::Element*> const boundaryrowbins = binstrategy_->BoundaryRowBins();
 
   if (boundaryrowbins.size() == 0)
     FOUR_C_THROW("Boundary row bins unknown, call function determine_boundary_row_bins() first!");
 
   // loop over boundary row bins and add neighbors of filled row bins
-  std::list<DRT::Element*>::const_iterator it;
+  std::list<CORE::Elements::Element*>::const_iterator it;
   for (it = boundaryrowbins.begin(); it != boundaryrowbins.end(); ++it)
   {
     if ((*it)->num_node() != 0)

@@ -27,8 +27,12 @@ namespace DRT
 {
   class Discretization;
   class Node;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::LINALG
 {
@@ -145,14 +149,15 @@ namespace CONTACT
       static void detect_dbc_slave_nodes_and_elements(const DRT::Discretization& str_discret,
           const std::vector<std::vector<CORE::Conditions::Condition*>>& ccond_grps,
           std::set<const DRT::Node*>& dbc_slave_nodes,
-          std::set<const DRT::Element*>& dbc_slave_eles);
+          std::set<const CORE::Elements::Element*>& dbc_slave_eles);
 
      private:
       static void detect_dbc_slave_nodes(std::map<const DRT::Node*, int>& dbc_slave_node_map,
           const DRT::Discretization& str_discret,
           const std::vector<const CORE::Conditions::Condition*>& sl_conds);
 
-      static void detect_dbc_slave_elements(std::set<const DRT::Element*>& dbc_slave_eles,
+      static void detect_dbc_slave_elements(
+          std::set<const CORE::Elements::Element*>& dbc_slave_eles,
           const std::map<const DRT::Node*, int>& dbc_slave_nodes,
           const std::vector<const CORE::Conditions::Condition*>& sl_conds);
     };  // class DbcHandler

@@ -118,7 +118,7 @@ CORE::REBALANCE::BuildWeights(const DRT::Discretization& dis)
   // loop all row elements and get their cost of evaluation
   for (int i = 0; i < dis.ElementRowMap()->NumMyElements(); ++i)
   {
-    DRT::Element* ele = dis.lRowElement(i);
+    CORE::Elements::Element* ele = dis.lRowElement(i);
     DRT::Node** nodes = ele->Nodes();
     const int numnode = ele->num_node();
     std::vector<int> lm(numnode);
@@ -155,7 +155,7 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
   std::set<int> mynodes;
   for (int lid = 0; lid < roweles->NumMyElements(); ++lid)
   {
-    DRT::Element* ele = dis->gElement(roweles->GID(lid));
+    CORE::Elements::Element* ele = dis->gElement(roweles->GID(lid));
     const int numnode = ele->num_node();
     const int* nodeids = ele->NodeIds();
     copy(nodeids, nodeids + numnode, inserter(mynodes, mynodes.begin()));
@@ -206,7 +206,7 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
   std::map<int, std::set<int>> remotes;
   for (int lid = 0; lid < roweles->NumMyElements(); ++lid)
   {
-    DRT::Element* ele = dis->gElement(roweles->GID(lid));
+    CORE::Elements::Element* ele = dis->gElement(roweles->GID(lid));
     const int numnode = ele->num_node();
     const int* nodeids = ele->NodeIds();
     for (int i = 0; i < numnode; ++i)

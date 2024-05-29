@@ -11,9 +11,9 @@
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_discretization_fem_general_assemblestrategy.hpp"
+#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_elements_paramsinterface.hpp"
 #include "4C_lib_utils_discret.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -46,9 +46,10 @@ void DRT::Discretization::Evaluate(
 {
   // Call the Evaluate method for the specific element
   Evaluate(params, strategy,
-      [&](DRT::Element& ele, Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
+      [&](CORE::Elements::Element& ele, CORE::Elements::Element::LocationArray& la,
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3)
       {
         const int err =
             ele.Evaluate(params, *this, la, strategy.Elematrix1(), strategy.Elematrix2(),
@@ -61,7 +62,7 @@ void DRT::Discretization::Evaluate(
  *----------------------------------------------------------------------*/
 void DRT::Discretization::Evaluate(Teuchos::ParameterList& params,
     CORE::FE::AssembleStrategy& strategy,
-    const std::function<void(DRT::Element&, Element::LocationArray&,
+    const std::function<void(CORE::Elements::Element&, CORE::Elements::Element::LocationArray&,
         CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&,
         CORE::LINALG::SerialDenseVector&)>& element_action)
@@ -82,10 +83,10 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params,
       strategy.Systemmatrix2(), strategy.Systemvector1(), strategy.Systemvector2(),
       strategy.Systemvector3());
 
-  Element::LocationArray la(dofsets_.size());
+  CORE::Elements::Element::LocationArray la(dofsets_.size());
 
   // loop over column elements
-  for (Element* actele : MyColElementRange())
+  for (auto* actele : MyColElementRange())
   {
     // get element location vector, dirichlet flags and ownerships
     actele->LocationVector(*this, la, false);
@@ -118,12 +119,13 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params,
   Evaluate(params, systemmatrix, Teuchos::null, systemvector, Teuchos::null, Teuchos::null);
 }
 
-void DRT::Discretization::Evaluate(const std::function<void(DRT::Element&)>& element_action)
+void DRT::Discretization::Evaluate(
+    const std::function<void(CORE::Elements::Element&)>& element_action)
 {
   // test only for Filled()!Dof information is not required
   if (!Filled()) FOUR_C_THROW("fill_complete() was not called");
 
-  for (Element* actele : MyColElementRange())
+  for (auto* actele : MyColElementRange())
   {
     // call the element evaluate method
     element_action(*actele);
@@ -143,10 +145,10 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params)
   CORE::LINALG::SerialDenseVector elevector2;
   CORE::LINALG::SerialDenseVector elevector3;
 
-  Element::LocationArray la(dofsets_.size());
+  CORE::Elements::Element::LocationArray la(dofsets_.size());
 
   Evaluate(
-      [&](DRT::Element& ele)
+      [&](CORE::Elements::Element& ele)
       {
         const int err = ele.Evaluate(
             params, *this, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);
@@ -171,7 +173,7 @@ void DRT::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
 
   if (params.isParameter("interface"))
   {
-    time = params.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface")->GetTotalTime();
+    time = params.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface")->GetTotalTime();
   }
 
   //--------------------------------------------------------
@@ -236,7 +238,7 @@ void DRT::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
     if (name == (std::string) "LineNeumann" || name == (std::string) "SurfaceNeumann" ||
         name == (std::string) "VolumeNeumann")
     {
-      std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond->Geometry();
       CORE::LINALG::SerialDenseVector elevector;
       CORE::LINALG::SerialDenseMatrix elematrix;
       for (const auto& [_, ele] : geom)
@@ -294,12 +296,12 @@ void DRT::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", nodeid);
 
       // get elements attached to global node
-      DRT::Element** curreleptr = actnode->Elements();
+      CORE::Elements::Element** curreleptr = actnode->Elements();
 
       // find element from pointer
       // please note, that external force will be applied to the first element [0] attached to a
       // node this needs to be done, otherwise it will be applied several times on several elements.
-      DRT::Element* currele = curreleptr[0];
+      CORE::Elements::Element* currele = curreleptr[0];
 
       // get information from location
       currele->LocationVector(*this, lm, lmowner, lmstride);
@@ -371,7 +373,7 @@ void DRT::Discretization::evaluate_condition(Teuchos::ParameterList& params,
   // get the current time
   const double time = params.get("total time", -1.0);
 
-  Element::LocationArray la(dofsets_.size());
+  CORE::Elements::Element::LocationArray la(dofsets_.size());
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -382,7 +384,7 @@ void DRT::Discretization::evaluate_condition(Teuchos::ParameterList& params,
     {
       if (condid == -1 || condid == cond->parameters().Get<int>("ConditionID"))
       {
-        std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond->Geometry();
         // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
         // no check for empty geometry here since in parallel computations
         // can exist processors which do not own a portion of the elements belonging
@@ -439,7 +441,7 @@ void DRT::Discretization::evaluate_condition(Teuchos::ParameterList& params,
            * be given to the Assembling! (comment: eid is not used by
            * sysmat.assemble(...,eid,...))*/
           int eid;
-          if (auto* faceele = dynamic_cast<DRT::FaceElement*>(ele.get()))
+          if (auto* faceele = dynamic_cast<CORE::Elements::FaceElement*>(ele.get()))
             eid = faceele->parent_element()->Id();
           else
             eid = ele->Id();
@@ -484,7 +486,7 @@ void DRT::Discretization::EvaluateScalars(
   for (const auto& actele : MyRowElementRange())
   {
     // get element location vector
-    Element::LocationArray la(dofsets_.size());
+    CORE::Elements::Element::LocationArray la(dofsets_.size());
     actele->LocationVector(*this, la, false);
 
     // define element vector
@@ -549,7 +551,7 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
       if (condid == -1 or condid == condition->parameters().Get<int>("ConditionID"))
       {
         // extract geometry map of current condition
-        std::map<int, Teuchos::RCP<DRT::Element>>& geometry = condition->Geometry();
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geometry = condition->Geometry();
 
         // add condition to parameter list for elements
         params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", condition);
@@ -561,7 +563,7 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
           if (element->Owner() == Comm().MyPID())
           {
             // construct location vector for current element
-            Element::LocationArray la(dofsets_.size());
+            CORE::Elements::Element::LocationArray la(dofsets_.size());
             element->LocationVector(*this, la, false);
 
             // initialize result vector for current element
@@ -619,13 +621,13 @@ void DRT::Discretization::EvaluateScalars(
   for (int i = 0; i < numrowele; ++i)
   {
     // pointer to current element
-    DRT::Element* actele = lRowElement(i);
+    CORE::Elements::Element* actele = lRowElement(i);
 
     if (!scalars->Map().MyGID(actele->Id()))
       FOUR_C_THROW("Proc does not have global element %d", actele->Id());
 
     // get element location vector
-    Element::LocationArray la(dofsets_.size());
+    CORE::Elements::Element::LocationArray la(dofsets_.size());
     actele->LocationVector(*this, la, false);
 
     // define element vector

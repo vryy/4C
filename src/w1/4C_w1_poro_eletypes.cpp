@@ -31,21 +31,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad4PoroType::Create(const std::vecto
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallQuad4PoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLQ4PORO")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::quad4>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallQuad4PoroType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::quad4>(id, owner));
   return ele;
 }
@@ -96,21 +97,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad9PoroType::Create(const std::vecto
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallQuad9PoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLQ9PORO")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::quad9>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallQuad9PoroType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::quad9>(id, owner));
   return ele;
 }
@@ -163,21 +165,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::WallNurbs4PoroType::Create(const std::vect
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs4PoroType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallNurbs4PoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLN4PORO")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::nurbs4>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs4PoroType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallNurbs4PoroType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::nurbs4>(id, owner));
   return ele;
 }
@@ -230,21 +233,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::WallNurbs9PoroType::Create(const std::vect
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs9PoroType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallNurbs9PoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLN9PORO")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::nurbs9>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs9PoroType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallNurbs9PoroType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::nurbs9>(id, owner));
   return ele;
 }
@@ -294,21 +298,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::WallTri3PoroType::Create(const std::vector
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallTri3PoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLT3PORO")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::tri3>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallTri3PoroType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::tri3>(id, owner));
   return ele;
 }

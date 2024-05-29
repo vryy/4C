@@ -92,7 +92,7 @@ namespace MORTAR
     DRT::Node** Nodes() override
     {
       if (parele_->Shape() != CORE::FE::CellType::nurbs9)
-        return DRT::Element::Nodes();
+        return CORE::Elements::Element::Nodes();
       else
         return nodes_ptr_.data();
     }

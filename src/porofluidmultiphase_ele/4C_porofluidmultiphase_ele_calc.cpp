@@ -75,9 +75,10 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(
  | evaluate  routine                                         vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Evaluate(DRT::Element* ele,
+int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Evaluate(CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+    CORE::Elements::Element::LocationArray& la,
+    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec)
 {
   // check for the action parameter
@@ -100,9 +101,10 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Evaluate(DRT::Element* e
  | evaluate action                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate_action(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const POROFLUIDMULTIPHASE::Action& action, DRT::Element::LocationArray& la,
+int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate_action(
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, const POROFLUIDMULTIPHASE::Action& action,
+    CORE::Elements::Element::LocationArray& la,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec)
 {
@@ -175,10 +177,10 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate_action(DRT::Ele
 |  calculate system matrix and rhs (public)                 vuong 08/16|
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop(DRT::Element* ele,
-    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop(
+    CORE::Elements::Element* ele, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element::LocationArray& la)
 {
   // prepare gauss point evaluation
   prepare_gauss_point_loop(ele);
@@ -195,10 +197,10 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop(DRT::E
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_average(DRT::Element* ele,
-    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_average(
+    CORE::Elements::Element* ele, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element::LocationArray& la)
 {
   prepare_gauss_point_loop(ele);
 
@@ -220,9 +222,9 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_averag
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_struct(
-    DRT::Element* ele, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+    CORE::Elements::Element* ele, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element::LocationArray& la)
 {
   // prepare gauss point evaluation
   prepare_gauss_point_loop(ele);
@@ -242,9 +244,9 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_str
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_scatra(
-    DRT::Element* ele, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+    CORE::Elements::Element* ele, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element::LocationArray& la)
 {
   // prepare gauss point evaluation
   prepare_gauss_point_loop(ele);
@@ -263,7 +265,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_sca
 |  calculate system matrix and rhs (public)                 vuong 08/16|
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::prepare_gauss_point_loop(DRT::Element* ele)
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::prepare_gauss_point_loop(
+    CORE::Elements::Element* ele)
 {
   return;
 }
@@ -273,10 +276,10 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::prepare_gauss_point_loo
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop(
-    const CORE::FE::IntPointsAndWeights<nsd_>& intpoints, DRT::Element* ele,
+    const CORE::FE::IntPointsAndWeights<nsd_>& intpoints, CORE::Elements::Element* ele,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element::LocationArray& la)
 {
   // start the loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -320,10 +323,10 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop(
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_struct(
-    const CORE::FE::IntPointsAndWeights<nsd_>& intpoints, DRT::Element* ele,
+    const CORE::FE::IntPointsAndWeights<nsd_>& intpoints, CORE::Elements::Element* ele,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element::LocationArray& la)
 {
   // start the loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -358,10 +361,10 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_str
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_scatra(
-    const CORE::FE::IntPointsAndWeights<nsd_>& intpoints, DRT::Element* ele,
+    const CORE::FE::IntPointsAndWeights<nsd_>& intpoints, CORE::Elements::Element* ele,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element::LocationArray& la)
 {
   // start the loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -396,10 +399,10 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_sca
  | loop over nodes for evaluation                                  vuong 08/16 |
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::node_loop(DRT::Element* ele,
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::node_loop(CORE::Elements::Element* ele,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, const bool jacobian_needed)
+    CORE::Elements::Element::LocationArray& la, const bool jacobian_needed)
 {
   // Note: this is an evaluation at every node (e.g. for post processing)
   //       Hence, the shape function matrix funct and the derivative matrix derxy
@@ -449,10 +452,10 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::node_loop(DRT::Element*
  | loop over nodes for evaluation                                  vuong 08/16 |
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate_only_element(DRT::Element* ele,
-    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate_only_element(
+    CORE::Elements::Element* ele, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element::LocationArray& la)
 {
   // Note: this is an evaluation of the element where no Gauss point data and function values (from
   //       variable and phase-managers are required
@@ -480,7 +483,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate_only_element(D
  | setup element evaluation                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::setup_calc(DRT::Element* ele,
+int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::setup_calc(CORE::Elements::Element* ele,
     DRT::Discretization& discretization, const POROFLUIDMULTIPHASE::Action& action)
 {
   // get element coordinates
@@ -533,8 +536,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::setup_calc(DRT::Element*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::extract_element_and_node_values(
-    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
 {
   variablemanager_->extract_element_and_node_values(*ele, discretization, la, xyze_);
   return;

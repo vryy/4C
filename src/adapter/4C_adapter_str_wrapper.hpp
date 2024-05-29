@@ -377,7 +377,7 @@ namespace ADAPTER
     void set_state(const Teuchos::RCP<Epetra_Vector>& x) override { structure_->set_state(x); }
 
     /// set evaluation action
-    void SetActionType(const DRT::ELEMENTS::ActionType& action) override
+    void SetActionType(const CORE::Elements::ActionType& action) override
     {
       structure_->SetActionType(action);
     }

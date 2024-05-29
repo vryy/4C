@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
  |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
 void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
-    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1,
+    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, CORE::Elements::Element* ele1,
     const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
     Teuchos::RCP<DRT::Discretization> dis2)
 {
@@ -29,14 +29,14 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
   if (ids_2.empty()) return;
 
   // default strategy: take material of element with closest center in reference coordinates
-  DRT::Element* ele2 = nullptr;
+  CORE::Elements::Element* ele2 = nullptr;
   double mindistance = 1e10;
   {
     std::vector<double> centercoords1 = CORE::FE::element_center_refe_coords(*ele1);
 
     for (unsigned i = 0; i < ids_2.size(); ++i)
     {
-      DRT::Element* actele2 = dis2->gElement(ids_2[i]);
+      CORE::Elements::Element* actele2 = dis2->gElement(ids_2[i]);
       std::vector<double> centercoords2 = CORE::FE::element_center_refe_coords(*actele2);
 
       CORE::LINALG::Matrix<3, 1> diffcoords(true);
@@ -62,7 +62,7 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
  |  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
 void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
-    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele2,
+    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, CORE::Elements::Element* ele2,
     const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
     Teuchos::RCP<DRT::Discretization> dis2)
 {
@@ -72,14 +72,14 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
   if (ids_1.empty()) return;
 
   // default strategy: take material of element with closest center in reference coordinates
-  DRT::Element* ele1 = nullptr;
+  CORE::Elements::Element* ele1 = nullptr;
   double mindistance = 1e10;
   {
     std::vector<double> centercoords2 = CORE::FE::element_center_refe_coords(*ele2);
 
     for (unsigned i = 0; i < ids_1.size(); ++i)
     {
-      DRT::Element* actele1 = dis1->gElement(ids_1[i]);
+      CORE::Elements::Element* actele1 = dis1->gElement(ids_1[i]);
       std::vector<double> centercoords1 = CORE::FE::element_center_refe_coords(*actele1);
 
       CORE::LINALG::Matrix<3, 1> diffcoords(true);

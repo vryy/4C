@@ -125,7 +125,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
   std::vector<int> my_elements_gid;
   for (int i_element = 0; i_element < discret_->ElementRowMap()->NumMyElements(); i_element++)
   {
-    DRT::Element const& element = *(discret_->lRowElement(i_element));
+    CORE::Elements::Element const& element = *(discret_->lRowElement(i_element));
     if (BEAMINTERACTION::UTILS::IsBeamElement(element)) my_elements_gid.push_back(element.Id());
   }
 

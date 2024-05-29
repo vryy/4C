@@ -101,29 +101,30 @@ namespace DRT
 
       //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
       //! coupling condition
-      void evaluate_s2_i_coupling_od(const DRT::FaceElement* ele,  ///< current boundary element
-          Teuchos::ParameterList& params,                          ///< parameter list
-          DRT::Discretization& discretization,                     ///< discretization
-          DRT::Element::LocationArray& la,                         ///< location array
+      void evaluate_s2_i_coupling_od(
+          const CORE::Elements::FaceElement* ele,        ///< current boundary element
+          Teuchos::ParameterList& params,                ///< parameter list
+          DRT::Discretization& discretization,           ///< discretization
+          CORE::Elements::Element::LocationArray& la,    ///< location array
           CORE::LINALG::SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
           ) override;
 
       //! evaluate action
-      int evaluate_action(DRT::FaceElement* ele,            //!< boundary element
-          Teuchos::ParameterList& params,                   //!< parameter list
-          DRT::Discretization& discretization,              //!< discretization
-          SCATRA::BoundaryAction action,                    //!< action
-          DRT::Element::LocationArray& la,                  //!< location array
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-          CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
+      int evaluate_action(CORE::Elements::FaceElement* ele,  //!< boundary element
+          Teuchos::ParameterList& params,                    //!< parameter list
+          DRT::Discretization& discretization,               //!< discretization
+          SCATRA::BoundaryAction action,                     //!< action
+          CORE::Elements::Element::LocationArray& la,        //!< location array
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,   //!< element matrix 1
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,   //!< element matrix 2
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,   //!< element right-hand side vector 1
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,   //!< element right-hand side vector 2
+          CORE::LINALG::SerialDenseVector& elevec3_epetra    //!< element right-hand side vector 3
           ) override;
 
       //! extract nodal state variables associated with boundary element
       void extract_node_values(const DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la                                  //!< location array
+          CORE::Elements::Element::LocationArray& la                       //!< location array
           ) override;
 
       //! evaluate factor F/RT

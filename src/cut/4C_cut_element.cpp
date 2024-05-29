@@ -1364,7 +1364,7 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::Element::Create(const unsi
     const int& eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes,
     const bool& active)
 {
-  return Create(DRT::ShardsKeyToDisType(shardskey), eid, sides, nodes, active);
+  return Create(CORE::Elements::ShardsKeyToDisType(shardskey), eid, sides, nodes, active);
 }
 
 template class CORE::GEO::CUT::ConcreteElement<2, CORE::FE::CellType::line2>;

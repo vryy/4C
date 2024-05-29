@@ -46,7 +46,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::ElemagType::Create(const std::vector<char>
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ELECTROMAGNETIC")
@@ -57,14 +57,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagType::Create(
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagType::Create(
+    const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::Elemag(id, owner));
 }
 
 
 void DRT::ELEMENTS::ElemagType::nodal_block_information(
-    Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   nv = CORE::FE::getDimension(dwele->Shape()) - 1;
   dimns = nv;
@@ -131,7 +132,7 @@ void DRT::ELEMENTS::ElemagType::setup_element_definition(
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Elemag::Elemag(int id, int owner)
-    : DRT::Element(id, owner), degree_(1), completepol_(true)
+    : CORE::Elements::Element(id, owner), degree_(1), completepol_(true)
 {
   distype_ = CORE::FE::CellType::dis_none;
 }
@@ -141,7 +142,7 @@ DRT::ELEMENTS::Elemag::Elemag(int id, int owner)
  |  copy-ctor (public)                                  berardocco 02/18|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Elemag::Elemag(const DRT::ELEMENTS::Elemag& old)
-    : DRT::Element(old),
+    : CORE::Elements::Element(old),
       distype_(old.distype_),
       degree_(old.degree_),
       completepol_(old.completepol_)
@@ -153,7 +154,7 @@ DRT::ELEMENTS::Elemag::Elemag(const DRT::ELEMENTS::Elemag& old)
  |  Deep copy this instance of Elemag and return pointer to it (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Elemag::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Elemag::Clone() const
 {
   DRT::ELEMENTS::Elemag* newelement = new DRT::ELEMENTS::Elemag(*this);
   return newelement;
@@ -253,7 +254,7 @@ bool DRT::ELEMENTS::Elemag::ReadElement(
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)           berardocco 02/18|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Elemag::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Elemag::Lines()
 {
   return CORE::COMM::GetElementLines<ElemagBoundary, Elemag>(*this);
 }
@@ -262,7 +263,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Elemag::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                     berardocco 02/18|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Elemag::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Elemag::Surfaces()
 {
   return CORE::COMM::GetElementSurfaces<ElemagBoundary, Elemag>(*this);
 }
@@ -270,9 +271,9 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Elemag::Surfaces()
 /*----------------------------------------------------------------------*
  |  get face element (public)                           berardocco 02/18|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Elemag::CreateFaceElement(DRT::Element* parent_slave,
-    int nnode, const int* nodeids, DRT::Node** nodes, const int lsurface_master,
-    const int lsurface_slave, const std::vector<int>& localtrafomap)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Elemag::CreateFaceElement(
+    CORE::Elements::Element* parent_slave, int nnode, const int* nodeids, DRT::Node** nodes,
+    const int lsurface_master, const int lsurface_slave, const std::vector<int>& localtrafomap)
 {
   // dynamic cast for slave parent element
   DRT::ELEMENTS::Elemag* slave_pele = dynamic_cast<DRT::ELEMENTS::Elemag*>(parent_slave);
@@ -294,7 +295,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Elemag::CreateFaceElement(DRT::Element
 //=======================================================================
 //=======================================================================
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagBoundaryType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagBoundaryType::Create(
+    const int id, const int owner)
 {
   return Teuchos::null;
 }
@@ -306,7 +308,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagBoundaryType::Create(const int i
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ElemagBoundary::ElemagBoundary(int id, int owner, int nnode, const int* nodeids,
     DRT::Node** nodes, DRT::ELEMENTS::Elemag* parent, const int lsurface)
-    : DRT::FaceElement(id, owner)
+    : CORE::Elements::FaceElement(id, owner)
 {
   set_parent_master_element(parent, lsurface);
   SetNodeIds(nnode, nodeids);
@@ -319,7 +321,7 @@ DRT::ELEMENTS::ElemagBoundary::ElemagBoundary(int id, int owner, int nnode, cons
  |  copy-ctor (public)                                 berardocco 02/18 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ElemagBoundary::ElemagBoundary(const DRT::ELEMENTS::ElemagBoundary& old)
-    : DRT::FaceElement(old)
+    : CORE::Elements::FaceElement(old)
 {
   return;
 }
@@ -329,7 +331,7 @@ DRT::ELEMENTS::ElemagBoundary::ElemagBoundary(const DRT::ELEMENTS::ElemagBoundar
  |  Deep copy this instance return pointer to it               (public) |
  |                                                     berardocco 02/18 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::ElemagBoundary::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::ElemagBoundary::Clone() const
 {
   DRT::ELEMENTS::ElemagBoundary* newelement = new DRT::ELEMENTS::ElemagBoundary(*this);
   return newelement;
@@ -408,7 +410,7 @@ void DRT::ELEMENTS::ElemagBoundary::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                       berardocco 02/18 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagBoundary::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ElemagBoundary::Lines()
 {
   FOUR_C_THROW("Lines of ElemagBoundary not implemented");
 }
@@ -417,7 +419,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagBoundary::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                       berardocco 02/18 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagBoundary::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ElemagBoundary::Surfaces()
 {
   FOUR_C_THROW("Surfaces of ElemagBoundary not implemented");
 }
@@ -473,7 +475,8 @@ void DRT::ELEMENTS::ElemagBoundary::LocationVector(const Discretization& dis, Lo
 //=======================================================================
 //=======================================================================
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagIntFaceType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagIntFaceType::Create(
+    const int id, const int owner)
 {
   return Teuchos::null;
 }
@@ -496,7 +499,7 @@ DRT::ELEMENTS::ElemagIntFace::ElemagIntFace(int id,  // element id
                        // face w.r.t the master parent element's face's coordinate system and the
                        // slave element's face's coordinate system
     )
-    : DRT::FaceElement(id, owner)
+    : CORE::Elements::FaceElement(id, owner)
 {
   set_parent_master_element(parent_master, lsurface_master);
   set_parent_slave_element(parent_slave, lsurface_slave);
@@ -517,7 +520,7 @@ DRT::ELEMENTS::ElemagIntFace::ElemagIntFace(int id,  // element id
  |  copy-ctor (public)                                  berardocco 02/18|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ElemagIntFace::ElemagIntFace(const DRT::ELEMENTS::ElemagIntFace& old)
-    : DRT::FaceElement(old), degree_(old.degree_)
+    : CORE::Elements::FaceElement(old), degree_(old.degree_)
 {
   return;
 }
@@ -526,7 +529,7 @@ DRT::ELEMENTS::ElemagIntFace::ElemagIntFace(const DRT::ELEMENTS::ElemagIntFace& 
  |  Deep copy this instance return pointer to it               (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::ElemagIntFace::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::ElemagIntFace::Clone() const
 {
   DRT::ELEMENTS::ElemagIntFace* newelement = new DRT::ELEMENTS::ElemagIntFace(*this);
   return newelement;
@@ -776,7 +779,7 @@ void DRT::ELEMENTS::ElemagIntFace::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                       berardocco 02/18 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagIntFace::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ElemagIntFace::Lines()
 {
   FOUR_C_THROW("Lines of ElemagIntFace not implemented");
 }
@@ -784,7 +787,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagIntFace::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                       berardocco 02/18 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagIntFace::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ElemagIntFace::Surfaces()
 {
   FOUR_C_THROW("Surfaces of ElemagIntFace not implemented");
 }

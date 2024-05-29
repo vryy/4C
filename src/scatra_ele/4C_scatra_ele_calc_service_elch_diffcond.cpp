@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  *-----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_element_parameter(
-    DRT::Element* ele)
+    CORE::Elements::Element* ele)
 {
   // 1) Check material specific options
   // 2) Check if numdofpernode, numscal is set correctly
@@ -110,9 +110,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_elem
  *---------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_initial_time_derivative(
-    DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element* ele, CORE::LINALG::SerialDenseMatrix& emat,
+    CORE::LINALG::SerialDenseVector& erhs, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
 {
   // call base class routine
   myelch::calc_initial_time_derivative(ele, emat, erhs, params, discretization, la);
@@ -142,10 +142,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::correct_rhs_fro
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_action(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const SCATRA::Action& action, DRT::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_action(
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, const SCATRA::Action& action,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -213,8 +213,9 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_action(
  *------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_domain_kinetics(
-    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra)
 {
   // from scatra_ele_boundary_calc_elch_diffcond.cpp
@@ -374,7 +375,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_domai
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
-    probdim>::evaluate_elch_boundary_kinetics_point(const DRT::Element* ele,
+    probdim>::evaluate_elch_boundary_kinetics_point(const CORE::Elements::Element* ele,
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
@@ -427,7 +428,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_elch_domain_kinetics(
-    const DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat,
+    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseMatrix& emat,
     CORE::LINALG::SerialDenseVector& erhs, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
     Teuchos::RCP<CORE::Conditions::Condition> cond, const int nume, const std::vector<int> stoich,
@@ -521,7 +522,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_elch_d
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_electrode_status(
-    const DRT::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
+    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::Conditions::Condition> cond,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephidtnp, const int kinetics,
@@ -684,7 +685,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calculate_curre
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
-    probdim>::cal_error_compared_to_analyt_solution(const DRT::Element* ele,
+    probdim>::cal_error_compared_to_analyt_solution(const CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& errors)
 {
   switch (CORE::UTILS::GetAsEnum<INPAR::SCATRA::CalcError>(params, "calcerrorflag"))
@@ -831,8 +832,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
-    probdim>::calculate_mean_electrode_concentration(const DRT::Element* const& ele,
-    const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    probdim>::calculate_mean_electrode_concentration(const CORE::Elements::Element* const& ele,
+    const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& conc)
 {
   // for complete 1D simulation of battery:

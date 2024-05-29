@@ -662,7 +662,7 @@ namespace FLD
     //           is depending on the point position.
     //
     //    */
-    //    void get_volume_cell_material(DRT::Element* actele,
+    //    void get_volume_cell_material(CORE::Elements::Element* actele,
     //                               Teuchos::RCP<CORE::MAT::Material> & mat,
     //                               const CORE::GEO::CUT::Point::PointPosition position =
     //                               CORE::GEO::CUT::Point::outside);

@@ -13,8 +13,8 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_volmortar_utils.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_inpar_poroelast.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_poroelast_utils.hpp"
 
 #include <Epetra_Vector.h>
@@ -25,9 +25,13 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
-  class Element;
   class Discretization;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::LINALG
 {
@@ -56,10 +60,10 @@ namespace POROELASTSCATRA
         Teuchos::RCP<DRT::Discretization> dis);
 
     //! check if element is a poro-scatra-element
-    bool IsPoroScatraElement(const DRT::Element* actele);
+    bool IsPoroScatraElement(const CORE::Elements::Element* actele);
 
     //! check if element is a poro-scatra-p1-element
-    bool IsPoroP1ScatraElement(const DRT::Element* actele);
+    bool IsPoroP1ScatraElement(const CORE::Elements::Element* actele);
 
 
     Teuchos::RCP<CORE::LINALG::MapExtractor> BuildPoroSplitter(
@@ -114,7 +118,7 @@ namespace POROELASTSCATRA
     //! Set the slave and master elements of the face element
     void SetSlaveAndMaster(const DRT::Discretization& voldiscret,
         const DRT::Discretization* voldiscret2, const Epetra_Map* elecolmap,
-        DRT::FaceElement* faceele);
+        CORE::Elements::FaceElement* faceele);
 
     //! strategy for material assignment for non matching meshes with poro
 
@@ -141,14 +145,14 @@ namespace POROELASTSCATRA
       PoroMaterialStrategy() = default;
 
       //! assignment of fluid material to structure material
-      void AssignMaterial2To1(const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1,
-          const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
-          Teuchos::RCP<DRT::Discretization> dis2) override;
+      void AssignMaterial2To1(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
+          CORE::Elements::Element* ele1, const std::vector<int>& ids_2,
+          Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2) override;
 
       //! assignment of structure material to fluid material
-      void AssignMaterial1To2(const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele2,
-          const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
-          Teuchos::RCP<DRT::Discretization> dis2) override;
+      void AssignMaterial1To2(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
+          CORE::Elements::Element* ele2, const std::vector<int>& ids_1,
+          Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2) override;
     };
   }  // namespace UTILS
 

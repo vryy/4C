@@ -64,7 +64,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
   else if (action == "calc_struct_internalforce")
     act = SoHex27::calc_struct_internalforce;
   else if (IsParamsInterface() &&
-           params_interface().GetActionType() == ELEMENTS::struct_calc_internalinertiaforce)
+           params_interface().GetActionType() == CORE::Elements::struct_calc_internalinertiaforce)
     act = SoHex27::calc_struct_internalinertiaforce;
   else if (action == "calc_struct_linstiffmass")
     act = SoHex27::calc_struct_linstiffmass;
@@ -217,10 +217,10 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
       CORE::FE::ExtractMyValues(*res, myres, lm);
 
       // This matrix is used in the evaluation functions to store the mass matrix. If the action
-      // type is ELEMENTS::struct_calc_internalinertiaforce we do not want to actually populate the
-      // elemat2 variable, since the inertia terms will be directly added to the right hand side.
-      // Therefore, a view is only set in cases where the evaluated mass matrix should also be
-      // exported in elemat2.
+      // type is CORE::Elements::struct_calc_internalinertiaforce we do not want to actually
+      // populate the elemat2 variable, since the inertia terms will be directly added to the right
+      // hand side. Therefore, a view is only set in cases where the evaluated mass matrix should
+      // also be exported in elemat2.
       CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27> mass_matrix_evaluate;
       if (act != SoHex27::calc_struct_internalinertiaforce) mass_matrix_evaluate.SetView(elemat2);
 

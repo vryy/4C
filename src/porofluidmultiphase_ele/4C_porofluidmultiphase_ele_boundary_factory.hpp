@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -35,7 +35,7 @@ namespace DRT
 
       //! ProvideImpl
       static PoroFluidMultiPhaseEleInterface* ProvideImpl(
-          const DRT::Element* ele, const int numdofpernode, const std::string& disname);
+          const CORE::Elements::Element* ele, const int numdofpernode, const std::string& disname);
 
      private:
       //! return instance of element evaluation class depending on implementation type

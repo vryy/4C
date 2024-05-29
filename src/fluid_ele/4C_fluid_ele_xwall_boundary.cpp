@@ -26,7 +26,7 @@ DRT::ELEMENTS::FluidXWallBoundaryType& DRT::ELEMENTS::FluidXWallBoundaryType::In
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidXWallBoundaryType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidXWallBoundaryType::Create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -56,7 +56,7 @@ DRT::ELEMENTS::FluidXWallBoundary::FluidXWallBoundary(const DRT::ELEMENTS::Fluid
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::FluidXWallBoundary::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::FluidXWallBoundary::Clone() const
 {
   DRT::ELEMENTS::FluidXWallBoundary* newelement = new DRT::ELEMENTS::FluidXWallBoundary(*this);
   return newelement;

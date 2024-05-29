@@ -1154,7 +1154,7 @@ void FLD::FluidImplicitTimeInt::evaluate_mat_and_rhs(Teuchos::ParameterList& ele
     CORE::FE::AssembleStrategy strategy(
         0, 0, sysmat, Teuchos::null, residual_col, Teuchos::null, Teuchos::null);
 
-    DRT::Element::LocationArray la(1);
+    CORE::Elements::Element::LocationArray la(1);
 
     //------------------------------------------------------------
     // call standard loop over elements
@@ -1167,7 +1167,7 @@ void FLD::FluidImplicitTimeInt::evaluate_mat_and_rhs(Teuchos::ParameterList& ele
     // this is 4C-unusual but more efficient in all XFEM applications
     for (int i = 0; i < numrowele; ++i)
     {
-      DRT::Element* actele = discret_->lRowElement(i);
+      CORE::Elements::Element* actele = discret_->lRowElement(i);
       // Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
       Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
       if (mat->MaterialType() == CORE::Materials::m_matlist)
@@ -1927,15 +1927,15 @@ void FLD::FluidImplicitTimeInt::evaluate_fluid_edge_based(
 
   for (int i = 0; i < numrowintfaces; ++i)
   {
-    DRT::Element* actface = facediscret_->lRowFace(i);
+    CORE::Elements::Element* actface = facediscret_->lRowFace(i);
 
     {
       DRT::ELEMENTS::FluidIntFace* ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace*>(actface);
       if (ele == nullptr) FOUR_C_THROW("expect FluidIntFace element");
 
       // get the parent fluid elements
-      DRT::Element* p_master = ele->ParentMasterElement();
-      DRT::Element* p_slave = ele->ParentSlaveElement();
+      CORE::Elements::Element* p_master = ele->ParentMasterElement();
+      CORE::Elements::Element* p_slave = ele->ParentSlaveElement();
 
       size_t p_master_numnode = p_master->num_node();
       size_t p_slave_numnode = p_slave->num_node();
@@ -6106,7 +6106,7 @@ void FLD::FluidImplicitTimeInt::recompute_mean_csgs_b()
     for (int nele = 0; nele < discret_->NumMyRowElements(); ++nele)
     {
       // get the element
-      DRT::Element* ele = discret_->lRowElement(nele);
+      CORE::Elements::Element* ele = discret_->lRowElement(nele);
 
       // get element location vector, dirichlet flags and ownerships
       std::vector<int> lm;
@@ -6153,7 +6153,7 @@ void FLD::FluidImplicitTimeInt::recompute_mean_csgs_b()
     for (int nele = 0; nele < discret_->NumMyRowElements(); ++nele)
     {
       // get the element
-      DRT::Element* ele = discret_->lRowElement(nele);
+      CORE::Elements::Element* ele = discret_->lRowElement(nele);
 
       // get element location vector, dirichlet flags and ownerships
       std::vector<int> lm;

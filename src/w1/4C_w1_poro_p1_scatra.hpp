@@ -79,7 +79,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -112,7 +112,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override;
+      CORE::Elements::ElementType& ElementType() const override;
 
       //@}
 

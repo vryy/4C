@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la)
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
 {
   if (la.Size() > 1)
   {
@@ -179,7 +179,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::pre_evaluate(Teuchos::Parameter
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -270,7 +270,8 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::get_cauchy_n_dir_and_derivative
  | for monolithic SSI, contribution to k_dS (private)                   |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kd_s_ssi(DRT::Element::LocationArray& la,
+void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kd_s_ssi(
+    CORE::Elements::Element::LocationArray& la,
     std::vector<double>& disp,                         // current displacement
     CORE::LINALG::SerialDenseMatrix& stiffmatrix_kdS,  // (numdim_*numnod_ ; numnod_)
     Teuchos::ParameterList& params)

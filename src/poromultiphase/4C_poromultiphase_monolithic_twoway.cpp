@@ -14,10 +14,10 @@
 #include "4C_adapter_str_wrapper.hpp"
 #include "4C_discretization_condition_locsys.hpp"
 #include "4C_discretization_fem_general_assemblestrategy.hpp"
+#include "4C_discretization_fem_general_elements_paramsminimal.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_solver.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_elements_paramsminimal.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -541,16 +541,16 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::apply_str_coupl_matrix(
     Teuchos::ParameterList sparams;
 
     //! pointer to the model evaluator data container
-    Teuchos::RCP<DRT::ELEMENTS::ParamsMinimal> params =
-        Teuchos::rcp(new DRT::ELEMENTS::ParamsMinimal());
+    Teuchos::RCP<CORE::Elements::ParamsMinimal> params =
+        Teuchos::rcp(new CORE::Elements::ParamsMinimal());
 
     // set parameters needed for element evalutation
-    params->SetActionType(DRT::ELEMENTS::struct_poro_calc_fluidcoupling);
+    params->SetActionType(CORE::Elements::struct_poro_calc_fluidcoupling);
     params->SetTotalTime(Time());
     params->SetDeltaTime(Dt());
     // std::cout << Dt() << std::endl;
 
-    sparams.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", params);
+    sparams.set<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface", params);
     sparams.set<std::string>("action", "struct_poro_calc_fluidcoupling");
     sparams.set<double>("delta time", Dt());
     sparams.set<double>("total time", Time());

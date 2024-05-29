@@ -290,7 +290,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Subdivide elements into segments for CPP
     */
-    double create_segments(const DRT::Element* ele,
+    double create_segments(const CORE::Elements::Element* ele,
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& endpoints_final, int& numsegment, int i);
 
     /*!
@@ -489,17 +489,17 @@ namespace BEAMINTERACTION
     element
     */
     void get_shape_functions(CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N,
-        const TYPE& eta, int deriv, const DRT::Element* ele) const;
+        const TYPE& eta, int deriv, const CORE::Elements::Element* ele) const;
 
     /*!
     \brief compute coordinate at given curve point
     */
-    CORE::LINALG::Matrix<3, 1, TYPE> r(const TYPE& eta, const DRT::Element* ele) const;
+    CORE::LINALG::Matrix<3, 1, TYPE> r(const TYPE& eta, const CORE::Elements::Element* ele) const;
 
     /*!
     \brief compute derivative at given curve point
     */
-    CORE::LINALG::Matrix<3, 1, TYPE> r_xi(const TYPE& eta, const DRT::Element* ele);
+    CORE::LINALG::Matrix<3, 1, TYPE> r_xi(const TYPE& eta, const CORE::Elements::Element* ele);
 
     /*!
     \brief Compute coordinates and their derivatives from the discretization
@@ -580,13 +580,13 @@ namespace BEAMINTERACTION
     /*!
       \brief Get jacobi factor of beam element
     */
-    double get_jacobi(const DRT::Element* element1);
+    double get_jacobi(const CORE::Elements::Element* element1);
 
     /** \brief get Jacobi factor of beam element at xi \in [-1;1]
      *
      *  \author grill
      *  \date 06/16 */
-    inline double get_jacobi_at_xi(const DRT::Element* element1, const double& xi)
+    inline double get_jacobi_at_xi(const CORE::Elements::Element* element1, const double& xi)
     {
       const DRT::ELEMENTS::Beam3Base* ele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element1);
 

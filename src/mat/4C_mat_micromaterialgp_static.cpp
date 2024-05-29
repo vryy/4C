@@ -11,12 +11,12 @@ class for handling of micro-macro transitions
 
 #include "4C_mat_micromaterialgp_static.hpp"
 
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_so3_hex8.hpp"
 #include "4C_so3_shw6.hpp"
@@ -232,7 +232,7 @@ void MAT::MicroMaterialGP::eas_init()
 
   for (int lid = 0; lid < discret->ElementRowMap()->NumMyElements(); ++lid)
   {
-    DRT::Element* actele = discret->lRowElement(lid);
+    CORE::Elements::Element* actele = discret->lRowElement(lid);
 
     if (actele->ElementType() == DRT::ELEMENTS::SoHex8Type::Instance() or
         actele->ElementType() == DRT::ELEMENTS::SoShw6Type::Instance())

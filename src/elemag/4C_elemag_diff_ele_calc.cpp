@@ -11,13 +11,13 @@
 
 #include "4C_elemag_diff_ele_calc.hpp"
 
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_boundary_integration.hpp"
 #include "4C_elemag_ele_action.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_discret_hdg.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_electromagnetic.hpp"
@@ -282,7 +282,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
  * Print trace
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::PrintTrace(DRT::Element* ele)
+void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::PrintTrace(CORE::Elements::Element* ele)
 {
   std::cout << "Local trace of element: " << ele->LID() << std::endl;
   std::cout << "Number of entries: " << localtrace_.size() << std::endl;
@@ -339,7 +339,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InitializeShapes(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::read_global_vectors(
-    DRT::Element* ele, DRT::Discretization& discretization, const std::vector<int>& lm)
+    CORE::Elements::Element* ele, DRT::Discretization& discretization, const std::vector<int>& lm)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagDiffEleCalc::read_global_vectors");
   DRT::ELEMENTS::ElemagDiff* elemagele = static_cast<DRT::ELEMENTS::ElemagDiff*>(ele);
@@ -369,7 +369,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::read_global_vectors(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::fill_restart_vectors(
-    DRT::Element* ele, DRT::Discretization& discretization)
+    CORE::Elements::Element* ele, DRT::Discretization& discretization)
 {
   // sort this back to the interior values vector
   int size = shapes_->ndofs_ * nsd_;
@@ -419,7 +419,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::fill_restart_vectors(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::element_init_from_restart(
-    DRT::Element* ele, DRT::Discretization& discretization)
+    CORE::Elements::Element* ele, DRT::Discretization& discretization)
 {
   DRT::ELEMENTS::ElemagDiff* elemagele = dynamic_cast<DRT::ELEMENTS::ElemagDiff*>(ele);
   unsigned int size = shapes_->ndofs_ * nsd_;

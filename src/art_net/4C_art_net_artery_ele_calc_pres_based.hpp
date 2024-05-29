@@ -53,7 +53,8 @@ namespace DRT
           const int numdofpernode, const std::string& disname);
 
       int Evaluate(Artery* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::Elements::Element::LocationArray& la,
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -70,7 +71,7 @@ namespace DRT
           Teuchos::RCP<CORE::MAT::Material> mat) override;
 
       int EvaluateService(Artery* ele, const ARTERY::Action action, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -90,7 +91,8 @@ namespace DRT
         \param rhs[in,out]        element rhs to calculate
         \param material[in]       artery material
         */
-      void sysmat(Artery* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      void sysmat(Artery* ele, DRT::Discretization& discretization,
+          CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::Matrix<my::iel_, my::iel_>& sysmat, CORE::LINALG::Matrix<my::iel_, 1>& rhs,
           Teuchos::RCP<const CORE::MAT::Material> material);
 
@@ -106,7 +108,7 @@ namespace DRT
         \note  only checked for line2 elements
         */
       void evaluate_flow(Artery* ele, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& flowVec,
+          CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& flowVec,
           Teuchos::RCP<const CORE::MAT::Material> material);
 
       /*!
@@ -116,8 +118,8 @@ namespace DRT
         \param la[in]             element location array
         \return                   element length (either in current or deformed configuration)
        */
-      double calculate_ele_length(
-          Artery* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la);
+      double calculate_ele_length(Artery* ele, DRT::Discretization& discretization,
+          CORE::Elements::Element::LocationArray& la);
     };
 
   }  // namespace ELEMENTS

@@ -7,17 +7,17 @@
 
 #include "4C_solid_3D_ele_neumann_evaluator.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_gausspoints.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_3D_ele_calc_lib_integration.hpp"
 #include "4C_utils_function.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
+void DRT::ELEMENTS::EvaluateNeumannByElement(CORE::Elements::Element& element,
     const DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
     double total_time)
@@ -69,7 +69,7 @@ void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
 }
 
 template <CORE::FE::CellType celltype>
-void DRT::ELEMENTS::evaluate_neumann(DRT::Element& element,
+void DRT::ELEMENTS::evaluate_neumann(CORE::Elements::Element& element,
     const DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
     double total_time)

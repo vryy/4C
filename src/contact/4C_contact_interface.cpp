@@ -316,7 +316,7 @@ void CONTACT::Interface::set_cn_ct_values(const int& iter)
     Node* cnode = dynamic_cast<Node*>(node);
 
     // calculate characteristic edge length:
-    DRT::Element* ele = cnode->Elements()[0];
+    CORE::Elements::Element* ele = cnode->Elements()[0];
     Element* cele = dynamic_cast<Element*>(ele);
     std::array<double, 3> pos1 = {0.0, 0.0, 0.0};
     std::array<double, 3> pos2 = {0.0, 0.0, 0.0};
@@ -608,7 +608,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       for (int i = 0; i < elerowmap->NumMyElements(); ++i)
       {
         int gid = elerowmap->GID(i);
-        DRT::Element* ele = Discret().gElement(gid);
+        CORE::Elements::Element* ele = Discret().gElement(gid);
         if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
         MORTAR::Element* mrtrele = dynamic_cast<MORTAR::Element*>(ele);
         if (!mrtrele->IsSlave()) sdata.push_back(gid);
@@ -623,7 +623,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       for (int i = 0; i < elecolmap->NumMyElements(); ++i)
       {
         int gid = elecolmap->GID(i);
-        DRT::Element* ele = Discret().gElement(gid);
+        CORE::Elements::Element* ele = Discret().gElement(gid);
         if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
         MORTAR::Element* mrtrele = dynamic_cast<MORTAR::Element*>(ele);
         if (mrtrele->IsSlave()) rdata.push_back(gid);
@@ -675,7 +675,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       const int numMasterColElements = extendedmastercolmap->NumMyElements();
       for (int lid = 0; lid < numMasterColElements; ++lid)
       {
-        DRT::Element* ele = Discret().gElement(extendedmastercolmap->GID(lid));
+        CORE::Elements::Element* ele = Discret().gElement(extendedmastercolmap->GID(lid));
         const int* nodeids = ele->NodeIds();
         for (int inode = 0; inode < ele->num_node(); ++inode) nodes.insert(nodeids[inode]);
       }
@@ -748,7 +748,7 @@ void CONTACT::Interface::Redistribute()
   for (int i = 0; i < numMySlaveColElements; ++i)
   {
     int gid = SlaveColElements()->GID(i);
-    DRT::Element* ele = Discret().gElement(gid);
+    CORE::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
@@ -847,7 +847,7 @@ void CONTACT::Interface::Redistribute()
     for (int k = 0; k < node->NumElement(); ++k)
     {
       // store adjacent nodes
-      DRT::Element* ele = node->Elements()[k];
+      CORE::Elements::Element* ele = node->Elements()[k];
       int numnode = ele->num_node();
       std::vector<int> nodeids(numnode);
       for (int n = 0; n < numnode; ++n) nodeids[n] = ele->NodeIds()[n];
@@ -1047,7 +1047,7 @@ void CONTACT::Interface::split_into_far_and_close_sets(std::vector<int>& closeel
     {
       // get element
       int gid = SlaveRowElements()->GID(i);
-      DRT::Element* ele = Discret().gElement(gid);
+      CORE::Elements::Element* ele = Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
       MORTAR::Element* cele = dynamic_cast<MORTAR::Element*>(ele);
 
@@ -1072,7 +1072,7 @@ void CONTACT::Interface::split_into_far_and_close_sets(std::vector<int>& closeel
     {
       // get element
       int gid = SlaveRowElements()->GID(i);
-      DRT::Element* ele = Discret().gElement(gid);
+      CORE::Elements::Element* ele = Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
       MORTAR::Element* cele = dynamic_cast<MORTAR::Element*>(ele);
 
@@ -1092,7 +1092,7 @@ void CONTACT::Interface::collect_distribution_data(int& numColElements, int& num
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     Element* slaveElement = dynamic_cast<Element*>(ele1);
 
@@ -1410,7 +1410,7 @@ void CONTACT::Interface::Initialize()
     // (use fully overlapping column map of S+M elements)
     for (int i = 0; i < idiscret_->NumMyColElements(); ++i)
     {
-      DRT::Element* ele = idiscret_->lColElement(i);
+      CORE::Elements::Element* ele = idiscret_->lColElement(i);
       MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
       mele->MoData().SearchElements().resize(0);
@@ -1427,7 +1427,7 @@ void CONTACT::Interface::Initialize()
     for (int i = 0; i < SlaveColElements()->NumMyElements(); ++i)
     {
       int gid = SlaveColElements()->GID(i);
-      DRT::Element* ele = Discret().gElement(gid);
+      CORE::Elements::Element* ele = Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
       MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
@@ -3705,7 +3705,7 @@ void CONTACT::Interface::evaluate_sts(
   //  for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   //  {
   //    int gid1 = selecolmap_->GID(i);
-  //    DRT::Element* ele1 = idiscret_->gElement(gid1);
+  //    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
   //    if (!ele1)
   //      FOUR_C_THROW("Cannot find slave element with gid %", gid1);
   //    MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(ele1);
@@ -3733,7 +3733,7 @@ void CONTACT::Interface::evaluate_sts(
   //    for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
   //    {
   //      int gid2 = selement->MoData().SearchElements()[j];
-  //      DRT::Element* ele2 = idiscret_->gElement(gid2);
+  //      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
   //      if (!ele2)
   //        FOUR_C_THROW("Cannot find master element with gid %", gid2);
   //      MORTAR::Element* melement = dynamic_cast<MORTAR::Element*>(ele2);
@@ -4245,7 +4245,7 @@ double CONTACT::Interface::compute_normal_node_to_edge(MORTAR::Node& snode, MORT
   // Orientation check:
   std::array<double, 3> slavebasednormal = {0.0, 0.0, 0.0};
   int nseg = snode.NumElement();
-  DRT::Element** adjeles = snode.Elements();
+  CORE::Elements::Element** adjeles = snode.Elements();
 
   // we need to store some stuff here
   //**********************************************************************
@@ -4372,7 +4372,7 @@ double CONTACT::Interface::compute_normal_node_to_node(MORTAR::Node& snode, MORT
   // Orientation check:
   std::array<double, 3> slavebasednormal = {0.0, 0.0, 0.0};
   int nseg = snode.NumElement();
-  DRT::Element** adjeles = snode.Elements();
+  CORE::Elements::Element** adjeles = snode.Elements();
 
   // we need to store some stuff here
   //**********************************************************************
@@ -4818,7 +4818,7 @@ void CONTACT::Interface::compute_scaling_ltl()
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     Element* selement = dynamic_cast<Element*>(ele1);
 
@@ -4917,7 +4917,7 @@ void CONTACT::Interface::compute_scaling_ltl()
     for (int k = 0; k < selement->MoData().NumSearchElements(); ++k)
     {
       int gid2 = selement->MoData().SearchElements()[k];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
@@ -6739,7 +6739,7 @@ void CONTACT::Interface::evaluate_stl()
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     Element* selement = dynamic_cast<Element*>(ele1);
 
@@ -6750,7 +6750,7 @@ void CONTACT::Interface::evaluate_stl()
     for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
     {
       int gid2 = selement->MoData().SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
@@ -6858,7 +6858,7 @@ void CONTACT::Interface::EvaluateNTSMaster()
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     Element* selement = dynamic_cast<Element*>(ele1);
 
@@ -6870,7 +6870,7 @@ void CONTACT::Interface::EvaluateNTSMaster()
     for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
     {
       int gid2 = selement->MoData().SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
@@ -6918,7 +6918,7 @@ void CONTACT::Interface::EvaluateLTSMaster()
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     Element* selement = dynamic_cast<Element*>(ele1);
 
@@ -6958,7 +6958,7 @@ void CONTACT::Interface::EvaluateLTSMaster()
     for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
     {
       int gid2 = selement->MoData().SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
@@ -7144,7 +7144,7 @@ void CONTACT::Interface::evaluate_lts()
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     Element* selement = dynamic_cast<Element*>(ele1);
 
@@ -7184,7 +7184,7 @@ void CONTACT::Interface::evaluate_lts()
     for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
     {
       int gid2 = selement->MoData().SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
@@ -7368,7 +7368,7 @@ void CONTACT::Interface::evaluate_ltl()
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     Element* selement = dynamic_cast<Element*>(ele1);
 
@@ -7537,7 +7537,7 @@ void CONTACT::Interface::evaluate_ltl()
     for (int k = 0; k < selement->MoData().NumSearchElements(); ++k)
     {
       int gid2 = selement->MoData().SearchElements()[k];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
@@ -8277,7 +8277,7 @@ void CONTACT::Interface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vecto
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     CONTACT::Element* selement = dynamic_cast<CONTACT::Element*>(ele1);
 
@@ -8298,7 +8298,7 @@ void CONTACT::Interface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vecto
     for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
     {
       int gid2 = selement->MoData().SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       CONTACT::Element* melement = dynamic_cast<CONTACT::Element*>(ele2);
 

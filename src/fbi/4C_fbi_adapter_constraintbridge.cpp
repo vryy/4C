@@ -61,7 +61,8 @@ void ADAPTER::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetr
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridge::CreatePair(const std::vector<DRT::Element const*> elements,
+void ADAPTER::FBIConstraintBridge::CreatePair(
+    const std::vector<CORE::Elements::Element const*> elements,
     const std::vector<double> beam_centerline_dofvec, const std::vector<double> fluid_nodal_dofvec)
 {
   // create a new beaminteratcion pair

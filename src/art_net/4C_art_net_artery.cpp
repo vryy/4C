@@ -28,21 +28,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::ArteryType::Create(const std::vector<char>
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ArteryType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ArteryType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ART")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Artery(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Artery(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ArteryType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ArteryType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Artery(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Artery(id, owner));
   return ele;
 }
 
@@ -66,7 +67,7 @@ void DRT::ELEMENTS::ArteryType::setup_element_definition(
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Artery::Artery(int id, int owner)
-    : DRT::Element(id, owner), impltype_(INPAR::ARTDYN::impltype_undefined)
+    : CORE::Elements::Element(id, owner), impltype_(INPAR::ARTDYN::impltype_undefined)
 {
   gaussrule_ = CORE::FE::GaussRule1D::undefined;
 
@@ -78,7 +79,7 @@ DRT::ELEMENTS::Artery::Artery(int id, int owner)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Artery::Artery(const DRT::ELEMENTS::Artery& old)
-    : DRT::Element(old), impltype_(old.impltype_), gaussrule_(old.gaussrule_)
+    : CORE::Elements::Element(old), impltype_(old.impltype_), gaussrule_(old.gaussrule_)
 {
   return;
 }
@@ -87,7 +88,7 @@ DRT::ELEMENTS::Artery::Artery(const DRT::ELEMENTS::Artery& old)
  |  Deep copy this instance of Artery and return pointer to it (public) |
  |                                                         ismail 01/09 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Artery::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Artery::Clone() const
 {
   DRT::ELEMENTS::Artery* newelement = new DRT::ELEMENTS::Artery(*this);
   return newelement;
@@ -157,7 +158,7 @@ void DRT::ELEMENTS::Artery::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                       kremheller 10/18 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Artery::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Artery::Lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

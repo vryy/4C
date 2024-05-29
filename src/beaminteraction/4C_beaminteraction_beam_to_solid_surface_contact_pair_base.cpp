@@ -72,7 +72,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surfa
  */
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam,
-    surface>::CreateGeometryPair(const DRT::Element* element1, const DRT::Element* element2,
+    surface>::CreateGeometryPair(const CORE::Elements::Element* element1,
+    const CORE::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   this->geometry_pair_ =

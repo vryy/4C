@@ -42,7 +42,7 @@ DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::So3PoroP1Scatra(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>(*this);
   return newelement;
@@ -101,7 +101,7 @@ void DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::Print(std::ostream& os) c
 {
   os << "So3_Poro_P1_Scatra ";
   os << CORE::FE::CellTypeToString(distype).c_str() << " ";
-  Element::Print(os);
+  CORE::Elements::Element::Print(os);
   return;
 }
 
@@ -137,7 +137,7 @@ int DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::UniqueParObjectId() const
  | get the element type (public)                           schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::ElementType& DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::ElementType() const
+CORE::Elements::ElementType& DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::ElementType() const
 {
   switch (distype)
   {

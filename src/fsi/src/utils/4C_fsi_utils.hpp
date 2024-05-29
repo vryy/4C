@@ -157,13 +157,13 @@ namespace FSI
       std::vector<double> centerdisptotal_;  ///< sum over all center displacement increments
       double maxmindist_;                    ///< maximal distance between fluidpairs
 
-      //      std::map<int, Teuchos::RCP<DRT::Element> > istructslideles_;  ///< sliding struct
-      //      elements in the interface
-      std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>>
+      //      std::map<int, Teuchos::RCP<CORE::Elements::Element> > istructslideles_;  ///< sliding
+      //      struct elements in the interface
+      std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>>
           istructslideles_;  ///< sliding struct elements in the interface
       std::map<int, DRT::Node*>
           istructdispnodes_;  ///< struct nodes in the interface used for centerdisp calculation
-      std::map<int, Teuchos::RCP<DRT::Element>>
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>
           istructdispeles_;  ///< struct elements in the interface used for centerdisp calc
       //      std::map<int, Teuchos::RCP<Epetra_Map> >  slideeleredmap_;      ///< redundant version
       //      of sliding struct elements
@@ -171,10 +171,10 @@ namespace FSI
           ifluidslidnodes_;                        ///< sliding fluid nodes in the interface
       std::map<int, DRT::Node*> ifluidconfnodes_;  ///< sticking fluid nodes in the interface
 
-      std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>> ifluidslideles_;
-      std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>> ifluidslidstructeles_;
+      std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>> ifluidslideles_;
+      std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>> ifluidslidstructeles_;
 
-      std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>> structreduelements_;
+      std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>> structreduelements_;
 
       Teuchos::RCP<const Epetra_Map> structdofrowmap_;
       Teuchos::RCP<const Epetra_Map> fluiddofrowmap_;

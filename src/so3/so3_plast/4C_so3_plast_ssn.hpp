@@ -89,7 +89,7 @@ namespace DRT
       //!
       //! The Clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       //@}
 
@@ -129,7 +129,7 @@ namespace DRT
       void Unpack(const std::vector<char>& data) override;
 
       //! Get number of degrees of freedom of a certain node in case of multiple
-      //! dofsets (implements pure virtual DRT::Element)
+      //! dofsets (implements pure virtual CORE::Elements::Element)
       //!
       //! The element decides how many degrees of freedom its nodes must have.
       int NumDofPerNode(const DRT::Node& node) const override { return nsd_; };
@@ -145,7 +145,7 @@ namespace DRT
       void Print(std::ostream& os) const override;
 
       //! return elementtype
-      DRT::ElementType& ElementType() const override;
+      CORE::Elements::ElementType& ElementType() const override;
 
       //! return element shape
       CORE::FE::CellType Shape() const override { return distype; };
@@ -169,13 +169,13 @@ namespace DRT
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       //@}
 
@@ -237,7 +237,7 @@ namespace DRT
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
-          DRT::Element::LocationArray& la,      //!< location array for de-assembly
+          CORE::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           CORE::LINALG::SerialDenseMatrix&
               elemat1_epetra,  //!< (stiffness-)matrix to be filled by element.
           CORE::LINALG::SerialDenseMatrix&

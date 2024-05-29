@@ -179,7 +179,7 @@ void ART::ArtNetExplicitTimeInt::Init(const Teuchos::ParameterList& globaltimepa
   //  for (int nele=0;nele<discret_->NumMyColElements();++nele)
   {
     // get the element
-    //    DRT::Element* ele = discret_->lColElement(nele);
+    //    CORE::Elements::Element* ele = discret_->lColElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
     //    std::vector<int> lm;
@@ -203,7 +203,7 @@ void ART::ArtNetExplicitTimeInt::Init(const Teuchos::ParameterList& globaltimepa
   for (int nele = 0; nele < discret_->NumMyColElements(); ++nele)
   {
     // get the element
-    DRT::Element* ele = discret_->lColElement(nele);
+    CORE::Elements::Element* ele = discret_->lColElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;

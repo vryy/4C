@@ -327,8 +327,8 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::error_handling(
 {
   if (params and params->isParameter("interface"))
   {
-    Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> interface_ptr = Teuchos::null;
-    interface_ptr = params->get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface");
+    Teuchos::RCP<CORE::Elements::ParamsInterface> interface_ptr = Teuchos::null;
+    interface_ptr = params->get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface");
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> pinter =
         Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(interface_ptr, true);
 

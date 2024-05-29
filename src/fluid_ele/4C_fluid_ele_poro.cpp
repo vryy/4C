@@ -29,7 +29,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::FluidPoroEleType::Create(const std::vector
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroEleType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidPoroEleType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDPORO")
@@ -39,7 +39,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroEleType::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroEleType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidPoroEleType::Create(
+    const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::FluidPoro(id, owner));
 }
@@ -91,7 +92,7 @@ DRT::ELEMENTS::FluidPoro::FluidPoro(const DRT::ELEMENTS::FluidPoro& old)
 {
 }
 
-DRT::Element* DRT::ELEMENTS::FluidPoro::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::FluidPoro::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::FluidPoro(*this);
   return newelement;
@@ -155,12 +156,12 @@ void DRT::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
 }
 
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidPoro::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::FluidPoro::Lines()
 {
   return CORE::COMM::GetElementLines<FluidPoroBoundary, FluidPoro>(*this);
 }
 
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidPoro::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::FluidPoro::Surfaces()
 {
   return CORE::COMM::GetElementSurfaces<FluidPoroBoundary, FluidPoro>(*this);
 }

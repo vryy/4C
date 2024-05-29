@@ -309,12 +309,12 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
     gindex[0] = numdof_per_cond * coupcondID + offsetID;
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
-    std::map<int, Teuchos::RCP<DRT::Element>>& geom = coupcond->Geometry();
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = coupcond->Geometry();
     // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
       // get element location vector and ownerships
@@ -330,7 +330,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       CORE::LINALG::SerialDenseVector elevector;
       elevector.size(eledim);
 
-      DRT::Element* element = curr->second.get();
+      CORE::Elements::Element* element = curr->second.get();
       int numnode = element->num_node();
 
       // allocate vector for shape functions and matrix for derivatives

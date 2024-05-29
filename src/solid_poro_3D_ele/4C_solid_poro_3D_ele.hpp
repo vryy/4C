@@ -13,11 +13,11 @@ Pack, Unpack, NumDofPerNode etc.
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_inpar_poro.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_solid_3D_ele_factory.hpp"
 #include "4C_solid_poro_3D_ele_factory.hpp"
@@ -45,22 +45,23 @@ namespace DRT::ELEMENTS
   class SolidPoroEleCalcInterface;
   class SolidEleCalcInterface;
 
-  class SolidPoroType : public DRT::ElementType
+  class SolidPoroType : public CORE::Elements::ElementType
   {
    public:
     void setup_element_definition(
         std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions) override;
 
-    Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string elecelltype,
-        const int id, const int owner) override;
+    Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+        const std::string elecelltype, const int id, const int owner) override;
 
-    Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
     [[nodiscard]] std::string Name() const override { return "SolidPoroType"; }
 
-    void nodal_block_information(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+    void nodal_block_information(
+        CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
     CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -73,7 +74,7 @@ namespace DRT::ELEMENTS
   };  // class SolidPoroType
 
 
-  class SolidPoro : public DRT::Element
+  class SolidPoro : public CORE::Elements::Element
   {
     friend class SolidPoroType;
 
@@ -91,7 +92,7 @@ namespace DRT::ELEMENTS
 
     //!@}
 
-    [[nodiscard]] DRT::Element* Clone() const override;
+    [[nodiscard]] CORE::Elements::Element* Clone() const override;
 
     [[nodiscard]] int UniqueParObjectId() const override
     {
@@ -104,9 +105,9 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] int NumVolume() const override;
 
-    std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+    std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
-    std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+    std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
     [[nodiscard]] int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
@@ -118,7 +119,7 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] CORE::FE::CellType Shape() const override { return celltype_; };
 
-    [[nodiscard]] DRT::ElementType& ElementType() const override
+    [[nodiscard]] CORE::Elements::ElementType& ElementType() const override
     {
       return SolidPoroType::Instance();
     }
@@ -127,7 +128,7 @@ namespace DRT::ELEMENTS
         INPUT::LineDefinition* linedef) override;
 
     int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
+        CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
         CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
         CORE::LINALG::SerialDenseVector& elevec2,
         CORE::LINALG::SerialDenseVector& elevec3) override;
@@ -139,7 +140,7 @@ namespace DRT::ELEMENTS
 
     void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
 
-    Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override
+    Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr() override
     {
       return interface_ptr_;
     }

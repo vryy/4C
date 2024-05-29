@@ -349,7 +349,7 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
     std::vector<int> rebalance_colnodegid_vec(0);
 
     // geometry iterator
-    std::map<int, Teuchos::RCP<DRT::Element>>::iterator geom_it;
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator geom_it;
 
     // fill condition discretization by cloning scatra discretization
     Teuchos::RCP<DRT::Discretization> dis_from_template_condition;
@@ -435,7 +435,8 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
     for (int lid = 0; lid < dis_to_rebalance.ElementColMap()->NumMyElements(); lid++)
     {
       bool conditionedele = false;
-      DRT::Element* ele = dis_to_rebalance.gElement(dis_to_rebalance.ElementColMap()->GID(lid));
+      CORE::Elements::Element* ele =
+          dis_to_rebalance.gElement(dis_to_rebalance.ElementColMap()->GID(lid));
       DRT::Node** nodes = ele->Nodes();
       for (int node = 0; node < ele->num_node(); node++)
       {

@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_porofluidmultiphase_ele.hpp"
 #include "4C_porofluidmultiphase_ele_action.hpp"
 #include "4C_porofluidmultiphase_ele_boundary_factory.hpp"
@@ -75,7 +75,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::evaluate_neumann(Teuchos::Parame
 
   // build the location array
   LocationArray la(discretization.NumDofSets());
-  DRT::Element::LocationVector(discretization, la, false);
+  CORE::Elements::Element::LocationVector(discretization, la, false);
 
   // evaluate boundary element
   return Evaluate(params, discretization, la, *elemat1, *elemat1, elevec1, elevec1, elevec1);

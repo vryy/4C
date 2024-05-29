@@ -57,7 +57,8 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const DRT::Discretization
     // loop over all faces
     for (int i = 0; i < discret.NumMyRowFaces(); ++i)
     {
-      const DRT::FaceElement* faceele = dynamic_cast<const DRT::FaceElement*>(discret.lRowFace(i));
+      const CORE::Elements::FaceElement* faceele =
+          dynamic_cast<const CORE::Elements::FaceElement*>(discret.lRowFace(i));
       const unsigned int dofperface =
           faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
       const unsigned int dofpercomponent =
@@ -195,7 +196,7 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const DRT::DiscretizationFa
   {
     CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
     CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
-    DRT::Element::LocationArray dummy(1);
+    CORE::Elements::Element::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
     if (GLOBAL::Problem::Instance(0)->GetProblemType() == GLOBAL::ProblemType::elemag or
         GLOBAL::Problem::Instance(0)->GetProblemType() == GLOBAL::ProblemType::scatra)
@@ -220,7 +221,8 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const DRT::DiscretizationFa
     // loop over all faces
     for (int i = 0; i < discret.NumMyRowFaces(); ++i)
     {
-      const DRT::FaceElement* faceele = dynamic_cast<const DRT::FaceElement*>(discret.lRowFace(i));
+      const CORE::Elements::FaceElement* faceele =
+          dynamic_cast<const CORE::Elements::FaceElement*>(discret.lRowFace(i));
       const unsigned int dofperface =
           faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
       const unsigned int dofpercomponent =
@@ -256,7 +258,7 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const DRT::DiscretizationFa
             double pressureavgBC = 0.0;
 
             // get 1st element
-            DRT::Element* ele = discret.lRowElement(0);
+            CORE::Elements::Element* ele = discret.lRowElement(0);
             DRT::ELEMENTS::Fluid* fluidele = dynamic_cast<DRT::ELEMENTS::Fluid*>(ele);
 
             // get material

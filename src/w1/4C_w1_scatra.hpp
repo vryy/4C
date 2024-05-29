@@ -34,10 +34,10 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
@@ -65,7 +65,7 @@ namespace DRT
       ///
       /// The Clone() method is used from the virtual base class Element in cases
       /// where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /// Return unique ParObject id
       ///
@@ -98,7 +98,10 @@ namespace DRT
       /// Print this element
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return Wall1ScatraType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return Wall1ScatraType::Instance();
+      }
 
       //@}
 
@@ -117,8 +120,8 @@ namespace DRT
       void pre_evaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
-          DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
-          DRT::Element::LocationArray& la       ///< location array for de-assembly
+          DRT::Discretization& discretization,        ///< pointer to discretization for de-assembly
+          CORE::Elements::Element::LocationArray& la  ///< location array for de-assembly
       );
 
       /// Evaluate an element
@@ -130,7 +133,7 @@ namespace DRT
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
-          DRT::Element::LocationArray& la,      ///< location array for de-assembly
+          CORE::Elements::Element::LocationArray& la,  ///< location array for de-assembly
           CORE::LINALG::SerialDenseMatrix&
               elemat1,  ///< (stiffness-)matrix to be filled by element.
           CORE::LINALG::SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
@@ -158,7 +161,7 @@ namespace DRT
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
-          DRT::Element::LocationArray& la,      ///< location array for de-assembly
+          CORE::Elements::Element::LocationArray& la,  ///< location array for de-assembly
           CORE::LINALG::SerialDenseMatrix&
               elemat1,  ///< (stiffness-)matrix to be filled by element.
           CORE::LINALG::SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.

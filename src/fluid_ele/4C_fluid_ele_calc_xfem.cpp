@@ -919,13 +919,13 @@ namespace DRT
         Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
 
         // location array of boundary element
-        DRT::Element::LocationArray cutla(1);
+        CORE::Elements::Element::LocationArray cutla(1);
 
         // pointer to boundary element
-        DRT::Element* side = nullptr;
+        CORE::Elements::Element* side = nullptr;
 
         // location array of element to couple with (only used for embedded fluid problems)
-        DRT::Element::LocationArray coupl_la(1);
+        CORE::Elements::Element::LocationArray coupl_la(1);
 
         // coordinates of boundary element
         CORE::LINALG::SerialDenseMatrix side_xyze;
@@ -938,7 +938,7 @@ namespace DRT
         Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>> ci;
 
         // pointer to coupling element
-        DRT::Element* coupl_ele = nullptr;
+        CORE::Elements::Element* coupl_ele = nullptr;
 
         // coupling element coordinates
         CORE::LINALG::SerialDenseMatrix coupl_xyze;
@@ -1559,10 +1559,10 @@ namespace DRT
         Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
 
         // location array of boundary element
-        DRT::Element::LocationArray cutla(1);
+        CORE::Elements::Element::LocationArray cutla(1);
 
         // pointer to boundary element
-        DRT::Element* side = nullptr;
+        CORE::Elements::Element* side = nullptr;
 
         // coordinates of boundary element
         CORE::LINALG::SerialDenseMatrix side_xyze;
@@ -1571,7 +1571,7 @@ namespace DRT
         // only used for couplings:
 
         // pointer to coupling element
-        DRT::Element* coupl_ele = nullptr;
+        CORE::Elements::Element* coupl_ele = nullptr;
 
         // coupling element coordinates
         CORE::LINALG::SerialDenseMatrix coupl_xyze;
@@ -3364,10 +3364,10 @@ namespace DRT
         Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
 
         // location array of boundary element
-        DRT::Element::LocationArray cutla(1);
+        CORE::Elements::Element::LocationArray cutla(1);
 
         // pointer to boundary element
-        DRT::Element* side = nullptr;
+        CORE::Elements::Element* side = nullptr;
 
         // coordinates of boundary element
         CORE::LINALG::SerialDenseMatrix side_xyze;
@@ -3380,7 +3380,7 @@ namespace DRT
         Teuchos::RCP<DRT::ELEMENTS::XFLUID::NitscheInterface<distype>> ci;
 
         // pointer to coupling element
-        DRT::Element* coupl_ele = nullptr;
+        CORE::Elements::Element* coupl_ele = nullptr;
 
         // coupling element coordinates
         CORE::LINALG::SerialDenseMatrix coupl_xyze;
@@ -4005,7 +4005,7 @@ namespace DRT
         double& visc_s,                         ///< slave sided dynamic viscosity
         CORE::LINALG::Matrix<3, 1>& rst_slave,  ///< local coord of gp in slave element
         std::vector<double>& eledisp,           ///< slave element displacement vector
-        DRT::Element* coupl_ele                 ///< slave coupling element
+        CORE::Elements::Element* coupl_ele      ///< slave coupling element
     )
     {
       TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::get_interface_jump_vectors");
@@ -4375,7 +4375,7 @@ namespace DRT
         if (cond_manager->IsMeshCoupling(coup_sid))
           cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
-        DRT::Element* side = cond_manager->get_side(
+        CORE::Elements::Element* side = cond_manager->get_side(
             coup_sid);  // for each boundary element there is one corresponding side
 
         std::vector<int> patchlm;

@@ -35,21 +35,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad4PoroP1Type::Create(const std::vec
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLQ4POROP1")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::quad4>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::quad4>(id, owner));
   return ele;
 }
@@ -68,7 +69,7 @@ void DRT::ELEMENTS::WallQuad4PoroP1Type::setup_element_definition(
 }
 
 void DRT::ELEMENTS::WallQuad4PoroP1Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 3;
@@ -113,21 +114,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad9PoroP1Type::Create(const std::vec
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLQ9POROP1")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::quad9>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::quad9>(id, owner));
   return ele;
 }
@@ -146,7 +148,7 @@ void DRT::ELEMENTS::WallQuad9PoroP1Type::setup_element_definition(
 }
 
 void DRT::ELEMENTS::WallQuad9PoroP1Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 3;
@@ -192,21 +194,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::WallTri3PoroP1Type::Create(const std::vect
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroP1Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallTri3PoroP1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLT3POROP1")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::tri3>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroP1Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallTri3PoroP1Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::tri3>(id, owner));
   return ele;
 }
@@ -225,7 +228,7 @@ void DRT::ELEMENTS::WallTri3PoroP1Type::setup_element_definition(
 }
 
 void DRT::ELEMENTS::WallTri3PoroP1Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 3;

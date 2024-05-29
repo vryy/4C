@@ -64,7 +64,7 @@ DRT::ELEMENTS::So3Poro<so3_ele, distype>::So3Poro(
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::So3Poro<so3_ele, distype>::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::So3Poro<so3_ele, distype>::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::So3Poro<so3_ele, distype>(*this);
   return newelement;
@@ -168,16 +168,17 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::Unpack(const std::vector<char>& d
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3Poro<so3_ele, distype>::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>>
+DRT::ELEMENTS::So3Poro<so3_ele, distype>::Surfaces()
 {
-  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, CORE::Elements::Element>(
       CORE::COMM::buildSurfaces, *this);
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3Poro<so3_ele, distype>::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::So3Poro<so3_ele, distype>::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, CORE::Elements::Element>(
       CORE::COMM::buildLines, *this);
 }
 
@@ -186,7 +187,7 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::Print(std::ostream& os) const
 {
   os << "So3_poro ";
   os << CORE::FE::CellTypeToString(distype).c_str() << " ";
-  Element::Print(os);
+  CORE::Elements::Element::Print(os);
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
@@ -269,7 +270,7 @@ int DRT::ELEMENTS::So3Poro<so3_ele, distype>::UniqueParObjectId() const
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::ElementType& DRT::ELEMENTS::So3Poro<so3_ele, distype>::ElementType() const
+CORE::Elements::ElementType& DRT::ELEMENTS::So3Poro<so3_ele, distype>::ElementType() const
 {
   switch (distype)
   {

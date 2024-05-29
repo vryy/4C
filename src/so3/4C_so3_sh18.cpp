@@ -36,12 +36,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoSh18Type::Create(const std::vector<char>
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh18Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoSh18Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh18(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh18(id, owner));
     return ele;
   }
 
@@ -49,9 +49,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh18Type::Create(
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh18Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoSh18Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh18(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh18(id, owner));
   return ele;
 }
 
@@ -114,7 +115,7 @@ DRT::ELEMENTS::SoSh18::SoSh18(const DRT::ELEMENTS::SoSh18& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                          seitz 11/14 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::SoSh18::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::SoSh18::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::SoSh18(*this);
   return newelement;

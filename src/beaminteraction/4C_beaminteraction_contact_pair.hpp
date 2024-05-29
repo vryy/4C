@@ -30,8 +30,13 @@ namespace CORE::LINALG
 namespace DRT
 {
   class Discretization;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace GEOMETRYPAIR
 {
   class GeometryPair;
@@ -68,7 +73,7 @@ namespace BEAMINTERACTION
     virtual ~BeamContactPair() = default;
     //! Initialization
     virtual void Init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-        std::vector<DRT::Element const*> elements);
+        std::vector<CORE::Elements::Element const*> elements);
 
     //! Setup
     virtual void Setup();
@@ -92,7 +97,8 @@ namespace BEAMINTERACTION
         CORE::LINALG::SerialDenseMatrix* stiffmat22) = 0;
 
     //! return appropriate internal implementation class (acts as a simple factory)
-    static Teuchos::RCP<BeamContactPair> Create(std::vector<DRT::Element const*> const& ele_ptrs,
+    static Teuchos::RCP<BeamContactPair> Create(
+        std::vector<CORE::Elements::Element const*> const& ele_ptrs,
         const Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions>&
             beam_interaction_conditions_ptr);
 
@@ -118,7 +124,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get an element pointer by the elements index.
     */
-    inline const DRT::Element* GetElement(const unsigned int index) const
+    inline const CORE::Elements::Element* GetElement(const unsigned int index) const
     {
       if (index == 0)
         return element1_;
@@ -132,12 +138,12 @@ namespace BEAMINTERACTION
     /*!
     \brief Get first element
     */
-    inline const DRT::Element* Element1() const { return element1_; };
+    inline const CORE::Elements::Element* Element1() const { return element1_; };
 
     /*!
     \brief Get second element
     */
-    inline const DRT::Element* Element2() const { return element2_; };
+    inline const CORE::Elements::Element* Element2() const { return element2_; };
 
     /*!
     \brief Get the geometry pair object. Throw error if it does not exist.
@@ -338,7 +344,8 @@ namespace BEAMINTERACTION
      *
      * @param geometry_evaluation_data_ptr (in) Geometry evaluation data for the geometry pair.
      */
-    virtual void CreateGeometryPair(const DRT::Element* element1, const DRT::Element* element2,
+    virtual void CreateGeometryPair(const CORE::Elements::Element* element1,
+        const CORE::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
     {
       FOUR_C_THROW("CreateGeometryPair has to be implemented in the derived class.");
@@ -400,10 +407,10 @@ namespace BEAMINTERACTION
     Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_;
 
     //! first element of interacting pair
-    const DRT::Element* element1_;
+    const CORE::Elements::Element* element1_;
 
     //! second element of interacting pair
-    const DRT::Element* element2_;
+    const CORE::Elements::Element* element2_;
     //@}
   };
 }  // namespace BEAMINTERACTION

@@ -16,8 +16,8 @@
 /* header inclusions */
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 #include <Epetra_Vector.h>
@@ -37,7 +37,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------------*/
     /* definition of classes */
-    class Ale2Type : public DRT::ElementType
+    class Ale2Type : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Ale2Type"; }
@@ -46,13 +46,13 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -69,7 +69,7 @@ namespace DRT
     /*!
     \brief A C++ wrapper for the ale2 element
     */
-    class Ale2 : public DRT::Element
+    class Ale2 : public CORE::Elements::Element
     {
      public:
       //! @name Friends
@@ -100,7 +100,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
@@ -137,13 +137,13 @@ namespace DRT
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -177,7 +177,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
@@ -188,7 +188,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -204,7 +204,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return Ale2Type::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override { return Ale2Type::Instance(); }
 
       //@}
 
@@ -476,17 +476,17 @@ namespace DRT
     //=======================================================================
 
 
-    class Ale2LineType : public DRT::ElementType
+    class Ale2LineType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Ale2LineType"; }
 
       static Ale2LineType& Instance();
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -506,7 +506,7 @@ namespace DRT
     /*!
     \brief An element representing a line of a ale2 element
     */
-    class Ale2Line : public DRT::FaceElement
+    class Ale2Line : public CORE::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -540,7 +540,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
@@ -582,7 +582,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
@@ -593,7 +593,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -609,7 +609,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return Ale2LineType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override { return Ale2LineType::Instance(); }
 
       //@}
 

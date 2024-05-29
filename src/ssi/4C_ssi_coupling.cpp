@@ -107,10 +107,10 @@ void SSI::SSICouplingMatchingVolume::assign_material_pointers(
 
   for (int i = 0; i < numelements; ++i)
   {
-    DRT::Element* scatratele = scatradis->lColElement(i);
+    CORE::Elements::Element* scatratele = scatradis->lColElement(i);
     const int gid = scatratele->Id();
 
-    DRT::Element* structele = structdis->gElement(gid);
+    CORE::Elements::Element* structele = structdis->gElement(gid);
 
     // for coupling we add the source material to the target element and vice versa
     scatratele->AddMaterial(structele->Material());

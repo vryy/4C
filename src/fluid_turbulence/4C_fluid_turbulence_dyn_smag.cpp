@@ -434,7 +434,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
   for (int nele = 0; nele < discret_->NumMyRowElements(); ++nele)
   {
     // get the element
-    DRT::Element* ele = discret_->lRowElement(nele);
+    CORE::Elements::Element* ele = discret_->lRowElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;
@@ -816,10 +816,10 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
   for (int nele = 0; nele < scatradiscret_->NumMyRowElements(); ++nele)
   {
     // get the element
-    DRT::Element* ele = scatradiscret_->lRowElement(nele);
+    CORE::Elements::Element* ele = scatradiscret_->lRowElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
-    DRT::Element::LocationArray la(scatradiscret_->NumDofSets());
+    CORE::Elements::Element::LocationArray la(scatradiscret_->NumDofSets());
     ele->LocationVector(*scatradiscret_, la, false);
 
     // call the element evaluate method to integrate functions

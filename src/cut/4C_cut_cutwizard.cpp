@@ -44,7 +44,7 @@ int CORE::GEO::CutWizard::BackMesh::NumMyColElements() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const DRT::Element* CORE::GEO::CutWizard::BackMesh::lColElement(int lid) const
+const CORE::Elements::Element* CORE::GEO::CutWizard::BackMesh::lColElement(int lid) const
 {
   return back_discret_->lColElement(lid);
 }
@@ -188,7 +188,7 @@ void CORE::GEO::CutWizard::set_marked_condition_sides(
   //  ## WARNING: Not sure what happens if it doesn't find a surface?
   for (int lid = 0; lid < cutter_dis->NumMyRowElements(); ++lid)
   {
-    DRT::Element* cutter_dis_ele = cutter_dis->lRowElement(lid);
+    CORE::Elements::Element* cutter_dis_ele = cutter_dis->lRowElement(lid);
 
     const int numnode = cutter_dis_ele->num_node();
     const int* nodeids = cutter_dis_ele->NodeIds();
@@ -375,7 +375,7 @@ void CORE::GEO::CutWizard::add_mesh_cutting_side(
 
   for (int lid = 0; lid < numcutelements; ++lid)
   {
-    DRT::Element* element = cutterdis->lColElement(lid);
+    CORE::Elements::Element* element = cutterdis->lColElement(lid);
 
     const int numnode = element->num_node();
     DRT::Node** nodes = element->Nodes();
@@ -430,8 +430,8 @@ void CORE::GEO::CutWizard::add_mesh_cutting_side(
 /*-------------------------------------------------------------*
  * prepare the cut, add background elements and cutting sides
  *--------------------------------------------------------------*/
-void CORE::GEO::CutWizard::add_mesh_cutting_side(
-    int mi, DRT::Element* ele, const CORE::LINALG::SerialDenseMatrix& xyze, const int start_ele_gid)
+void CORE::GEO::CutWizard::add_mesh_cutting_side(int mi, CORE::Elements::Element* ele,
+    const CORE::LINALG::SerialDenseMatrix& xyze, const int start_ele_gid)
 {
   const int numnode = ele->num_node();
   const int* nodeids = ele->NodeIds();
@@ -458,7 +458,7 @@ void CORE::GEO::CutWizard::add_background_elements()
 
   for (int lid = 0; lid < numelements; ++lid)
   {
-    const DRT::Element* element = back_mesh_->lColElement(lid);
+    const CORE::Elements::Element* element = back_mesh_->lColElement(lid);
 
     CORE::LINALG::SerialDenseMatrix xyze;
 
@@ -481,7 +481,7 @@ void CORE::GEO::CutWizard::add_background_elements()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CutWizard::get_physical_nodal_coordinates(
-    const DRT::Element* element, CORE::LINALG::SerialDenseMatrix& xyze) const
+    const CORE::Elements::Element* element, CORE::LINALG::SerialDenseMatrix& xyze) const
 {
   std::vector<int> lm;
   std::vector<double> mydisp;
@@ -539,7 +539,7 @@ void CORE::GEO::CutWizard::get_physical_nodal_coordinates(
 /*-------------------------------------------------------------*
  * Add this background mesh element to the intersection class
  *--------------------------------------------------------------*/
-void CORE::GEO::CutWizard::add_element(const DRT::Element* ele,
+void CORE::GEO::CutWizard::add_element(const CORE::Elements::Element* ele,
     const CORE::LINALG::SerialDenseMatrix& xyze, double* myphinp, bool lsv_only_plus_domain)
 {
   const int numnode = ele->num_node();
@@ -822,7 +822,8 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CutWizard::GetElement(const int eleid)
   return intersection_->GetElement(eleid);
 }
 
-CORE::GEO::CUT::ElementHandle* CORE::GEO::CutWizard::GetElement(const DRT::Element* ele) const
+CORE::GEO::CUT::ElementHandle* CORE::GEO::CutWizard::GetElement(
+    const CORE::Elements::Element* ele) const
 {
   return GetElement(ele->Id());
 }
@@ -853,7 +854,7 @@ void CORE::GEO::CutWizard::update_boundary_cell_coords(Teuchos::RCP<DRT::Discret
 
   for (int lid = 0; lid < numcutelements; ++lid)
   {
-    DRT::Element* element = cutterdis->lColElement(lid);
+    CORE::Elements::Element* element = cutterdis->lColElement(lid);
 
     const int numnode = element->num_node();
     DRT::Node** nodes = element->Nodes();

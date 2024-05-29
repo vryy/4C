@@ -963,7 +963,7 @@ Teuchos::RCP<DRT::Discretization> STR::TIMINT::Base::discretization()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::SetActionType(const DRT::ELEMENTS::ActionType& action)
+void STR::TIMINT::Base::SetActionType(const CORE::Elements::ActionType& action)
 {
   check_init_setup();
   int_ptr_->EvalData().SetActionType(action);

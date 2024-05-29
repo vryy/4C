@@ -422,7 +422,7 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
   //**********************************************************************
   // SEARCH
   //**********************************************************************
-  std::vector<std::vector<DRT::Element*>> elementpairs, elementpairspot;
+  std::vector<std::vector<CORE::Elements::Element*>> elementpairs, elementpairspot;
   elementpairs.clear();
   elementpairspot.clear();
   //**********************************************************************
@@ -654,9 +654,9 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // loop over all column elements of underlying problem discret and add
   for (int i = 0; i < (ProblemDiscret().ElementColMap())->NumMyElements(); ++i)
   {
-    DRT::Element* ele = ProblemDiscret().lColElement(i);
+    CORE::Elements::Element* ele = ProblemDiscret().lColElement(i);
     if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
-    Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
+    Teuchos::RCP<CORE::Elements::Element> newele = Teuchos::rcp(ele->Clone());
     if (BEAMINTERACTION::UTILS::IsBeamElement(*newele) or
         BEAMINTERACTION::UTILS::IsRigidSphereElement(*newele))
     {
@@ -727,7 +727,8 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   for (int j = 0; j < (int)btscontactconditions.size(); ++j)
   {
     // get elements from condition j of current group
-    std::map<int, Teuchos::RCP<DRT::Element>>& currele = btscontactconditions[j]->Geometry();
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& currele =
+        btscontactconditions[j]->Geometry();
 
     // elements in a boundary condition have a unique id
     // but ids are not unique among 2 distinct conditions
@@ -741,7 +742,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
     int gsize = 0;
     Comm().SumAll(&lsize, &gsize, 1);
 
-    std::map<int, Teuchos::RCP<DRT::Element>>::iterator fool;
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator fool;
     for (fool = currele.begin(); fool != currele.end(); ++fool)
     {
       // The IDs of the surface elements of each conditions begin with zero. Therefore we have to
@@ -752,7 +753,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       // element IDs being identical to these beam element IDs within the contact discretization we
       // have to add the additional offset maxproblemid, which is identical to the maximal element
       // ID in the problem discretization.
-      Teuchos::RCP<DRT::Element> ele = fool->second;
+      Teuchos::RCP<CORE::Elements::Element> ele = fool->second;
       Teuchos::RCP<CONTACT::Element> cele =
           Teuchos::rcp(new CONTACT::Element(ele->Id() + ggsize + maxproblemid + 1, ele->Owner(),
               ele->Shape(), ele->num_node(), ele->NodeIds(),
@@ -804,7 +805,8 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   for (int j = 0; j < (int)btsmeshtyingconditions.size(); ++j)
   {
     // get elements from condition j of current group
-    std::map<int, Teuchos::RCP<DRT::Element>>& currele = btsmeshtyingconditions[j]->Geometry();
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& currele =
+        btsmeshtyingconditions[j]->Geometry();
 
     // elements in a boundary condition have a unique id
     // but ids are not unique among 2 distinct conditions
@@ -818,7 +820,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
     int gsize = 0;
     Comm().SumAll(&lsize, &gsize, 1);
 
-    std::map<int, Teuchos::RCP<DRT::Element>>::iterator fool;
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator fool;
     for (fool = currele.begin(); fool != currele.end(); ++fool)
     {
       // The IDs of the surface elements of each conditions begin with zero. Therefore we have to
@@ -829,7 +831,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       // element IDs being identical to these beam element IDs within the contact discretization we
       // have to add the additional offset maxproblemid, which is identical to the maximal element
       // ID in the problem discretization.
-      Teuchos::RCP<DRT::Element> ele = fool->second;
+      Teuchos::RCP<CORE::Elements::Element> ele = fool->second;
       Teuchos::RCP<MORTAR::Element> mtele =
           Teuchos::rcp(new MORTAR::Element(ele->Id() + ggsize + maxproblemid + 1, ele->Owner(),
               ele->Shape(), ele->num_node(), ele->NodeIds(),
@@ -1189,8 +1191,8 @@ void CONTACT::Beam3cmanager::evaluate_all_pairs(Teuchos::ParameterList timeintpa
 
   for (int i = 0; i < ProblemDiscret().NumMyColElements(); i++)
   {
-    DRT::Element* element = ProblemDiscret().lColElement(i);
-    const DRT::ElementType& eot = element->ElementType();
+    CORE::Elements::Element* element = ProblemDiscret().lColElement(i);
+    const CORE::Elements::ElementType& eot = element->ElementType();
     if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
     {
       const DRT::ELEMENTS::Beam3eb* beam3ebelement =
@@ -1272,9 +1274,9 @@ void CONTACT::Beam3cmanager::evaluate_all_pairs(Teuchos::ParameterList timeintpa
  |  BTB, BTSOL and BTSPH contact pair vectors                grill 09/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
-    const std::vector<std::vector<DRT::Element*>> elementpairs)
+    const std::vector<std::vector<CORE::Elements::Element*>> elementpairs)
 {
-  std::vector<std::vector<DRT::Element*>> formattedelementpairs;
+  std::vector<std::vector<CORE::Elements::Element*>> formattedelementpairs;
   formattedelementpairs.clear();
 
   // Besides beam-to-beam contact we also can handle beam-to-solid contact and beam to sphere
@@ -1291,7 +1293,7 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
     // if ele1 is no beam element, but ele2 is one, we have to change the order
     else if (BEAMINTERACTION::UTILS::IsBeamElement(*(elementpairs[i])[1]))
     {
-      std::vector<DRT::Element*> elementpairaux;
+      std::vector<CORE::Elements::Element*> elementpairaux;
       elementpairaux.clear();
       elementpairaux.push_back((elementpairs[i])[1]);
       elementpairaux.push_back((elementpairs[i])[0]);
@@ -1312,11 +1314,12 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
   if ((int)formattedelementpairs.size() > 0)
   {
     // search for the first beam element in vector pairs
-    const DRT::ElementType& pair1_ele1_type = ((formattedelementpairs[0])[0])->ElementType();
+    const CORE::Elements::ElementType& pair1_ele1_type =
+        ((formattedelementpairs[0])[0])->ElementType();
     for (int k = 0; k < (int)formattedelementpairs.size(); ++k)
     {
-      const DRT::ElementType& ele1_type = ((formattedelementpairs[k])[0])->ElementType();
-      const DRT::ElementType& ele2_type = ((formattedelementpairs[k])[1])->ElementType();
+      const CORE::Elements::ElementType& ele1_type = ((formattedelementpairs[k])[0])->ElementType();
+      const CORE::Elements::ElementType& ele2_type = ((formattedelementpairs[k])[1])->ElementType();
 
       // ele1 and ele2 (in case this is a beam element) have to be of the same type as ele1 of the
       // first pair
@@ -1340,8 +1343,8 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
   // beam-to-solid or beam-to-sphere pairs) need this history information.
   for (int k = 0; k < (int)formattedelementpairs.size(); k++)
   {
-    DRT::Element* ele1 = (formattedelementpairs[k])[0];
-    DRT::Element* ele2 = (formattedelementpairs[k])[1];
+    CORE::Elements::Element* ele1 = (formattedelementpairs[k])[0];
+    CORE::Elements::Element* ele2 = (formattedelementpairs[k])[1];
     int currid1 = ele1->Id();
     int currid2 = ele2->Id();
 
@@ -1452,9 +1455,9 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
  |  BTB, BTSOL and BTSPH potential pair vectors              grill 09/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
-    const std::vector<std::vector<DRT::Element*>> elementpairs)
+    const std::vector<std::vector<CORE::Elements::Element*>> elementpairs)
 {
-  std::vector<std::vector<DRT::Element*>> formattedelementpairs;
+  std::vector<std::vector<CORE::Elements::Element*>> formattedelementpairs;
   formattedelementpairs.clear();
 
   // Besides beam-to-beam potentials, we can also handle beam to sphere potentials
@@ -1472,7 +1475,7 @@ void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
     // if ele1 is no beam element, but ele2 is one, we have to change the order
     else if (BEAMINTERACTION::UTILS::IsBeamElement(*(elementpairs[i])[1]))
     {
-      std::vector<DRT::Element*> elementpairaux;
+      std::vector<CORE::Elements::Element*> elementpairaux;
       elementpairaux.clear();
       elementpairaux.push_back((elementpairs[i])[1]);
       elementpairaux.push_back((elementpairs[i])[0]);
@@ -1489,8 +1492,8 @@ void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
   // Create Beam3tobeampotentialinterface instances in the btbpotpairs_ vector
   for (int k = 0; k < (int)formattedelementpairs.size(); k++)
   {
-    DRT::Element* ele1 = (formattedelementpairs[k])[0];
-    DRT::Element* ele2 = (formattedelementpairs[k])[1];
+    CORE::Elements::Element* ele1 = (formattedelementpairs[k])[0];
+    CORE::Elements::Element* ele2 = (formattedelementpairs[k])[1];
 
     // get the conditions applied to both elements of the pair and decide whether they need to be
     // evaluated
@@ -1559,7 +1562,7 @@ void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
 /*----------------------------------------------------------------------*
  |  search possible contact element pairs                     popp 04/10|
  *----------------------------------------------------------------------*/
-std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::brute_force_search(
+std::vector<std::vector<CORE::Elements::Element*>> CONTACT::Beam3cmanager::brute_force_search(
     std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const double searchradius,
     const double sphericalsearchradius)
 {
@@ -1574,7 +1577,7 @@ std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::brute_force_sear
   // NOTE: This is a brute force search! The time to search across n nodes
   // goes with n^2, which is not efficient at all....
   //**********************************************************************
-  std::vector<std::vector<DRT::Element*>> newpairs;
+  std::vector<std::vector<CORE::Elements::Element*>> newpairs;
   newpairs.clear();
 
   //**********************************************************************
@@ -1613,11 +1616,11 @@ std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::brute_force_sear
     std::vector<int> NearNodesGIDs;
 
     // get the elements 'firstnode' is linked to
-    DRT::Element** neighboureles = firstnode->Elements();
+    CORE::Elements::Element** neighboureles = firstnode->Elements();
     // loop over all adjacent elements and their nodes
     for (int j = 0; j < firstnode->NumElement(); ++j)
     {
-      DRT::Element* thisele = neighboureles[j];
+      CORE::Elements::Element* thisele = neighboureles[j];
       for (int k = 0; k < thisele->num_node(); ++k)
       {
         int nodeid = thisele->NodeIds()[k];
@@ -1684,7 +1687,7 @@ std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::brute_force_sear
     for (int j = 0; j < firstnode->NumElement(); ++j)
     {
       // element pointer
-      DRT::Element* ele1 = neighboureles[j];
+      CORE::Elements::Element* ele1 = neighboureles[j];
 
       // insert into element vector
       FirstElesGIDs.push_back(ele1->Id());
@@ -1696,13 +1699,13 @@ std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::brute_force_sear
       // node pointer
       DRT::Node* tempnode = BTSolDiscret().gNode(NearNodesGIDs[j]);
       // getting the elements tempnode is linked to
-      DRT::Element** TempEles = tempnode->Elements();
+      CORE::Elements::Element** TempEles = tempnode->Elements();
 
       // loop over all elements adjacent to tempnode
       for (int k = 0; k < tempnode->NumElement(); ++k)
       {
         // element pointer
-        DRT::Element* ele2 = TempEles[k];
+        CORE::Elements::Element* ele2 = TempEles[k];
         // insert into element vector
         SecondElesGIDs.push_back(ele2->Id());
       }
@@ -1741,7 +1744,7 @@ std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::brute_force_sear
     for (int j = 0; j < (int)FirstElesGIDs.size(); ++j)
     {
       // beam element pointer
-      DRT::Element* ele1 = BTSolDiscret().gElement(FirstElesGIDs[j]);
+      CORE::Elements::Element* ele1 = BTSolDiscret().gElement(FirstElesGIDs[j]);
 
       // node ids adjacent to this element
       const int* NodesEle1 = ele1->NodeIds();
@@ -1750,7 +1753,7 @@ std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::brute_force_sear
       for (int k = 0; k < (int)SecondElesGIDsRej.size(); ++k)
       {
         // get and cast a pointer on an element
-        DRT::Element* ele2 = BTSolDiscret().gElement(SecondElesGIDsRej[k]);
+        CORE::Elements::Element* ele2 = BTSolDiscret().gElement(SecondElesGIDsRej[k]);
 
         // close element id
         const int* NodesEle2 = ele2->NodeIds();
@@ -1791,7 +1794,7 @@ std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::brute_force_sear
         if (!elements_neighbouring && !foundbefore &&
             close_midpoint_distance(ele1, ele2, currentpositions, sphericalsearchradius))
         {
-          std::vector<DRT::Element*> contactelementpair;
+          std::vector<CORE::Elements::Element*> contactelementpair;
           contactelementpair.clear();
           if (ele1->Id() < ele2->Id())
           {
@@ -1879,7 +1882,7 @@ void CONTACT::Beam3cmanager::set_min_max_ele_radius()
   {
     // get pointer onto element
     int gid = RowElements()->GID(i);
-    DRT::Element* thisele = BTSolDiscret().gElement(gid);
+    CORE::Elements::Element* thisele = BTSolDiscret().gElement(gid);
 
     double eleradius = 0.0;
 
@@ -1918,7 +1921,7 @@ void CONTACT::Beam3cmanager::get_max_ele_length(double& maxelelength)
   {
     // get pointer onto element
     int gid = RowElements()->GID(i);
-    DRT::Element* thisele = BTSolDiscret().gElement(gid);
+    CORE::Elements::Element* thisele = BTSolDiscret().gElement(gid);
 
     double elelength = 0.0;
 
@@ -2317,10 +2320,10 @@ void CONTACT::Beam3cmanager::GmshOutput(
       for (int i = 0; i < FullElements()->NumMyElements(); ++i)
       {
         // get pointer onto current beam element
-        DRT::Element* element = BTSolDiscret().lColElement(i);
+        CORE::Elements::Element* element = BTSolDiscret().lColElement(i);
 
         // write output in specific function
-        const DRT::ElementType& eot = element->ElementType();
+        const CORE::Elements::ElementType& eot = element->ElementType();
 
         // no output for solid elements here
         if (eot != DRT::ELEMENTS::Beam3ebType::Instance() and
@@ -2689,7 +2692,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
       for (int i = 0; i < ProblemDiscret().NumMyColElements(); ++i)
       {
         // Get pointer onto current beam element
-        DRT::Element* element = ProblemDiscret().lColElement(i);
+        CORE::Elements::Element* element = ProblemDiscret().lColElement(i);
 
         if (!BEAMCONTACT::UTILS::IsBeamElement(*element))
         {
@@ -2700,7 +2703,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
       for (int i = 0; i < BTSolDiscret().NumMyColElements(); ++i)
       {
         // Get pointer onto current beam element
-        DRT::Element* element = BTSolDiscret().lColElement(i);
+        CORE::Elements::Element* element = BTSolDiscret().lColElement(i);
 
         if (!BEAMCONTACT::UTILS::IsBeamElement(*element))
         {
@@ -2720,8 +2723,9 @@ void CONTACT::Beam3cmanager::GmshOutput(
       // double Iyy1 = 0.0;
       // if ((int)btsolpairs_.size() > 0)
       //{
-      //  DRT::Element* element1 = const_cast<DRT::Element*>(btsolpairs_[0]->Element1());
-      //  Iyy1 = (dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element1))->MomentOfInertiaY();
+      //  CORE::Elements::Element* element1 =
+      //  const_cast<CORE::Elements::Element*>(btsolpairs_[0]->Element1()); Iyy1 =
+      //  (dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element1))->MomentOfInertiaY();
       //}
 
       // Get number of beam elements and surface elements on contact surface
@@ -2729,7 +2733,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
       int numele2 = 0;
       for (int i = 0; i < ColElements()->NumMyElements(); ++i)
       {
-        DRT::Element* element = BTSolDiscret().lColElement(i);
+        CORE::Elements::Element* element = BTSolDiscret().lColElement(i);
         if (BEAMCONTACT::UTILS::IsBeamElement(*element))
           numele1++;
         else
@@ -2740,7 +2744,8 @@ void CONTACT::Beam3cmanager::GmshOutput(
       std::string shape2 = "unknown";
       if ((int)btsolpairs_.size() > 0)
       {
-        DRT::Element* element2 = const_cast<DRT::Element*>(btsolpairs_[0]->Element2());
+        CORE::Elements::Element* element2 =
+            const_cast<CORE::Elements::Element*>(btsolpairs_[0]->Element2());
 
         switch (element2->Shape())
         {
@@ -2960,7 +2965,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
   for (int i = 0; i < ProblemDiscret().NumMyColElements(); ++i)
   {
     // Get pointer onto current beam element
-    DRT::Element* element = ProblemDiscret().lColElement(i);
+    CORE::Elements::Element* element = ProblemDiscret().lColElement(i);
 
     if (!BEAMCONTACT::UTILS::IsBeamElement(*element))
     {
@@ -3613,7 +3618,7 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
  |  Compute gmsh output for 2-noded elements (private)        popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::gmsh_2_noded(const int& n,
-    const CORE::LINALG::SerialDenseMatrix& coord, const DRT::Element* thisele,
+    const CORE::LINALG::SerialDenseMatrix& coord, const CORE::Elements::Element* thisele,
     std::stringstream& gmshfilecontent)
 {
   // some local variables
@@ -3770,7 +3775,7 @@ void CONTACT::Beam3cmanager::gmsh_2_noded(const int& n,
  |  Compute gmsh output for 3-noded elements (private)        popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::gmsh_3_noded(const int& n,
-    const CORE::LINALG::SerialDenseMatrix& allcoord, const DRT::Element* thisele,
+    const CORE::LINALG::SerialDenseMatrix& allcoord, const CORE::Elements::Element* thisele,
     std::stringstream& gmshfilecontent)
 {
   // some local variables
@@ -3956,7 +3961,7 @@ void CONTACT::Beam3cmanager::gmsh_3_noded(const int& n,
  |  Compute gmsh output for 3-noded elements (private)       meier 04/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::gmsh_4_noded(const int& n,
-    const CORE::LINALG::SerialDenseMatrix& allcoord, const DRT::Element* thisele,
+    const CORE::LINALG::SerialDenseMatrix& allcoord, const CORE::Elements::Element* thisele,
     std::stringstream& gmshfilecontent)
 {
   // some local variables
@@ -4158,7 +4163,7 @@ void CONTACT::Beam3cmanager::gmsh_4_noded(const int& n,
  |  Compute gmsh output for N-noded elements (private)       meier 02/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::gmsh_n_noded(const int& n, int& n_axial,
-    const CORE::LINALG::SerialDenseMatrix& allcoord, const DRT::Element* thisele,
+    const CORE::LINALG::SerialDenseMatrix& allcoord, const CORE::Elements::Element* thisele,
     std::stringstream& gmshfilecontent)
 {
   // some local variables
@@ -4370,7 +4375,7 @@ void CONTACT::Beam3cmanager::gmsh_n_noded(const int& n, int& n_axial,
  |  Compute gmsh output for N-noded elements (private)       meier 02/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::gmsh_n_noded_line(const int& n, const int& n_axial,
-    const CORE::LINALG::SerialDenseMatrix& allcoord, const DRT::Element* thisele,
+    const CORE::LINALG::SerialDenseMatrix& allcoord, const CORE::Elements::Element* thisele,
     std::stringstream& gmshfilecontent)
 {
   // declaring variable for color of elements
@@ -4428,13 +4433,13 @@ void CONTACT::Beam3cmanager::gmsh_n_noded_line(const int& n, const int& n_axial,
  |  Compute gmsh output for sphere elements (private)        grill 03/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::gmsh_sphere(const CORE::LINALG::SerialDenseMatrix& coord,
-    const DRT::Element* thisele, std::stringstream& gmshfilecontent)
+    const CORE::Elements::Element* thisele, std::stringstream& gmshfilecontent)
 {
   double eleradius = 0.0;
   double color = 1.0;
 
   // get radius of element
-  const DRT::ElementType& eot = thisele->ElementType();
+  const CORE::Elements::ElementType& eot = thisele->ElementType();
 
   if (eot == DRT::ELEMENTS::RigidsphereType::Instance())
   {
@@ -4683,8 +4688,8 @@ void CONTACT::Beam3cmanager::gmsh_refine_icosphere(std::vector<std::vector<doubl
 /*----------------------------------------------------------------------*
  | Compute Gmsh output for solid elements                               |
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::gmsh_solid(
-    const DRT::Element* element, const Epetra_Vector& disrow, std::stringstream& gmshfilecontent)
+void CONTACT::Beam3cmanager::gmsh_solid(const CORE::Elements::Element* element,
+    const Epetra_Vector& disrow, std::stringstream& gmshfilecontent)
 {
   // Prepare storage for nodal coordinates
   int nnodes = element->num_node();
@@ -4790,7 +4795,8 @@ void CONTACT::Beam3cmanager::gmsh_solid(
  | Compute Gmsh output for solid surface element numbers                |
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::gmsh_solid_surface_element_numbers(
-    const DRT::Element* element, const Epetra_Vector& disrow, std::stringstream& gmshfilecontent)
+    const CORE::Elements::Element* element, const Epetra_Vector& disrow,
+    std::stringstream& gmshfilecontent)
 {
   // Prepare storage for nodal coordinates
   int nnodes = element->num_node();
@@ -4834,7 +4840,7 @@ void CONTACT::Beam3cmanager::gmsh_solid_surface_element_numbers(
 /*----------------------------------------------------------------------*
  | Get color of solid element surfaces for GMSH-Output                  |
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::gmsh_get_surf_color(const DRT::Element* element,
+void CONTACT::Beam3cmanager::gmsh_get_surf_color(const CORE::Elements::Element* element,
     const int& n_surfNodes, const int surfNodes[6][9], double surfColor[6])
 {
   // Loop over all surfaces to get their colors
@@ -4846,7 +4852,8 @@ void CONTACT::Beam3cmanager::gmsh_get_surf_color(const DRT::Element* element,
       int found = 0;
 
       // Get surface element
-      DRT::Element* bts_element2 = const_cast<DRT::Element*>(btsolpairs_[i_pair]->Element2());
+      CORE::Elements::Element* bts_element2 =
+          const_cast<CORE::Elements::Element*>(btsolpairs_[i_pair]->Element2());
 
       // Loop over all nodes of bts surface element
       for (int j = 0; j < bts_element2->num_node(); j++)
@@ -4960,7 +4967,7 @@ void CONTACT::Beam3cmanager::gmsh_st(
 /*----------------------------------------------------------------------*
  |  Determine number of nodes and nodal DoFs of element      meier 02/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::set_element_type_and_distype(DRT::Element* ele1)
+void CONTACT::Beam3cmanager::set_element_type_and_distype(CORE::Elements::Element* ele1)
 {
   const DRT::ELEMENTS::Beam3Base* ele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele1);
 
@@ -4973,9 +4980,9 @@ void CONTACT::Beam3cmanager::set_element_type_and_distype(DRT::Element* ele1)
 /*----------------------------------------------------------------------*
  | Is element midpoint distance smaller than search radius?  meier 02/14|
  *----------------------------------------------------------------------*/
-bool CONTACT::Beam3cmanager::close_midpoint_distance(const DRT::Element* ele1,
-    const DRT::Element* ele2, std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-    const double sphericalsearchradius)
+bool CONTACT::Beam3cmanager::close_midpoint_distance(const CORE::Elements::Element* ele1,
+    const CORE::Elements::Element* ele2,
+    std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const double sphericalsearchradius)
 {
   if (sphericalsearchradius == -1.0) return true;
 

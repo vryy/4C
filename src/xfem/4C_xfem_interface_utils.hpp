@@ -15,10 +15,10 @@
 #include "4C_config.hpp"
 
 #include "4C_cut_utils.hpp"
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_element_integration_select.hpp"
 #include "4C_fluid_ele_calc_xfem_coupling.hpp"
 #include "4C_inpar_xfem.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_element_integration_select.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -106,8 +106,8 @@ namespace XFEM
     );
 
     //! compute the measure of the elements surface with given local id
-    double ComputeMeasFace(DRT::Element* ele,       ///< fluid element
-        CORE::LINALG::SerialDenseMatrix& ele_xyze,  ///< element coordinates
+    double ComputeMeasFace(CORE::Elements::Element* ele,  ///< fluid element
+        CORE::LINALG::SerialDenseMatrix& ele_xyze,        ///< element coordinates
         const int local_face_id,  ///< the local id of the face w.r.t the fluid element
         const int nsd             ///< number of space dimensions
     );
@@ -129,7 +129,7 @@ namespace XFEM
 
     //! compute characteristic element length h_k
     template <CORE::FE::CellType distype>
-    double ComputeCharEleLength(DRT::Element* ele,                 ///< fluid element
+    double ComputeCharEleLength(CORE::Elements::Element* ele,      ///< fluid element
         CORE::LINALG::SerialDenseMatrix& ele_xyze,                 ///< element coordinates
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
         const CORE::GEO::CUT::plain_volumecell_set&
@@ -140,8 +140,8 @@ namespace XFEM
             bintpoints,  ///< integration points for boundary cell integration
         const INPAR::XFEM::ViscStabHk visc_stab_hk,  ///< h definition
         Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>> emb =
-            Teuchos::null,            ///< pointer to the embedded coupling implementation
-        DRT::Element* face = nullptr  ///< side element in 3D
+            Teuchos::null,  ///< pointer to the embedded coupling implementation
+        CORE::Elements::Element* face = nullptr  ///< side element in 3D
     );
 
     //! compute full scaling of Nitsche's penalty term (xfluid-fluid)
@@ -187,9 +187,9 @@ namespace XFEM
         const CORE::LINALG::Matrix<3, 1>& vel_m, const CORE::LINALG::Matrix<3, 1>& vel_s,
         const CORE::LINALG::Matrix<3, 1>& elenormal, const CORE::LINALG::Matrix<3, 1>& normal);
 
-    void EvaluteStateatGP(const DRT::Element* sele, const CORE::LINALG::Matrix<3, 1>& selexsi,
-        const DRT::Discretization& discret, const std::string& state,
-        CORE::LINALG::Matrix<3, 1>& vel_s);
+    void EvaluteStateatGP(const CORE::Elements::Element* sele,
+        const CORE::LINALG::Matrix<3, 1>& selexsi, const DRT::Discretization& discret,
+        const std::string& state, CORE::LINALG::Matrix<3, 1>& vel_s);
 
   }  // namespace UTILS
 }  // namespace XFEM

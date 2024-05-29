@@ -9,12 +9,12 @@
 
 #include "4C_geometry_pair_line_to_volume_gauss_point_projection.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_geometry_pair_element.hpp"
 #include "4C_geometry_pair_line_projection.hpp"
 #include "4C_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "4C_geometry_pair_utility_classes.hpp"
-#include "4C_lib_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
  */
 template <typename scalar_type, typename line, typename volume>
 GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, line,
-    volume>::GeometryPairLineToVolumeGaussPointProjection(const DRT::Element* element1,
-    const DRT::Element* element2,
+    volume>::GeometryPairLineToVolumeGaussPointProjection(const CORE::Elements::Element* element1,
+    const CORE::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
     : GeometryPairLineToVolume<scalar_type, line, volume>(element1, element2, evaluation_data)
 {

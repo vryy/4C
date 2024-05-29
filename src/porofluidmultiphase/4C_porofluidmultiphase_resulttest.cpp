@@ -105,7 +105,7 @@ void POROFLUIDMULTIPHASE::ResultTest::TestElement(
   {
     if (porotimint_.discretization()->HaveGlobalElement(element))
     {
-      const DRT::Element* actelement = porotimint_.discretization()->gElement(element);
+      const CORE::Elements::Element* actelement = porotimint_.discretization()->gElement(element);
 
       // Here we are just interested in the elements that we own (i.e. a row element)!
       if (actelement->Owner() != porotimint_.discretization()->Comm().MyPID()) return;
@@ -211,7 +211,7 @@ double POROFLUIDMULTIPHASE::ResultTest::result_node(
  | get element result to be tested                     kremheller 10/19 |
  *----------------------------------------------------------------------*/
 double POROFLUIDMULTIPHASE::ResultTest::result_element(
-    const std::string quantity, const DRT::Element* element) const
+    const std::string quantity, const CORE::Elements::Element* element) const
 {
   // initialize variable for result
   double result(0.);

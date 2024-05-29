@@ -67,8 +67,8 @@ namespace ADAPTER
         Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
         std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
-        std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements) override;
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements) override;
 
     /*!
     \brief initialize routine

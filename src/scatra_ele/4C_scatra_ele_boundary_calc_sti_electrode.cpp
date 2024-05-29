@@ -62,8 +62,8 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::evaluate_s2_i_coupling(
-    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    const CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& eslavematrix, CORE::LINALG::SerialDenseMatrix& emastermatrix,
     CORE::LINALG::SerialDenseVector& eslaveresidual)
 {
@@ -312,8 +312,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::evaluate_s2_i_coupling_od(
-    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    const CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& eslavematrix, CORE::LINALG::SerialDenseMatrix& emastermatrix)
 {
   // access primary and secondary materials of parent element
@@ -712,9 +712,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::evaluate_action(
-    DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, SCATRA::BoundaryAction action,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -751,7 +751,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::evaluate
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::extract_node_values(
-    const DRT::Discretization& discretization, DRT::Element::LocationArray& la)
+    const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
 {
   // call base class routine
   my::extract_node_values(discretization, la);

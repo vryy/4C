@@ -33,9 +33,13 @@ namespace CORE::LINALG
 namespace DRT
 {
   class Discretization;
-  class Element;
   class Node;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace MORTAR
 {
@@ -108,9 +112,11 @@ feel free to write your own tailored Setup() method.
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
         const std::map<int, DRT::Node*>& mastergnodes,  ///< master nodes, including ghosted nodes
         const std::map<int, DRT::Node*>& slavegnodes,   ///< slave nodes, including ghosted nodes
-        const std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,  ///< master elements
-        const std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,   ///< slave elements
-        const Epetra_Comm& comm,                                          ///< communicator
+        const std::map<int, Teuchos::RCP<CORE::Elements::Element>>&
+            masterelements,  ///< master elements
+        const std::map<int, Teuchos::RCP<CORE::Elements::Element>>&
+            slaveelements,                ///< slave elements
+        const Epetra_Comm& comm,          ///< communicator
         const bool slavewithale = false,  ///< flag defining if slave is ALE
         const bool slidingale = false,    ///< flag indicating sliding ALE case
         const int nds_master = 0,         ///< master dofset number

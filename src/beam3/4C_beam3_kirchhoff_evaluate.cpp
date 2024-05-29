@@ -50,7 +50,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
   if (IsParamsInterface()) set_brownian_dyn_params_interface_ptr();
 
   // start with "none"
-  ELEMENTS::ActionType act = ELEMENTS::none;
+  CORE::Elements::ActionType act = CORE::Elements::none;
 
   if (IsParamsInterface())
   {
@@ -63,61 +63,61 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
     if (action == "calc_none")
       FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_linstiff")
-      act = ELEMENTS::struct_calc_linstiff;
+      act = CORE::Elements::struct_calc_linstiff;
     else if (action == "calc_struct_nlnstiff")
-      act = ELEMENTS::struct_calc_nlnstiff;
+      act = CORE::Elements::struct_calc_nlnstiff;
     else if (action == "calc_struct_internalforce")
-      act = ELEMENTS::struct_calc_internalforce;
+      act = CORE::Elements::struct_calc_internalforce;
     else if (action == "calc_struct_linstiffmass")
-      act = ELEMENTS::struct_calc_linstiffmass;
+      act = CORE::Elements::struct_calc_linstiffmass;
     else if (action == "calc_struct_nlnstiffmass")
-      act = ELEMENTS::struct_calc_nlnstiffmass;
+      act = CORE::Elements::struct_calc_nlnstiffmass;
     else if (action == "calc_struct_nlnstifflmass")
-      act = ELEMENTS::struct_calc_nlnstifflmass;  // with lumped mass matrix
+      act = CORE::Elements::struct_calc_nlnstifflmass;  // with lumped mass matrix
     else if (action == "calc_struct_stress")
-      act = ELEMENTS::struct_calc_stress;
+      act = CORE::Elements::struct_calc_stress;
     else if (action == "calc_struct_eleload")
-      act = ELEMENTS::struct_calc_eleload;
+      act = CORE::Elements::struct_calc_eleload;
     else if (action == "calc_struct_fsiload")
-      act = ELEMENTS::struct_calc_fsiload;
+      act = CORE::Elements::struct_calc_fsiload;
     else if (action == "calc_struct_update_istep")
-      act = ELEMENTS::struct_calc_update_istep;
+      act = CORE::Elements::struct_calc_update_istep;
     else if (action == "calc_struct_reset_istep")
-      act = ELEMENTS::struct_calc_reset_istep;
+      act = CORE::Elements::struct_calc_reset_istep;
     else if (action == "calc_struct_ptcstiff")
-      act = ELEMENTS::struct_calc_ptcstiff;
+      act = CORE::Elements::struct_calc_ptcstiff;
     else if (action == "calc_struct_energy")
-      act = ELEMENTS::struct_calc_energy;
+      act = CORE::Elements::struct_calc_energy;
     else
       FOUR_C_THROW("Unknown type of action for Beam3k");
   }
 
   switch (act)
   {
-    case ELEMENTS::struct_calc_ptcstiff:
+    case CORE::Elements::struct_calc_ptcstiff:
     {
       FOUR_C_THROW("no ptc implemented for Beam3k element");
       break;
     }
 
-    case ELEMENTS::struct_calc_linstiff:
+    case CORE::Elements::struct_calc_linstiff:
     {
       // only nonlinear case implemented!
       FOUR_C_THROW("linear stiffness matrix called, but not implemented");
       break;
     }
 
-    // nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is
-    // required
-    case ELEMENTS::struct_calc_nlnstiffmass:
-    case ELEMENTS::struct_calc_nlnstifflmass:
-    case ELEMENTS::struct_calc_nlnstiff:
-    case ELEMENTS::struct_calc_internalforce:
-    case ELEMENTS::struct_calc_internalinertiaforce:
+    // nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix
+    // is required
+    case CORE::Elements::struct_calc_nlnstiffmass:
+    case CORE::Elements::struct_calc_nlnstifflmass:
+    case CORE::Elements::struct_calc_nlnstiff:
+    case CORE::Elements::struct_calc_internalforce:
+    case CORE::Elements::struct_calc_internalinertiaforce:
     {
       // need current global displacement and residual forces and get them from discretization
-      // making use of the local-to-global map lm one can extract current displacement and residual
-      // values for each degree of freedom get element displacements
+      // making use of the local-to-global map lm one can extract current displacement and
+      // residual values for each degree of freedom get element displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
 
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
@@ -125,33 +125,34 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
 
-      if (act == ELEMENTS::struct_calc_nlnstiffmass)
+      if (act == CORE::Elements::struct_calc_nlnstiffmass)
       {
         calc_internal_and_inertia_forces_and_stiff(
             params, mydisp, &elemat1, &elemat2, &elevec1, &elevec2);
       }
-      else if (act == ELEMENTS::struct_calc_nlnstifflmass)
+      else if (act == CORE::Elements::struct_calc_nlnstifflmass)
       {
         FOUR_C_THROW("The action calc_struct_nlnstifflmass is not implemented yet!");
       }
-      else if (act == ELEMENTS::struct_calc_nlnstiff)
+      else if (act == CORE::Elements::struct_calc_nlnstiff)
       {
         calc_internal_and_inertia_forces_and_stiff(
             params, mydisp, &elemat1, nullptr, &elevec1, nullptr);
       }
-      else if (act == ELEMENTS::struct_calc_internalforce)
+      else if (act == CORE::Elements::struct_calc_internalforce)
       {
         calc_internal_and_inertia_forces_and_stiff(
             params, mydisp, nullptr, nullptr, &elevec1, nullptr);
       }
-      else if (act == ELEMENTS::struct_calc_internalinertiaforce)
+      else if (act == CORE::Elements::struct_calc_internalinertiaforce)
       {
         calc_internal_and_inertia_forces_and_stiff(
             params, mydisp, nullptr, nullptr, &elevec1, &elevec2);
       }
 
       // ATTENTION: In order to perform a brief finite difference check of the nonlinear stiffness
-      // matrix the code block "FD-CHECK" from the end of this file has to be copied to this place:
+      // matrix the code block "FD-CHECK" from the end of this file has to be copied to this
+      // place:
       //***************************************************************************************************************
       // Insert code block here!
       //***************************************************************************************************************
@@ -159,8 +160,8 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
-    case ELEMENTS::struct_calc_brownianforce:
-    case ELEMENTS::struct_calc_brownianstiff:
+    case CORE::Elements::struct_calc_brownianforce:
+    case CORE::Elements::struct_calc_brownianstiff:
     {
       // get element displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -174,9 +175,9 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myvel(lm.size());
       CORE::FE::ExtractMyValues(*vel, myvel, lm);
 
-      if (act == ELEMENTS::struct_calc_brownianforce)
+      if (act == CORE::Elements::struct_calc_brownianforce)
         calc_brownian_forces_and_stiff<2, 2, 3>(params, myvel, mydisp, nullptr, &elevec1);
-      else if (act == ELEMENTS::struct_calc_brownianstiff)
+      else if (act == CORE::Elements::struct_calc_brownianstiff)
         calc_brownian_forces_and_stiff<2, 2, 3>(params, myvel, mydisp, &elemat1, &elevec1);
       else
         FOUR_C_THROW("You shouldn't be here.");
@@ -184,13 +185,14 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
-    case ELEMENTS::struct_calc_energy:
+    case CORE::Elements::struct_calc_energy:
     {
       if (elevec1 != Teuchos::null)  // old structural time integration
       {
         if (elevec1.numRows() != 1)
           FOUR_C_THROW(
-              "energy vector of invalid size %i, expected row dimension 1 (total elastic energy of "
+              "energy vector of invalid size %i, expected row dimension 1 (total elastic energy "
+              "of "
               "element)!",
               elevec1.numRows());
         elevec1(0) = eint_;
@@ -203,12 +205,12 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
-    case ELEMENTS::struct_calc_stress:
+    case CORE::Elements::struct_calc_stress:
     {
       break;
     }
 
-    case ELEMENTS::struct_calc_update_istep:
+    case CORE::Elements::struct_calc_update_istep:
     {
       /* the action calc_struct_update_istep is called in the very end of a time step when the new
        * dynamic equilibrium has finally been found; this is the point where the variable
@@ -228,15 +230,15 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
-    case ELEMENTS::struct_calc_reset_istep:
+    case CORE::Elements::struct_calc_reset_istep:
     {
-      /* the action calc_struct_reset_istep is called by the adaptive time step controller; carries
-       * out one test step whose purpose is only figuring out a suitable timestep; thus this step
-       * may be a very bad one in order to iterated towards the new dynamic equilibrium and the
-       * thereby gained new geometric configuration should not be applied as starting point for any
-       * further iteration step; as a consequence the thereby generated change of the geometric
-       * configuration should be canceled and the configuration should be reset to the value at the
-       * beginning of the time step */
+      /* the action calc_struct_reset_istep is called by the adaptive time step controller;
+       * carries out one test step whose purpose is only figuring out a suitable timestep; thus
+       * this step may be a very bad one in order to iterated towards the new dynamic equilibrium
+       * and the thereby gained new geometric configuration should not be applied as starting
+       * point for any further iteration step; as a consequence the thereby generated change of
+       * the geometric configuration should be canceled and the configuration should be reset to
+       * the value at the beginning of the time step */
 
       qnewmass_ = qconvmass_;
       wnewmass_ = wconvmass_;
@@ -252,20 +254,20 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
-    case ELEMENTS::struct_calc_recover:
+    case CORE::Elements::struct_calc_recover:
     {
       // do nothing here
       break;
     }
 
-    case ELEMENTS::struct_calc_predict:
+    case CORE::Elements::struct_calc_predict:
     {
       // do nothing here
       break;
     }
 
     // element based PTC scaling
-    case ELEMENTS::struct_calc_addjacPTC:
+    case CORE::Elements::struct_calc_addjacPTC:
     {
       calc_stiff_contributions_ptc(elemat1);
       break;

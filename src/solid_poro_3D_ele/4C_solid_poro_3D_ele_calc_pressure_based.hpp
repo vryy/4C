@@ -12,9 +12,9 @@ implementation
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_gausspoints.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -39,20 +39,21 @@ namespace DRT
      public:
       SolidPoroPressureBasedEleCalc();
 
-      void evaluate_nonlinear_force_stiffness(const DRT::Element& ele,
+      void evaluate_nonlinear_force_stiffness(const CORE::Elements::Element& ele,
           MAT::StructPoro& porostructmat, MAT::FluidPoroMultiPhase& porofluidmat,
           const INPAR::STR::KinemType& kinematictype, const DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, Teuchos::ParameterList& params,
+          CORE::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
           CORE::LINALG::SerialDenseVector* force_vector,
           CORE::LINALG::SerialDenseMatrix* stiffness_matrix);
 
-      void coupling_poroelast(const DRT::Element& ele, MAT::StructPoro& porostructmat,
+      void coupling_poroelast(const CORE::Elements::Element& ele, MAT::StructPoro& porostructmat,
           MAT::FluidPoroMultiPhase& porofluidmat, const INPAR::STR::KinemType& kinematictype,
-          const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& stiffness_matrix);
 
-      void CouplingStress(const DRT::Element& ele, const DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params);
+      void CouplingStress(const CORE::Elements::Element& ele,
+          const DRT::Discretization& discretization, const std::vector<int>& lm,
+          Teuchos::ParameterList& params);
 
       void PoroSetup(MAT::StructPoro& porostructmat, INPUT::LineDefinition* linedef);
 

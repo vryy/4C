@@ -35,9 +35,14 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Element;
   class Node;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace CORE::GEO
 {
   namespace MESHFREE
@@ -138,7 +143,10 @@ namespace BINSTRATEGY
      *
      * \return reference to const list of pointer to boundary row bins
      */
-    inline std::list<DRT::Element*> const& BoundaryRowBins() const { return boundaryrowbins_; }
+    inline std::list<CORE::Elements::Element*> const& BoundaryRowBins() const
+    {
+      return boundaryrowbins_;
+    }
 
     /*!
      * \brief get const set of boundary col bins ids
@@ -477,7 +485,8 @@ namespace BINSTRATEGY
      * \param[out] ijk_range ijk range for rigid sphere element
      */
     void build_axis_alignedijk_range_for_rigid_sphere(
-        DRT::Element const* const sphereele, double currpos[3], int ijk[3], int ijk_range[6]) const;
+        CORE::Elements::Element const* const sphereele, double currpos[3], int ijk[3],
+        int ijk_range[6]) const;
 
     /// fixme: the following function needs to be replaced by
     /// distribute_row_elements_to_bins_using_ele_aabb()
@@ -524,7 +533,7 @@ namespace BINSTRATEGY
      * \param[in] disnp current col displacement state
      */
     void distribute_single_element_to_bins_using_ele_aabb(
-        Teuchos::RCP<DRT::Discretization> const& discret, DRT::Element* eleptr,
+        Teuchos::RCP<DRT::Discretization> const& discret, CORE::Elements::Element* eleptr,
         std::vector<int>& binIds, Teuchos::RCP<const Epetra_Vector> const& disnp) const;
 
     /*!
@@ -545,7 +554,7 @@ namespace BINSTRATEGY
      * \param[in] binIds bins you want to look for your element type
      * \param[in] roweles flag indicating to just consider elements owned by myrank
      */
-    void GetBinContent(std::set<DRT::Element*>& eles,
+    void GetBinContent(std::set<CORE::Elements::Element*>& eles,
         std::vector<BINSTRATEGY::UTILS::BinContentType> bincontent, std::vector<int>& binIds,
         bool roweles = false) const;
 
@@ -783,7 +792,7 @@ namespace BINSTRATEGY
     /*!
      * \brief list of boundary row bins
      */
-    std::list<DRT::Element*> boundaryrowbins_;
+    std::list<CORE::Elements::Element*> boundaryrowbins_;
 
     /*!
      * \brief list of boundary col bins (one full bin layer)

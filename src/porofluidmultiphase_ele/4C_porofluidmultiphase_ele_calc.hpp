@@ -88,8 +88,8 @@ namespace DRT
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      int Evaluate(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
           std::vector<CORE::LINALG::SerialDenseVector*>& elevec) override;
 
@@ -99,90 +99,91 @@ namespace DRT
       /*========================================================================*/
 
       /// Setup element evaluation
-      virtual int setup_calc(DRT::Element* ele, DRT::Discretization& discretization,
+      virtual int setup_calc(CORE::Elements::Element* ele, DRT::Discretization& discretization,
           const POROFLUIDMULTIPHASE::Action& action);
 
       //! evaluate action
-      virtual int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const POROFLUIDMULTIPHASE::Action& action,
-          DRT::Element::LocationArray& la, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+          CORE::Elements::Element::LocationArray& la,
+          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
           std::vector<CORE::LINALG::SerialDenseVector*>& elevec);
 
       //! extract element based or nodal values
       //  return extracted values of phinp
-      virtual void extract_element_and_node_values(DRT::Element* ele,
+      virtual void extract_element_and_node_values(CORE::Elements::Element* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la);
+          CORE::Elements::Element::LocationArray& la);
 
       /// Setup element evaluation
       virtual void prepare_gauss_point_loop(
-          DRT::Element* ele  ///< the element whose matrix is calculated
+          CORE::Elements::Element* ele  ///< the element whose matrix is calculated
       );
 
       void gauss_point_loop(
           const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,   ///< integration points
-          DRT::Element* ele,                                      //!< current element
+          CORE::Elements::Element* ele,                           //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
-              elevec,                           //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la       //!< location array
+              elevec,                                 //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,        //!< discretization
+          CORE::Elements::Element::LocationArray& la  //!< location array
       );
 
       void gauss_point_loop_od_struct(
           const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,   ///< integration points
-          DRT::Element* ele,                                      //!< current element
+          CORE::Elements::Element* ele,                           //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
-              elevec,                           //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la       //!< location array
+              elevec,                                 //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,        //!< discretization
+          CORE::Elements::Element::LocationArray& la  //!< location array
       );
 
       void gauss_point_loop_od_scatra(
           const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,   ///< integration points
-          DRT::Element* ele,                                      //!< current element
+          CORE::Elements::Element* ele,                           //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
-              elevec,                           //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la       //!< location array
+              elevec,                                 //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,        //!< discretization
+          CORE::Elements::Element::LocationArray& la  //!< location array
       );
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
-      void gauss_point_loop(DRT::Element* ele,                    //!< current element
+      void gauss_point_loop(CORE::Elements::Element* ele,         //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
-              elevec,                           //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la       //!< location array
+              elevec,                                 //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,        //!< discretization
+          CORE::Elements::Element::LocationArray& la  //!< location array
       );
 
       //! evaluate at all Gauss points and average
-      void gauss_point_loop_average(DRT::Element* ele,            //!< current element
+      void gauss_point_loop_average(CORE::Elements::Element* ele,  //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrices to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
-              elevec,                           //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la       //!< location array
+              elevec,                                 //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,        //!< discretization
+          CORE::Elements::Element::LocationArray& la  //!< location array
       );
 
       //! calculate off-diagonal fluid-struct-coupling matrix. Here the whole thing is hidden.
-      void gauss_point_loop_od_struct(DRT::Element* ele,          //!< current element
+      void gauss_point_loop_od_struct(CORE::Elements::Element* ele,  //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
-              elevec,                           //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la       //!< location array
+              elevec,                                 //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,        //!< discretization
+          CORE::Elements::Element::LocationArray& la  //!< location array
       );
 
       //! calculate off-diagonal fluid-scatra-coupling matrix. Here the whole thing is hidden.
-      void gauss_point_loop_od_scatra(DRT::Element* ele,          //!< current element
+      void gauss_point_loop_od_scatra(CORE::Elements::Element* ele,  //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
-              elevec,                           //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la       //!< location array
+              elevec,                                 //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,        //!< discretization
+          CORE::Elements::Element::LocationArray& la  //!< location array
       );
 
       //! evaluate shape functions and their derivatives at current integration point
@@ -203,22 +204,22 @@ namespace DRT
       /*========================================================================*/
 
       //! loop over nodes and evaluate element
-      void node_loop(DRT::Element* ele,                           //!< current element
+      void node_loop(CORE::Elements::Element* ele,                //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
-              elevec,                           //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la,      //!< location array
-          const bool jacobian_needed            //!< necessary to compute Jacobian at node
+              elevec,                                  //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,         //!< discretization
+          CORE::Elements::Element::LocationArray& la,  //!< location array
+          const bool jacobian_needed                   //!< necessary to compute Jacobian at node
       );
 
       //! evaluate just the element
-      void evaluate_only_element(DRT::Element* ele,               //!< current element
+      void evaluate_only_element(CORE::Elements::Element* ele,    //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
-              elevec,                           //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la       //!< location array
+              elevec,                                 //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,        //!< discretization
+          CORE::Elements::Element::LocationArray& la  //!< location array
       );
 
      private:
@@ -227,7 +228,7 @@ namespace DRT
       /*========================================================================*/
 
       //! element
-      DRT::Element* ele_;
+      CORE::Elements::Element* ele_;
 
       /*========================================================================*/
       //! @name dofs and nodes

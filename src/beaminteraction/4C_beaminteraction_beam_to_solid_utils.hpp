@@ -45,9 +45,14 @@ namespace CORE::LINALG
 }  // namespace CORE::LINALG
 namespace DRT
 {
-  class Element;
   class Discretization;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace LARGEROTATIONS
 {
   template <unsigned int numnodes, typename T>
@@ -102,7 +107,8 @@ namespace BEAMINTERACTION
    * @param ref_triad_interpolation_scheme (out) Interpolation of reference triad field.
    */
   void GetBeamTriadInterpolationScheme(const DRT::Discretization& discret,
-      const Teuchos::RCP<const Epetra_Vector>& displacement_vector, const DRT::Element* ele,
+      const Teuchos::RCP<const Epetra_Vector>& displacement_vector,
+      const CORE::Elements::Element* ele,
       LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>& triad_interpolation_scheme,
       LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
           ref_triad_interpolation_scheme);

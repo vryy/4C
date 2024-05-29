@@ -378,7 +378,7 @@ Teuchos::SerialDenseMatrix<int, double> STR::UTILS::SHELL::ComputeShellNullSpace
 }
 
 void STR::UTILS::SHELL::NodalBlockInformationShell(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 6;
   dimns = 6;
@@ -386,7 +386,7 @@ void STR::UTILS::SHELL::NodalBlockInformationShell(
 }
 
 void STR::UTILS::SHELL::DIRECTOR::SetupDirectorForElement(
-    const DRT::Element& ele, CORE::LINALG::SerialDenseMatrix& nodal_directors)
+    const CORE::Elements::Element& ele, CORE::LINALG::SerialDenseMatrix& nodal_directors)
 {
   constexpr auto num_dim = DRT::ELEMENTS::SHELL::DETAIL::num_dim;
   const int num_node = ele.num_node();
@@ -491,8 +491,9 @@ void STR::UTILS::SHELL::DIRECTOR::AverageDirector(const CORE::LINALG::Matrix<3, 
   }
 }
 
-void STR::UTILS::SHELL::DIRECTOR::ExportDirectorMapFromRowToColMap(const DRT::ElementType& eletype,
-    const DRT::Discretization& dis, std::map<int, std::vector<double>>& director_map)
+void STR::UTILS::SHELL::DIRECTOR::ExportDirectorMapFromRowToColMap(
+    const CORE::Elements::ElementType& eletype, const DRT::Discretization& dis,
+    std::map<int, std::vector<double>>& director_map)
 {
   // export this map from nodal row map to nodal col map
   const Epetra_Map* noderowmap = dis.NodeRowMap();
@@ -507,7 +508,7 @@ void STR::UTILS::SHELL::DIRECTOR::ExportDirectorMapFromRowToColMap(const DRT::El
     FOUR_C_ASSERT(curr != director_map.end(), "Cannot find director map entry");
     for (int j = 0; j < actnode->NumElement(); ++j)
     {
-      DRT::Element* tmpele = actnode->Elements()[j];
+      CORE::Elements::Element* tmpele = actnode->Elements()[j];
       if (!tmpele) continue;
       if (tmpele->ElementType() != eletype) continue;
       if (auto* scatra_ele = dynamic_cast<DRT::ELEMENTS::Shell7pScatra*>(tmpele))
@@ -539,8 +540,9 @@ void STR::UTILS::SHELL::DIRECTOR::ExportDirectorMapFromRowToColMap(const DRT::El
 }
 
 
-void STR::UTILS::SHELL::DIRECTOR::AverageDirectorsAtNodes(const DRT::ElementType& eletype,
-    const DRT::Discretization& dis, std::map<int, std::vector<double>>& director_map)
+void STR::UTILS::SHELL::DIRECTOR::AverageDirectorsAtNodes(
+    const CORE::Elements::ElementType& eletype, const DRT::Discretization& dis,
+    std::map<int, std::vector<double>>& director_map)
 {
   const int max_ele = 8;
   static constexpr int num_dim = DRT::ELEMENTS::SHELL::DETAIL::num_dim;
@@ -552,7 +554,7 @@ void STR::UTILS::SHELL::DIRECTOR::AverageDirectorsAtNodes(const DRT::ElementType
     int num_directors = 0;
     for (int j = 0; j < act_node->NumElement(); ++j)
     {
-      DRT::Element* tmpele = act_node->Elements()[j];
+      CORE::Elements::Element* tmpele = act_node->Elements()[j];
       if (tmpele->ElementType() != eletype) continue;
       if (auto* scatra_ele = dynamic_cast<DRT::ELEMENTS::Shell7pScatra*>(tmpele))
       {
@@ -607,7 +609,7 @@ void STR::UTILS::SHELL::DIRECTOR::AverageDirectorsAtNodes(const DRT::ElementType
 }
 
 void STR::UTILS::SHELL::DIRECTOR::SetupShellElementDirectors(
-    const DRT::ElementType& eletype, const DRT::Discretization& dis)
+    const CORE::Elements::ElementType& eletype, const DRT::Discretization& dis)
 {
   for (const auto& actele : dis.MyColElementRange())
   {

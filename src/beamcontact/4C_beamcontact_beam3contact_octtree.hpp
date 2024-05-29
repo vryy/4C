@@ -53,7 +53,7 @@ class Beam3ContactOctTree
   /*!\brief call octtree search routine
    * \param currentposition (in) node positions in column map format (fully overlapping)
    * \param step            (in) time step (needed for output)*/
-  std::vector<std::vector<DRT::Element*>> OctTreeSearch(
+  std::vector<std::vector<CORE::Elements::Element*>> OctTreeSearch(
       std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, int step = -1);
 
   //!\brief checks in which octant a given bounding box lies
@@ -68,7 +68,8 @@ class Beam3ContactOctTree
   /*!\brief output of octree discretization, bounding boxes and contact pairs
    * \param contactpairelements (in) vector with contact pairs
    * \param step   (in) time step */
-  void OctreeOutput(std::vector<std::vector<DRT::Element*>> contactpairelements, int step);
+  void OctreeOutput(
+      std::vector<std::vector<CORE::Elements::Element*>> contactpairelements, int step);
 
  private:
   // ! \brief Bounding Box Types available for this search routine
@@ -148,7 +149,7 @@ class Beam3ContactOctTree
    * evaluation
    */
   void bounding_box_intersection(std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-      std::vector<std::vector<DRT::Element*>>& contactpairelements);
+      std::vector<std::vector<CORE::Elements::Element*>>& contactpairelements);
 
   /*!\brief intersection method applying axis-aligned bounding boxes when both boxes belong to
    * existing elements \param bboxIDs    (in) vector with bounding box Ids (element GIDs) \param
@@ -182,7 +183,7 @@ class Beam3ContactOctTree
       bool zerofy = false, bool doexport = true, bool doimport = true);
 
   /*! \brief Calculate maximal and minimal x-, y- and z-value of a solid elements nodes */
-  void calc_corner_pos(DRT::Element* element,
+  void calc_corner_pos(CORE::Elements::Element* element,
       std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
       CORE::LINALG::SerialDenseMatrix& coord);
 

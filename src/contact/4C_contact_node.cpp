@@ -845,7 +845,7 @@ void CONTACT::Node::build_averaged_edge_tangent()
     MoData().EdgeTangent()[j] = 0.0;
   }
   int nseg = NumElement();
-  DRT::Element** adjeles = Elements();
+  CORE::Elements::Element** adjeles = Elements();
 
   //**************************************************
   //              CALCULATE EDGES
@@ -1078,7 +1078,7 @@ void CONTACT::Node::BuildAveragedNormal()
   }
 
   int nseg = NumElement();
-  DRT::Element** adjeles = Elements();
+  CORE::Elements::Element** adjeles = Elements();
 
   // temporary vector to store nodal normal
   std::array<double, 3> n_tmp = {0., 0., 0.};
@@ -1209,7 +1209,7 @@ void CONTACT::Node::deriv_averaged_normal(
     CORE::LINALG::SerialDenseMatrix& elens, double length, double ltxi)
 {
   int nseg = NumElement();
-  DRT::Element** adjeles = Elements();
+  CORE::Elements::Element** adjeles = Elements();
 
   // prepare nodal storage maps for derivative
   if ((int)Data().GetDerivN().size() == 0) Data().GetDerivN().resize(3, linsize_);

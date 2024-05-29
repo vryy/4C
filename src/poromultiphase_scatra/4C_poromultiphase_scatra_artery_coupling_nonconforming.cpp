@@ -251,7 +251,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
        ++nearbyeleiter)
   {
     const int artelegid = nearbyeleiter->first;
-    std::vector<DRT::Element const*> ele_ptrs(2);
+    std::vector<CORE::Elements::Element const*> ele_ptrs(2);
     ele_ptrs[0] = arterydis_->gElement(artelegid);
 
     std::set<int>::const_iterator secondeleiter;
@@ -312,7 +312,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_cou
   for (const auto& nearbyeleiter : nearbyelepairs_)
   {
     // create vector of active coupling pairs
-    std::vector<DRT::Element const*> ele_ptrs(2);
+    std::vector<CORE::Elements::Element const*> ele_ptrs(2);
     // assign artery element
     ele_ptrs[0] = arterydis_->gElement(nearbyeleiter.first);
 
@@ -397,7 +397,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::set_varyin
   for (int i = 0; i < arterydis_->NumMyColElements(); ++i)
   {
     // pointer to current element
-    DRT::Element* actele = arterydis_->lColElement(i);
+    CORE::Elements::Element* actele = arterydis_->lColElement(i);
 
     // get the artery-material
     Teuchos::RCP<MAT::Cnst1dArt> arterymat =
@@ -527,8 +527,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
         std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
-  const DRT::Element* ele1 = arterydis_->gElement(ele1gid);
-  const DRT::Element* ele2 = contdis_->gElement(ele2gid);
+  const CORE::Elements::Element* ele1 = arterydis_->gElement(ele1gid);
+  const CORE::Elements::Element* ele2 = contdis_->gElement(ele2gid);
 
   // get element location vector and ownerships
   std::vector<int> lmrow1;
@@ -555,8 +555,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::fe_assembl
     const int& ele1gid, const int& ele2gid, const CORE::LINALG::SerialDenseMatrix& D_ele,
     const CORE::LINALG::SerialDenseMatrix& M_ele, const CORE::LINALG::SerialDenseVector& Kappa_ele)
 {
-  const DRT::Element* ele1 = arterydis_->gElement(ele1gid);
-  const DRT::Element* ele2 = contdis_->gElement(ele2gid);
+  const CORE::Elements::Element* ele1 = arterydis_->gElement(ele1gid);
+  const CORE::Elements::Element* ele2 = contdis_->gElement(ele2gid);
 
   // get element location vector and ownerships
   std::vector<int> lmrow1;
@@ -662,7 +662,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::invert_kap
  *----------------------------------------------------------------------*/
 Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_new_artery_coupling_pair(
-    std::vector<DRT::Element const*> const& ele_ptrs)
+    std::vector<CORE::Elements::Element const*> const& ele_ptrs)
 {
   const CORE::FE::CellType distypeart = ele_ptrs[0]->Shape();
   switch (distypeart)

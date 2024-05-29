@@ -35,10 +35,10 @@ namespace DRT
 
         CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-        Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-            const int id, const int owner) override;
+        Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+            const std::string eledistype, const int id, const int owner) override;
 
-        Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+        Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
         void setup_element_definition(
             std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
@@ -90,7 +90,10 @@ namespace DRT
         /// Print this element
         void Print(std::ostream& os) const override;
 
-        DRT::ElementType& ElementType() const override { return Ale2NurbsType::Instance(); }
+        CORE::Elements::ElementType& ElementType() const override
+        {
+          return Ale2NurbsType::Instance();
+        }
 
         /*!
         \brief Get shape type of element

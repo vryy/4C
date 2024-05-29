@@ -68,9 +68,9 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::ScaTraEleBoundaryCal
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::evaluate_action(
-    DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, SCATRA::BoundaryAction action,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -104,13 +104,13 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::evaluate_action(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_therm_press(
-    DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
 {
   // get location vector associated with primary dofset
   std::vector<int>& lm = la[0].lm_;
 
-  DRT::Element* parentele = ele->parent_element();
+  CORE::Elements::Element* parentele = ele->parent_element();
   // we dont know the parent element's lm vector; so we have to build it here
   const int nenparent = parentele->num_node();
   std::vector<int> lmparent(nenparent);
@@ -147,7 +147,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_therm
 
   // extract temperature flux vector for each node of the parent element
   CORE::LINALG::SerialDenseMatrix eflux(3, nenparent);
-  DRT::Element* peleptr = (DRT::Element*)parentele;
+  CORE::Elements::Element* peleptr = (CORE::Elements::Element*)parentele;
   int k = my::numscal_ - 1;  // temperature is always last degree of freedom!!
   std::ostringstream temp;
   temp << k;
@@ -190,8 +190,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_therm
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::neumann_inflow(
-    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    const CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs)
 {
   // set thermodynamic pressure
@@ -333,7 +333,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::get_density(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::norm_diff_flux_and_vel_integral(
-    const DRT::Element* ele, Teuchos::ParameterList& params,
+    const CORE::Elements::Element* ele, Teuchos::ParameterList& params,
     const std::vector<double>& enormdiffflux, const std::vector<double>& enormvel)
 {
   // get variables for integrals of normal diffusive flux and velocity

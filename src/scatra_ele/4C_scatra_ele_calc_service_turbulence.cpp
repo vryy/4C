@@ -34,7 +34,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter(dou
     Teuchos::RCP<std::vector<double>> densveltemp_hat,
     Teuchos::RCP<std::vector<double>> densstraintemp_hat, Teuchos::RCP<std::vector<double>> phi_hat,
     Teuchos::RCP<std::vector<std::vector<double>>> alphaijsc_hat, double& volume,
-    const DRT::Element* ele, Teuchos::ParameterList& params)
+    const CORE::Elements::Element* ele, Teuchos::ParameterList& params)
 {
   // do preparations first
   // ---------------------------------------------
@@ -177,9 +177,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter(dou
  | get density at integration point                                 fang 02/15 |
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_density(const DRT::Element* ele,
-    Teuchos::RCP<const CORE::MAT::Material> material, Teuchos::ParameterList& params,
-    const double tempnp)
+double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_density(
+    const CORE::Elements::Element* ele, Teuchos::RCP<const CORE::MAT::Material> material,
+    Teuchos::ParameterList& params, const double tempnp)
 {
   // initialization
   double density(0.);
@@ -190,7 +190,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_density(const DRT::El
     Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
     fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
     // get corresponding fluid element (it has the same global ID as the scatra element)
-    DRT::Element* fluidele = fluiddis->gElement(ele->Id());
+    CORE::Elements::Element* fluidele = fluiddis->gElement(ele->Id());
     if (fluidele == nullptr) FOUR_C_THROW("Fluid element %i not on local processor", ele->Id());
     // get fluid material
     Teuchos::RCP<CORE::MAT::Material> fluidmat = fluidele->Material();
@@ -219,7 +219,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_lk_m
     Teuchos::RCP<Epetra_MultiVector>& col_filtered_dens_rateofstrain_temp,
     Teuchos::RCP<Epetra_Vector>& col_filtered_temp, Teuchos::RCP<Epetra_Vector>& col_filtered_dens,
     Teuchos::RCP<Epetra_Vector>& col_filtered_dens_temp, double& LkMk, double& MkMk,
-    double& xcenter, double& ycenter, double& zcenter, const DRT::Element* ele)
+    double& xcenter, double& ycenter, double& zcenter, const CORE::Elements::Element* ele)
 {
   CORE::LINALG::Matrix<nsd_, nen_> evel_hat;
   CORE::LINALG::Matrix<nsd_, nen_> edensvel_hat;
@@ -367,7 +367,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_vreman_dt(
     Teuchos::RCP<Epetra_Vector>& col_filtered_phi2,
     Teuchos::RCP<Epetra_Vector>& col_filtered_phiexpression,
     Teuchos::RCP<Epetra_MultiVector>& col_filtered_alphaijsc, double& dt_numerator,
-    double& dt_denominator, const DRT::Element* ele)
+    double& dt_denominator, const CORE::Elements::Element* ele)
 {
   double phi_hat2 = 0.0;
   CORE::LINALG::Matrix<9, nen_> ealphaijsc_hat(true);
@@ -777,8 +777,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_diff(
   *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_fine_scale_subgr_diff(double& sgdiff,
-    CORE::LINALG::SerialDenseVector& subgrdiff, DRT::Element* ele, const double vol, const int k,
-    const double densnp, const double diffus, const CORE::LINALG::Matrix<nsd_, 1> convelint)
+    CORE::LINALG::SerialDenseVector& subgrdiff, CORE::Elements::Element* ele, const double vol,
+    const int k, const double densnp, const double diffus,
+    const CORE::LINALG::Matrix<nsd_, 1> convelint)
 {
   // get number of dimensions
   const double dim = (double)nsd_;
@@ -1328,7 +1329,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_ref_length(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::store_model_parameters_for_output(
-    const DRT::Element* ele, const bool isowned, Teuchos::ParameterList& turbulencelist,
+    const CORE::Elements::Element* ele, const bool isowned, Teuchos::ParameterList& turbulencelist,
     const int nlayer)
 {
   if (isowned)
@@ -1401,10 +1402,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::store_model_parameters_for_
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
-    Teuchos::ParameterList& params,       //!< parameter list
-    DRT::Element* ele,                    //!< pointer to element
-    DRT::Discretization& discretization,  //!< scatra discretization
-    DRT::Element::LocationArray& la       //!< location array
+    Teuchos::ParameterList& params,             //!< parameter list
+    CORE::Elements::Element* ele,               //!< pointer to element
+    DRT::Discretization& discretization,        //!< scatra discretization
+    CORE::Elements::Element::LocationArray& la  //!< location array
 )
 {
   // do some checks first

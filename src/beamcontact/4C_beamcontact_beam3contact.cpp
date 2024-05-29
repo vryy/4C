@@ -36,7 +36,8 @@ FOUR_C_NAMESPACE_OPEN
 template <const int numnodes, const int numnodalvalues>
 CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(const DRT::Discretization& pdiscret,
     const DRT::Discretization& cdiscret, const std::map<int, int>& dofoffsetmap,
-    DRT::Element* element1, DRT::Element* element2, Teuchos::ParameterList& beamcontactparams)
+    CORE::Elements::Element* element1, CORE::Elements::Element* element2,
+    Teuchos::ParameterList& beamcontactparams)
     : pdiscret_(pdiscret),
       cdiscret_(cdiscret),
       dofoffsetmap_(dofoffsetmap),
@@ -70,7 +71,7 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(const DRT::Discret
       CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Smoothing>(bcparams_, "BEAMS_SMOOTHING");
   if (smoothing == INPAR::BEAMCONTACT::bsm_cpp)
   {
-    const DRT::ElementType& eot1 = element1_->ElementType();
+    const CORE::Elements::ElementType& eot1 = element1_->ElementType();
     if (eot1 != DRT::ELEMENTS::Beam3rType::Instance())
       FOUR_C_THROW("Tangent smoothing only implemented for beams of type beam3r!");
 
@@ -1750,8 +1751,9 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_par_penalty_scale_fac
  |  Subdivide elements into segments for CPP                 meier 10/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-double CONTACT::Beam3contact<numnodes, numnodalvalues>::create_segments(DRT::Element* ele,
-    std::vector<CORE::LINALG::Matrix<3, 1, double>>& endpoints_final, int& numsegment, int i)
+double CONTACT::Beam3contact<numnodes, numnodalvalues>::create_segments(
+    CORE::Elements::Element* ele, std::vector<CORE::LINALG::Matrix<3, 1, double>>& endpoints_final,
+    int& numsegment, int i)
 {
   // endpoints of the segments
   std::vector<CORE::LINALG::Matrix<3, 1, double>> endpoints(
@@ -2365,12 +2367,12 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::closest_point_projection(d
           // element2_ are pure copies of these elements generated once in the beginning of the
           // simulation and which do therefore not contain the current values of such element
           // quantities
-          DRT::Element* element1 =
+          CORE::Elements::Element* element1 =
               pdiscret_.lColElement(pdiscret_.ElementColMap()->LID(element1_->Id()));
-          DRT::Element* element2 =
+          CORE::Elements::Element* element2 =
               pdiscret_.lColElement(pdiscret_.ElementColMap()->LID(element2_->Id()));
 
-          const DRT::ElementType& eot = element1->ElementType();
+          const CORE::Elements::ElementType& eot = element1->ElementType();
           if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
           {
             const DRT::ELEMENTS::Beam3eb* beam3ebelement1 =
@@ -4450,7 +4452,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_shape_functions(
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_shape_functions(
     CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N, const TYPE& eta, int deriv,
-    DRT::Element* ele)
+    CORE::Elements::Element* ele)
 {
   // get both discretization types
   const CORE::FE::CellType distype = ele->Shape();
@@ -4636,7 +4638,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::assemble_shapefunctions(
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 CORE::LINALG::Matrix<3, 1, TYPE> CONTACT::Beam3contact<numnodes, numnodalvalues>::r(
-    const TYPE& eta, DRT::Element* ele)
+    const TYPE& eta, CORE::Elements::Element* ele)
 {
   CORE::LINALG::Matrix<3, 1, TYPE> r(true);
   CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N(true);
@@ -4678,7 +4680,7 @@ CORE::LINALG::Matrix<3, 1, TYPE> CONTACT::Beam3contact<numnodes, numnodalvalues>
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 CORE::LINALG::Matrix<3, 1, TYPE> CONTACT::Beam3contact<numnodes, numnodalvalues>::r_xi(
-    const TYPE& eta, DRT::Element* ele)
+    const TYPE& eta, CORE::Elements::Element* ele)
 {
   CORE::LINALG::Matrix<3, 1, TYPE> r_xi(true);
   CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N_xi(true);
@@ -5242,10 +5244,11 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::update_ele_smooth_tangents
  *----------------------------------------------------------------------*/
 
 template <const int numnodes, const int numnodalvalues>
-double CONTACT::Beam3contact<numnodes, numnodalvalues>::get_jacobi(DRT::Element* element1)
+double CONTACT::Beam3contact<numnodes, numnodalvalues>::get_jacobi(
+    CORE::Elements::Element* element1)
 {
   double jacobi = 1.0;
-  const DRT::ElementType& eot1 = element1->ElementType();
+  const CORE::Elements::ElementType& eot1 = element1->ElementType();
 
   // The jacobi factor is only needed in order to scale the CPP condition. Therefore, we only use
   // the jacobi_ factor corresponding to the first gauss point of the beam element

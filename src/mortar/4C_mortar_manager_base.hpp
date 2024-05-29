@@ -35,8 +35,12 @@ namespace DRT
 {
   class Node;
   class Discretization;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace MORTAR
 {

@@ -37,7 +37,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
       s << " col e->Id() \" {\n";
       for (int i = 0; i < dis->NumMyColElements(); ++i)
       {
-        const DRT::Element* actele = dis->lColElement(i);
+        const CORE::Elements::Element* actele = dis->lColElement(i);
         if (curr_pos == nullptr)
           IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
         else
@@ -49,7 +49,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
       s << " row e->Id() \" {\n";
       for (int i = 0; i < dis->NumMyRowElements(); ++i)
       {
-        const DRT::Element* actele = dis->lRowElement(i);
+        const CORE::Elements::Element* actele = dis->lRowElement(i);
         if (curr_pos == nullptr)
           IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
         else
@@ -132,7 +132,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
         s << " col f->Id() \" {\n";
         for (int i = 0; i < xdis->NumMyColFaces(); ++i)
         {
-          const DRT::Element* actele = xdis->lColFace(i);
+          const CORE::Elements::Element* actele = xdis->lColFace(i);
           if (curr_pos == nullptr)
             IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
           else
@@ -144,7 +144,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
         s << " row f->Id() \" {\n";
         for (int i = 0; i < xdis->NumMyRowFaces(); ++i)
         {
-          const DRT::Element* actele = xdis->lRowFace(i);
+          const CORE::Elements::Element* actele = xdis->lRowFace(i);
           if (curr_pos == nullptr)
             IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
           else
@@ -279,7 +279,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
   std::map<int, DRT::Node*> sourcegnodes;
 
   // element map
-  std::map<int, Teuchos::RCP<DRT::Element>> sourceelements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> sourceelements;
 
   // find conditioned nodes (owned and ghosted) and elements
   CORE::Conditions::FindConditionObjects(
@@ -294,7 +294,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
 void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
     Teuchos::RCP<DRT::Discretization> sourcedis, Teuchos::RCP<DRT::Discretization> targetdis,
     const std::map<int, DRT::Node*>& sourcenodes, const std::map<int, DRT::Node*>& sourcegnodes,
-    const std::map<int, Teuchos::RCP<DRT::Element>>& sourceelements,
+    const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& sourceelements,
     const std::vector<std::string>& conditions_to_copy) const
 {
   if (!sourcedis->Filled()) FOUR_C_THROW("sourcedis is not filled");
@@ -304,7 +304,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
   const int numothernodecol = sourcedis->NumMyColNodes();
 
   // add the conditioned elements
-  for (std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator sourceele_iter =
+  for (std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator sourceele_iter =
            sourceelements.begin();
        sourceele_iter != sourceelements.end(); ++sourceele_iter)
   {
@@ -369,7 +369,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
     int source_ele_gid = sourcedis->ElementColMap()->GID(j);
     // continue, if we are going to delete this element
     if (sourceelements.find(source_ele_gid) != sourceelements.end()) continue;
-    DRT::Element* source_ele = sourcedis->gElement(source_ele_gid);
+    CORE::Elements::Element* source_ele = sourcedis->gElement(source_ele_gid);
     const int* nid = source_ele->NodeIds();
     for (unsigned i = 0; i < static_cast<unsigned>(source_ele->num_node()); ++i)
     {
@@ -406,7 +406,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
     if (not sourcedis->DeleteNode(*it)) FOUR_C_THROW("Node %d could not be deleted!", *it);
 
   // delete conditioned elements from source discretization
-  for (std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator sourceele_iter =
+  for (std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator sourceele_iter =
            sourceelements.begin();
        sourceele_iter != sourceelements.end(); ++sourceele_iter)
   {
@@ -481,13 +481,13 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_co
   const int myrank = targetdis->Comm().MyPID();
 
   // element map
-  std::map<int, Teuchos::RCP<DRT::Element>> src_cond_elements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> src_cond_elements;
 
   // find conditioned nodes (owned and ghosted) and elements
   CORE::Conditions::FindConditionObjects(src_cond_elements, boundary_conds);
 
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator cit;
-  std::map<int, Teuchos::RCP<DRT::Element>> src_elements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator cit;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> src_elements;
   // row node map (id -> pointer)
   std::map<int, DRT::Node*> src_my_gnodes;
   std::vector<int> condnoderowvec;
@@ -497,14 +497,15 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_co
   // find all parent elements
   for (cit = src_cond_elements.begin(); cit != src_cond_elements.end(); ++cit)
   {
-    DRT::FaceElement* src_face_element = dynamic_cast<DRT::FaceElement*>(cit->second.get());
+    CORE::Elements::FaceElement* src_face_element =
+        dynamic_cast<CORE::Elements::FaceElement*>(cit->second.get());
     if (src_face_element == nullptr)
-      FOUR_C_THROW(
-          "Dynamic cast failed! The src element %d is no DRT::FaceElement!", cit->second->Id());
+      FOUR_C_THROW("Dynamic cast failed! The src element %d is no CORE::Elements::FaceElement!",
+          cit->second->Id());
     // get the parent element
-    DRT::Element* src_ele = src_face_element->parent_element();
+    CORE::Elements::Element* src_ele = src_face_element->parent_element();
     int src_ele_gid = src_face_element->ParentElementId();
-    src_elements[src_ele_gid] = Teuchos::rcp<DRT::Element>(src_ele, false);
+    src_elements[src_ele_gid] = Teuchos::rcp<CORE::Elements::Element>(src_ele, false);
     const int* n = src_ele->NodeIds();
     for (unsigned i = 0; i < static_cast<unsigned>(src_ele->num_node()); ++i)
     {

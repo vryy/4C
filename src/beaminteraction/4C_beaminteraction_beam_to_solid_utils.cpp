@@ -167,7 +167,8 @@ std::pair<unsigned int, unsigned int> BEAMINTERACTION::MortarShapeFunctionsToNum
  *
  */
 void BEAMINTERACTION::GetBeamTriadInterpolationScheme(const DRT::Discretization& discret,
-    const Teuchos::RCP<const Epetra_Vector>& displacement_vector, const DRT::Element* ele,
+    const Teuchos::RCP<const Epetra_Vector>& displacement_vector,
+    const CORE::Elements::Element* ele,
     LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>& triad_interpolation_scheme,
     LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
         ref_triad_interpolation_scheme)

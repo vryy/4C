@@ -34,7 +34,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
-    const DRT::Element* ele)
+    const CORE::Elements::Element* ele)
 {
   switch (ele->Shape())
   {
@@ -138,8 +138,8 @@ DRT::ELEMENTS::TemperImpl<distype>::TemperImpl()
 
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
-    const DRT::Element* ele, Teuchos::ParameterList& params,
-    const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
+    const CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    const DRT::Discretization& discretization, const CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  // Tangent ("stiffness")
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  // Capacity ("mass")
     CORE::LINALG::SerialDenseVector& elevec1_epetra,  // internal force vector
@@ -628,7 +628,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 }
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::TemperImpl<distype>::evaluate_neumann(const DRT::Element* ele,
+int DRT::ELEMENTS::TemperImpl<distype>::evaluate_neumann(const CORE::Elements::Element* ele,
     const Teuchos::ParameterList& params, const DRT::Discretization& discretization,
     const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseMatrix* elemat1_epetra)
@@ -674,9 +674,9 @@ int DRT::ELEMENTS::TemperImpl<distype>::evaluate_neumann(const DRT::Element* ele
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::evaluate_tang_capa_fint(const Element* ele,
+void DRT::ELEMENTS::TemperImpl<distype>::evaluate_tang_capa_fint(const CORE::Elements::Element* ele,
     const double time, const DRT::Discretization& discretization,
-    const DRT::Element::LocationArray& la,
+    const CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* etang,
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapalin,
@@ -733,8 +733,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::evaluate_tang_capa_fint(const Element* 
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::evaluate_coupled_tang(const DRT::Element* ele,
-    const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
+void DRT::ELEMENTS::TemperImpl<distype>::evaluate_coupled_tang(const CORE::Elements::Element* ele,
+    const DRT::Discretization& discretization, const CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_>* etangcoupl,
     Teuchos::ParameterList& params)
 {
@@ -775,7 +775,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::evaluate_coupled_tang(const DRT::Elemen
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::evaluate_fext(
-    const DRT::Element* ele,                               // the element whose matrix is calculated
+    const CORE::Elements::Element* ele,                    // the element whose matrix is calculated
     const double time,                                     // current time
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& efext  // external force
 )
@@ -811,8 +811,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::evaluate_fext(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::linear_thermo_contribution(
-    const DRT::Element* ele,  // the element whose matrix is calculated
-    const double time,        // current time
+    const CORE::Elements::Element* ele,  // the element whose matrix is calculated
+    const double time,                   // current time
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
         econd,  // conductivity matrix
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  // capacity matrix
@@ -916,8 +916,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_thermo_contribution(
  | and rhs: r_T(d), k_TT(d) (public)                                    |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::linear_disp_contribution(const DRT::Element* ele,
-    const double time, const std::vector<double>& disp, const std::vector<double>& vel,
+void DRT::ELEMENTS::TemperImpl<distype>::linear_disp_contribution(
+    const CORE::Elements::Element* ele, const double time, const std::vector<double>& disp,
+    const std::vector<double>& vel,
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint, const Teuchos::ParameterList& params)
 {
@@ -1127,9 +1128,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_disp_contribution(const DRT::Ele
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::linear_coupled_tang(
-    const DRT::Element* ele,          // the element whose matrix is calculated
-    const std::vector<double>& disp,  // current displacements
-    const std::vector<double>& vel,   // current velocities
+    const CORE::Elements::Element* ele,  // the element whose matrix is calculated
+    const std::vector<double>& disp,     // current displacements
+    const std::vector<double>& vel,      // current velocities
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
     const Teuchos::ParameterList& params)
 {
@@ -1287,10 +1288,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_coupled_tang(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
-    const DRT::Element* ele,          // the element whose matrix is calculated
-    const double time,                // current time
-    const std::vector<double>& disp,  // current displacements
-    const std::vector<double>& vel,   // current velocities
+    const CORE::Elements::Element* ele,  // the element whose matrix is calculated
+    const double time,                   // current time
+    const std::vector<double>& disp,     // current displacements
+    const std::vector<double>& vel,      // current velocities
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
         econd,  // conductivity matrix
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  // capacity matrix
@@ -1596,9 +1597,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
-    const DRT::Element* ele,          // the element whose matrix is calculated
-    const std::vector<double>& disp,  // current displacements
-    const std::vector<double>& vel,   // current velocities
+    const CORE::Elements::Element* ele,  // the element whose matrix is calculated
+    const std::vector<double>& disp,     // current displacements
+    const std::vector<double>& vel,      // current velocities
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,
     Teuchos::ParameterList& params  // parameter list
 )
@@ -1990,7 +1991,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::linear_dissipation_fint(
-    const DRT::Element* ele,  // the element whose matrix is calculated
+    const CORE::Elements::Element* ele,  // the element whose matrix is calculated
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  // internal force
     Teuchos::ParameterList& params)
 {
@@ -2085,7 +2086,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_dissipation_fint(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::linear_dissipation_coupled_tang(
-    const DRT::Element* ele,  // the element whose matrix is calculated
+    const CORE::Elements::Element* ele,  // the element whose matrix is calculated
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
     Teuchos::ParameterList& params)
 {
@@ -2239,8 +2240,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_dissipation_coupled_tang(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_dissipation_fint_tang(
-    const DRT::Element* ele,          // the element whose matrix is calculated
-    const std::vector<double>& disp,  // current displacements
+    const CORE::Elements::Element* ele,  // the element whose matrix is calculated
+    const std::vector<double>& disp,     // current displacements
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
         econd,                                              // conductivity matrix
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  // internal force
@@ -2356,9 +2357,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_dissipation_fint_tang(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_dissipation_coupled_tang(
-    const DRT::Element* ele,          // the element whose matrix is calculated
-    const std::vector<double>& disp,  //!< current displacements
-    const std::vector<double>& vel,   //!< current velocities
+    const CORE::Elements::Element* ele,  // the element whose matrix is calculated
+    const std::vector<double>& disp,     //!< current displacements
+    const std::vector<double>& vel,      //!< current velocities
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
     Teuchos::ParameterList& params)
 {
@@ -2471,7 +2472,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_dissipation_coupled_tang(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::linear_heatflux_tempgrad(const DRT::Element* ele,
+void DRT::ELEMENTS::TemperImpl<distype>::linear_heatflux_tempgrad(
+    const CORE::Elements::Element* ele,
     CORE::LINALG::Matrix<nquad_, nsd_>* eheatflux,  // heat fluxes at Gauss points
     CORE::LINALG::Matrix<nquad_, nsd_>* etempgrad   // temperature gradients at Gauss points
 )
@@ -2510,7 +2512,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::linear_heatflux_tempgrad(const DRT::Ele
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_heatflux_tempgrad(
-    const DRT::Element* ele,                        // the element whose matrix is calculated
+    const CORE::Elements::Element* ele,             // the element whose matrix is calculated
     const std::vector<double>& disp,                // current displacements
     const std::vector<double>& vel,                 // current velocities
     CORE::LINALG::Matrix<nquad_, nsd_>* eheatflux,  // heat fluxes at Gauss points
@@ -2632,7 +2634,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::nonlinear_heatflux_tempgrad(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::extract_disp_vel(const DRT::Discretization& discretization,
-    const DRT::Element::LocationArray& la, std::vector<double>& mydisp,
+    const CORE::Elements::Element::LocationArray& la, std::vector<double>& mydisp,
     std::vector<double>& myvel) const
 {
   if ((discretization.HasState(1, "displacement")) and (discretization.HasState(1, "velocity")))
@@ -2673,7 +2675,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::calculate_lump_matrix(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::radiation(const DRT::Element* ele, const double time)
+void DRT::ELEMENTS::TemperImpl<distype>::radiation(
+    const CORE::Elements::Element* ele, const double time)
 {
   std::vector<CORE::Conditions::Condition*> myneumcond;
 
@@ -2776,7 +2779,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::radiation(const DRT::Element* ele, cons
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::materialize(const DRT::Element* ele, const int gp)
+void DRT::ELEMENTS::TemperImpl<distype>::materialize(
+    const CORE::Elements::Element* ele, const int gp)
 {
   auto material = ele->Material();
 
@@ -2855,8 +2859,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::eval_shape_func_and_derivs_at_int_point
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::initial_and_current_nodal_position_velocity(
-    const DRT::Element* ele, const std::vector<double>& disp, const std::vector<double>& vel,
-    CORE::LINALG::Matrix<nen_, nsd_>& xcurr, CORE::LINALG::Matrix<nen_, nsd_>& xcurrrate)
+    const CORE::Elements::Element* ele, const std::vector<double>& disp,
+    const std::vector<double>& vel, CORE::LINALG::Matrix<nen_, nsd_>& xcurr,
+    CORE::LINALG::Matrix<nen_, nsd_>& xcurrrate)
 {
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   for (int i = 0; i < nen_; ++i)
@@ -2873,7 +2878,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::initial_and_current_nodal_position_velo
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::prepare_nurbs_eval(
-    const DRT::Element* ele,                   // the element whose matrix is calculated
+    const CORE::Elements::Element* ele,        // the element whose matrix is calculated
     const DRT::Discretization& discretization  // current discretisation
 )
 {
@@ -2898,8 +2903,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::prepare_nurbs_eval(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::integrate_shape_functions(const DRT::Element* ele,
-    CORE::LINALG::SerialDenseVector& elevec1, const CORE::LINALG::IntSerialDenseVector& dofids)
+void DRT::ELEMENTS::TemperImpl<distype>::integrate_shape_functions(
+    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseVector& elevec1,
+    const CORE::LINALG::IntSerialDenseVector& dofids)
 {
   // get node coordinates
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
@@ -2930,7 +2936,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::integrate_shape_functions(const DRT::El
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::extrapolate_from_gauss_points_to_nodes(
-    const DRT::Element* ele,  // the element whose matrix is calculated
+    const CORE::Elements::Element* ele,  // the element whose matrix is calculated
     const CORE::LINALG::Matrix<nquad_, nsd_>& gpheatflux,
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& efluxx,
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& efluxy,
@@ -3207,7 +3213,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::calculate_cauchy_greens(
 
 template <CORE::FE::CellType distype>
 Teuchos::RCP<CORE::MAT::Material> DRT::ELEMENTS::TemperImpl<distype>::get_str_material(
-    const DRT::Element* ele  // the element whose matrix is calculated
+    const CORE::Elements::Element* ele  // the element whose matrix is calculated
 ) const
 {
   Teuchos::RCP<CORE::MAT::Material> structmat = Teuchos::null;
@@ -3223,7 +3229,7 @@ Teuchos::RCP<CORE::MAT::Material> DRT::ELEMENTS::TemperImpl<distype>::get_str_ma
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::compute_error(
-    const DRT::Element* ele,  // the element whose matrix is calculated
+    const CORE::Elements::Element* ele,  // the element whose matrix is calculated
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& elevec1,
     Teuchos::ParameterList& params  // parameter list
 )
@@ -3351,10 +3357,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::copy_matrix_into_char_vector(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::fd_check_coupl_nln_fint_cond_capa(
-    const DRT::Element* ele,          //!< the element whose matrix is calculated
-    const double time,                //!< current time
-    const std::vector<double>& disp,  //!< current displacements
-    const std::vector<double>& vel,   //!< current velocities
+    const CORE::Elements::Element* ele,  //!< the element whose matrix is calculated
+    const double time,                   //!< current time
+    const std::vector<double>& disp,     //!< current displacements
+    const std::vector<double>& vel,      //!< current velocities
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
         etang,                                              //!< tangent conductivity matrix
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force);)
@@ -3432,10 +3438,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::fd_check_coupl_nln_fint_cond_capa(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::fd_check_capalin(
-    const DRT::Element* ele,          //!< the element whose matrix is calculated
-    const double time,                //!< current time
-    const std::vector<double>& disp,  //!< current displacements
-    const std::vector<double>& vel,   //!< current velocities
+    const CORE::Elements::Element* ele,  //!< the element whose matrix is calculated
+    const double time,                   //!< current time
+    const std::vector<double>& disp,     //!< current displacements
+    const std::vector<double>& vel,      //!< current velocities
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
         ecapan,  //!< capacity matrix
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*

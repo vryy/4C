@@ -31,7 +31,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(const std::v
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLNURBS")
@@ -45,14 +45,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id, owner));
 }
 
 void DRT::ELEMENTS::NURBS::Wall1NurbsType::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 2;
   dimns = 3;
@@ -120,7 +120,7 @@ DRT::ELEMENTS::NURBS::Wall1Nurbs::Wall1Nurbs(const DRT::ELEMENTS::NURBS::Wall1Nu
  |  Deep copy this instance of Wall1 and return pointer to it (public) |
  |                                                          gammi 05/09|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::NURBS::Wall1Nurbs::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::NURBS::Wall1Nurbs::Clone() const
 {
   DRT::ELEMENTS::NURBS::Wall1Nurbs* newelement = new DRT::ELEMENTS::NURBS::Wall1Nurbs(*this);
   return newelement;
@@ -158,7 +158,7 @@ CORE::FE::CellType DRT::ELEMENTS::NURBS::Wall1Nurbs::Shape() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 05/09|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::Wall1Nurbs::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::NURBS::Wall1Nurbs::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1>(CORE::COMM::buildLines, *this);
 }
@@ -166,7 +166,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::Wall1Nurbs::Lines(
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          gammi 05/09|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::Wall1Nurbs::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::NURBS::Wall1Nurbs::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

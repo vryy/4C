@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::check_elch_element_parameter(
-    DRT::Element* ele  //!< current element
+    CORE::Elements::Element* ele  //!< current element
 )
 {
   // check material
@@ -64,7 +64,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::check_elch_element_parameter(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::evaluate_elch_boundary_kinetics_point(
-    const DRT::Element* ele,                                   ///< current element
+    const CORE::Elements::Element* ele,                        ///< current element
     CORE::LINALG::SerialDenseMatrix& emat,                     ///< element matrix
     CORE::LINALG::SerialDenseVector& erhs,                     ///< element right-hand side vector
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
@@ -251,7 +251,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calculate_flux(
   *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_solution(
-    const DRT::Element* ele, Teuchos::ParameterList& params,
+    const CORE::Elements::Element* ele, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& errors)
 {
   // at the moment, there is only one analytical test problem available!

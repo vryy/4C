@@ -65,19 +65,20 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       /// Setup element evaluation
-      int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) override;
+      int SetupCalc(CORE::Elements::Element* ele, DRT::Discretization& discretization) override;
 
      protected:
       //! extract element based or nodal values
       //  return extracted values of phinp
-      void extract_element_and_node_values(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la) override;
+      void extract_element_and_node_values(CORE::Elements::Element* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          CORE::Elements::Element::LocationArray& la) override;
 
       //! extract element based or nodal values --> L2-projection case: called within
       //! extract_element_and_node_values
       //  return extracted values of phinp
-      virtual void extract_nodal_flux(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      virtual void extract_nodal_flux(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           const int numfluidphases);
 
       //! set internal variables
@@ -657,7 +658,7 @@ namespace DRT
       };
 
       // Set the fluid-material in the scatra-Varmanager
-      void set_fluid_poromultiphase_material(DRT::Element* ele)
+      void set_fluid_poromultiphase_material(CORE::Elements::Element* ele)
       {
         // check if we actually have three materials
         if (ele->NumMaterial() < 3) FOUR_C_THROW("no third material available");
@@ -1472,8 +1473,8 @@ namespace DRT
       }
 
       //! Setup phasemanager and variablemanager of fluid
-      void setup_poro_fluid_managers(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      void setup_poro_fluid_managers(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           const int numfluidphases, const int totalnummultiphasedofpernode)
       {
         // dummy parameter list
@@ -1500,8 +1501,8 @@ namespace DRT
 
       // extract the element and node values of the poro-fluid --> extract them from its
       // variablemanager
-      void extract_element_and_node_values_of_poro_fluid(DRT::Element* ele,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      void extract_element_and_node_values_of_poro_fluid(CORE::Elements::Element* ele,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::Matrix<NSD, NEN>& xyze)
       {
         // access from outside to the variablemananger: scatra-discretization has fluid-dis on

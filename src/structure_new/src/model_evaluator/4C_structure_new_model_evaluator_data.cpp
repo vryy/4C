@@ -174,7 +174,7 @@ STR::MODELEVALUATOR::Data::Data()
     : isinit_(false),
       issetup_(false),
       isntmaps_filled_(false),
-      ele_action_(DRT::ELEMENTS::none),
+      ele_action_(CORE::Elements::none),
       predict_type_(INPAR::STR::pred_vague),
       ele_eval_error_flag_(STR::ELEMENTS::ele_error_none),
       is_tolerate_errors_(false),

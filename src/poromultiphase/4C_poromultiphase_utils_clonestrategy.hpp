@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
 }
@@ -45,11 +45,11 @@ namespace POROMULTIPHASE
      protected:
       /// determine element type std::string and whether element is copied or not
       virtual bool determine_ele_type(
-          DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+          CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
       /// set element-specific data (material etc.)
-      void set_element_data(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele,
-          const int matid, const bool isnurbs);
+      void set_element_data(Teuchos::RCP<CORE::Elements::Element> newele,
+          CORE::Elements::Element* oldele, const int matid, const bool isnurbs);
 
       /// check for correct material
       void check_material_type(const int matid);

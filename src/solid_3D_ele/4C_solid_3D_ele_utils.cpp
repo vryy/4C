@@ -7,8 +7,8 @@
 
 #include "4C_solid_3D_ele_utils.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_solid_3D_ele_properties.hpp"
@@ -143,7 +143,7 @@ DRT::ELEMENTS::PrestressTechnology STR::UTILS::READELEMENT::ReadPrestressTechnol
 }
 
 void STR::UTILS::NodalBlockInformationSolid(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;

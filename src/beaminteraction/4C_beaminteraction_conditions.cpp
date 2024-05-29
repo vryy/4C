@@ -278,7 +278,7 @@ void BEAMINTERACTION::BeamInteractionConditions::Clear()
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamInteractionConditions::CreateContactPair(
-    const std::vector<DRT::Element const*>& ele_ptrs)
+    const std::vector<CORE::Elements::Element const*>& ele_ptrs)
 {
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> new_pair;
   for (auto& map_pair : condition_map_)
@@ -336,7 +336,7 @@ void BEAMINTERACTION::ConditionToElementIds(
     // last node, since if there are nodes connected to fewer elements, those are usually at the
     // end of the list.
     int local_node_id = n_nodes - 1;
-    DRT::Element** elements = item.second->Nodes()[local_node_id]->Elements();
+    CORE::Elements::Element** elements = item.second->Nodes()[local_node_id]->Elements();
     for (int i_element = 0; i_element < item.second->Nodes()[local_node_id]->NumElement();
          i_element++)
     {

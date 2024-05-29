@@ -48,9 +48,10 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate the element
-      int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::Elements::Element::LocationArray& la,
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -62,8 +63,9 @@ namespace DRT
       /*========================================================================*/
 
       //! extract element based or nodal values
-      void extract_element_and_node_values(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la) override;
+      void extract_element_and_node_values(CORE::Elements::Element* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          CORE::Elements::Element::LocationArray& la) override;
 
       //! evaluate material
       void materials(
@@ -88,7 +90,7 @@ namespace DRT
       );
 
       //! calculate matrix and rhs for ep
-      void sysmat(DRT::Element* ele,                  ///< the element whose matrix is calculated
+      void sysmat(CORE::Elements::Element* ele,       ///< the element whose matrix is calculated
           CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs,      ///< element rhs to calculate
           CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector

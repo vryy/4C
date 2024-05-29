@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
 }
@@ -58,17 +58,18 @@ namespace STI
     virtual std::map<std::string, std::string> conditions_to_copy() const;
 
     //! decide whether element should be cloned or not, and if so, determine type of cloned element
-    bool determine_ele_type(DRT::Element* actele,  //! current element on source discretization
-        const bool ismyele,                        //! ownership flag
-        std::vector<std::string>& eletype          //! vector storing types of cloned elements
+    bool determine_ele_type(
+        CORE::Elements::Element* actele,   //! current element on source discretization
+        const bool ismyele,                //! ownership flag
+        std::vector<std::string>& eletype  //! vector storing types of cloned elements
     );
 
     //! provide cloned element with element specific data
-    void set_element_data(
-        Teuchos::RCP<DRT::Element> newele,  //! current cloned element on target discretization
-        DRT::Element* oldele,               //! current element on source discretization
-        const int matid,                    //! material of cloned element
-        const bool isnurbs                  //! nurbs flag
+    void set_element_data(Teuchos::RCP<CORE::Elements::Element>
+                              newele,     //! current cloned element on target discretization
+        CORE::Elements::Element* oldele,  //! current element on source discretization
+        const int matid,                  //! material of cloned element
+        const bool isnurbs                //! nurbs flag
     );
   };  // class ScatraThermoCloneStrategy
 }  // namespace STI

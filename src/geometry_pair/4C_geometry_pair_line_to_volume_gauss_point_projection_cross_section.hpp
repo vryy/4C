@@ -50,8 +50,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToVolumeGaussPointProjectionCrossSection(const DRT::Element* element1,
-        const DRT::Element* element2,
+    GeometryPairLineToVolumeGaussPointProjectionCrossSection(
+        const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data);
 
 

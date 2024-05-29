@@ -153,7 +153,7 @@ namespace
           fflush(nullptr);
         }
 
-        DRT::Element* actele = nurbsdis->lColElement(i);
+        CORE::Elements::Element* actele = nurbsdis->lColElement(i);
 
         // get element location vector, dirichlet flags and ownerships
         lm.clear();

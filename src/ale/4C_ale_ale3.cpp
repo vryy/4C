@@ -34,10 +34,10 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Ale3Type::Create(const std::vector<char>& 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Ale3Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele;
+  Teuchos::RCP<CORE::Elements::Element> ele;
 
   if (eletype == "ALE3")
   {
@@ -52,7 +52,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3Type::Create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Ale3Type::Create(const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::Ale3(id, owner));
 }
@@ -60,7 +60,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3Type::Create(const int id, const i
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale3Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
@@ -109,7 +109,8 @@ void DRT::ELEMENTS::Ale3Type::setup_element_definition(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3SurfaceType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Ale3SurfaceType::Create(
+    const int id, const int owner)
 {
   // return Teuchos::rcp( new Ale3Surface( id, owner ) );
   return Teuchos::null;
@@ -117,15 +118,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3SurfaceType::Create(const int id, 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale3::Ale3(int id, int owner) : DRT::Element(id, owner) {}
+DRT::ELEMENTS::Ale3::Ale3(int id, int owner) : CORE::Elements::Element(id, owner) {}
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale3::Ale3(const DRT::ELEMENTS::Ale3& old) : DRT::Element(old) { return; }
+DRT::ELEMENTS::Ale3::Ale3(const DRT::ELEMENTS::Ale3& old) : CORE::Elements::Element(old) { return; }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Ale3::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Ale3::Clone() const
 {
   DRT::ELEMENTS::Ale3* newelement = new DRT::ELEMENTS::Ale3(*this);
   return newelement;
@@ -201,7 +202,7 @@ void DRT::ELEMENTS::Ale3::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Ale3::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Ale3::Surfaces()
 {
   return CORE::COMM::ElementBoundaryFactory<Ale3Surface, Ale3>(CORE::COMM::buildSurfaces, *this);
 }

@@ -114,7 +114,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
-  DRT::Element::LocationArray la(dis.NumDofSets());
+  CORE::Elements::Element::LocationArray la(dis.NumDofSets());
 
   // define element matrices and vectors
   CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -129,10 +129,10 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
   // loop only row elements
   for (int i = 0; i < numele; ++i)
   {
-    DRT::Element* actele = dis.lRowElement(i);
+    CORE::Elements::Element* actele = dis.lRowElement(i);
 
     // get element location vector
-    // DRT::Element::LocationArray la(1);
+    // CORE::Elements::Element::LocationArray la(1);
     actele->LocationVector(dis, la, false);
 
     // Reshape element matrices and vectors and initialize to zero
@@ -206,7 +206,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         // we have an inner node here
         //---------------------------------------------
 
-        const DRT::Element* const* adjacentele = node->Elements();
+        const CORE::Elements::Element* const* adjacentele = node->Elements();
         const int numadjacent = node->NumElement();
 
         // patch-recovery for each entry of the velocity gradient
@@ -257,7 +257,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         std::vector<int> slavenodeids = masternode->second;
         const int numslavenodes = (int)(masternode->second.size());
         // containers for adjacent elements to slave+master nodes
-        std::vector<const DRT::Element* const*> adjacenteles(numslavenodes + 1);
+        std::vector<const CORE::Elements::Element* const*> adjacenteles(numslavenodes + 1);
         std::vector<int> numadjacenteles(numslavenodes + 1);
         std::vector<double> offset(dim, 0.0);
         std::vector<std::vector<double>> eleoffsets(numslavenodes + 1, offset);
@@ -329,7 +329,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         //---------------------------------------------
 
         // get all neighboring nodes of boundary node and find closest one
-        const DRT::Element* const* adjacentele = node->Elements();
+        const CORE::Elements::Element* const* adjacentele = node->Elements();
         const int numadjacentele = node->NumElement();
         double distance = 1.0e12;
         int closestnodeid = -1;
@@ -361,7 +361,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
 
         // build patch for closest node and evaluate patch at boundary node
         const DRT::Node* closestnode = dis.gNode(closestnodeid);
-        const DRT::Element* const* closestnodeadjacentele = closestnode->Elements();
+        const CORE::Elements::Element* const* closestnodeadjacentele = closestnode->Elements();
         const int numadjacent = closestnode->NumElement();
 
         // leave here in case the closest node is a ghost node
@@ -417,7 +417,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         //---------------------------------------------
 
         // often bounds are axis aligned -> another pbc (master) node is closest node
-        const DRT::Element* const* adjacentele = node->Elements();
+        const CORE::Elements::Element* const* adjacentele = node->Elements();
         const int numadjacentele = node->NumElement();
 
         // leave here if the boundary node is a ghost node and has no adjacent elements on this proc
@@ -486,7 +486,8 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         }
 
         // containers for adjacent elements to slave+master nodes
-        std::vector<const DRT::Element* const*> closestnodeadjacenteles(numslavenodes + 1);
+        std::vector<const CORE::Elements::Element* const*> closestnodeadjacenteles(
+            numslavenodes + 1);
         std::vector<int> numadjacenteles(numslavenodes + 1);
         std::vector<double> offset(dim, 0.0);
         std::vector<std::vector<double>> eleoffsets(numslavenodes + 1, offset);

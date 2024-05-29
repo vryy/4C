@@ -93,7 +93,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
   // loop all available elements
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
-    DRT::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
+    CORE::Elements::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
 
     // access elements knot span
     std::vector<CORE::LINALG::SerialDenseVector> knots(dim);
@@ -1792,7 +1792,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
   std::set<int> coldofset;
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
-    DRT::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
+    CORE::Elements::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
 
     std::vector<int> lm;
     std::vector<int> lmowner;
@@ -1923,7 +1923,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
   // loop all available elements
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
-    DRT::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
+    CORE::Elements::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
 
     // get gid, location in the patch
     std::vector<int> ele_cart_id(dim);
@@ -2159,7 +2159,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
 /*----------------------------------------------------------------------*/
 void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_MultiVector> idata,
     const int dim, const int npatch, const std::vector<int>& vpoff,
-    const std::vector<int>& ele_cart_id, const DRT::Element* actele,
+    const std::vector<int>& ele_cart_id, const CORE::Elements::Element* actele,
     DRT::NURBS::NurbsDiscretization* nurbsdis,
     const std::vector<CORE::LINALG::SerialDenseVector>& eleknots,
     const CORE::LINALG::SerialDenseVector& weights, const int numdf,
@@ -3405,7 +3405,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
   std::set<int> colnodeset;
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
-    DRT::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
+    CORE::Elements::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
     /*
         std::vector<int> lm;
         std::vector<int> lmowner;
@@ -3445,7 +3445,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
   // loop all available elements
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
-    DRT::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
+    CORE::Elements::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
 
     // get gid, location in the patch
     std::vector<int> ele_cart_id(dim);

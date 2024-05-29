@@ -79,13 +79,13 @@ namespace CONTACT
     /*!
     \brief Get first element
     */
-    virtual const DRT::Element* Element1() = 0;
-    // inline const DRT::Element* Element1() { return element1_;};
+    virtual const CORE::Elements::Element* Element1() = 0;
+    // inline const CORE::Elements::Element* Element1() { return element1_;};
 
     /*!
     \brief Get first element
     */
-    virtual const DRT::Element* Element2() = 0;
+    virtual const CORE::Elements::Element* Element2() = 0;
 
     /*!
     \brief Get gap of this contact pair
@@ -128,7 +128,8 @@ namespace CONTACT
     static Teuchos::RCP<Beam3tosolidcontactinterface> Impl(const int numnodessol,
         const int numnodes, const int numnodalvalues, const DRT::Discretization& pdiscret,
         const DRT::Discretization& cdiscret, const std::map<int, int>& dofoffsetmap,
-        DRT::Element* element1, DRT::Element* element2, Teuchos::ParameterList beamcontactparams);
+        CORE::Elements::Element* element1, CORE::Elements::Element* element2,
+        Teuchos::ParameterList beamcontactparams);
 
     /*!
     \brief Change the sign of the normal vector: This has to be done at the end of a time step when
@@ -202,8 +203,8 @@ namespace CONTACT
     \param ele2pos (in): nodal coordinates of second element
     */
     Beam3tosolidcontact(const DRT::Discretization& pdiscret, const DRT::Discretization& cdiscret,
-        const std::map<int, int>& dofoffsetmap, DRT::Element* element1, DRT::Element* element2,
-        Teuchos::ParameterList beamcontactparams);
+        const std::map<int, int>& dofoffsetmap, CORE::Elements::Element* element1,
+        CORE::Elements::Element* element2, Teuchos::ParameterList beamcontactparams);
 
     /*!
     \brief Copy Constructor
@@ -234,12 +235,12 @@ namespace CONTACT
     /*!
     \brief Get first element
     */
-    inline const DRT::Element* Element1() override { return element1_; };
+    inline const CORE::Elements::Element* Element1() override { return element1_; };
 
     /*!
     \brief Get first element
     */
-    inline const DRT::Element* Element2() override { return element2_; };
+    inline const CORE::Elements::Element* Element2() override { return element2_; };
 
     /*!
     \brief Get gap of this contact pair
@@ -343,10 +344,10 @@ namespace CONTACT
     const std::map<int, int>& dofoffsetmap_;
 
     //! first element of contact pair
-    DRT::Element* element1_;
+    CORE::Elements::Element* element1_;
 
     //! second element of contact pair
-    DRT::Element* element2_;
+    CORE::Elements::Element* element2_;
 
     //! current node coordinates of the two elements
     CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS> ele1pos_;

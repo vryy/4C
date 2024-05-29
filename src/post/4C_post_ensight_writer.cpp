@@ -419,7 +419,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::
     // loop all available elements
     for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
     {
-      DRT::Element* const actele = dis->gElement(elementmap->GID(iele));
+      CORE::Elements::Element* const actele = dis->gElement(elementmap->GID(iele));
       if (actele->Shape() == distypeiter)
       {
         DRT::Node** const nodes = actele->Nodes();
@@ -692,7 +692,7 @@ EnsightWriter::NumElePerDisType EnsightWriter::get_num_ele_per_dis_type(
   NumElePerDisType numElePerDisType;
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
-    DRT::Element* actele = dis->gElement(elementmap->GID(iele));
+    CORE::Elements::Element* actele = dis->gElement(elementmap->GID(iele));
     const CORE::FE::CellType distype = actele->Shape();
     // update counter for current distype
     numElePerDisType[distype]++;
@@ -793,7 +793,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
     const int gid = elementmap->GID(iele);
-    DRT::Element* actele = dis->gElement(gid);
+    CORE::Elements::Element* actele = dis->gElement(gid);
     const CORE::FE::CellType distype = actele->Shape();
     // update counter for current distype
     eleGidPerDisType[distype].push_back(gid);
@@ -1853,7 +1853,7 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
   {
     for (int ielem = 0; ielem < nummyelem; ielem++)
     {
-      DRT::Element* n = dis->lRowElement(ielem);
+      CORE::Elements::Element* n = dis->lRowElement(ielem);
       const double dofgid = (double)dis->Dof(n, from + idof);
       if (dofgid > -1.0)
       {

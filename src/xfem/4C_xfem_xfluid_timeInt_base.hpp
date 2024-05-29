@@ -15,9 +15,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_inpar_xfem.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -445,12 +445,12 @@ namespace XFEM
     /*========================================================================*/
 
     //! check if the current point x2 at time t^n changed the side compared to x1
-    bool changed_side(DRT::Element* ele1,  /// first element where x1 lies in
-        CORE::LINALG::Matrix<3, 1>& x1,    /// global coordinates of point x1
-        bool newTimeStep1,                 /// new/old timestep for point x1
-        DRT::Element* ele2,                /// second element where x2 lies in
-        CORE::LINALG::Matrix<3, 1>& x2,    /// global coordinates of point x2
-        bool newTimeStep2                  /// new/old timestep for point x2
+    bool changed_side(CORE::Elements::Element* ele1,  /// first element where x1 lies in
+        CORE::LINALG::Matrix<3, 1>& x1,               /// global coordinates of point x1
+        bool newTimeStep1,                            /// new/old timestep for point x1
+        CORE::Elements::Element* ele2,                /// second element where x2 lies in
+        CORE::LINALG::Matrix<3, 1>& x2,               /// global coordinates of point x2
+        bool newTimeStep2                             /// new/old timestep for point x2
     ) const
     {
       if (newTimeStep1 != newTimeStep2)
@@ -469,16 +469,17 @@ namespace XFEM
     //! check if the current point x2 changed the side compared to x1
     bool changed_side_same_time(
         const bool newTimeStep,          /// new/old timestep for both points x1 and x2
-        DRT::Element* ele1,              /// first element where x1 lies in
+        CORE::Elements::Element* ele1,   /// first element where x1 lies in
         CORE::LINALG::Matrix<3, 1>& x1,  /// global coordinates of point x1
-        DRT::Element* ele2,              /// second element where x2 lies in
+        CORE::Elements::Element* ele2,   /// second element where x2 lies in
         CORE::LINALG::Matrix<3, 1>& x2   /// global coordinates of point x2
     ) const;
 
 
     //! check if both element are neighbors sharing at least one common node and get the common
     //! nodes
-    bool neighbors(DRT::Element* ele1, DRT::Element* ele2, std::set<int>& common_nodes) const;
+    bool neighbors(CORE::Elements::Element* ele1, CORE::Elements::Element* ele2,
+        std::set<int>& common_nodes) const;
 
 
     //! check if edge between x1 and x2 cuts the side
@@ -503,7 +504,8 @@ namespace XFEM
     /*========================================================================*/
 
     //! add adjacebt elements for a periodic boundary node
-    void add_pb_celements(const DRT::Node* node, std::vector<const DRT::Element*>& eles) const;
+    void add_pb_celements(
+        const DRT::Node* node, std::vector<const CORE::Elements::Element*>& eles) const;
 
     //! find the PBC node
     void find_pbc_node(const DRT::Node* node, DRT::Node*& pbcnode, bool& pbcnodefound) const;
@@ -531,11 +533,11 @@ namespace XFEM
     /*========================================================================*/
 
     //! transformation of point x to local xi-coordinates of an integration cell
-    void call_x_to_xi_coords(const DRT::Element* ele,  /// pointer to element
-        CORE::LINALG::Matrix<3, 1>& x,                 /// global coordinates of element
-        CORE::LINALG::Matrix<3, 1>& xi,                /// determined local coordinates w.r.t ele
-        const std::string state,                       ///< state n or np?
-        bool& pointInDomain                            /// lies point in element ?
+    void call_x_to_xi_coords(const CORE::Elements::Element* ele,  /// pointer to element
+        CORE::LINALG::Matrix<3, 1>& x,                            /// global coordinates of element
+        CORE::LINALG::Matrix<3, 1>& xi,  /// determined local coordinates w.r.t ele
+        const std::string state,         ///< state n or np?
+        bool& pointInDomain              /// lies point in element ?
     ) const;
 
     //! call the computation of local coordinates for a polytop with corners given by the
@@ -559,10 +561,10 @@ namespace XFEM
 
     //! data at an arbitrary point lying in an element
     template <const int numnode, CORE::FE::CellType DISTYPE>
-    void eval_shape_and_deriv(DRT::Element* element,  /// pointer to element
-        CORE::LINALG::Matrix<3, 1>& xi,               /// local coordinates of point w.r.t element
-        CORE::LINALG::Matrix<3, 3>& xji,              /// inverse of jacobian
-        CORE::LINALG::Matrix<numnode, 1>& shapeFcn,   /// shape functions at point
+    void eval_shape_and_deriv(CORE::Elements::Element* element,  /// pointer to element
+        CORE::LINALG::Matrix<3, 1>& xi,              /// local coordinates of point w.r.t element
+        CORE::LINALG::Matrix<3, 3>& xji,             /// inverse of jacobian
+        CORE::LINALG::Matrix<numnode, 1>& shapeFcn,  /// shape functions at point
         CORE::LINALG::Matrix<3, numnode>&
             shapeFcnDerivXY,  /// derivatives of shape function w.r.t global coordiantes xyz
         bool compute_deriv    /// shall derivatives and jacobian be computed
@@ -662,14 +664,15 @@ namespace XFEM
     /*========================================================================*/
 
     //! identify an element containing a point and additional data
-    void elementSearch(DRT::Element*& ele,  ///< pointer to element if point lies in a found element
-        CORE::LINALG::Matrix<3, 1>& x,      ///< global coordiantes of point
-        CORE::LINALG::Matrix<3, 1>& xi,     ///< determined local coordinates w.r.t ele
-        bool& found                         ///< is element found?
+    void elementSearch(
+        CORE::Elements::Element*& ele,   ///< pointer to element if point lies in a found element
+        CORE::LINALG::Matrix<3, 1>& x,   ///< global coordiantes of point
+        CORE::LINALG::Matrix<3, 1>& xi,  ///< determined local coordinates w.r.t ele
+        bool& found                      ///< is element found?
     ) const;
 
     //! interpolate velocity and derivatives for a point in an element
-    void getGPValues(DRT::Element* ele,             ///< pointer to element
+    void getGPValues(CORE::Elements::Element* ele,  ///< pointer to element
         CORE::LINALG::Matrix<3, 1>& xi,             ///< local coordinates of point w.r.t element
         std::vector<int>& nds,                      ///< nodal dofset of point for elemental nodes
         XFEM::XFEMDofSet& dofset,                   ///< XFEM dofset
@@ -683,16 +686,16 @@ namespace XFEM
 
     //! interpolate velocity and derivatives for a point in an element
     template <CORE::FE::CellType DISTYPE>
-    void getGPValuesT(DRT::Element* ele,            ///< pointer to element
-        CORE::LINALG::Matrix<3, 1>& xi,             ///< local coordinates of point w.r.t element
-        std::vector<int>& nds,                      ///< nodal dofset of point for elemental nodes
-        XFEM::XFEMDofSet& dofset,                   ///< xfem dofset
-        CORE::LINALG::Matrix<3, 1>& vel,            ///< determine velocity at point
-        CORE::LINALG::Matrix<3, 3>& vel_deriv,      ///< determine velocity derivatives at point
-        double& pres,                               ///< pressure
-        CORE::LINALG::Matrix<1, 3>& pres_deriv,     ///< pressure gradient
-        Teuchos::RCP<const Epetra_Vector> vel_vec,  ///< vector used for interpolating at gp
-        bool compute_deriv = true                   ///< shall derivatives be computed?
+    void getGPValuesT(CORE::Elements::Element* ele,  ///< pointer to element
+        CORE::LINALG::Matrix<3, 1>& xi,              ///< local coordinates of point w.r.t element
+        std::vector<int>& nds,                       ///< nodal dofset of point for elemental nodes
+        XFEM::XFEMDofSet& dofset,                    ///< xfem dofset
+        CORE::LINALG::Matrix<3, 1>& vel,             ///< determine velocity at point
+        CORE::LINALG::Matrix<3, 3>& vel_deriv,       ///< determine velocity derivatives at point
+        double& pres,                                ///< pressure
+        CORE::LINALG::Matrix<1, 3>& pres_deriv,      ///< pressure gradient
+        Teuchos::RCP<const Epetra_Vector> vel_vec,   ///< vector used for interpolating at gp
+        bool compute_deriv = true                    ///< shall derivatives be computed?
     ) const;
 
     //!  back-tracking of data at final Lagrangian origin of a point                       schott
@@ -771,8 +774,9 @@ namespace XFEM
     );
 
     //! call and prepare the projection of point to side
-    void call_project_on_side(DRT::Element* side,  ///< pointer to structural side element
-        const std::string state,                   ///< state n or np?
+    void call_project_on_side(
+        CORE::Elements::Element* side,  ///< pointer to structural side element
+        const std::string state,        ///< state n or np?
         CORE::LINALG::Matrix<3, 1>&
             newNodeCoords,  ///< node coordinates of point that has to be projected
         int& proj_sid,      ///< id of side when projection lies on side
@@ -784,10 +788,11 @@ namespace XFEM
     );
 
     //! call and prepare the projection of point to line
-    void call_project_on_line(DRT::Element* side,  ///< pointer to structural side element
-        DRT::Element* line,                        ///< pointer to structural line of side element
-        int line_count,                            ///< local line id w.r.t side element
-        const std::string state,                   ///< state n or np?
+    void call_project_on_line(
+        CORE::Elements::Element* side,  ///< pointer to structural side element
+        CORE::Elements::Element* line,  ///< pointer to structural line of side element
+        int line_count,                 ///< local line id w.r.t side element
+        const std::string state,        ///< state n or np?
         CORE::LINALG::Matrix<3, 1>&
             newNodeCoords,  ///< node coordinates of point that has to be projected
         double& min_dist,   ///< minimal distance, potentially updated
@@ -863,9 +868,9 @@ namespace XFEM
 
     //! compute reasonable start point for finding the Lagrangean origin, when projected point lies
     //! on a side
-    void compute_start_point_side(DRT::Element* side,  ///< pointer to side element
-        CORE::LINALG::SerialDenseMatrix& side_xyze,    ///< side's node coordinates
-        const std::vector<int>& lm,                    ///< local map
+    void compute_start_point_side(CORE::Elements::Element* side,  ///< pointer to side element
+        CORE::LINALG::SerialDenseMatrix& side_xyze,               ///< side's node coordinates
+        const std::vector<int>& lm,                               ///< local map
         CORE::LINALG::Matrix<2, 1>& xi_side,   ///< local coordinates of projected point w.r.t side
         double& dist,                          ///< distance from point to its projection
         CORE::LINALG::Matrix<3, 1>& proj_x_n,  ///< projected point at t^n
@@ -874,21 +879,21 @@ namespace XFEM
 
     //! compute reasonable start point for finding the Lagrangean origin, when projected point lies
     //! on a line
-    void compute_start_point_line(DRT::Element* side1,  ///< pointer to side element
-        CORE::LINALG::SerialDenseMatrix& side1_xyze,    ///< side's node coordinates
-        DRT::Element* side2,                            ///< pointer to side element
-        CORE::LINALG::SerialDenseMatrix& side2_xyze,    ///< side's node coordinates
-        const std::vector<int>& lm1,                    ///< local map
-        const std::vector<int>& lm2,                    ///< local map
-        double& dist,                                   ///< distance from point to its projection
-        CORE::LINALG::Matrix<3, 1>& proj_x_n,           ///< projected point at t^n
-        CORE::LINALG::Matrix<3, 1>& start_point         ///< final start point
+    void compute_start_point_line(CORE::Elements::Element* side1,  ///< pointer to side element
+        CORE::LINALG::SerialDenseMatrix& side1_xyze,               ///< side's node coordinates
+        CORE::Elements::Element* side2,                            ///< pointer to side element
+        CORE::LINALG::SerialDenseMatrix& side2_xyze,               ///< side's node coordinates
+        const std::vector<int>& lm1,                               ///< local map
+        const std::vector<int>& lm2,                               ///< local map
+        double& dist,                            ///< distance from point to its projection
+        CORE::LINALG::Matrix<3, 1>& proj_x_n,    ///< projected point at t^n
+        CORE::LINALG::Matrix<3, 1>& start_point  ///< final start point
     );
 
     //! compute reasonable start point for finding the Lagrangean origin, when projected point lies
     //! on a point
     void compute_start_point_avg(
-        const std::vector<DRT::Element*>& sides,                   ///< pointer to side element
+        const std::vector<CORE::Elements::Element*>& sides,        ///< pointer to side element
         std::vector<CORE::LINALG::SerialDenseMatrix>& sides_xyze,  ///< side's node coordinates
         const std::vector<std::vector<int>>& sides_lm,             ///< local map
         double& dist,                            ///< distance from point to its projection
@@ -897,11 +902,11 @@ namespace XFEM
     );
 
     //! compute the normal vector on side at time t^n
-    void callget_normal_side_tn(DRT::Element* side,  ///< pointer to side element
-        CORE::LINALG::Matrix<3, 1>& normal,          ///< normal vector w.r.t side
-        CORE::LINALG::SerialDenseMatrix& side_xyze,  ///< side's node coordinates
-        const std::vector<int>& lm,                  ///< local map
-        CORE::LINALG::Matrix<3, 1>& proj_x_n,        ///< projected point on side
+    void callget_normal_side_tn(CORE::Elements::Element* side,  ///< pointer to side element
+        CORE::LINALG::Matrix<3, 1>& normal,                     ///< normal vector w.r.t side
+        CORE::LINALG::SerialDenseMatrix& side_xyze,             ///< side's node coordinates
+        const std::vector<int>& lm,                             ///< local map
+        CORE::LINALG::Matrix<3, 1>& proj_x_n,                   ///< projected point on side
         CORE::LINALG::Matrix<2, 1>& xi_side  ///< local coordinates of projected point w.r.t side
     );
 
@@ -914,10 +919,11 @@ namespace XFEM
         CORE::LINALG::Matrix<2, 1>& xi_side  ///< local coordinates of projected point w.r.t side
     );
 
-    void call_get_projxn_line(DRT::Element* side,  ///< pointer to structural side element
-        DRT::Element* line,                        ///< pointer to structural line of side element
-        CORE::LINALG::Matrix<3, 1>& proj_x_n,      ///< projected point on line
-        double& xi_line  ///< local coordinates of projected point w.r.t line
+    void call_get_projxn_line(
+        CORE::Elements::Element* side,         ///< pointer to structural side element
+        CORE::Elements::Element* line,         ///< pointer to structural line of side element
+        CORE::LINALG::Matrix<3, 1>& proj_x_n,  ///< projected point on line
+        double& xi_line                        ///< local coordinates of projected point w.r.t line
     );
 
     template <CORE::FE::CellType line_distype, const int numdof>

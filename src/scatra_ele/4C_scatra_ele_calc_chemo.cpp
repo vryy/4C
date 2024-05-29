@@ -8,9 +8,9 @@
 
 #include "4C_scatra_ele_calc_chemo.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_list_chemotaxis.hpp"
 #include "4C_mat_scatra.hpp"
@@ -207,12 +207,12 @@ int DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::get_partner(const std::
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::get_material_params(
-    const DRT::Element* ele,      //!< the element we are dealing with
-    std::vector<double>& densn,   //!< density at t_(n)
-    std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-    std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-    double& visc,                 //!< fluid viscosity
-    const int iquad               //!< id of current gauss point
+    const CORE::Elements::Element* ele,  //!< the element we are dealing with
+    std::vector<double>& densn,          //!< density at t_(n)
+    std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
+    std::vector<double>& densam,         //!< density at t_(n+alpha_M)
+    double& visc,                        //!< fluid viscosity
+    const int iquad                      //!< id of current gauss point
 )
 {
   // get the material

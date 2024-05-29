@@ -86,7 +86,7 @@ void SCATRA::LEVELSET::Intersection::get_zero_level_set(const Epetra_Vector& phi
   for (int iele = 0; iele < scatradis.NumMyRowElements(); ++iele)
   {
     // get element from discretization
-    const DRT::Element* ele = scatradis.lRowElement(iele);
+    const CORE::Elements::Element* ele = scatradis.lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
 
     // clear vector each loop
@@ -291,7 +291,7 @@ void SCATRA::LEVELSET::Intersection::collect_cut_eles(CORE::GEO::CUT::ElementHan
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void SCATRA::LEVELSET::Intersection::prepare_cut(const DRT::Element* ele,
+void SCATRA::LEVELSET::Intersection::prepare_cut(const CORE::Elements::Element* ele,
     const DRT::Discretization& scatradis, const Epetra_Vector& phicol,
     CORE::LINALG::SerialDenseMatrix& xyze, std::vector<double>& phi_nodes,
     std::vector<int>& node_ids) const

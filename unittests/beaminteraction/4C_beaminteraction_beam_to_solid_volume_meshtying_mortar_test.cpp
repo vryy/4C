@@ -59,9 +59,11 @@ namespace
     {
       // Create the elements.
       const int dummy_node_ids[2] = {0, 1};
-      Teuchos::RCP<DRT::Element> beam_element = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
+      Teuchos::RCP<CORE::Elements::Element> beam_element =
+          Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
       beam_element->SetNodeIds(2, dummy_node_ids);
-      Teuchos::RCP<DRT::Element> solid_element = Teuchos::rcp(new DRT::ELEMENTS::SoHex8(1, 0));
+      Teuchos::RCP<CORE::Elements::Element> solid_element =
+          Teuchos::rcp(new DRT::ELEMENTS::SoHex8(1, 0));
 
       // Set up the beam element.
       std::vector<double> xrefe(6);
@@ -79,7 +81,7 @@ namespace
       beam_element_cast->set_up_reference_geometry<3, 2, 2>(xrefe, rotrefe);
 
       // Call Init on the beam contact pair.
-      std::vector<const DRT::Element*> pair_elements;
+      std::vector<const CORE::Elements::Element*> pair_elements;
       pair_elements.push_back(&(*beam_element));
       pair_elements.push_back(&(*solid_element));
       contact_pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);

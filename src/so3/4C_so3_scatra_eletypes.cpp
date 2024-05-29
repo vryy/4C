@@ -28,21 +28,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8ScatraType::Create(const std::vector
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8ScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8ScatraType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8ScatraType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(id, owner));
   return ele;
 }
@@ -99,12 +100,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8fbarScatraType::Create(const std::ve
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8fbarScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8fbarScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8fbar, CORE::FE::CellType::hex8>(
             id, owner));
     return ele;
@@ -112,10 +113,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8fbarScatraType::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8fbarScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8fbarScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8fbar, CORE::FE::CellType::hex8>(id, owner));
   return ele;
 }
@@ -168,21 +169,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex27ScatraType::Create(const std::vecto
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27ScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex27ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27ScatraType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex27ScatraType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>(id, owner));
   return ele;
 }
@@ -238,21 +240,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoTet4ScatraType::Create(const std::vector
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4ScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet4ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4ScatraType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet4ScatraType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(id, owner));
   return ele;
 }
@@ -307,21 +310,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoTet10ScatraType::Create(const std::vecto
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet10ScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet10ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet10ScatraType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet10ScatraType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>(id, owner));
   return ele;
 }
@@ -377,21 +381,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoWeg6ScatraType::Create(const std::vector
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoWeg6ScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoWeg6ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoWeg6, CORE::FE::CellType::wedge6>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoWeg6ScatraType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoWeg6ScatraType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoWeg6, CORE::FE::CellType::wedge6>(id, owner));
   return ele;
 }

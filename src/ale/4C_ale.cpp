@@ -790,7 +790,7 @@ bool ALE::Ale::evaluate_element_quality()
 
     for (int i = 0; i < discretization()->NumMyRowElements(); ++i)
     {
-      DRT::Element* actele;
+      CORE::Elements::Element* actele;
       actele = discretization()->lRowElement(i);
 
       // list to define routines at elementlevel
@@ -798,7 +798,7 @@ bool ALE::Ale::evaluate_element_quality()
       eleparams.set("action", "calc_jacobian_determinant");
 
       // initialize element vectors
-      DRT::Element::LocationArray la(discretization()->NumDofSets());
+      CORE::Elements::Element::LocationArray la(discretization()->NumDofSets());
       actele->LocationVector(*discretization(), la, false);
 
       // only two entries per element necessary (detJ and quality measure)

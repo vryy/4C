@@ -27,9 +27,9 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::evaluate_action(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::evaluate_action(CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const SCATRA::Action& action, DRT::Element::LocationArray& la,
+    const SCATRA::Action& action, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -87,7 +87,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::evaluate_action(DRT::Element* ele
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::calculate_domain_and_bodyforce(
-    CORE::LINALG::SerialDenseVector& scalars, const DRT::Element* ele)
+    CORE::LINALG::SerialDenseVector& scalars, const CORE::Elements::Element* ele)
 {
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes
@@ -123,9 +123,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::calculate_domain_and_bodyforce(
  | extract element based or nodal values and return extracted values of phinp   fang 02/15 |
  *-----------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::extract_element_and_node_values(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::extract_element_and_node_values(
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
 {
   // add loma-specific values
   if (my::scatraparatimint_->IsGenAlpha())
@@ -153,7 +153,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::extract_element_and_node_values(
  | get density at integration point                                 fang 02/15 |
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::get_density(const DRT::Element* ele,
+double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::get_density(const CORE::Elements::Element* ele,
     Teuchos::RCP<const CORE::MAT::Material> material, Teuchos::ParameterList& params,
     const double tempnp)
 {

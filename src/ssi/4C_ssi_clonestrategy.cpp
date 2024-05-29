@@ -52,7 +52,7 @@ std::map<std::string, std::string> SSI::ScatraStructureCloneStrategyManifold::co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-INPAR::SCATRA::ImplType SSI::ScatraStructureCloneStrategy::GetImplType(DRT::Element* ele)
+INPAR::SCATRA::ImplType SSI::ScatraStructureCloneStrategy::GetImplType(CORE::Elements::Element* ele)
 {
   return ADAPTER::GetScaTraImplType(ele);
 }
@@ -77,7 +77,8 @@ void SSI::ScatraStructureCloneStrategy::check_material_type(const int matid)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureCloneStrategy::set_element_data(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
+    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+    const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual
@@ -116,7 +117,8 @@ void SSI::ScatraStructureCloneStrategy::set_element_data(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureCloneStrategyManifold::set_element_data(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
+    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+    const bool isnurbsdis)
 {
   // determine impl type from manifold condition by identifying the condition for this element
   auto struct_dis = GLOBAL::Problem::Instance()->GetDis("structure");
@@ -155,7 +157,7 @@ void SSI::ScatraStructureCloneStrategyManifold::set_element_data(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool SSI::ScatraStructureCloneStrategy::determine_ele_type(
-    DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // note: ismyele, actele remain unused here! Used only for ALE creation
 

@@ -84,12 +84,13 @@ namespace DRT
       /*========================================================================*/
 
       //! get the material parameters
-      void get_material_params(const DRT::Element* ele,  //!< the element we are dealing with
-          std::vector<double>& densn,                    //!< density at t_(n)
-          std::vector<double>& densnp,                   //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,                   //!< density at t_(n+alpha_M)
-          double& visc,                                  //!< fluid viscosity
-          const int iquad = -1  //!< id of current gauss point (default = -1)
+      void get_material_params(
+          const CORE::Elements::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,          //!< density at t_(n)
+          std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,         //!< density at t_(n+alpha_M)
+          double& visc,                        //!< fluid viscosity
+          const int iquad = -1                 //!< id of current gauss point (default = -1)
           ) override;
 
 
@@ -287,12 +288,13 @@ namespace DRT
 
       //! validity check with respect to input parameters, degrees of freedom, number of scalars
       //! etc.
-      void check_elch_element_parameter(DRT::Element* ele  //!< current element
+      void check_elch_element_parameter(CORE::Elements::Element* ele  //!< current element
           ) override;
 
       //! evaluate an electrode boundary kinetics point condition
-      void evaluate_elch_boundary_kinetics_point(const DRT::Element* ele,  ///< current element
-          CORE::LINALG::SerialDenseMatrix& emat,                           ///< element matrix
+      void evaluate_elch_boundary_kinetics_point(
+          const CORE::Elements::Element* ele,     ///< current element
+          CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix
           CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< state variables at element nodes
@@ -327,7 +329,7 @@ namespace DRT
 
       //! calculate error of numerical solution with respect to analytical solution
       void cal_error_compared_to_analyt_solution(
-          const DRT::Element* ele,                 //!< the element we are dealing with
+          const CORE::Elements::Element* ele,      //!< the element we are dealing with
           Teuchos::ParameterList& params,          //!< parameter list
           CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2-error norm
           ) override;

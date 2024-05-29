@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInterface(
-    DRT::Element& ele, INPAR::PORO::PoroType porotype)
+    CORE::Elements::Element& ele, INPAR::PORO::PoroType porotype)
 {
   switch (ele.Shape())
   {

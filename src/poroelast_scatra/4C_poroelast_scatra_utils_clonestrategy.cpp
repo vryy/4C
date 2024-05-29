@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 INPAR::SCATRA::ImplType POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::GetImplType(
-    DRT::Element* ele  //! element whose SCATRA::ImplType shall be determined
+    CORE::Elements::Element* ele  //! element whose SCATRA::ImplType shall be determined
 )
 {
   // the element type name, needed to cast correctly in the following
@@ -153,7 +153,7 @@ INPAR::SCATRA::ImplType POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::GetImpl
 }
 
 bool POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::determine_ele_type(
-    DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // clone elements based on poro or scatra elements
   if (POROELASTSCATRA::UTILS::IsPoroScatraElement(actele) or
@@ -169,7 +169,8 @@ bool POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::determine_ele_type(
 
 
 void POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::set_element_data(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
+    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+    const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual
@@ -233,7 +234,7 @@ void POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::check_material_type(const 
 }
 
 bool POROELASTSCATRA::UTILS::PoroelastCloneStrategyforScatraElements::determine_ele_type(
-    DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // clone the element only if it is a poro or scatra element (we support submeshes here)
   if (POROELASTSCATRA::UTILS::IsPoroScatraElement(actele) or

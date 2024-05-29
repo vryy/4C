@@ -90,9 +90,9 @@ DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Instance(const std::string&
  * Action type: Evaluate                                    wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Evaluate(DRT::Element* ele,
+int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Evaluate(CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -125,9 +125,10 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Evaluate(DRT::Element* 
  * EHL problems)
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateEHLMon(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateEHLMon(
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -163,7 +164,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateEHLMon(DRT::Ele
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::SetupCalc(
-    DRT::Element* ele, DRT::Discretization& discretization)
+    CORE::Elements::Element* ele, DRT::Discretization& discretization)
 {
   // get element coordinates
   read_element_coordinates(ele);
@@ -181,7 +182,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::SetupCalc(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::read_element_coordinates(
-    const DRT::Element* ele)
+    const CORE::Elements::Element* ele)
 {
   // Directly copy the coordinates since in 3D the transformation is just the identity
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
@@ -194,8 +195,8 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::read_element_coordinat
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_and_node_values(
-    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
 {
   // 1. Extract the average tangential velocity
 
@@ -326,7 +327,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_and_no
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::sysmat(
-    DRT::Element* ele,                      ///< the element whose matrix is calculated
+    CORE::Elements::Element* ele,           ///< the element whose matrix is calculated
     CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
     CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
 )
@@ -440,7 +441,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::sysmat(
 
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::matrixfor_ehl_mon(
-    DRT::Element* ele,  ///< the element whose matrix is calculated
+    CORE::Elements::Element* ele,  ///< the element whose matrix is calculated
     CORE::LINALG::SerialDenseMatrix& ematheight, CORE::LINALG::SerialDenseMatrix& ematvel)
 {
   //----------------------------------------------------------------------
@@ -669,13 +670,13 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_s_flow_fac_at_int
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::get_material_params(
-    const DRT::Element* ele,  //!< the element we are dealing with
-    double& densn,            //!< density at t_(n)
-    double& densnp,           //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,           //!< density at t_(n+alpha_M)
-    double& visc,             //!< fluid viscosity
-    double& dvisc,            //!< derivative of the fluid viscosity
-    const int iquad           //!< id of current gauss point
+    const CORE::Elements::Element* ele,  //!< the element we are dealing with
+    double& densn,                       //!< density at t_(n)
+    double& densnp,                      //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,                      //!< density at t_(n+alpha_M)
+    double& visc,                        //!< fluid viscosity
+    double& dvisc,                       //!< derivative of the fluid viscosity
+    const int iquad                      //!< id of current gauss point
 )
 {
   // get the material
@@ -1209,9 +1210,10 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rel_vel_at_int_po
  | evaluate service routine                                 wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateService(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateService(
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -1234,10 +1236,10 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateService(DRT::El
  | evaluate action                                          wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_action(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const LUBRICATION::Action& action, DRT::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_action(
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, const LUBRICATION::Action& action,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -1295,7 +1297,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_action(DRT::El
   *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared_to_analyt_solution(
-    const DRT::Element* ele, Teuchos::ParameterList& params,
+    const CORE::Elements::Element* ele, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& errors)
 {
   if (CORE::UTILS::GetAsEnum<LUBRICATION::Action>(params, "action") != LUBRICATION::calc_error)
@@ -1413,7 +1415,8 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared_to_
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calculate_pressures(
-    const DRT::Element* ele, CORE::LINALG::SerialDenseVector& pressures, const bool inverting)
+    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseVector& pressures,
+    const bool inverting)
 {
   // integration points and weights
   const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(

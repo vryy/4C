@@ -23,10 +23,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration ...
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
-}  // namespace DRT
+}
+
 namespace BEAMINTERACTION
 {
   class BeamPotentialParams;
@@ -161,7 +162,7 @@ namespace BEAMINTERACTION
 
       /// exclude certain neighbors from interaction evaluation
       void select_eles_to_be_considered_for_potential_evaluation(
-          DRT::Element* currele, std::set<DRT::Element*>& neighbors) const;
+          CORE::Elements::Element* currele, std::set<CORE::Elements::Element*>& neighbors) const;
 
       /// create instances of class BeamContactPair that will be evaluated
       //  to get force and stiffness contributions from beam interactions
@@ -207,7 +208,7 @@ namespace BEAMINTERACTION
       std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>> beam_potential_element_pairs_;
 
       //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
-      std::map<int, std::set<DRT::Element*>> nearby_elements_map_;
+      std::map<int, std::set<CORE::Elements::Element*>> nearby_elements_map_;
 
       //! runtime vtp writer for visualization of potential-based interactions
       Teuchos::RCP<IO::VisualizationManager> visualization_manager_;

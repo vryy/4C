@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element_integration_select.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_lib_element_integration_select.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_transformation.hpp"
 #include "4C_mat_so3_material.hpp"

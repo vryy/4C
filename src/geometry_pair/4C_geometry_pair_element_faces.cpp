@@ -162,7 +162,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::Setup(
     const DRT::Node* node = this->drt_face_element_->Nodes()[i_node];
     for (int i_element = 0; i_element < node->NumElement(); i_element++)
     {
-      const DRT::Element* element = node->Elements()[i_element];
+      const CORE::Elements::Element* element = node->Elements()[i_element];
 
       // Do nothing for this element.
       if (element->Id() == this->drt_face_element_->ParentElementId()) continue;
@@ -650,7 +650,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
  *
  */
 Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
-    const Teuchos::RCP<const DRT::FaceElement>& face_element, const int fad_order,
+    const Teuchos::RCP<const CORE::Elements::FaceElement>& face_element, const int fad_order,
     const INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy)
 {
   const bool is_fad = fad_order > 0;

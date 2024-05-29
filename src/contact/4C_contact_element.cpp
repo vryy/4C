@@ -27,14 +27,14 @@ CORE::COMM::ParObject* CONTACT::ElementType::Create(const std::vector<char>& dat
   return ele;
 }
 
-Teuchos::RCP<DRT::Element> CONTACT::ElementType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> CONTACT::ElementType::Create(const int id, const int owner)
 {
   // return Teuchos::rcp( new Element( id, owner ) );
   return Teuchos::null;
 }
 
 void CONTACT::ElementType::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
 
@@ -71,7 +71,7 @@ CONTACT::Element::Element(const CONTACT::Element& old) : MORTAR::Element(old)
 /*----------------------------------------------------------------------*
  |  clone-ctor (public)                                      mwgee 10/07|
  *----------------------------------------------------------------------*/
-DRT::Element* CONTACT::Element::Clone() const
+CORE::Elements::Element* CONTACT::Element::Clone() const
 {
   CONTACT::Element* newele = new CONTACT::Element(*this);
   return newele;

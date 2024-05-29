@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 void DRT::ELEMENTS::AssembleGaussPointValues(
     std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
-    const CORE::LINALG::SerialDenseMatrix& gp_data, const DRT::Element& ele)
+    const CORE::LINALG::SerialDenseMatrix& gp_data, const CORE::Elements::Element& ele)
 {
   for (int gp = 0; gp < gp_data.numRows(); ++gp)
   {
@@ -34,7 +34,7 @@ void DRT::ELEMENTS::AssembleGaussPointValues(
 }
 
 void DRT::ELEMENTS::AssembleNodalElementCount(
-    Epetra_IntVector& global_count, const DRT::Element& ele)
+    Epetra_IntVector& global_count, const CORE::Elements::Element& ele)
 {
   for (int n = 0; n < ele.num_node(); ++n)
   {

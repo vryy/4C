@@ -16,9 +16,9 @@ MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_membrane_eletypes.hpp"
 #include "4C_thermo_ele_impl_utils.hpp"
 
@@ -57,7 +57,7 @@ namespace DRT
     \brief A C++ wrapper for the membrane element
     */
     template <CORE::FE::CellType distype>
-    class Membrane : public DRT::Element
+    class Membrane : public CORE::Elements::Element
     {
      public:
       //! @name Friends
@@ -94,7 +94,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-constructor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       //! number of element nodes
       static constexpr int numnod_ = CORE::FE::num_nodes<distype>;
@@ -130,13 +130,13 @@ namespace DRT
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -206,7 +206,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
@@ -217,7 +217,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -233,7 +233,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override
+      CORE::Elements::ElementType& ElementType() const override
       {
         switch (distype)
         {
@@ -401,14 +401,14 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr() override;
 
      protected:
       /** \brief get access to the interface
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline DRT::ELEMENTS::ParamsInterface& params_interface()
+      inline CORE::Elements::ParamsInterface& params_interface()
       {
         if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
@@ -424,7 +424,7 @@ namespace DRT
       /** \brief interface ptr
        *
        *  data exchange between the element and the time integrator. */
-      Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> interface_ptr_;
+      Teuchos::RCP<CORE::Elements::ParamsInterface> interface_ptr_;
 
       /// type of 2D dimension reduction
       enum DimensionalReduction
@@ -512,17 +512,17 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  LINE 2 Element                                         fbraeu 06/16 |
      *----------------------------------------------------------------------*/
-    class MembraneLine2Type : public DRT::ElementType
+    class MembraneLine2Type : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Membrane_line2Type"; }
 
       static MembraneLine2Type& Instance();
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -541,17 +541,17 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  LINE 3 Element                                         fbraeu 06/16 |
      *----------------------------------------------------------------------*/
-    class MembraneLine3Type : public DRT::ElementType
+    class MembraneLine3Type : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Membrane_line3Type"; }
 
       static MembraneLine3Type& Instance();
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -573,11 +573,12 @@ namespace DRT
     \note This is a pure Neumann boundary condition element. It's only
           purpose is to evaluate line Neumann boundary conditions that might be
           adjacent to a parent membrane element. It therefore does not implement
-          the DRT::Element::Evaluate method and does not have its own ElementRegister class.
+          the CORE::Elements::Element::Evaluate method and does not have its own ElementRegister
+    class.
 
     */
     template <CORE::FE::CellType distype2>
-    class MembraneLine : public DRT::FaceElement
+    class MembraneLine : public CORE::Elements::FaceElement
     {
      public:
       //! @name Friends
@@ -621,7 +622,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -678,7 +679,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
@@ -689,7 +690,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -705,7 +706,7 @@ namespace DRT
        */
       virtual DRT::ELEMENTS::Membrane<distype2>* parent_element() const
       {
-        DRT::Element* parent = this->DRT::FaceElement::parent_element();
+        CORE::Elements::Element* parent = this->CORE::Elements::FaceElement::parent_element();
         // make sure the static cast below is really valid
         FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Membrane<distype2>*>(parent) != nullptr,
             "Parent element is no membrane element");
@@ -717,7 +718,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override
+      CORE::Elements::ElementType& ElementType() const override
       {
         switch (CORE::FE::DisTypeToFaceShapeType<distype2>::shape)
         {

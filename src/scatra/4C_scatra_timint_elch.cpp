@@ -1112,10 +1112,10 @@ SCATRA::ScaTraTimIntElch::evaluate_single_electrode_info_point(
     }
 
     // get element attached to node
-    DRT::Element* element = node->Elements()[0];
+    CORE::Elements::Element* element = node->Elements()[0];
 
     // determine location information
-    DRT::Element::LocationArray la(discret_->NumDofSets());
+    CORE::Elements::Element::LocationArray la(discret_->NumDofSets());
     element->LocationVector(*discret_, la, false);
 
     // dummy matrix and right-hand side vector
@@ -1671,7 +1671,7 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
 
   // initialization of the densification coefficient vector
   densific_.resize(NumScal());
-  DRT::Element* element = discret_->lRowElement(0);
+  CORE::Elements::Element* element = discret_->lRowElement(0);
   Teuchos::RCP<CORE::MAT::Material> mat = element->Material();
 
   if (mat->MaterialType() == CORE::Materials::m_matlist)
@@ -2697,10 +2697,10 @@ void SCATRA::ScaTraTimIntElch::evaluate_electrode_boundary_kinetics_point_condit
       }
 
       // get element attached to node
-      DRT::Element* element = node->Elements()[0];
+      CORE::Elements::Element* element = node->Elements()[0];
 
       // determine location information
-      DRT::Element::LocationArray la(discret_->NumDofSets());
+      CORE::Elements::Element::LocationArray la(discret_->NumDofSets());
       element->LocationVector(*discret_, la, false);
 
       // initialize element matrix

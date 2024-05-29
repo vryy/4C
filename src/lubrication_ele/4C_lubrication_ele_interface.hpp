@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
@@ -23,10 +23,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace DRT
 {
   class Discretization;
-  class Element;
 
   namespace ELEMENTS
   {
@@ -47,7 +51,7 @@ namespace DRT
       LubricationEleInterface() = default;
 
       /// Setup element evaluation
-      virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) = 0;
+      virtual int SetupCalc(CORE::Elements::Element* ele, DRT::Discretization& discretization) = 0;
 
       /// Evaluate the element
       /*!
@@ -56,16 +60,16 @@ namespace DRT
         The Evaluate() method is meant only for the assembling of the
         linearized matrix and the right hand side
        */
-      virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      virtual int Evaluate(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra) = 0;
 
-      virtual int EvaluateEHLMon(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      virtual int EvaluateEHLMon(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -78,8 +82,8 @@ namespace DRT
         The EvaluateService() method is meant for everything not related to
         the assembling of the linearized matrix and the right hand side
       */
-      virtual int EvaluateService(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      virtual int EvaluateService(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,

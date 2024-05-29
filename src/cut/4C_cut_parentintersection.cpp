@@ -68,7 +68,7 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
       DRT::Node* node = dis.gNode(n_gid);
 
       // get adjacent elements for this node
-      const DRT::Element* const* adjelements = node->Elements();
+      const CORE::Elements::Element* const* adjelements = node->Elements();
 
       for (int iele = 0; iele < node->NumElement(); iele++)
       {
@@ -166,7 +166,7 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
 
     // get the nodes of this element
     // get the element via discret
-    DRT::Element* e = dis.gElement(eid);
+    CORE::Elements::Element* e = dis.gElement(eid);
 
     if (e == nullptr) FOUR_C_THROW(" element not found, this should not be! ");
 
@@ -228,7 +228,7 @@ void CORE::GEO::CUT::ParentIntersection::fill_parallel_dof_set_data(
   // node in this element
   for (int k = 0; k < dis.NumMyColElements(); ++k)
   {
-    DRT::Element* ele = dis.lColElement(k);
+    CORE::Elements::Element* ele = dis.lColElement(k);
     int eid = ele->Id();
     CORE::GEO::CUT::ElementHandle* e = GetElement(eid);
 
@@ -749,7 +749,7 @@ void CORE::GEO::CUT::ParentIntersection::dump_gmsh_num_dof_sets(
   for (int lid = 0; lid < num_row_ele;
        lid++)  // std::set<int>::iterator i= eids.begin(); i!= eids.end(); i++)
   {
-    DRT::Element* e = dis.lRowElement(lid);
+    CORE::Elements::Element* e = dis.lRowElement(lid);
     int eid = e->Id();
 
     ElementHandle* eh = GetElement(eid);

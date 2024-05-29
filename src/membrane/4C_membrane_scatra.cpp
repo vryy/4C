@@ -40,7 +40,7 @@ DRT::ELEMENTS::MembraneScatra<distype>::MembraneScatra(
  |  and return pointer to it (public)                                   |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::MembraneScatra<distype>::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::MembraneScatra<distype>::Clone() const
 {
   DRT::ELEMENTS::MembraneScatra<distype>* newelement =
       new DRT::ELEMENTS::MembraneScatra<distype>(*this);

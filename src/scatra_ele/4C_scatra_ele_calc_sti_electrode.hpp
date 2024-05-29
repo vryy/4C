@@ -56,11 +56,11 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action for off-diagonal system matrix block
-      int EvaluateActionOD(DRT::Element* ele,               //!< current element
+      int EvaluateActionOD(CORE::Elements::Element* ele,    //!< current element
           Teuchos::ParameterList& params,                   //!< parameter list
           DRT::Discretization& discretization,              //!< discretization
           const SCATRA::Action& action,                     //!< action parameter
-          DRT::Element::LocationArray& la,                  //!< location array
+          CORE::Elements::Element::LocationArray& la,       //!< location array
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
           CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
@@ -69,15 +69,15 @@ namespace DRT
           ) override;
 
       //! calculate element matrix and element right-hand side vector
-      void sysmat(DRT::Element* ele,                  ///< current element
+      void sysmat(CORE::Elements::Element* ele,       ///< current element
           CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix
           CORE::LINALG::SerialDenseVector& erhs,      ///< element right-hand side vector
           CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid diffusivity scaling vector
           ) override;
 
       //! fill element matrix with linearizations of discrete thermo residuals w.r.t. scatra dofs
-      void sysmat_od_thermo_scatra(DRT::Element* ele,  //!< current element
-          CORE::LINALG::SerialDenseMatrix& emat        //!< element matrix
+      void sysmat_od_thermo_scatra(CORE::Elements::Element* ele,  //!< current element
+          CORE::LINALG::SerialDenseMatrix& emat                   //!< element matrix
       );
 
       //! element matrix and right-hand side vector contributions arising from Joule's heat
@@ -123,19 +123,19 @@ namespace DRT
           ) override;
 
       //! extract quantities for element evaluation
-      void extract_element_and_node_values(DRT::Element* ele,  //!< current element
-          Teuchos::ParameterList& params,                      //!< parameter list
-          DRT::Discretization& discretization,                 //!< discretization
-          DRT::Element::LocationArray& la                      //!< location array
+      void extract_element_and_node_values(CORE::Elements::Element* ele,  //!< current element
+          Teuchos::ParameterList& params,                                 //!< parameter list
+          DRT::Discretization& discretization,                            //!< discretization
+          CORE::Elements::Element::LocationArray& la                      //!< location array
           ) override;
 
       //! get material parameters
-      void get_material_params(const DRT::Element* ele,  //!< current element
-          std::vector<double>& densn,                    //!< density at t_(n)
-          std::vector<double>& densnp,                   //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,                   //!< density at t_(n+alpha_M)
-          double& visc,                                  //!< fluid viscosity
-          const int iquad                                //!< ID of current integration point
+      void get_material_params(const CORE::Elements::Element* ele,  //!< current element
+          std::vector<double>& densn,                               //!< density at t_(n)
+          std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,  //!< density at t_(n+alpha_M)
+          double& visc,                 //!< fluid viscosity
+          const int iquad               //!< ID of current integration point
           ) override;
 
       //! evaluate Soret material
@@ -193,8 +193,8 @@ namespace DRT
 
       //! compute and store half cell open circuit potential and its first and second derivatives
       //! w.r.t. concentration
-      void SetOCPAndDerivs(
-          const DRT::Element* ele, const double& concentration, const double& temperature)
+      void SetOCPAndDerivs(const CORE::Elements::Element* ele, const double& concentration,
+          const double& temperature)
       {
         const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
         const double gasconstant =

@@ -27,7 +27,7 @@ its parameters and conditions.
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_condition_definition.hpp"
-#include "4C_lib_elementdefinition.hpp"
+#include "4C_io_elementdefinition.hpp"
 #include "4C_pre_exodus_readbc.hpp"
 #include "4C_pre_exodus_reader.hpp"
 #include "4C_pre_exodus_validate.hpp"

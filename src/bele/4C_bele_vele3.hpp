@@ -15,9 +15,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
@@ -34,7 +34,7 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    class Vele3Type : public DRT::ElementType
+    class Vele3Type : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Vele3Type"; }
@@ -43,13 +43,13 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -78,7 +78,7 @@ namespace DRT
     \brief A register for bele3 element
 
     */
-    class Vele3 : public DRT::Element
+    class Vele3 : public CORE::Elements::Element
     {
      public:
       //@}
@@ -107,7 +107,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
@@ -156,12 +156,12 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
 
       /*!
@@ -195,7 +195,7 @@ namespace DRT
 
       /*!
     \brief Get number of degrees of freedom of a certain node
-           (implements pure virtual DRT::Element)
+           (implements pure virtual CORE::Elements::Element)
 
     The element decides how many degrees of freedom its nodes must have.
     As this may vary along a simulation, the element can redecide the
@@ -206,7 +206,7 @@ namespace DRT
 
       /*!
     \brief Get number of degrees of freedom per element
-           (implements pure virtual DRT::Element)
+           (implements pure virtual CORE::Elements::Element)
 
     The element decides how many element degrees of freedom it has.
     It can redecide along the way of a simulation.
@@ -219,7 +219,7 @@ namespace DRT
 
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return Vele3Type::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override { return Vele3Type::Instance(); }
 
 
       //@}
@@ -292,17 +292,17 @@ namespace DRT
 
 
 
-    class Vele3SurfaceType : public DRT::ElementType
+    class Vele3SurfaceType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Vele3SurfaceType"; }
 
       static Vele3SurfaceType& Instance();
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -322,7 +322,7 @@ namespace DRT
     //=======================================================================
     //=======================================================================
     //=======================================================================
-    class Vele3Surface : public DRT::FaceElement
+    class Vele3Surface : public CORE::Elements::FaceElement
     {
      public:
       //@}
@@ -342,7 +342,7 @@ namespace DRT
       */
       explicit Vele3Surface(const Vele3Surface& old);
 
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
       CORE::FE::CellType Shape() const override;
       int NumLine() const override
       {
@@ -358,8 +358,8 @@ namespace DRT
       }
       int NumSurface() const override { return 1; }
       int NumVolume() const override { return -1; }
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
       int UniqueParObjectId() const override
       {
         return Vele3SurfaceType::Instance().UniqueParObjectId();
@@ -375,7 +375,10 @@ namespace DRT
       int NumDofPerNode(const DRT::Node&) const override { return 3; }
       int num_dof_per_element() const override { return 0; }
       void Print(std::ostream& os) const override;
-      DRT::ElementType& ElementType() const override { return Vele3SurfaceType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return Vele3SurfaceType::Instance();
+      }
 
       //@}
 
@@ -442,17 +445,17 @@ namespace DRT
     //=======================================================================
 
 
-    class Vele3LineType : public DRT::ElementType
+    class Vele3LineType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Vele3LineType"; }
 
       static Vele3LineType& Instance();
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -473,7 +476,7 @@ namespace DRT
     \brief An element representing a line of a vele3 element
 
     */
-    class Vele3Line : public DRT::FaceElement
+    class Vele3Line : public CORE::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -490,7 +493,7 @@ namespace DRT
       \param lline: the local line number of this line w.r.t. the parent element
       */
       Vele3Line(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
-          DRT::Element* parent, const int lline);
+          CORE::Elements::Element* parent, const int lline);
 
       /*!
       \brief Copy Constructor
@@ -500,7 +503,7 @@ namespace DRT
       */
       Vele3Line(const Vele3Line& old);
 
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
       CORE::FE::CellType Shape() const override;
       int UniqueParObjectId() const override
       {
@@ -517,7 +520,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       For this 3D boundary element, we have 3 displacements, if needed
       */
@@ -527,7 +530,10 @@ namespace DRT
 
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return Vele3LineType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return Vele3LineType::Instance();
+      }
 
       //@}
 

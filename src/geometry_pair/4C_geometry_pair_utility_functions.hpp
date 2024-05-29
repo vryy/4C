@@ -84,7 +84,7 @@ namespace GEOMETRYPAIR
     constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
     out << std::setprecision(max_precision);
 
-    const auto* face_element = dynamic_cast<const DRT::FaceElement*>(pair->Element2());
+    const auto* face_element = dynamic_cast<const CORE::Elements::FaceElement*>(pair->Element2());
     if (face_element == nullptr)
     {
       out << "Pair consisting of the line with GID " << pair->Element1()->Id()

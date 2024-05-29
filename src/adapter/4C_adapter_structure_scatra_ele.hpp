@@ -18,14 +18,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
 }
 
 namespace ADAPTER
 {
-  INPAR::SCATRA::ImplType GetScaTraImplType(DRT::Element* ele);
+  INPAR::SCATRA::ImplType GetScaTraImplType(CORE::Elements::Element* ele);
 }  // namespace ADAPTER
 
 

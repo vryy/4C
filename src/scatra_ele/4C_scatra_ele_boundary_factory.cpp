@@ -32,8 +32,8 @@ FOUR_C_NAMESPACE_OPEN
  |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::ProvideImpl(
-    const DRT::Element* ele, const enum INPAR::SCATRA::ImplType impltype, const int numdofpernode,
-    const int numscal, const std::string& disname)
+    const CORE::Elements::Element* ele, const enum INPAR::SCATRA::ImplType impltype,
+    const int numdofpernode, const int numscal, const std::string& disname)
 {
   // number of space dimensions
   const int ndim = disname != "scatra_micro" ? GLOBAL::Problem::Instance()->NDim() : 1;

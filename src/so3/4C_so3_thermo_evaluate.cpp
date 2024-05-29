@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la)
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
 {
   // if the coupling variables are required before Evaluate() is called the 1st
   // time
@@ -70,7 +70,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::pre_evaluate(Teuchos::Parameter
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -150,7 +150,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
 template <class so3_ele, CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -795,7 +795,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::lin_fint_tsi(
-    DRT::Element::LocationArray& la,                        // location array
+    CORE::Elements::Element::LocationArray& la,             // location array
     std::vector<double>& disp,                              // current displacements
     std::vector<double>& temp,                              // current temperature
     CORE::LINALG::Matrix<numdofperelement_, 1>* force,      // element internal force vector
@@ -948,7 +948,8 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::lin_fint_tsi(
  | for monolithic TSI, contribution to k_dT (private)                   |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::lin_kd_t_tsi(DRT::Element::LocationArray& la,
+void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::lin_kd_t_tsi(
+    CORE::Elements::Element::LocationArray& la,
     std::vector<double>& disp,                                       // current displacement
     std::vector<double>& temp,                                       // current temperatures
     CORE::LINALG::Matrix<numdofperelement_, nen_>* stiffmatrix_kdT,  // (nsd_*nen_ x nen_)
@@ -1083,10 +1084,10 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::lin_kd_t_tsi(DRT::Element::Loca
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
-    DRT::Element::LocationArray& la,      // location array
-    DRT::Discretization& discretization,  ///< discretisation to extract knot vector
-    std::vector<double>& disp,            // current displacements
-    std::vector<double>& temp,            // current temperature
+    CORE::Elements::Element::LocationArray& la,  // location array
+    DRT::Discretization& discretization,         ///< discretisation to extract knot vector
+    std::vector<double>& disp,                   // current displacements
+    std::vector<double>& temp,                   // current temperature
     CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
         stiffmatrix,                                        // element stiffness matrix
     CORE::LINALG::Matrix<numdofperelement_, 1>* force,      // element internal force vector
@@ -1342,7 +1343,8 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
  | for monolithic TSI, contribution to k_dT (private)                   |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi(DRT::Element::LocationArray& la,
+void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi(
+    CORE::Elements::Element::LocationArray& la,
     DRT::Discretization& discretization,  ///< discretisation to extract knot vector
     std::vector<double>& disp,            // current displacement
     std::vector<double>& temp,            // current temperature
@@ -1538,9 +1540,9 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi(DRT::Element::Loca
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
-    DRT::Element::LocationArray& la,  // location array
-    std::vector<double>& disp,        // current displacements
-    std::vector<double>& temp,        // current temperature
+    CORE::Elements::Element::LocationArray& la,  // location array
+    std::vector<double>& disp,                   // current displacements
+    std::vector<double>& temp,                   // current temperature
     CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
         stiffmatrix,                                        // element stiffness matrix
     CORE::LINALG::Matrix<numdofperelement_, 1>* force,      // element internal force vector
@@ -1892,7 +1894,8 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
  | for monolithic TSI, contribution to k_dT (protected)                 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi_fbar(DRT::Element::LocationArray& la,
+void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi_fbar(
+    CORE::Elements::Element::LocationArray& la,
     std::vector<double>& disp,                                       // current displacement
     std::vector<double>& temp,                                       // current temperature
     CORE::LINALG::Matrix<numdofperelement_, nen_>* stiffmatrix_kdT,  // (nsd_*nen_ x nen_)

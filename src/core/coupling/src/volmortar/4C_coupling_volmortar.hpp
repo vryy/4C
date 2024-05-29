@@ -28,8 +28,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::LINALG
 {
@@ -197,7 +201,7 @@ namespace CORE::VOLMORTAR
      \brief calc dops for one element
 
      */
-    virtual CORE::LINALG::Matrix<9, 2> calc_dop(DRT::Element& ele);
+    virtual CORE::LINALG::Matrix<9, 2> calc_dop(CORE::Elements::Element& ele);
 
     /*!
      \brief center triangulation (if delaunay fails)
@@ -210,13 +214,14 @@ namespace CORE::VOLMORTAR
      \brief check if we need cut (3D)
 
      */
-    virtual bool check_cut(DRT::Element& sele, DRT::Element& mele);
+    virtual bool check_cut(CORE::Elements::Element& sele, CORE::Elements::Element& mele);
 
     /*!
      \brief check if we can integrate element-wise (3D)
 
      */
-    virtual bool check_ele_integration(DRT::Element& sele, DRT::Element& mele);
+    virtual bool check_ele_integration(
+        CORE::Elements::Element& sele, CORE::Elements::Element& mele);
 
     /*!
      \brief check initial coupling constraint
@@ -240,7 +245,7 @@ namespace CORE::VOLMORTAR
      \brief compute trafo operator
 
      */
-    virtual void create_trafo_operator(DRT::Element& ele,
+    virtual void create_trafo_operator(CORE::Elements::Element& ele,
         Teuchos::RCP<DRT::Discretization> searchdis, bool dis, std::set<int>& donebefore);
 
     /*!
@@ -248,14 +253,14 @@ namespace CORE::VOLMORTAR
 
      */
     virtual void define_vertices_master(
-        DRT::Element& ele, std::vector<MORTAR::Vertex>& slave_vertices);
+        CORE::Elements::Element& ele, std::vector<MORTAR::Vertex>& slave_vertices);
 
     /*!
      \brief define vertices for 2D polygon clipping (slave)
 
      */
     virtual void define_vertices_slave(
-        DRT::Element& ele, std::vector<MORTAR::Vertex>& slave_vertices);
+        CORE::Elements::Element& ele, std::vector<MORTAR::Vertex>& slave_vertices);
 
     /*!
      \brief create integration cells for 2D volmortar
@@ -292,13 +297,13 @@ namespace CORE::VOLMORTAR
      \brief Evaluate segment-based for 2D problems
 
      */
-    virtual void evaluate_segments2_d(DRT::Element& Aele, DRT::Element& Bele);
+    virtual void evaluate_segments2_d(CORE::Elements::Element& Aele, CORE::Elements::Element& Bele);
 
     /*!
      \brief Evaluate segment-based for 3D problems
 
      */
-    virtual void evaluate_segments3_d(DRT::Element* Aele, DRT::Element* Bele);
+    virtual void evaluate_segments3_d(CORE::Elements::Element* Aele, CORE::Elements::Element* Bele);
 
     /*!
      \brief get adjacent node ids for quadr. dual shape functions (trafo calculation)
@@ -329,53 +334,56 @@ namespace CORE::VOLMORTAR
      \brief perform 2D integration
 
      */
-    virtual void integrate2_d(
-        DRT::Element& sele, DRT::Element& mele, std::vector<Teuchos::RCP<MORTAR::IntCell>>& cells);
+    virtual void integrate2_d(CORE::Elements::Element& sele, CORE::Elements::Element& mele,
+        std::vector<Teuchos::RCP<MORTAR::IntCell>>& cells);
 
     /*!
      \brief perform 3D element-wise integration
 
      */
-    virtual void integrate3_d(DRT::Element& sele, DRT::Element& mele, int domain);
+    virtual void integrate3_d(
+        CORE::Elements::Element& sele, CORE::Elements::Element& mele, int domain);
 
     /*!
      \brief perform 3D element-wise integration for P12
 
      */
-    virtual void integrate3_d_ele_based_p12(DRT::Element& Aele, std::vector<int>& foundeles);
+    virtual void integrate3_d_ele_based_p12(
+        CORE::Elements::Element& Aele, std::vector<int>& foundeles);
 
     /*!
      \brief perform 3D element-wise integration for BDis
 
      */
-    virtual void integrate3_d_ele_based_p21(DRT::Element& Bele, std::vector<int>& foundeles);
+    virtual void integrate3_d_ele_based_p21(
+        CORE::Elements::Element& Bele, std::vector<int>& foundeles);
 
     /*!
      \brief perform 3D element-wise integration for ADis for meshinit
 
      */
     virtual void integrate3_d_ele_based_a_dis_mesh_init(
-        DRT::Element& Aele, std::vector<int>& foundeles, int dofseta, int dofsetb);
+        CORE::Elements::Element& Aele, std::vector<int>& foundeles, int dofseta, int dofsetb);
 
     /*!
      \brief perform 3D element-wise integration for BDis for meshinit
 
      */
     virtual void integrate3_d_ele_based_b_dis_mesh_init(
-        DRT::Element& Bele, std::vector<int>& foundeles, int dofsetb, int dofseta);
+        CORE::Elements::Element& Bele, std::vector<int>& foundeles, int dofsetb, int dofseta);
     /*!
      \brief perform 3D integration of created cells
 
      */
-    virtual void integrate3_d_cell(
-        DRT::Element& sele, DRT::Element& mele, std::vector<Teuchos::RCP<Cell>>& cells);
+    virtual void integrate3_d_cell(CORE::Elements::Element& sele, CORE::Elements::Element& mele,
+        std::vector<Teuchos::RCP<Cell>>& cells);
 
     /*!
      \brief perform 3D integration of created cells
 
      */
     virtual void integrate3_d_cell_direct_divergence(
-        DRT::Element& sele, DRT::Element& mele, bool switched_conf = false);
+        CORE::Elements::Element& sele, CORE::Elements::Element& mele, bool switched_conf = false);
     /*!
      \brief perform mesh init procedure
 
@@ -392,7 +400,8 @@ namespace CORE::VOLMORTAR
      \brief perform cut and create integration cells (3D)
 
      */
-    virtual void perform_cut(DRT::Element* sele, DRT::Element* mele, bool switched_conf = false);
+    virtual void perform_cut(
+        CORE::Elements::Element* sele, CORE::Elements::Element* mele, bool switched_conf = false);
 
     /*!
      \brief perform 2D polygon clipping
@@ -400,7 +409,7 @@ namespace CORE::VOLMORTAR
      */
     virtual bool polygon_clipping_convex_hull(std::vector<MORTAR::Vertex>& poly1,
         std::vector<MORTAR::Vertex>& poly2, std::vector<MORTAR::Vertex>& respoly,
-        DRT::Element& sele, DRT::Element& mele, double& tol);
+        CORE::Elements::Element& sele, CORE::Elements::Element& mele, double& tol);
 
     /*!
      \brief Output for evaluation status -- progress
@@ -418,7 +427,7 @@ namespace CORE::VOLMORTAR
      \brief search algorithm
 
      */
-    virtual std::vector<int> search(DRT::Element& ele,
+    virtual std::vector<int> search(CORE::Elements::Element& ele,
         Teuchos::RCP<CORE::GEO::SearchTree> SearchTree,
         std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs);
 

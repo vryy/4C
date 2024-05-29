@@ -15,8 +15,8 @@
 #include "4C_config.hpp"
 
 #include "4C_art_net_artery_ele_interface.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_inpar_bio.hpp"
-#include "4C_lib_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

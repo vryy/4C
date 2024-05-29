@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
-    std::vector<DRT::Element const*> const& ele_ptrs,
+    std::vector<CORE::Elements::Element const*> const& ele_ptrs,
     const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr)
 {
   // Cast the fluid element.

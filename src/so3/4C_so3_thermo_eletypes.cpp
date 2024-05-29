@@ -45,12 +45,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8ThermoType::Create(const std::vector
  | create the new element type (public)                      dano 08/12 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8ThermoType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8ThermoType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SOLIDH8THERMO")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(id, owner));
     return ele;
   }
@@ -62,9 +62,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8ThermoType::Create(
  | create the new element type (public)                      dano 08/12 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8ThermoType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8ThermoType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(id, owner));
   return ele;
 
@@ -147,12 +148,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8fbarThermoType::Create(const std::ve
  | create the new element type (public)                      dano 05/13 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8fbarThermoType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8fbarThermoType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SOLIDH8FBARTHERMO")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoHex8fbar, CORE::FE::CellType::hex8>(
             id, owner));
     return ele;
@@ -165,10 +166,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8fbarThermoType::Create(
  | create the new element type (public)                      dano 05/13 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8fbarThermoType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8fbarThermoType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoHex8fbar, CORE::FE::CellType::hex8>(id, owner));
   return ele;
 }  // Create()
@@ -253,12 +254,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoTet4ThermoType::Create(const std::vector
  | create the new element type (public)                      dano 08/12 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4ThermoType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet4ThermoType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SOLIDT4THERMO")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(id, owner));
     return ele;
   }
@@ -270,9 +271,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4ThermoType::Create(
  | create the new element type (public)                      dano 08/12 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4ThermoType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet4ThermoType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(id, owner));
   return ele;
 }  // Create()
@@ -350,12 +352,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoTet10ThermoType::Create(const std::vecto
  | create the new element type (public)                     farah 05/14 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet10ThermoType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet10ThermoType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SOLIDT10THERMO")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>(id, owner));
     return ele;
   }
@@ -367,9 +369,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet10ThermoType::Create(
  | create the new element type (public)                     farah 05/14 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet10ThermoType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet10ThermoType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>(id, owner));
   return ele;
 }  // Create()
@@ -447,12 +450,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex27ThermoType::Create(const std::vecto
  | create the new element type (public)                      dano 10/13 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27ThermoType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex27ThermoType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SOLIDH27THERMO")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>(id, owner));
     return ele;
   }
@@ -464,9 +467,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27ThermoType::Create(
  | create the new element type (public)                      dano 10/13 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27ThermoType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex27ThermoType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>(id, owner));
   return ele;
 }  // Create ()
@@ -544,12 +548,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex20ThermoType::Create(const std::vecto
  | create the new element type (public)                     farah 05/14 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex20ThermoType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex20ThermoType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SOLIDH20THERMO")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoHex20, CORE::FE::CellType::hex20>(id, owner));
     return ele;
   }
@@ -561,9 +565,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex20ThermoType::Create(
  | create the new element type (public)                     farah 05/14 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex20ThermoType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex20ThermoType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoHex20, CORE::FE::CellType::hex20>(id, owner));
   return ele;
 }  // Create ()
@@ -646,12 +651,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoNurbs27ThermoType::Create(const std::vec
  | create the new element type (public)                     seitz 12/15 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoNurbs27ThermoType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoNurbs27ThermoType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SONURBS27THERMO")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::NURBS::SoNurbs27, CORE::FE::CellType::nurbs27>(
             id, owner));
     return ele;
@@ -664,9 +669,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoNurbs27ThermoType::Create(
  | create the new element type (public)                     seitz 12/15 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoNurbs27ThermoType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoNurbs27ThermoType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::NURBS::SoNurbs27, CORE::FE::CellType::nurbs27>(
           id, owner));
   return ele;

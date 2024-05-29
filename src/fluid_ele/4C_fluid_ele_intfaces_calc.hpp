@@ -15,8 +15,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_inpar_xfem.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
 #include "4C_utils_singleton_owner.hpp"
@@ -90,7 +90,7 @@ namespace DRT
 
       /// Internal implementation class for FluidIntFace elements (the first object is created in
       /// DRT::ELEMENTS::FluidIntFace::Evaluate)
-      static FluidIntFaceImplInterface* Impl(const DRT::Element* ele);
+      static FluidIntFaceImplInterface* Impl(const CORE::Elements::Element* ele);
     };
 
     /// Internal FluidIntFace element implementation

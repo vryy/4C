@@ -41,9 +41,9 @@ DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::ScaTraEleCalcElch(
  | Action type: Evaluate                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Evaluate(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Evaluate(CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -67,7 +67,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Evaluate(DRT::Element* e
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::sysmat(
-    DRT::Element* ele,                          ///< the element whose matrix is calculated
+    CORE::Elements::Element* ele,               ///< the element whose matrix is calculated
     CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix to calculate
     CORE::LINALG::SerialDenseVector& erhs,      ///< element rhs to calculate
     CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector

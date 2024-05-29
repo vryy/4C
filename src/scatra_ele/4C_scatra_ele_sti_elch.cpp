@@ -69,10 +69,10 @@ void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::calc_mat_source_od(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::extract_element_and_node_values(
-    DRT::Element* ele,                    //!< current element
-    Teuchos::ParameterList& params,       //!< parameter list
-    DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la       //!< location array
+    CORE::Elements::Element* ele,               //!< current element
+    Teuchos::ParameterList& params,             //!< parameter list
+    DRT::Discretization& discretization,        //!< discretization
+    CORE::Elements::Element::LocationArray& la  //!< location array
 )
 {
   // extract electrochemistry state vector from discretization

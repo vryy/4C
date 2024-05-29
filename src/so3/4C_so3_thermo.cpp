@@ -44,7 +44,7 @@ DRT::ELEMENTS::So3Thermo<so3_ele, distype>::So3Thermo(
  | it (public)                                                          |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::So3Thermo<so3_ele, distype>(*this);
 
@@ -117,7 +117,7 @@ template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Print(std::ostream& os) const
 {
   os << "So3_Thermo ";
-  Element::Print(os);
+  CORE::Elements::Element::Print(os);
   return;
 }
 
@@ -183,7 +183,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::UniqueParObjectId() const
  | get the nodes from so3 (public)                           dano 05/13 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::ElementType& DRT::ELEMENTS::So3Thermo<so3_ele, distype>::ElementType() const
+CORE::Elements::ElementType& DRT::ELEMENTS::So3Thermo<so3_ele, distype>::ElementType() const
 {
   switch (distype)
   {

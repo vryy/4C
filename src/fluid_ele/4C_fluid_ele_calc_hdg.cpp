@@ -178,8 +178,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::read_global_vectors(const DRT::Element& ele,
-    DRT::Discretization& discretization, const std::vector<int>& lm, const bool updateLocally)
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::read_global_vectors(
+    const CORE::Elements::Element& ele, DRT::Discretization& discretization,
+    const std::vector<int>& lm, const bool updateLocally)
 {
   // read the HDG solution vector (for traces)
   trace_val_.resize(1 + nfaces_ * nsd_ * shapesface_->nfdofs_);
@@ -201,9 +202,9 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::read_global_vectors(const DRT::Ele
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::update_secondary_solution(const DRT::Element& ele,
-    DRT::Discretization& discretization, const CORE::LINALG::SerialDenseVector& updateG,
-    const CORE::LINALG::SerialDenseVector& updateUp)
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::update_secondary_solution(
+    const CORE::Elements::Element& ele, DRT::Discretization& discretization,
+    const CORE::LINALG::SerialDenseVector& updateG, const CORE::LINALG::SerialDenseVector& updateUp)
 {
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "intvelnp");
   std::vector<int> localDofs = discretization.Dof(1, &ele);
@@ -757,7 +758,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
   matrix_state = discretization.GetState(0, "velnp");
 
   // we have always two dofsets
-  Element::LocationArray la(2);
+  CORE::Elements::Element::LocationArray la(2);
   ele->LocationVector(discretization, la, false);
   localDofs = la[0].lm_;
   solvalues.resize(localDofs.size());

@@ -39,7 +39,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::FluidHDGType::Create(const std::vector<cha
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidHDGType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidHDGType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDHDG")
@@ -53,7 +53,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidHDGType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidHDGType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidHDGType::Create(
+    const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::FluidHDG(id, owner));
 }
@@ -63,7 +64,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidHDGType::Create(const int id, con
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidHDGType::nodal_block_information(
-    Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = CORE::FE::getDimension(dwele->Shape()) + 1;
   dimns = numdf;
@@ -165,7 +166,7 @@ DRT::ELEMENTS::FluidHDG::FluidHDG(const DRT::ELEMENTS::FluidHDG& old)
  |  Deep copy this instance of Fluid and return pointer to it (public)  |
  |                                                    kronbichler 05/13 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::FluidHDG::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::FluidHDG::Clone() const
 {
   DRT::ELEMENTS::FluidHDG* newelement = new DRT::ELEMENTS::FluidHDG(*this);
   return newelement;

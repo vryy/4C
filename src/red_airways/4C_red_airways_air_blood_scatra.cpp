@@ -34,22 +34,24 @@ CORE::COMM::ParObject* DRT::ELEMENTS::RedAirBloodScatraType::Create(const std::v
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirBloodScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RedAirBloodScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "RED_AIR_BLOOD_SCATRA")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::RedAirBloodScatra(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::RedAirBloodScatra(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirBloodScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RedAirBloodScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::RedAirBloodScatra(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::RedAirBloodScatra(id, owner));
   return ele;
 }
 
@@ -72,14 +74,17 @@ void DRT::ELEMENTS::RedAirBloodScatraType::setup_element_definition(
  |  ctor (public)                                           ismail 05/13|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAirBloodScatra::RedAirBloodScatra(int id, int owner) : DRT::Element(id, owner) {}
+DRT::ELEMENTS::RedAirBloodScatra::RedAirBloodScatra(int id, int owner)
+    : CORE::Elements::Element(id, owner)
+{
+}
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      ismail 05/13|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedAirBloodScatra::RedAirBloodScatra(const DRT::ELEMENTS::RedAirBloodScatra& old)
-    : DRT::Element(old), elem_params_(old.elem_params_), generation_(old.generation_)
+    : CORE::Elements::Element(old), elem_params_(old.elem_params_), generation_(old.generation_)
 {
 }
 
@@ -88,7 +93,7 @@ DRT::ELEMENTS::RedAirBloodScatra::RedAirBloodScatra(const DRT::ELEMENTS::RedAirB
  |  to it                                                      (public) |
  |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::RedAirBloodScatra::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::RedAirBloodScatra::Clone() const
 {
   DRT::ELEMENTS::RedAirBloodScatra* newelement = new DRT::ELEMENTS::RedAirBloodScatra(*this);
   return newelement;
@@ -200,7 +205,7 @@ void DRT::ELEMENTS::RedAirBloodScatra::Print(std::ostream& os) const
 void DRT::ELEMENTS::RedAirBloodScatra::VisNames(std::map<std::string, int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
-  DRT::Element::VisNames(names);
+  CORE::Elements::Element::VisNames(names);
 }
 
 /*----------------------------------------------------------------------*
@@ -209,7 +214,7 @@ void DRT::ELEMENTS::RedAirBloodScatra::VisNames(std::map<std::string, int>& name
 bool DRT::ELEMENTS::RedAirBloodScatra::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (DRT::Element::VisData(name, data)) return true;
+  if (CORE::Elements::Element::VisData(name, data)) return true;
 
   return false;
 }
@@ -250,7 +255,7 @@ void DRT::ELEMENTS::RedAirBloodScatra::getParams(std::string name, int& var)
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)              ismail  02/13|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::RedAirBloodScatra::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::RedAirBloodScatra::Lines()
 {
   FOUR_C_ASSERT(NumLine() == 1, "RED_AIRWAY element must have one and only one line");
 

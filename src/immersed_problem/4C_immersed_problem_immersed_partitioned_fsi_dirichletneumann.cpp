@@ -699,7 +699,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::prepare_fluid_op()
   else
   {
     // get searchbox conditions on bodies
-    std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
     std::vector<CORE::Conditions::Condition*> conditions;
     structdis_->GetCondition("ImmersedSearchbox", conditions);
 

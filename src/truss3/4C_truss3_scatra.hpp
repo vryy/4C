@@ -25,10 +25,10 @@ namespace DRT
      public:
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       static Truss3ScatraType& Instance();
 
@@ -59,9 +59,12 @@ namespace DRT
 
       Truss3Scatra(const Truss3Scatra& old);
 
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
-      DRT::ElementType& ElementType() const override { return Truss3ScatraType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return Truss3ScatraType::Instance();
+      }
 
       /// return SCATRA::ImplType
       const INPAR::SCATRA::ImplType& ImplType() const { return impltype_; };

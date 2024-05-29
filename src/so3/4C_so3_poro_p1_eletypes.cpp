@@ -30,21 +30,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8PoroP1Type::Create(const std::vector
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PoroP1Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8PoroP1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PoroP1Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8PoroP1Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(id, owner));
   return ele;
 }
@@ -63,7 +64,7 @@ void DRT::ELEMENTS::SoHex8PoroP1Type::setup_element_definition(
 }
 
 void DRT::ELEMENTS::SoHex8PoroP1Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 4;
   dimns = 4;
@@ -107,21 +108,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoTet4PoroP1Type::Create(const std::vector
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PoroP1Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet4PoroP1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PoroP1Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet4PoroP1Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(id, owner));
   return ele;
 }
@@ -155,7 +157,7 @@ int DRT::ELEMENTS::SoTet4PoroP1Type::Initialize(DRT::Discretization& dis)
 }
 
 void DRT::ELEMENTS::SoTet4PoroP1Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 4;
   dimns = 4;

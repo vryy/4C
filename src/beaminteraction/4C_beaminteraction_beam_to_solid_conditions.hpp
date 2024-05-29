@@ -14,7 +14,7 @@
 #include "4C_config.hpp"
 
 #include "4C_beaminteraction_conditions.hpp"
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_RCP.hpp>
@@ -27,10 +27,10 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declarations.
-namespace DRT
+namespace CORE::Elements
 {
   class FaceElement;
-}  // namespace DRT
+}
 namespace BEAMINTERACTION
 {
   class BeamToSolidParamsBase;
@@ -79,7 +79,7 @@ namespace BEAMINTERACTION
      * \brief Create the beam to solid pairs needed for this condition (derived).
      */
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
-        const std::vector<DRT::Element const*>& ele_ptrs) override;
+        const std::vector<CORE::Elements::Element const*>& ele_ptrs) override;
 
     /**
      * \brief Return a pointer to the condition of the other geometry (volume or surface).
@@ -122,7 +122,7 @@ namespace BEAMINTERACTION
      * @return Pointer to the created pair.
      */
     virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair_internal(
-        const std::vector<DRT::Element const*>& ele_ptrs) = 0;
+        const std::vector<CORE::Elements::Element const*>& ele_ptrs) = 0;
 
    protected:
     //! Pointer to the geometry evaluation data for this condition.
@@ -166,7 +166,7 @@ namespace BEAMINTERACTION
      * \brief Return the created beam contact pair for this condition. (derived)
      */
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair_internal(
-        const std::vector<DRT::Element const*>& ele_ptrs) override;
+        const std::vector<CORE::Elements::Element const*>& ele_ptrs) override;
 
     /**
      * \brief Check if a solid ID is in this condition.
@@ -225,7 +225,7 @@ namespace BEAMINTERACTION
      * \brief Return the created beam contact pair for this condition. (derived)
      */
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair_internal(
-        const std::vector<DRT::Element const*>& ele_ptrs) override;
+        const std::vector<CORE::Elements::Element const*>& ele_ptrs) override;
 
     /**
      * \brief Check if a solid ID is in this condition.
@@ -252,7 +252,7 @@ namespace BEAMINTERACTION
 
     //! Map containing the global volume element IDs for each face element of the surface in this
     //! condition.
-    std::unordered_map<int, Teuchos::RCP<const DRT::FaceElement>> surface_ids_;
+    std::unordered_map<int, Teuchos::RCP<const CORE::Elements::FaceElement>> surface_ids_;
   };
 
 

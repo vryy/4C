@@ -45,12 +45,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Beam3rType::Create(const std::vector<char>
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3rType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Beam3rType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "BEAM3R")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -58,16 +58,17 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3rType::Create(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3rType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Beam3rType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(id, owner));
   return ele;
 }
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3rType::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   DRT::ELEMENTS::Beam3r* currele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(dwele);
   if (!currele) FOUR_C_THROW("cast to Beam3r* failed");
@@ -370,7 +371,7 @@ DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old)
  |  Deep copy this instance of Beam3r and return pointer to it (public) |
  |                                                            cyron 01/08 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Beam3r::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Beam3r::Clone() const
 {
   DRT::ELEMENTS::Beam3r* newelement = new DRT::ELEMENTS::Beam3r(*this);
   return newelement;
@@ -555,7 +556,7 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          cyron 01/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Beam3r::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Beam3r::Lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

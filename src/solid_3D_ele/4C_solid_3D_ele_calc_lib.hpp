@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_gauss_point_postprocess.hpp"
 #include "4C_discretization_fem_general_utils_gausspoints.hpp"
@@ -19,7 +20,6 @@
 #include "4C_fiber_utils.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_fixedsizematrix_generators.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_nurbs_discret_nurbs_utils.hpp"
@@ -131,7 +131,7 @@ namespace DRT::ELEMENTS
    */
   template <CORE::FE::CellType celltype>
   ElementNodes<celltype> EvaluateElementNodes(
-      const DRT::Element& ele, const std::vector<double>& disp)
+      const CORE::Elements::Element& ele, const std::vector<double>& disp)
   {
     DRT::ELEMENTS::ElementNodes<celltype> element_nodes;
     for (int i = 0; i < DETAIL::num_nodes<celltype>; ++i)
@@ -154,7 +154,7 @@ namespace DRT::ELEMENTS
    * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    */
   template <CORE::FE::CellType celltype>
-  ElementNodes<celltype> EvaluateElementNodes(const DRT::Element& ele,
+  ElementNodes<celltype> EvaluateElementNodes(const CORE::Elements::Element& ele,
       const DRT::Discretization& discretization, const std::vector<int>& lm)
   {
     const Epetra_Vector& displacements = *discretization.GetState("displacement");
@@ -881,8 +881,8 @@ namespace DRT::ELEMENTS
    */
   template <CORE::FE::CellType celltype>
   inline void InterpolateFibersToGaussPointsAndAddToParameterList(
-      const CORE::FE::GaussIntegration& stiffness_matrix_integration, const DRT::Element& ele,
-      Teuchos::ParameterList& params)
+      const CORE::FE::GaussIntegration& stiffness_matrix_integration,
+      const CORE::Elements::Element& ele, Teuchos::ParameterList& params)
   {
     if (DRT::FIBER::UTILS::HaveNodalFibers<celltype>(ele.Nodes()))
     {

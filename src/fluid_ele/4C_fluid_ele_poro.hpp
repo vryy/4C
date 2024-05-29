@@ -38,10 +38,10 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
@@ -89,7 +89,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -120,12 +120,12 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       //!@}
 
@@ -136,7 +136,10 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return FluidPoroEleType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return FluidPoroEleType::Instance();
+      }
 
 
       void SetKinematicType(INPAR::STR::KinemType kintype) { kintype_ = kintype; }
@@ -228,7 +231,7 @@ namespace DRT
      public:
       std::string Name() const override { return "FluidPoroBoundaryType"; }
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       static FluidPoroBoundaryType& Instance();
 
@@ -271,7 +274,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -293,7 +296,10 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return FluidPoroBoundaryType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return FluidPoroBoundaryType::Instance();
+      }
 
       //!@}
 

@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_solid_3D_ele_calc.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 
@@ -42,7 +42,7 @@ namespace DRT::ELEMENTS
     using LinearizationContainer = DisplacementBasedLinearizationContainer<celltype>;
 
     template <typename Evaluator>
-    static inline auto Evaluate(const DRT::Element& ele,
+    static inline auto Evaluate(const CORE::Elements::Element& ele,
         const ElementNodes<celltype>& nodal_coordinates,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -70,7 +70,7 @@ namespace DRT::ELEMENTS
     }
 
     static inline CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
-    evaluate_d_deformation_gradient_d_displacements(const DRT::Element& ele,
+    evaluate_d_deformation_gradient_d_displacements(const CORE::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -98,7 +98,7 @@ namespace DRT::ELEMENTS
     }
 
     static inline CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>>
-    evaluate_d_deformation_gradient_d_xi(const DRT::Element& ele,
+    evaluate_d_deformation_gradient_d_xi(const CORE::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -148,7 +148,7 @@ namespace DRT::ELEMENTS
 
     static inline CORE::LINALG::Matrix<9,
         CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>
-    evaluate_d_deformation_gradient_d_displacements_d_xi(const DRT::Element& ele,
+    evaluate_d_deformation_gradient_d_displacements_d_xi(const CORE::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,

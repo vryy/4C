@@ -31,7 +31,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Ale2NurbsType::Create(const std::ve
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale2NurbsType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::NURBS::Ale2NurbsType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ALE2")
@@ -46,7 +46,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale2NurbsType::Create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale2NurbsType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::NURBS::Ale2NurbsType::Create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Ale2Nurbs(id, owner));

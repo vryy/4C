@@ -15,11 +15,11 @@
 
 #include "4C_comm_utils.hpp"
 #include "4C_discretization_condition.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -897,7 +897,7 @@ void STRUMULTI::MicroStatic::SetEASData()
 {
   for (int lid = 0; lid < discret_->ElementRowMap()->NumMyElements(); ++lid)
   {
-    DRT::Element* actele = discret_->lRowElement(lid);
+    CORE::Elements::Element* actele = discret_->lRowElement(lid);
 
     if (actele->ElementType() == DRT::ELEMENTS::SoHex8Type::Instance() or
         actele->ElementType() == DRT::ELEMENTS::SoShw6Type::Instance())

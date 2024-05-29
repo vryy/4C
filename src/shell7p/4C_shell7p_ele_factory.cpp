@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 std::unique_ptr<DRT::ELEMENTS::Shell7pEleCalcInterface>
 DRT::ELEMENTS::Shell7pFactory::provide_shell7p_calculation_interface(
-    const DRT::Element& ele, const std::set<INPAR::STR::EleTech>& eletech)
+    const CORE::Elements::Element& ele, const std::set<INPAR::STR::EleTech>& eletech)
 {
   switch (ele.Shape())
   {

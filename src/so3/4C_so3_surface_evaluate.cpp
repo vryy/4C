@@ -1357,7 +1357,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<3, 8> parent_deriv_notrafo;
 
       // get parent location matrix
-      Element::LocationArray parent_la(immerseddis->NumDofSets());
+      CORE::Elements::Element::LocationArray parent_la(immerseddis->NumDofSets());
       this->parent_element()->LocationVector(*immerseddis, parent_la, false);
 
       // get structural state and element displacements (parent element)
@@ -2433,7 +2433,7 @@ void DRT::ELEMENTS::StructuralSurface::calculate_surface_porosity(
     Teuchos::ParameterList& params, DRT::Discretization& discretization, LocationArray& la)
 {
   // get the parent element
-  DRT::Element* parentele = parent_element();
+  CORE::Elements::Element* parentele = parent_element();
   const int nenparent = parentele->num_node();
   // get element location vector and ownerships
   std::vector<int> lmpar;

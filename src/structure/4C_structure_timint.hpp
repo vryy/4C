@@ -16,8 +16,8 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_str_structure.hpp"
+#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_elements_paramsinterface.hpp"
 #include "4C_timestepping_mstep.hpp"
 
 #include <Epetra_Operator.h>
@@ -701,7 +701,7 @@ namespace STR
     Teuchos::RCP<const Epetra_Vector> RHS() override = 0;
 
     /// set evaluation action
-    void SetActionType(const DRT::ELEMENTS::ActionType& action) override
+    void SetActionType(const CORE::Elements::ActionType& action) override
     {
       FOUR_C_THROW("new structural time integration only...");
     }

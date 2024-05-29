@@ -10,11 +10,11 @@
 
 #include "4C_discretization_geometry_intersection_service.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_geometry_element_coordtrafo.hpp"
 #include "4C_discretization_geometry_intersection_service_templates.hpp"
 #include "4C_discretization_geometry_position_array.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ICS:    checks if an element is CARTESIAN, LINEAR and    u.may 07/08|
  |          HIGHERORDER                                                 |
  *----------------------------------------------------------------------*/
-void CORE::GEO::checkGeoType(const DRT::Element* element,
+void CORE::GEO::checkGeoType(const CORE::Elements::Element* element,
     const CORE::LINALG::SerialDenseMatrix& xyze_element, EleGeoType& eleGeoType)
 {
   bool cartesian = true;
@@ -44,12 +44,12 @@ void CORE::GEO::checkGeoType(const DRT::Element* element,
   {
     const std::vector<std::vector<int>> eleNodeNumbering =
         CORE::FE::getEleNodeNumberingSurfaces(distype);
-    std::vector<Teuchos::RCP<DRT::Element>> surfaces =
-        (const_cast<DRT::Element*>(element))->Surfaces();
+    std::vector<Teuchos::RCP<CORE::Elements::Element>> surfaces =
+        (const_cast<CORE::Elements::Element*>(element))->Surfaces();
     for (int i = 0; i < element->NumSurface(); i++)
     {
       CartesianCount = 0;
-      const DRT::Element* surfaceP = surfaces[i].get();
+      const CORE::Elements::Element* surfaceP = surfaces[i].get();
 
       for (int k = 0; k < dimCoord; k++)
       {
@@ -110,7 +110,7 @@ std::map<int, CORE::LINALG::Matrix<3, 2>> CORE::GEO::getCurrentXAABBs(
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
   for (int j = 0; j < dis.NumMyColElements(); ++j)
   {
-    const DRT::Element* element = dis.lColElement(j);
+    const CORE::Elements::Element* element = dis.lColElement(j);
     const CORE::LINALG::SerialDenseMatrix xyze_element(
         CORE::GEO::getCurrentNodalPositions(element, currentpositions));
     CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);

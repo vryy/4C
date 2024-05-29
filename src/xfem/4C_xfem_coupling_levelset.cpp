@@ -1065,9 +1065,9 @@ void XFEM::LevelSetCouplingWeakDirichlet::update_configuration_map_gp(
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
     double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    DRT::Element* ele,   //< Element
-    DRT::Element* bele,  //< Boundary Element
-    double* funct,       //< local shape function for Gauss Point (from fluid element)
+    CORE::Elements::Element* ele,   //< Element
+    CORE::Elements::Element* bele,  //< Boundary Element
+    double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
@@ -1133,9 +1133,9 @@ void XFEM::LevelSetCouplingNeumann::update_configuration_map_gp(
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
     double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    DRT::Element* ele,   //< Element
-    DRT::Element* bele,  //< Boundary Element
-    double* funct,       //< local shape function for Gauss Point (from fluid element)
+    CORE::Elements::Element* ele,   //< Element
+    CORE::Elements::Element* bele,  //< Boundary Element
+    double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
@@ -1291,7 +1291,7 @@ void XFEM::LevelSetCouplingNavierSlip::set_element_specific_conditions(
   // loop all column cutting elements on this processor
   for (int lid = 0; lid < nummycolele; ++lid)
   {
-    DRT::Element* cutele = cutter_dis_->lColElement(lid);
+    CORE::Elements::Element* cutele = cutter_dis_->lColElement(lid);
 
     // get all conditions with given condition name
     std::vector<CORE::Conditions::Condition*> mycond;
@@ -1468,9 +1468,9 @@ void XFEM::LevelSetCouplingNavierSlip::update_configuration_map_gp(
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
     double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    DRT::Element* ele,   //< Element
-    DRT::Element* bele,  //< Boundary Element
-    double* funct,       //< local shape function for Gauss Point (from fluid element)
+    CORE::Elements::Element* ele,   //< Element
+    CORE::Elements::Element* bele,  //< Boundary Element
+    double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp

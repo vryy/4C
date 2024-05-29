@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -49,11 +49,12 @@ namespace DRT
        */
       virtual int evaluate_neumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::Elements::Element::LocationArray& la,
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra) = 0;
 
       //! Internal implementation class for ScaTraHDGBoundary elements
-      static ScaTraHDGBoundaryImplInterface* Impl(const DRT::Element* ele);
+      static ScaTraHDGBoundaryImplInterface* Impl(const CORE::Elements::Element* ele);
 
     };  // class ScaTraHDGBoundaryImplInterface
 
@@ -80,7 +81,7 @@ namespace DRT
 
       //! Evaluate a Neumann boundary condition
       int evaluate_neumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra) override;
 

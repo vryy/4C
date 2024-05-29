@@ -51,9 +51,10 @@ namespace DRT
       static ScaTraEleCalcLoma<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::Elements::Element::LocationArray& la,
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -205,15 +206,17 @@ namespace DRT
 
       //! calculate domain integral
       void calculate_domain_and_bodyforce(
-          CORE::LINALG::SerialDenseVector& scalars, const DRT::Element* ele);
+          CORE::LINALG::SerialDenseVector& scalars, const CORE::Elements::Element* ele);
 
       //! extract element based or nodal values and return extracted values of phinp
-      void extract_element_and_node_values(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la) override;
+      void extract_element_and_node_values(CORE::Elements::Element* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          CORE::Elements::Element::LocationArray& la) override;
 
       //! get density at integration point
-      double get_density(const DRT::Element* ele, Teuchos::RCP<const CORE::MAT::Material> material,
-          Teuchos::ParameterList& params, const double tempnp) override;
+      double get_density(const CORE::Elements::Element* ele,
+          Teuchos::RCP<const CORE::MAT::Material> material, Teuchos::ParameterList& params,
+          const double tempnp) override;
 
       //! calculate viscous part of subgrid-scale velocity
       void calc_subgr_velocity_visc(CORE::LINALG::Matrix<nsd_, 1>& epsilonvel) override;

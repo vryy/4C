@@ -14,13 +14,13 @@
 #include "4C_config.hpp"
 
 #include "4C_beam3_spatial_discretization_utils.hpp"
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_inpar_beaminteraction.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_utils_local_newton.hpp"
 
 #include <Epetra_Vector.h>
@@ -68,7 +68,7 @@ namespace DRT
   namespace ELEMENTS
   {
     //! base class for all beam elements
-    class Beam3Base : public DRT::Element
+    class Beam3Base : public CORE::Elements::Element
     {
      public:
       /*!
@@ -123,7 +123,7 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr() override;
       virtual Teuchos::RCP<BROWNIANDYN::ParamsInterface> brownian_dyn_params_interface_ptr() const;
 
       //! computes the number of different random numbers required in each time step for generation

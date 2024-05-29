@@ -103,8 +103,8 @@ namespace DRT
      *  schoeder 06/14
      */
     void assign_global_i_ds(const Epetra_Comm& comm,
-        const std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>& elementmap,
-        std::map<int, Teuchos::RCP<DRT::Element>>& finalelements) override;
+        const std::map<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>>& elementmap,
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& finalelements) override;
 
   };  // class DiscretizationHDG
 

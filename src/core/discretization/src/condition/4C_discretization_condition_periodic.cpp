@@ -1382,7 +1382,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::balance_load()
       double weight = 0.0;
 
       // loop over adjacent elements of this node and find element with highest cost
-      DRT::Element** surrele = node->Elements();
+      CORE::Elements::Element** surrele = node->Elements();
       for (int k = 0; k < node->NumElement(); ++k)
         weight = std::max(weight, surrele[k]->EvaluationCost());
 
@@ -1426,7 +1426,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::balance_load()
     for (int ele_lid = 0; ele_lid < discret_->NumMyColElements(); ++ele_lid)
     {
       // get the element
-      DRT::Element* ele = discret_->lColElement(ele_lid);
+      CORE::Elements::Element* ele = discret_->lColElement(ele_lid);
 
       // get its nodes and nodeids
       const int num_nodes_per_ele = ele->num_node();
@@ -1458,7 +1458,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::balance_load()
     for (int ele_lid = 0; ele_lid < discret_->NumMyColElements(); ++ele_lid)
     {
       // get the element
-      DRT::Element* ele = discret_->lColElement(ele_lid);
+      CORE::Elements::Element* ele = discret_->lColElement(ele_lid);
 
       // get its nodes and nodeids
       const int num_nodes_per_ele = ele->num_node();

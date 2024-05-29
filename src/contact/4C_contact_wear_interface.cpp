@@ -3161,7 +3161,7 @@ bool WEAR::WearInterface::build_active_set_master()
   for (int j = 0; j < meleall->NumMyElements(); ++j)
   {
     int gid = meleall->GID(j);
-    DRT::Element* ele = Discret().gElement(gid);
+    CORE::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Element* moele = dynamic_cast<MORTAR::Element*>(ele);
 
@@ -3176,7 +3176,7 @@ bool WEAR::WearInterface::build_active_set_master()
   for (int j = 0; j < att->NumMyElements(); ++j)
   {
     int gid = att->GID(j);
-    DRT::Element* ele = Discret().gElement(gid);
+    CORE::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Element* moele = dynamic_cast<MORTAR::Element*>(ele);
 
@@ -3208,7 +3208,7 @@ bool WEAR::WearInterface::build_active_set_master()
       {
         int gid2 =
             dynamic_cast<MORTAR::Element*>(frinode->Elements()[u])->MoData().SearchElements()[k];
-        DRT::Element* ele2 = Discret().gElement(gid2);
+        CORE::Elements::Element* ele2 = Discret().gElement(gid2);
         if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
         MORTAR::Element* celement = dynamic_cast<MORTAR::Element*>(ele2);
 
@@ -3262,7 +3262,7 @@ bool WEAR::WearInterface::build_active_set_master()
   for (int j = 0; j < mastereles->NumMyElements(); ++j)
   {
     int gid = mastereles->GID(j);
-    DRT::Element* ele = Discret().gElement(gid);
+    CORE::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
     MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
@@ -3983,7 +3983,7 @@ void WEAR::WearInterface::Initialize()
     // (use fully overlapping column map of S+M elements)
     for (int i = 0; i < idiscret_->NumMyColElements(); ++i)
     {
-      DRT::Element* ele = idiscret_->lColElement(i);
+      CORE::Elements::Element* ele = idiscret_->lColElement(i);
       MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
       mele->MoData().SearchElements().resize(0);
@@ -4000,7 +4000,7 @@ void WEAR::WearInterface::Initialize()
     for (int i = 0; i < SlaveColElements()->NumMyElements(); ++i)
     {
       int gid = SlaveColElements()->GID(i);
-      DRT::Element* ele = Discret().gElement(gid);
+      CORE::Elements::Element* ele = Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
       MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 

@@ -14,7 +14,7 @@
 #include "4C_config.hpp"
 
 #include "4C_beaminteraction_conditions.hpp"
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_RCP.hpp>
@@ -65,7 +65,7 @@ namespace BEAMINTERACTION
      * \brief Create the beam to beam pairs needed for this condition (derived).
      */
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
-        const std::vector<DRT::Element const*>& ele_ptrs) override;
+        const std::vector<CORE::Elements::Element const*>& ele_ptrs) override;
 
    protected:
     /**

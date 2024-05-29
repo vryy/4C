@@ -49,7 +49,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::ElemagDiffType::Create(const std::vector<c
 /*----------------------------------------------------------------------*
  |                                                      berardocco 03/19|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagDiffType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagDiffType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ELECTROMAGNETICDIFF")
@@ -62,13 +62,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagDiffType::Create(
 /*----------------------------------------------------------------------*
  |                                                      berardocco 03/19|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagDiffType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagDiffType::Create(
+    const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::ElemagDiff(id, owner));
 }
 
 void DRT::ELEMENTS::ElemagDiffType::nodal_block_information(
-    Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = CORE::FE::getDimension(dwele->Shape()) - 1;  // 2;  // Bad Luca! Hard coding is not nice!
   dimns = numdf;
@@ -150,7 +151,7 @@ DRT::ELEMENTS::ElemagDiff::ElemagDiff(const DRT::ELEMENTS::ElemagDiff& old) : El
  |  Deep copy this instance of Elemag and return pointer to it (public)   |
  |                                                        berardocco 03/19|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::ElemagDiff::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::ElemagDiff::Clone() const
 {
   DRT::ELEMENTS::ElemagDiff* newelement = new DRT::ELEMENTS::ElemagDiff(*this);
   return newelement;
@@ -169,7 +170,7 @@ void DRT::ELEMENTS::ElemagDiff::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)           berardocco 03/19|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagDiff::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ElemagDiff::Lines()
 {
   return CORE::COMM::GetElementLines<ElemagDiffBoundary, ElemagDiff>(*this);
 }
@@ -178,7 +179,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagDiff::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                     berardocco 03/19|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagDiff::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ElemagDiff::Surfaces()
 {
   return CORE::COMM::GetElementSurfaces<ElemagDiffBoundary, ElemagDiff>(*this);
 }
@@ -187,14 +188,14 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagDiff::Surfaces()
 /*----------------------------------------------------------------------*
  |  get face element (public)                           berardocco 03/19|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagDiff::CreateFaceElement(
-    DRT::Element* parent_slave,            //!< parent slave fluid3 element
-    int nnode,                             //!< number of surface nodes
-    const int* nodeids,                    //!< node ids of surface element
-    DRT::Node** nodes,                     //!< nodes of surface element
-    const int lsurface_master,             //!< local surface number w.r.t master parent element
-    const int lsurface_slave,              //!< local surface number w.r.t slave parent element
-    const std::vector<int>& localtrafomap  //! local trafo map
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagDiff::CreateFaceElement(
+    CORE::Elements::Element* parent_slave,  //!< parent slave fluid3 element
+    int nnode,                              //!< number of surface nodes
+    const int* nodeids,                     //!< node ids of surface element
+    DRT::Node** nodes,                      //!< nodes of surface element
+    const int lsurface_master,              //!< local surface number w.r.t master parent element
+    const int lsurface_slave,               //!< local surface number w.r.t slave parent element
+    const std::vector<int>& localtrafomap   //! local trafo map
 )
 {
   // dynamic cast for slave parent element
@@ -228,7 +229,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagDiff::CreateFaceElement(
 //=======================================================================
 //=======================================================================
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagDiffBoundaryType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagDiffBoundaryType::Create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -262,7 +263,7 @@ DRT::ELEMENTS::ElemagDiffBoundary::ElemagDiffBoundary(const DRT::ELEMENTS::Elema
  |  Deep copy this instance return pointer to it               (public) |
  |                                                     berardocco 03/19 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::ElemagDiffBoundary::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::ElemagDiffBoundary::Clone() const
 {
   DRT::ELEMENTS::ElemagDiffBoundary* newelement = new DRT::ELEMENTS::ElemagDiffBoundary(*this);
   return newelement;
@@ -360,7 +361,7 @@ void DRT::ELEMENTS::ElemagDiffBoundary::LocationVector(const Discretization& dis
 //=======================================================================
 //=======================================================================
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagDiffIntFaceType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagDiffIntFaceType::Create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -407,7 +408,7 @@ DRT::ELEMENTS::ElemagDiffIntFace::ElemagDiffIntFace(const DRT::ELEMENTS::ElemagD
  |  Deep copy this instance return pointer to it               (public) |
  |                                                      berardocco 03/19|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::ElemagDiffIntFace::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::ElemagDiffIntFace::Clone() const
 {
   DRT::ELEMENTS::ElemagDiffIntFace* newelement = new DRT::ELEMENTS::ElemagDiffIntFace(*this);
   return newelement;

@@ -36,7 +36,7 @@ CORE::COMM::ParObject* MORTAR::ElementType::Create(const std::vector<char>& data
 }
 
 
-Teuchos::RCP<DRT::Element> MORTAR::ElementType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> MORTAR::ElementType::Create(const int id, const int owner)
 {
   // return Teuchos::rcp( new MORTAR::Element( id, owner ) );
   return Teuchos::null;
@@ -44,7 +44,7 @@ Teuchos::RCP<DRT::Element> MORTAR::ElementType::Create(const int id, const int o
 
 
 void MORTAR::ElementType::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
 
@@ -104,7 +104,7 @@ void MORTAR::MortarEleDataContainer::Unpack(
  *----------------------------------------------------------------------*/
 MORTAR::Element::Element(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
     const int* nodeids, const bool isslave, bool isnurbs)
-    : DRT::FaceElement(id, owner),
+    : CORE::Elements::FaceElement(id, owner),
       shape_(shape),
       isslave_(isslave),
       attached_(false),
@@ -120,7 +120,7 @@ MORTAR::Element::Element(int id, int owner, const CORE::FE::CellType& shape, con
  |  ctor (protected)                                   kronbichler 03/15|
  *----------------------------------------------------------------------*/
 MORTAR::Element::Element(int id, int owner)
-    : DRT::FaceElement(id, owner),
+    : CORE::Elements::FaceElement(id, owner),
       shape_(CORE::FE::CellType::dis_none),
       isslave_(false),
       attached_(false),
@@ -134,7 +134,7 @@ MORTAR::Element::Element(int id, int owner)
  |  copy-ctor (public)                                       mwgee 10/07|
  *----------------------------------------------------------------------*/
 MORTAR::Element::Element(const MORTAR::Element& old)
-    : DRT::FaceElement(old), shape_(old.shape_), isslave_(old.isslave_)
+    : CORE::Elements::FaceElement(old), shape_(old.shape_), isslave_(old.isslave_)
 {
   // not yet used and thus not necessarily consistent
   FOUR_C_THROW("MORTAR::Element copy-ctor not yet implemented");
@@ -145,7 +145,7 @@ MORTAR::Element::Element(const MORTAR::Element& old)
 /*----------------------------------------------------------------------*
  |  clone-ctor (public)                                      mwgee 10/07|
  *----------------------------------------------------------------------*/
-DRT::Element* MORTAR::Element::Clone() const
+CORE::Elements::Element* MORTAR::Element::Clone() const
 {
   MORTAR::Element* newele = new MORTAR::Element(*this);
   return newele;
@@ -168,7 +168,7 @@ std::ostream& operator<<(std::ostream& os, const MORTAR::Element& element)
 void MORTAR::Element::Print(std::ostream& os) const
 {
   os << "Mortar Element ";
-  DRT::Element::Print(os);
+  CORE::Elements::Element::Print(os);
   if (isslave_)
     os << " Slave  ";
   else
@@ -189,8 +189,8 @@ void MORTAR::Element::Pack(CORE::COMM::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
-  // add base class DRT::FaceElement
-  DRT::FaceElement::Pack(data);
+  // add base class CORE::Elements::FaceElement
+  CORE::Elements::FaceElement::Pack(data);
   // add shape_
   AddtoPack(data, shape_);
   // add isslave_
@@ -240,10 +240,10 @@ void MORTAR::Element::Unpack(const std::vector<char>& data)
 
   CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  // extract base class DRT::FaceElement
+  // extract base class CORE::Elements::FaceElement
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::FaceElement::Unpack(basedata);
+  CORE::Elements::FaceElement::Unpack(basedata);
   // shape_
   shape_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   // isslave_
@@ -1676,7 +1676,7 @@ void MORTAR::Element::estimate_nitsche_trace_max_eigenvalue_combined()
         "Contact using Nitsche's method is only supported for 3D problems."
         "We do not intend to support 2D problems.");
 
-  Teuchos::RCP<DRT::Element> surf_ele = parent_element()->Surfaces()[FaceParentNumber()];
+  Teuchos::RCP<CORE::Elements::Element> surf_ele = parent_element()->Surfaces()[FaceParentNumber()];
   DRT::ELEMENTS::StructuralSurface* surf =
       dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(surf_ele.get());
 

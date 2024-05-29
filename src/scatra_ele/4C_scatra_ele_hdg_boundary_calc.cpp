@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraHDGBoundaryImplInterface* DRT::ELEMENTS::ScaTraHDGBoundaryImplInterface::Impl(
-    const DRT::Element* ele)
+    const CORE::Elements::Element* ele)
 {
   switch (ele->Shape())
   {
@@ -112,7 +112,7 @@ DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::ScaTraHDGBoundaryImpl()
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::evaluate_neumann(
     DRT::ELEMENTS::ScaTraHDGBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra)
 {
@@ -124,8 +124,8 @@ int DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::evaluate_neumann(
 
   const int* nodeids = ele->NodeIds();
 
-  DRT::Element* parent = ele->parent_element();
-  Teuchos::RCP<DRT::FaceElement>* faces = parent->Faces();
+  CORE::Elements::Element* parent = ele->parent_element();
+  Teuchos::RCP<CORE::Elements::FaceElement>* faces = parent->Faces();
   bool same = false;
   for (int i = 0; i < parent->NumFace(); ++i)
   {

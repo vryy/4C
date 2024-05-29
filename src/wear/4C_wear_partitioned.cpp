@@ -28,11 +28,11 @@
 #include "4C_contact_wear_interface.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_fs3i_biofilm_fsi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ale.hpp"
 #include "4C_inpar_wear.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -430,7 +430,7 @@ void WEAR::Partitioned::update_spat_conf()
     {
       int gid = structure_field()->discretization()->NodeRowMap()->GID(k);
       DRT::Node* node = structure_field()->discretization()->gNode(gid);
-      DRT::Element** ElementPtr = node->Elements();
+      CORE::Elements::Element** ElementPtr = node->Elements();
       int numelement = node->NumElement();
 
       const int numdof = structure_field()->discretization()->NumDof(node);
@@ -694,7 +694,7 @@ void WEAR::Partitioned::wear_spatial_master_map(
     for (int j = 0; j < winterface->MasterColElements()->NumMyElements(); ++j)
     {
       int gid = winterface->MasterColElements()->GID(j);
-      DRT::Element* ele = winterface->Discret().gElement(gid);
+      CORE::Elements::Element* ele = winterface->Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find ele with gid %", gid);
       CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 
@@ -1085,7 +1085,7 @@ void WEAR::Partitioned::wear_pull_back_slave(Teuchos::RCP<Epetra_Vector>& disint
     for (int j = 0; j < interfacesMat_[m]->SlaveColElements()->NumMyElements(); ++j)
     {
       int gid = interfacesMat_[m]->SlaveColElements()->GID(j);
-      DRT::Element* ele = interfacesMat_[m]->Discret().gElement(gid);
+      CORE::Elements::Element* ele = interfacesMat_[m]->Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find ele with gid %", gid);
       CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 
@@ -1307,7 +1307,7 @@ void WEAR::Partitioned::wear_pull_back_master(Teuchos::RCP<Epetra_Vector>& disin
     for (int j = 0; j < winterface->MasterColElements()->NumMyElements(); ++j)
     {
       int gid = winterface->MasterColElements()->GID(j);
-      DRT::Element* ele = winterface->Discret().gElement(gid);
+      CORE::Elements::Element* ele = winterface->Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find ele with gid %", gid);
       CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 
@@ -1324,7 +1324,7 @@ void WEAR::Partitioned::wear_pull_back_master(Teuchos::RCP<Epetra_Vector>& disin
     for (int j = 0; j < winterfaceMat->MasterColElements()->NumMyElements(); ++j)
     {
       int gid = winterfaceMat->MasterColElements()->GID(j);
-      DRT::Element* ele = winterfaceMat->Discret().gElement(gid);
+      CORE::Elements::Element* ele = winterfaceMat->Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find ele with gid %", gid);
       CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 
@@ -1461,7 +1461,7 @@ void WEAR::Partitioned::update_mat_conf()
     {
       int gid = structure_field()->discretization()->NodeRowMap()->GID(k);
       DRT::Node* node = structure_field()->discretization()->gNode(gid);
-      DRT::Element** ElementPtr = node->Elements();
+      CORE::Elements::Element** ElementPtr = node->Elements();
       int numelement = node->NumElement();
 
       const int numdof = structure_field()->discretization()->NumDof(node);
@@ -1504,7 +1504,7 @@ void WEAR::Partitioned::update_mat_conf()
  *----------------------------------------------------------------------*/
 void WEAR::Partitioned::advection_map(double* Xtarget,  // out
     double* Xsource,                                    // in
-    DRT::Element** ElementPtr,                          // in
+    CORE::Elements::Element** ElementPtr,               // in
     int numelements,                                    // in
     bool spatialtomaterial)                             // in
 {
@@ -1546,10 +1546,10 @@ void WEAR::Partitioned::advection_map(double* Xtarget,  // out
   for (int jele = 0; jele < numelements; jele++)
   {
     // get element
-    DRT::Element* actele = ElementPtr[jele];
+    CORE::Elements::Element* actele = ElementPtr[jele];
 
     // get element location vector, dirichlet flags and ownerships
-    DRT::Element::LocationArray la(1);
+    CORE::Elements::Element::LocationArray la(1);
     actele->LocationVector(*(structure_field()->discretization()), la, false);
 
     if (ndim == 2)
@@ -1642,10 +1642,10 @@ void WEAR::Partitioned::advection_map(double* Xtarget,  // out
   //  if displ not into elements: get
   //  Xtarget from closest element 'gele'
   // ****************************************
-  DRT::Element* actele = ElementPtr[gele];
+  CORE::Elements::Element* actele = ElementPtr[gele];
 
   // get element location vector, dirichlet flags and ownerships
-  DRT::Element::LocationArray la(1);
+  CORE::Elements::Element::LocationArray la(1);
   actele->LocationVector(*(structure_field()->discretization()), la, false);
 
   if (ndim == 2)

@@ -707,7 +707,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
   CONTACT::UTILS::GetContactConditionGroups(ccond_grps, discret());
 
   std::set<const DRT::Node*> dbc_slave_nodes;
-  std::set<const DRT::Element*> dbc_slave_eles;
+  std::set<const CORE::Elements::Element*> dbc_slave_eles;
   CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
       discret(), ccond_grps, dbc_slave_nodes, dbc_slave_eles);
 
@@ -919,7 +919,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
         const bool nurbs = CORE::FE::IsNurbsDisType(node->Elements()[0]->Shape());
         for (unsigned elid = 0; elid < static_cast<unsigned>(node->NumElement()); ++elid)
         {
-          const DRT::Element* adj_ele = node->Elements()[elid];
+          const CORE::Elements::Element* adj_ele = node->Elements()[elid];
           if (nurbs != CORE::FE::IsNurbsDisType(adj_ele->Shape()))
           {
             FOUR_C_THROW(
@@ -1100,7 +1100,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     for (std::size_t j = 0; j < currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
-      std::map<int, Teuchos::RCP<DRT::Element>>& currele = currentgroup[j]->Geometry();
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& currele = currentgroup[j]->Geometry();
 
       /* elements in a boundary condition have a unique id
        * but ids are not unique among 2 distinct conditions
@@ -1115,7 +1115,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
        * the element ids stay the same for more than one processor in use.
        * hiermeier 02/2016 */
       int lsize = 0;
-      std::map<int, Teuchos::RCP<DRT::Element>>::iterator fool;
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator fool;
       for (fool = currele.begin(); fool != currele.end(); ++fool)
         if (fool->second->Owner() == comm().MyPID()) ++lsize;
 
@@ -1127,7 +1127,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
 
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
-        Teuchos::RCP<DRT::Element> ele = fool->second;
+        Teuchos::RCP<CORE::Elements::Element> ele = fool->second;
         if (CORE::FE::IsNurbsDisType(ele->Shape()) != nurbs)
         {
           FOUR_C_THROW(
@@ -1148,8 +1148,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
 
         if (algo == INPAR::MORTAR::algorithm_gpts)
         {
-          Teuchos::RCP<DRT::FaceElement> faceele =
-              Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
+          Teuchos::RCP<CORE::Elements::FaceElement> faceele =
+              Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(ele, true);
           if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
           if (faceele->parent_element() == nullptr) FOUR_C_THROW("face parent does not exist");
           if (discret().ElementColMap()->LID(faceele->parent_element()->Id()) == -1)
@@ -1463,12 +1463,13 @@ Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::CreateInterface(
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::set_poro_parent_element(
     enum MORTAR::Element::PhysicalType& slavetype, enum MORTAR::Element::PhysicalType& mastertype,
-    Teuchos::RCP<CONTACT::Element>& cele, Teuchos::RCP<DRT::Element>& ele,
+    Teuchos::RCP<CONTACT::Element>& cele, Teuchos::RCP<CORE::Elements::Element>& ele,
     const DRT::Discretization& discret) const
 {
   // ints to communicate decision over poro bools between processors on every interface
   // safety check - because there may not be mixed interfaces and structural slave elements
-  Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
+  Teuchos::RCP<CORE::Elements::FaceElement> faceele =
+      Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(ele, true);
   if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
   cele->PhysType() = MORTAR::Element::other;
   std::vector<Teuchos::RCP<CORE::Conditions::Condition>> poroCondVec;
@@ -1477,7 +1478,7 @@ void CONTACT::STRATEGY::Factory::set_poro_parent_element(
   {
     for (auto& poroCond : poroCondVec)
     {
-      std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator eleitergeometry;
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = poroCond->Geometry().begin();
            eleitergeometry != poroCond->Geometry().end(); ++eleitergeometry)
       {
@@ -1508,7 +1509,7 @@ void CONTACT::STRATEGY::Factory::set_poro_parent_element(
   {
     for (auto& poroCond : poroCondVec)
     {
-      std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator eleitergeometry;
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = poroCond->Geometry().begin();
            eleitergeometry != poroCond->Geometry().end(); ++eleitergeometry)
       {

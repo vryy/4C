@@ -12,8 +12,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_porofluidmultiphase_ele_action.hpp"
 #include "4C_porofluidmultiphase_ele_calc_utils.hpp"
 #include "4C_porofluidmultiphase_ele_interface.hpp"
@@ -52,32 +52,33 @@ namespace DRT
       static constexpr int nsd_ = CORE::FE::dim<distype>;
 
       //! Evaluate the element (using location array)
-      int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      int Evaluate(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
           std::vector<CORE::LINALG::SerialDenseVector*>& elevec) override;
 
      protected:
       //! setup element evaluation
-      int setup_calc(
-          DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization);
+      int setup_calc(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization);
 
       //! extract element based or nodal values
       //  return extracted values of phinp
-      virtual void extract_element_and_node_values(DRT::Element* ele,
+      virtual void extract_element_and_node_values(CORE::Elements::Element* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la);
+          CORE::Elements::Element::LocationArray& la);
 
       //! evaluate action
-      virtual int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, POROFLUIDMULTIPHASE::BoundaryAction action,
-          DRT::Element::LocationArray& la, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+          CORE::Elements::Element::LocationArray& la,
+          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
           std::vector<CORE::LINALG::SerialDenseVector*>& elevec);
 
       //! evaluate Neumann boundary condition
-      virtual int evaluate_neumann(DRT::Element* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_neumann(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1);
+          CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1);
 
       //! evaluate shape functions and derivatives at int. point
       double eval_shape_func_and_int_fac(

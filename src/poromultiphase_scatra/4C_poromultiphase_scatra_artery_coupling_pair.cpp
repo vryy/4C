@@ -9,14 +9,14 @@
 
 #include "4C_poromultiphase_scatra_artery_coupling_pair.hpp"
 
+#include "4C_discretization_fem_general_element_integration_select.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_discretization_geometry_coordinate_system_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element_integration_select.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_mat_cnst_1d_art.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
 #include "4C_porofluidmultiphase_ele_parameter.hpp"
@@ -86,7 +86,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distype
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeArt, CORE::FE::CellType distypeCont, int dim>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::Init(std::vector<DRT::Element const*> elements,
+    dim>::Init(std::vector<CORE::Elements::Element const*> elements,
     const Teuchos::ParameterList& couplingparams, const Teuchos::ParameterList& fluidcouplingparams,
     const std::vector<int>& coupleddofs_cont, const std::vector<int>& coupleddofs_art,
     const std::vector<std::vector<int>>& scale_vec, const std::vector<std::vector<int>>& funct_vec,
@@ -786,11 +786,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   if (!ispreevaluated_) FOUR_C_THROW("MeshTying Pair has not yet been pre-evaluated");
 
   // get location array for continuous ele
-  DRT::Element::LocationArray la_cont(contdis->NumDofSets());
+  CORE::Elements::Element::LocationArray la_cont(contdis->NumDofSets());
   element2_->LocationVector(*contdis, la_cont, false);
 
   // get location array for artery ele
-  DRT::Element::LocationArray la_art(artdis->NumDofSets());
+  CORE::Elements::Element::LocationArray la_art(artdis->NumDofSets());
   element1_->LocationVector(*artdis, la_art, false);
 
   switch (coupltype_)
@@ -815,7 +815,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
             artdis->GetState(ndsartery_scatra_, "one_d_artery_phinp");
         if (artscalarnp != Teuchos::null)
         {
-          DRT::Element::LocationArray la(artdis->NumDofSets());
+          CORE::Elements::Element::LocationArray la(artdis->NumDofSets());
           element1_->LocationVector(*artdis, la, false);
           // rebuild scalar vector
           eartscalarnp_.clear();
@@ -834,7 +834,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         Teuchos::RCP<const Epetra_Vector> contscalarnp = contdis->GetState(3, "scalars");
         if (contscalarnp != Teuchos::null)
         {
-          DRT::Element::LocationArray la(contdis->NumDofSets());
+          CORE::Elements::Element::LocationArray la(contdis->NumDofSets());
           element2_->LocationVector(*contdis, la, false);
           // rebuild scalar vector
           econtscalarnp_.clear();
@@ -863,7 +863,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
           artdis->GetState(ndsscatra_artery_, "one_d_artery_pressure");
       if (artpressnp != Teuchos::null)
       {
-        DRT::Element::LocationArray la(artdis->NumDofSets());
+        CORE::Elements::Element::LocationArray la(artdis->NumDofSets());
         element1_->LocationVector(*artdis, la, false);
         CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<numnodesart_, 1>>(
             *artpressnp, earterypressurenp_, la[ndsscatra_artery_].lm_);
@@ -1091,7 +1091,7 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
   if (!firstcall)
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = contdis->GetState(1, "dispnp");
-    DRT::Element::LocationArray la(contdis->NumDofSets());
+    CORE::Elements::Element::LocationArray la(contdis->NumDofSets());
     element2_->LocationVector(*contdis, la, false);
 
     // construct location vector for displacement related dofs
@@ -2086,7 +2086,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   if (evaluate_in_ref_config_) return;
 
   Teuchos::RCP<const Epetra_Vector> velocity = contdis->GetState(1, "velocity field");
-  DRT::Element::LocationArray la(contdis->NumDofSets());
+  CORE::Elements::Element::LocationArray la(contdis->NumDofSets());
   element2_->LocationVector(*contdis, la, false);
 
   // construct location vector for displacement related dofs

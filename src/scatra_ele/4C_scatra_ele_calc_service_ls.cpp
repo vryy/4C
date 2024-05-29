@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::evaluate_action(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::evaluate_action(CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const SCATRA::Action& action, DRT::Element::LocationArray& la,
+    const SCATRA::Action& action, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -74,7 +74,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::evaluate_action(DRT::Element* ele,
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::cal_error_compared_to_analyt_solution(
-    const DRT::Element* ele, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephizero,
+    const CORE::Elements::Element* ele, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephizero,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& errors)
 {
   // get element volume

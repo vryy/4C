@@ -50,7 +50,8 @@ namespace DRT
       //! This class does not provide a definition for this function, it
       //! must be defined in TemperBoundaryImpl.
       virtual int Evaluate(const DRT::ELEMENTS::ThermoBoundary* ele, Teuchos::ParameterList& params,
-          const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
+          const DRT::Discretization& discretization,
+          const CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -61,12 +62,13 @@ namespace DRT
       //!
       //! This class does not provide a definition for this function, it
       //! must be defined in TemperBoundaryImpl.
-      virtual int evaluate_neumann(const DRT::Element* ele, Teuchos::ParameterList& params,
-          const DRT::Discretization& discretization, const CORE::Conditions::Condition& condition,
-          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra) = 0;
+      virtual int evaluate_neumann(const CORE::Elements::Element* ele,
+          Teuchos::ParameterList& params, const DRT::Discretization& discretization,
+          const CORE::Conditions::Condition& condition, const std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra) = 0;
 
       //! Internal implementation class for thermo elements
-      static TemperBoundaryImplInterface* Impl(const DRT::Element* ele);
+      static TemperBoundaryImplInterface* Impl(const CORE::Elements::Element* ele);
 
     };  // TemperBoundaryImplInterface
 
@@ -122,7 +124,8 @@ namespace DRT
 
       //! Evaluate (la required in case of multiple dofsets)
       int Evaluate(const DRT::ELEMENTS::ThermoBoundary* ele, Teuchos::ParameterList& params,
-          const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
+          const DRT::Discretization& discretization,
+          const CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -130,14 +133,14 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! Evaluate a Neumann boundary condition
-      int evaluate_neumann(const DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_neumann(const CORE::Elements::Element* ele, Teuchos::ParameterList& params,
           const DRT::Discretization& discretization, const CORE::Conditions::Condition& condition,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra) override;
 
      private:
       //! prepare the evaluation of NURBS shape functions
       virtual void prepare_nurbs_eval(
-          const DRT::Element* ele,                   //!< the element whose matrix is calculated
+          const CORE::Elements::Element* ele,        //!< the element whose matrix is calculated
           const DRT::Discretization& discretization  //!< current discretisation
       );
 
@@ -149,10 +152,11 @@ namespace DRT
       );
 
       //! integral of shape functions over boundary surface
-      void integrate_shape_functions(const DRT::Element* ele,  //!< the actual boundary element
-          Teuchos::ParameterList& params,                      //!< the parameter list
-          CORE::LINALG::SerialDenseVector& elevec1,            //!< result vector (to be assembled)
-          const bool addarea                                   //!< flag for area calculation
+      void integrate_shape_functions(
+          const CORE::Elements::Element* ele,        //!< the actual boundary element
+          Teuchos::ParameterList& params,            //!< the parameter list
+          CORE::LINALG::SerialDenseVector& elevec1,  //!< result vector (to be assembled)
+          const bool addarea                         //!< flag for area calculation
       );
 
       //! Compute a constant normal vector for a boundary element
@@ -177,14 +181,15 @@ namespace DRT
       //! This is a non-linear heat load type, due to its dependence on the
       //! current heat state (follower load-like).
       //! Using the current temperature solution requires the linearisation.
-      void calculate_convection_fint_cond(const DRT::Element* ele,  //!< the actual boundary element
-          CORE::LINALG::Matrix<nen_, nen_>* econd,                  // view only!
+      void calculate_convection_fint_cond(
+          const CORE::Elements::Element* ele,       //!< the actual boundary element
+          CORE::LINALG::Matrix<nen_, nen_>* econd,  // view only!
                                                     //!< tangent of the thermal problem
-          CORE::LINALG::Matrix<nen_, 1>* efext,  // view only!
-                                                 //!< heat flux to be applied
-          const double coeff,                    //!< heat transfer coefficient
-          const double surtemp,                  //!< surrounding temperature
-          const std::string& tempstate           //!< desired temperature state
+          CORE::LINALG::Matrix<nen_, 1>* efext,     // view only!
+                                                    //!< heat flux to be applied
+          const double coeff,                       //!< heat transfer coefficient
+          const double surtemp,                     //!< surrounding temperature
+          const std::string& tempstate              //!< desired temperature state
       );
 
       //! evaluate a geometrically nonlinear heat convection boundary condition
@@ -195,7 +200,7 @@ namespace DRT
       //! Using the current temperature solution T_{n+1} requires the linearisation.
       //! In addition: using the current displacements u_{n+1} requires linearisation
       void calculate_nln_convection_fint_cond(
-          const DRT::Element* ele,                  //!< the actual boundary element
+          const CORE::Elements::Element* ele,       //!< the actual boundary element
           const std::vector<double>& disp,          //!< current displacements d_{n+1}
           CORE::LINALG::Matrix<nen_, nen_>* econd,  // view only!
                                                     //!< tangent of the thermal problem k_TT

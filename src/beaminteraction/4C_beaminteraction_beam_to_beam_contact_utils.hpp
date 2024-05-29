@@ -132,17 +132,18 @@ namespace BEAMINTERACTION
   /*!
   \brief Check, if current node is a solid contact element
   */
-  bool SolidContactElement(const DRT::Element& element);
+  bool SolidContactElement(const CORE::Elements::Element& element);
 
   /*
   \brief Check, if two elements share a node -> neighbor elements
   */
-  bool ElementsShareNode(const DRT::Element& element1, const DRT::Element& element2);
+  bool ElementsShareNode(
+      const CORE::Elements::Element& element1, const CORE::Elements::Element& element2);
 
   /*
   \brief Calculate beam radius
   */
-  double CalcEleRadius(const DRT::Element* ele);
+  double CalcEleRadius(const CORE::Elements::Element* ele);
 
   /*
   \brief Intersect two parallel cylinders

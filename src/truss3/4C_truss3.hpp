@@ -12,8 +12,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 #include <Sacado.hpp>
@@ -33,7 +33,7 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    class Truss3Type : public DRT::ElementType
+    class Truss3Type : public CORE::Elements::ElementType
     {
      public:
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
@@ -41,10 +41,10 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       int Initialize(DRT::Discretization& dis) override;
 
@@ -53,7 +53,7 @@ namespace DRT
       std::string Name() const override { return "Truss3Type"; }
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
@@ -67,7 +67,7 @@ namespace DRT
      \brief three dimensional total Lagrange truss element
 
      */
-    class Truss3 : public DRT::Element
+    class Truss3 : public CORE::Elements::Element
     {
      public:
       //! @name Friends
@@ -88,7 +88,7 @@ namespace DRT
        */
       Truss3(const Truss3& old);
 
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       //! prepare elemental specific geometric values
       //! \param[in] ele_state              elemental states (depending on the instantiated element)
@@ -116,7 +116,7 @@ namespace DRT
       virtual void CalcGPStresses(Teuchos::ParameterList& params,
           const std::map<std::string, std::vector<double>>& ele_state);
 
-      DRT::ElementType& ElementType() const override { return Truss3Type::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override { return Truss3Type::Instance(); }
 
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
@@ -156,7 +156,7 @@ namespace DRT
         return curr_nodal_coords(col) / curr_nodal_coords.Norm2() * M_SQRT1_2;
       }
 
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       // TODO: remove once truss3 element is fixed and no longer expects more dofs (6) than it can
       // inherently handle (3)...
@@ -178,7 +178,7 @@ namespace DRT
 
       void Pack(CORE::COMM::PackBuffer& data) const override;
 
-      Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr() override;
 
       bool ReadElement(const std::string& eletype, const std::string& distype,
           INPUT::LineDefinition* linedef) override;
@@ -330,7 +330,7 @@ namespace DRT
     };
 
     // << operator
-    std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
+    std::ostream& operator<<(std::ostream& os, const CORE::Elements::Element& ele);
 
   }  // namespace ELEMENTS
 }  // namespace DRT

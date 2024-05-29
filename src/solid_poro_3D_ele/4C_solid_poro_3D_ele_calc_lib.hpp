@@ -11,9 +11,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_element_integration_select.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_element_integration_select.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
 #include "4C_mat_structporo.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
@@ -43,7 +43,7 @@ namespace DRT::ELEMENTS
       const int& dofset, const std::vector<int>& lm,
       CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>>* matrixtofill,
       CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, 1>* vectortofill, const std::string& state,
-      const DRT::Element& ele)
+      const CORE::Elements::Element& ele)
   {
     // get state of the global vector
     Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(dofset, state);
@@ -120,7 +120,7 @@ namespace DRT::ELEMENTS
    */
   template <CORE::FE::CellType celltype>
   double ComputeVolumeChange(const SpatialMaterialMapping<celltype>& spatial_material_mapping,
-      const JacobianMapping<celltype>& jacobian_mapping, const DRT::Element& ele,
+      const JacobianMapping<celltype>& jacobian_mapping, const CORE::Elements::Element& ele,
       const DRT::Discretization& discretization, const std::vector<int>& lm,
       const INPAR::STR::KinemType& kinematictype)
   {

@@ -79,8 +79,8 @@ void ADAPTER::CouplingNonLinMortar::Setup(Teuchos::RCP<DRT::Discretization> mast
   std::map<int, DRT::Node*> slavegnodes;
 
   // initialize maps for elements
-  std::map<int, Teuchos::RCP<DRT::Element>> masterelements;
-  std::map<int, Teuchos::RCP<DRT::Element>> slaveelements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> masterelements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> slaveelements;
 
   Teuchos::RCP<CONTACT::Interface> interface;
 
@@ -139,8 +139,8 @@ void ADAPTER::CouplingNonLinMortar::read_mortar_condition(
     Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<DRT::Discretization> slavedis,
     std::vector<int> coupleddof, const std::string& couplingcond, Teuchos::ParameterList& input,
     std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
-    std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
-    std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements)
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements)
 {
   // TODO: extend this to sliding ale + ALE-dis
   // vector coupleddof defines degree of freedom which are coupled (1: coupled; 0: not coupled),
@@ -238,8 +238,8 @@ void ADAPTER::CouplingNonLinMortar::add_mortar_nodes(Teuchos::RCP<DRT::Discretiz
     Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
     Teuchos::ParameterList& input, std::map<int, DRT::Node*>& mastergnodes,
     std::map<int, DRT::Node*>& slavegnodes,
-    std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
-    std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements,
     Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof)
 {
   const bool isnurbs = input.get<bool>("NURBS");
@@ -345,8 +345,8 @@ void ADAPTER::CouplingNonLinMortar::add_mortar_nodes(Teuchos::RCP<DRT::Discretiz
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingNonLinMortar::add_mortar_elements(Teuchos::RCP<DRT::Discretization> masterdis,
     Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
-    std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
-    std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements,
     Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof)
 {
   const bool isnurbs = input.get<bool>("NURBS");
@@ -388,10 +388,10 @@ void ADAPTER::CouplingNonLinMortar::add_mortar_elements(Teuchos::RCP<DRT::Discre
   //    eleoffset = masterdis->ElementRowMap()->MaxAllGID()+1;
 
   // feeding master elements to the interface
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator elemiter;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator elemiter;
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
-    Teuchos::RCP<DRT::Element> ele = elemiter->second;
+    Teuchos::RCP<CORE::Elements::Element> ele = elemiter->second;
     Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
         ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), false, isnurbs));
 
@@ -404,8 +404,8 @@ void ADAPTER::CouplingNonLinMortar::add_mortar_elements(Teuchos::RCP<DRT::Discre
       std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim);
       std::vector<CORE::LINALG::SerialDenseVector> mortarknots(dim - 1);
 
-      Teuchos::RCP<DRT::FaceElement> faceele =
-          Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
+      Teuchos::RCP<CORE::Elements::FaceElement> faceele =
+          Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(ele, true);
       double normalfac = 0.0;
       bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
           faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
@@ -422,7 +422,7 @@ void ADAPTER::CouplingNonLinMortar::add_mortar_elements(Teuchos::RCP<DRT::Discre
   // feeding slave elements to the interface
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
-    Teuchos::RCP<DRT::Element> ele = elemiter->second;
+    Teuchos::RCP<CORE::Elements::Element> ele = elemiter->second;
 
     // Here, we have to distinguish between standard and sliding ale since mortar elements are
     // generated from the identical element sets in the case of sliding ale Therefore, we introduce
@@ -441,8 +441,8 @@ void ADAPTER::CouplingNonLinMortar::add_mortar_elements(Teuchos::RCP<DRT::Discre
         std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim);
         std::vector<CORE::LINALG::SerialDenseVector> mortarknots(dim - 1);
 
-        Teuchos::RCP<DRT::FaceElement> faceele =
-            Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
+        Teuchos::RCP<CORE::Elements::FaceElement> faceele =
+            Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(ele, true);
         double normalfac = 0.0;
         bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots,
             normalfac, faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
@@ -591,8 +591,8 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   std::map<int, DRT::Node*> mastergnodes;
 
   // initialize maps for elements
-  std::map<int, Teuchos::RCP<DRT::Element>> slaveelements;
-  std::map<int, Teuchos::RCP<DRT::Element>> masterelements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> slaveelements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> masterelements;
 
   // get the conditions for the current evaluation we use the SpringDashpot condition as a
   // substitute for the mortar slave surface
@@ -666,7 +666,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   std::map<int, DRT::Node*>::const_iterator nodeiter;
 
   // feeding elements to the interface
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator elemiter;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator elemiter;
 
   // eleoffset is neccessary because slave and master elements are from different conditions
   const int eleoffset = masterdis->ElementRowMap()->MaxAllGID() + 1;
@@ -699,7 +699,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   // feeding master elements to the interface
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
-    Teuchos::RCP<DRT::Element> ele = elemiter->second;
+    Teuchos::RCP<CORE::Elements::Element> ele = elemiter->second;
 
     Teuchos::RCP<CONTACT::Element> mrtrele = Teuchos::rcp(new CONTACT::Element(
         ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), false));
@@ -711,7 +711,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   // feeding slave elements to the interface
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
-    Teuchos::RCP<DRT::Element> ele = elemiter->second;
+    Teuchos::RCP<CORE::Elements::Element> ele = elemiter->second;
 
     Teuchos::RCP<CONTACT::Element> mrtrele = Teuchos::rcp(new CONTACT::Element(
         ele->Id() + eleoffset, ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), true));
@@ -796,7 +796,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
   for (int j = 0; j < interface_->SlaveColElements()->NumMyElements(); ++j)
   {
     int gid = interface_->SlaveColElements()->GID(j);
-    DRT::Element* ele = interface_->Discret().gElement(gid);
+    CORE::Elements::Element* ele = interface_->Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("ERROR: Cannot find ele with gid %", gid);
     CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 

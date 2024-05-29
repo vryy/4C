@@ -22,10 +22,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
 }
+
 namespace CORE::GEOMETRICSEARCH
 {
   class geometric_search_params;
@@ -240,7 +241,7 @@ namespace BEAMINTERACTION
        * - elements sharing nodes don't interact
        */
       void select_eles_to_be_considered_for_contact_evaluation(
-          DRT::Element* currele, std::set<DRT::Element*>& neighbors) const;
+          CORE::Elements::Element* currele, std::set<CORE::Elements::Element*>& neighbors) const;
 
       /// create instances of class BeamContactPair that will be evaluated
       //  to get force and stiffness contributions from beam interactions
@@ -275,7 +276,7 @@ namespace BEAMINTERACTION
           assembly_managers_;
 
       //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
-      std::map<int, std::set<DRT::Element*>> nearby_elements_map_;
+      std::map<int, std::set<CORE::Elements::Element*>> nearby_elements_map_;
 
       //! runtime visualization writer for visualization of contact forces
       Teuchos::RCP<IO::VisualizationManager> visualization_manager_ptr_;

@@ -9,15 +9,15 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 
 #include "4C_comm_utils_factory.hpp"
 #include "4C_discretization_condition.hpp"
 #include "4C_discretization_geometric_search_bounding_volume.hpp"
 #include "4C_discretization_geometric_search_params.hpp"
+#include "4C_io_element_append_visualization.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element_append_visualization.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_material_base.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ShardsKeyToDisType(const unsigned& key)
+CORE::FE::CellType CORE::Elements::ShardsKeyToDisType(const unsigned& key)
 {
   CORE::FE::CellType distype = CORE::FE::CellType::dis_none;
   switch (key)
@@ -125,7 +125,7 @@ CORE::FE::CellType DRT::ShardsKeyToDisType(const unsigned& key)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Element::Element(int id, int owner)
+CORE::Elements::Element::Element(int id, int owner)
     : ParObject(), id_(id), lid_(-1), owner_(owner), mat_(1, Teuchos::null), is_nurbs_(false)
 {
 }
@@ -133,7 +133,7 @@ DRT::Element::Element(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Element::Element(const DRT::Element& old)
+CORE::Elements::Element::Element(const Element& old)
     : ParObject(old),
       id_(old.id_),
       lid_(old.lid_),
@@ -166,7 +166,7 @@ DRT::Element::Element(const DRT::Element& old)
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const DRT::Element& element)
+std::ostream& operator<<(std::ostream& os, const CORE::Elements::Element& element)
 {
   element.Print(os);
   return os;
@@ -175,7 +175,7 @@ std::ostream& operator<<(std::ostream& os, const DRT::Element& element)
 /*----------------------------------------------------------------------*
  |  print element (public)                                   mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Element::Print(std::ostream& os) const
+void CORE::Elements::Element::Print(std::ostream& os) const
 {
   os << std::setw(12) << Id() << " Owner " << std::setw(5) << Owner() << " ";
   const int nnode = num_node();
@@ -191,7 +191,7 @@ void DRT::Element::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::Element::ReadElement(
+bool CORE::Elements::Element::ReadElement(
     const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   FOUR_C_THROW("subclass implementations missing");
@@ -202,7 +202,7 @@ bool DRT::Element::ReadElement(
 /*----------------------------------------------------------------------*
  |  set node numbers to element (public)                     mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Element::SetNodeIds(const int nnode, const int* nodes)
+void CORE::Elements::Element::SetNodeIds(const int nnode, const int* nodes)
 {
   nodeid_.resize(nnode);
   for (int i = 0; i < nnode; ++i) nodeid_[i] = nodes[i];
@@ -213,7 +213,7 @@ void DRT::Element::SetNodeIds(const int nnode, const int* nodes)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Element::SetNodeIds(const std::string& distype, INPUT::LineDefinition* linedef)
+void CORE::Elements::Element::SetNodeIds(const std::string& distype, INPUT::LineDefinition* linedef)
 {
   linedef->ExtractIntVector(distype, nodeid_);
   for (int& i : nodeid_) i -= 1;
@@ -222,7 +222,7 @@ void DRT::Element::SetNodeIds(const std::string& distype, INPUT::LineDefinition*
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Element::SetMaterial(const int index, Teuchos::RCP<CORE::MAT::Material> mat)
+void CORE::Elements::Element::SetMaterial(const int index, Teuchos::RCP<CORE::MAT::Material> mat)
 {
   FOUR_C_THROW_UNLESS(mat != Teuchos::null,
       "Invalid material given to the element. \n"
@@ -243,7 +243,7 @@ void DRT::Element::SetMaterial(const int index, Teuchos::RCP<CORE::MAT::Material
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::Element::AddMaterial(Teuchos::RCP<CORE::MAT::Material> mat)
+int CORE::Elements::Element::AddMaterial(Teuchos::RCP<CORE::MAT::Material> mat)
 {
   mat_.push_back(mat);
 
@@ -255,7 +255,7 @@ int DRT::Element::AddMaterial(Teuchos::RCP<CORE::MAT::Material> mat)
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Element::Pack(CORE::COMM::PackBuffer& data) const
+void CORE::Elements::Element::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -289,7 +289,7 @@ void DRT::Element::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Element::Unpack(const std::vector<char>& data)
+void CORE::Elements::Element::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -321,7 +321,7 @@ void DRT::Element::Unpack(const std::vector<char>& data)
   node_.resize(0);
   if (!face_.empty())
   {
-    std::vector<Teuchos::RCP<DRT::FaceElement>> empty;
+    std::vector<Teuchos::RCP<CORE::Elements::FaceElement>> empty;
     std::swap(face_, empty);
   }
 
@@ -335,7 +335,7 @@ void DRT::Element::Unpack(const std::vector<char>& data)
  |  Build nodal pointers                                    (protected) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-bool DRT::Element::BuildNodalPointers(std::map<int, Teuchos::RCP<DRT::Node>>& nodes)
+bool CORE::Elements::Element::BuildNodalPointers(std::map<int, Teuchos::RCP<DRT::Node>>& nodes)
 {
   int nnode = num_node();
   const int* nodeids = NodeIds();
@@ -356,7 +356,7 @@ bool DRT::Element::BuildNodalPointers(std::map<int, Teuchos::RCP<DRT::Node>>& no
  |  Build nodal pointers                                    (protected) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-bool DRT::Element::BuildNodalPointers(DRT::Node** nodes)
+bool CORE::Elements::Element::BuildNodalPointers(DRT::Node** nodes)
 {
   node_.resize(num_node());
   for (int i = 0; i < num_node(); ++i) node_[i] = nodes[i];
@@ -367,7 +367,7 @@ bool DRT::Element::BuildNodalPointers(DRT::Node** nodes)
  |  Build nodal connectivity and weight nodes and edges        (public) |
  |                                                          ghamm 09/13 |
  *----------------------------------------------------------------------*/
-void DRT::Element::NodalConnectivity(
+void CORE::Elements::Element::NodalConnectivity(
     CORE::LINALG::SerialDenseMatrix& edgeweights, CORE::LINALG::SerialDenseVector& nodeweights)
 {
   // weight for this element
@@ -422,7 +422,7 @@ void DRT::Element::NodalConnectivity(
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void DRT::Element::GetCondition(
+void CORE::Elements::Element::GetCondition(
     const std::string& name, std::vector<CORE::Conditions::Condition*>& out) const
 {
   const int num = condition_.count(name);
@@ -440,7 +440,7 @@ void DRT::Element::GetCondition(
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-CORE::Conditions::Condition* DRT::Element::GetCondition(const std::string& name) const
+CORE::Conditions::Condition* CORE::Elements::Element::GetCondition(const std::string& name) const
 {
   auto curr = condition_.find(name);
   if (curr == condition_.end()) return nullptr;
@@ -452,8 +452,8 @@ CORE::Conditions::Condition* DRT::Element::GetCondition(const std::string& name)
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void DRT::Element::LocationVector(const DRT::Discretization& dis, const std::vector<int>& nds,
-    DRT::Element::LocationArray& la, bool doDirichlet) const
+void CORE::Elements::Element::LocationVector(const DRT::Discretization& dis,
+    const std::vector<int>& nds, CORE::Elements::Element::LocationArray& la, bool doDirichlet) const
 {
   const int numnode = num_node();
   const DRT::Node* const* nodes = Nodes();
@@ -570,8 +570,8 @@ void DRT::Element::LocationVector(const DRT::Discretization& dis, const std::vec
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void DRT::Element::LocationVector(
-    const Discretization& dis, LocationArray& la, bool doDirichlet) const
+void CORE::Elements::Element::LocationVector(
+    const DRT::Discretization& dis, LocationArray& la, bool doDirichlet) const
 {
   const int numnode = num_node();
   const DRT::Node* const* nodes = Nodes();
@@ -754,8 +754,8 @@ void DRT::Element::LocationVector(
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element                (public) |
  *----------------------------------------------------------------------*/
-void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
-    const std::string& condstring, Teuchos::ParameterList& params) const
+void CORE::Elements::Element::LocationVector(const DRT::Discretization& dis, LocationArray& la,
+    bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const
 {
   /* This method is intended to fill the LocationArray with the dofs
    * the element will assemble into. In the standard case implemented here
@@ -771,7 +771,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& lm,
+void CORE::Elements::Element::LocationVector(const DRT::Discretization& dis, std::vector<int>& lm,
     std::vector<int>& lmdirich, std::vector<int>& lmowner, std::vector<int>& lmstride) const
 {
   const int numnode = num_node();
@@ -871,7 +871,7 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& lm,
+void CORE::Elements::Element::LocationVector(const DRT::Discretization& dis, std::vector<int>& lm,
     std::vector<int>& lmowner, std::vector<int>& lmstride) const
 {
   const int numnode = num_node();
@@ -886,7 +886,7 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
   {
     for (int i = 0; i < numnode; ++i)
     {
-      const Node* node = nodes[i];
+      const DRT::Node* node = nodes[i];
       unsigned bef = lm.size();
       dis.Dof(0, this, node, lm);
       unsigned aft = lm.size();
@@ -924,7 +924,7 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
 /*----------------------------------------------------------------------*
  |  return number of faces (public)                    kronbichler 05/13|
  *----------------------------------------------------------------------*/
-int DRT::Element::NumFace() const
+int CORE::Elements::Element::NumFace() const
 {
   switch (CORE::FE::getDimension(this->Shape()))
   {
@@ -942,11 +942,11 @@ int DRT::Element::NumFace() const
 /*----------------------------------------------------------------------*
  |  returns neighbor of element (public)               kronbichler 05/13|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Element::Neighbor(const int face) const
+CORE::Elements::Element* CORE::Elements::Element::Neighbor(const int face) const
 {
   if (face_.empty()) return nullptr;
   FOUR_C_ASSERT(face < NumFace(), "there is no face with the given index");
-  DRT::FaceElement* faceelement = face_[face].getRawPtr();
+  CORE::Elements::FaceElement* faceelement = face_[face].getRawPtr();
   if (faceelement->ParentMasterElement() == this)
     return faceelement->ParentSlaveElement();
   else if (faceelement->ParentSlaveElement() == this)
@@ -957,18 +957,19 @@ DRT::Element* DRT::Element::Neighbor(const int face) const
 /*----------------------------------------------------------------------*
  |  set faces (public)                                 kronbichler 05/13|
  *----------------------------------------------------------------------*/
-void DRT::Element::SetFace(const int faceindex, DRT::FaceElement* faceelement)
+void CORE::Elements::Element::SetFace(const int faceindex, CORE::Elements::FaceElement* faceelement)
 {
   const int nface = NumFace();
   if (face_.empty()) face_.resize(nface, Teuchos::null);
   FOUR_C_ASSERT(faceindex < NumFace(), "there is no face with the given index");
-  face_[faceindex] = Teuchos::rcpFromRef<DRT::FaceElement>(*faceelement);
+  face_[faceindex] = Teuchos::rcpFromRef<CORE::Elements::FaceElement>(*faceelement);
 }
 
 /*----------------------------------------------------------------------*
  |  set faces (public)                                       seitz 12/16|
  *----------------------------------------------------------------------*/
-void DRT::Element::SetFace(const int faceindex, Teuchos::RCP<DRT::FaceElement> faceelement)
+void CORE::Elements::Element::SetFace(
+    const int faceindex, Teuchos::RCP<CORE::Elements::FaceElement> faceelement)
 {
   const int nface = NumFace();
   if (face_.empty()) face_.resize(nface, Teuchos::null);
@@ -980,10 +981,11 @@ void DRT::Element::SetFace(const int faceindex, Teuchos::RCP<DRT::FaceElement> f
 /*----------------------------------------------------------------------*
  |  evaluate element dummy (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::Element::Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
-    CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
+int CORE::Elements::Element::Evaluate(Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, LocationArray& la,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   return Evaluate(params, discretization, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
 }
@@ -991,23 +993,24 @@ int DRT::Element::Evaluate(Teuchos::ParameterList& params, DRT::Discretization& 
 /*----------------------------------------------------------------------*
  |  evaluate element dummy (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::Element::Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-    CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
+int CORE::Elements::Element::Evaluate(Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
-  std::cout << "DRT::Element::Evaluate:\n"
-            << "Base class dummy routine DRT::Element::Evaluate(...) called\n"
+  std::cout << "CORE::Elements::Element::Evaluate:\n"
+            << "Base class dummy routine CORE::Elements::Element::Evaluate(...) called\n"
             << __FILE__ << ":" << __LINE__ << std::endl;
   return -1;
 }
 
-int DRT::Element::Degree() const { return CORE::FE::getDegree(Shape()); }
+int CORE::Elements::Element::Degree() const { return CORE::FE::getDegree(Shape()); }
 
 /*----------------------------------------------------------------------*
  |  check if the element has only ghost nodes (public)       vuong 09/14|
  *----------------------------------------------------------------------*/
-bool DRT::Element::HasOnlyGhostNodes(const int mypid) const
+bool CORE::Elements::Element::HasOnlyGhostNodes(const int mypid) const
 {
   const int numnode = num_node();
   const DRT::Node* const* nodes = Nodes();
@@ -1028,37 +1031,37 @@ bool DRT::Element::HasOnlyGhostNodes(const int mypid) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-unsigned int DRT::Element::append_visualization_geometry(const DRT::Discretization& discret,
-    std::vector<uint8_t>& cell_types, std::vector<double>& point_coordinates) const
+unsigned int CORE::Elements::Element::append_visualization_geometry(
+    const DRT::Discretization& discret, std::vector<uint8_t>& cell_types,
+    std::vector<double>& point_coordinates) const
 {
   if (IsNurbsElement())
-    return DRT::ELEMENTS::AppendVisualizationGeometryNURBSEle(
-        *this, discret, cell_types, point_coordinates);
+    return IO::AppendVisualizationGeometryNURBSEle(*this, discret, cell_types, point_coordinates);
   else
-    return DRT::ELEMENTS::AppendVisualizationGeometryLagrangeEle(
+    return IO::AppendVisualizationGeometryLagrangeEle(
         *this, discret, cell_types, point_coordinates);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-unsigned int DRT::Element::append_visualization_dof_based_result_data_vector(
+unsigned int CORE::Elements::Element::append_visualization_dof_based_result_data_vector(
     const DRT::Discretization& discret, const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
     unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
     std::vector<double>& vtu_point_result_data) const
 {
   if (IsNurbsElement())
-    return DRT::ELEMENTS::AppendVisualizationDofBasedResultDataVectorNURBSEle(*this, discret,
+    return IO::AppendVisualizationDofBasedResultDataVectorNURBSEle(*this, discret,
         result_data_dofbased, result_num_dofs_per_node, read_result_data_from_dofindex,
         vtu_point_result_data);
   else
-    return DRT::ELEMENTS::AppendVisualizationDofBasedResultDataVectorLagrangeEle(*this, discret,
+    return IO::AppendVisualizationDofBasedResultDataVectorLagrangeEle(*this, discret,
         result_data_dofbased, result_num_dofs_per_node, read_result_data_from_dofindex,
         vtu_point_result_data);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::GEOMETRICSEARCH::BoundingVolume DRT::Element::GetBoundingVolume(
+CORE::GEOMETRICSEARCH::BoundingVolume CORE::Elements::Element::GetBoundingVolume(
     const DRT::Discretization& discret, const Epetra_Vector& result_data_dofbased,
     const CORE::GEOMETRICSEARCH::GeometricSearchParams& params) const
 {
@@ -1093,8 +1096,8 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::Element::GetBoundingVolume(
 /*----------------------------------------------------------------------*
  |  Constructor (public)                               kronbichler 03/15|
  *----------------------------------------------------------------------*/
-DRT::FaceElement::FaceElement(const int id, const int owner)
-    : DRT::Element(id, owner),
+CORE::Elements::FaceElement::FaceElement(const int id, const int owner)
+    : Element(id, owner),
       parent_master_(nullptr),
       parent_slave_(nullptr),
       lface_master_(-1),
@@ -1108,8 +1111,8 @@ DRT::FaceElement::FaceElement(const int id, const int owner)
 /*----------------------------------------------------------------------*
  |  Copy constructor (public)                          kronbichler 03/15|
  *----------------------------------------------------------------------*/
-DRT::FaceElement::FaceElement(const DRT::FaceElement& old)
-    : DRT::Element(old),
+CORE::Elements::FaceElement::FaceElement(const CORE::Elements::FaceElement& old)
+    : Element(old),
       parent_master_(old.parent_master_),
       parent_slave_(old.parent_slave_),
       lface_master_(old.lface_master_),
@@ -1122,7 +1125,7 @@ DRT::FaceElement::FaceElement(const DRT::FaceElement& old)
  |  Pack data                                                  (public) |
  |                                                           ager 06/15 |
  *----------------------------------------------------------------------*/
-void DRT::FaceElement::Pack(CORE::COMM::PackBuffer& data) const
+void CORE::Elements::FaceElement::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -1131,7 +1134,7 @@ void DRT::FaceElement::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class DRT::Elememt
-  DRT::Element::Pack(data);
+  CORE::Elements::Element::Pack(data);
   // add lface_master_
   AddtoPack(data, lface_master_);
   // Pack Parent Id, used to set parent_master_ after parallel communication!
@@ -1145,16 +1148,16 @@ void DRT::FaceElement::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           ager 06/15 |
  *----------------------------------------------------------------------*/
-void DRT::FaceElement::Unpack(const std::vector<char>& data)
+void CORE::Elements::FaceElement::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
   CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  // extract base class DRT::Element
+  // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::Element::Unpack(basedata);
+  CORE::Elements::Element::Unpack(basedata);
 
   // lface_master_
   lface_master_ = ExtractInt(position, data);
@@ -1169,7 +1172,7 @@ void DRT::FaceElement::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  set the local trafo map (protected)                kronbichler 03/15|
  *----------------------------------------------------------------------*/
-void DRT::FaceElement::set_local_trafo_map(const std::vector<int>& trafo)
+void CORE::Elements::FaceElement::set_local_trafo_map(const std::vector<int>& trafo)
 {
   localtrafomap_ = trafo;
 }

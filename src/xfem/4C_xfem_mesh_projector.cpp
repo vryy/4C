@@ -92,7 +92,7 @@ void XFEM::MeshProjector::set_source_position_vector(Teuchos::RCP<const Epetra_V
 template <CORE::FE::CellType distype>
 void XFEM::MeshProjector::find_search_radius()
 {
-  DRT::Element* actele = sourcedis_->lRowElement(0);
+  CORE::Elements::Element* actele = sourcedis_->lRowElement(0);
   const DRT::Node* const* nodes = actele->Nodes();
 
   // problem dimension
@@ -325,7 +325,7 @@ void XFEM::MeshProjector::project_in_full_target_discretization(
 }
 
 template <CORE::FE::CellType distype>
-bool XFEM::MeshProjector::check_position_and_project(const DRT::Element* src_ele,
+bool XFEM::MeshProjector::check_position_and_project(const CORE::Elements::Element* src_ele,
     const CORE::LINALG::Matrix<3, 1>& node_xyz, CORE::LINALG::Matrix<8, 1>& interpolatedvec)
 {
   // number of element's nodes
@@ -423,7 +423,7 @@ void XFEM::MeshProjector::find_covering_elements_and_interpolate_values(
       for (std::set<int>::const_iterator eleIter = (closele->second).begin();
            eleIter != (closele->second).end(); eleIter++)
       {
-        DRT::Element* pele = sourcedis_->gElement(*eleIter);
+        CORE::Elements::Element* pele = sourcedis_->gElement(*eleIter);
         // determine values for target fluid node
         switch (pele->Shape())
         {

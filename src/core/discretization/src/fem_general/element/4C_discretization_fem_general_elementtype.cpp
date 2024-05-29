@@ -9,12 +9,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "4C_lib_elementtype.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ElementType::ElementType() : ParObjectType() {}
+CORE::Elements::ElementType::ElementType() : ParObjectType() {}
 
-int DRT::ElementType::Initialize(DRT::Discretization& dis) { return 0; }
+int CORE::Elements::ElementType::Initialize(DRT::Discretization& dis) { return 0; }
 
 FOUR_C_NAMESPACE_CLOSE

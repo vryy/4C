@@ -25,9 +25,13 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Node;
-  class Element;
   class Discretization;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::Dofsets
 {
@@ -61,8 +65,8 @@ namespace CORE::Dofsets
     ) const = 0;
 
     /// Get number of dofs for given element
-    virtual int NumDof(
-        const DRT::Element* element  ///< element, for which you want to know the number of dofs
+    virtual int NumDof(const CORE::Elements::Element*
+            element  ///< element, for which you want to know the number of dofs
     ) const = 0;
 
     /// get number of nodal dofs
@@ -76,8 +80,9 @@ namespace CORE::Dofsets
     ) const = 0;
 
     /// Get the gid of a dof for given element
-    virtual int Dof(const DRT::Element* element,  ///< element, for which you want the dof positions
-        int dof  ///< number dof for which you want the dof position
+    virtual int Dof(
+        const CORE::Elements::Element* element,  ///< element, for which you want the dof positions
+        int dof                                  ///< number dof for which you want the dof position
     ) const = 0;
 
     /// Get the gid of all dofs of a node
@@ -92,7 +97,7 @@ namespace CORE::Dofsets
     ) const = 0;
 
     /// Get the gid of all dofs of a element
-    virtual std::vector<int> Dof(const DRT::Element* element) const = 0;
+    virtual std::vector<int> Dof(const CORE::Elements::Element* element) const = 0;
 
     /// Get the gid of all dofs of a node and the location matrix
     virtual void Dof(const DRT::Node* node, std::vector<int>& lm) const = 0;
@@ -104,10 +109,10 @@ namespace CORE::Dofsets
     ) const = 0;
 
     /// Get the gid of all dofs of a element and the location matrix
-    virtual void Dof(const DRT::Element* element, std::vector<int>& lm) const = 0;
+    virtual void Dof(const CORE::Elements::Element* element, std::vector<int>& lm) const = 0;
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    virtual void Dof(const DRT::Element*
+    virtual void Dof(const CORE::Elements::Element*
                          element,  ///< element which provides its expected number of DOFs per node
         const DRT::Node* node,     ///< node, for which you want the DOF positions
         std::vector<int>& lm       ///< already allocated vector to be filled with DOF positions

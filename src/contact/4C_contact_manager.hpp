@@ -130,7 +130,7 @@ namespace CONTACT
 
     */
     void set_poro_parent_element(int& slavetype, int& mastertype,
-        Teuchos::RCP<CONTACT::Element>& cele, Teuchos::RCP<DRT::Element>& ele);
+        Teuchos::RCP<CONTACT::Element>& cele, Teuchos::RCP<CORE::Elements::Element>& ele);
 
     /*!
     \brief Find Physical Type (Poro or Structure) of Poro Interface

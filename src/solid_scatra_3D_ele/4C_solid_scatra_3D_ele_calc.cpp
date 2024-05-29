@@ -110,7 +110,7 @@ namespace
 
   template <bool is_scalar, CORE::FE::CellType celltype>
   void PrepareScatraQuantityInParameterList(const DRT::Discretization& discretization,
-      const DRT::Element::LocationArray& la,
+      const CORE::Elements::Element::LocationArray& la,
       const DRT::ELEMENTS::ElementNodes<celltype>& element_nodes, const std::string& field_name,
       const int field_index, const int num_scalars,
       const CORE::FE::GaussIntegration& gauss_integration, Teuchos::ParameterList& params,
@@ -159,8 +159,8 @@ namespace
   };
 
   template <CORE::FE::CellType celltype>
-  void PrepareScatraQuantitiesInParameterList(const DRT::Element& element,
-      const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
+  void PrepareScatraQuantitiesInParameterList(const CORE::Elements::Element& element,
+      const DRT::Discretization& discretization, const CORE::Elements::Element::LocationArray& la,
       const DRT::ELEMENTS::ElementNodes<celltype>& element_nodes,
       const CORE::FE::GaussIntegration& gauss_integration, Teuchos::ParameterList& params)
   {
@@ -260,9 +260,9 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Unpack(
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
 void DRT::ELEMENTS::SolidScatraEleCalc<celltype,
-    SolidFormulation>::evaluate_nonlinear_force_stiffness_mass(const DRT::Element& ele,
+    SolidFormulation>::evaluate_nonlinear_force_stiffness_mass(const CORE::Elements::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
-    const DRT::Element::LocationArray& la, Teuchos::ParameterList& params,
+    const CORE::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector* force_vector,
     CORE::LINALG::SerialDenseMatrix* stiffness_matrix, CORE::LINALG::SerialDenseMatrix* mass_matrix)
 {
@@ -349,8 +349,8 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype,
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
 void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate_d_stress_d_scalar(
-    const DRT::Element& ele, MAT::So3Material& solid_material,
-    const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
+    const DRT::Discretization& discretization, const CORE::Elements::Element::LocationArray& la,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& stiffness_matrix_dScalar)
 {
   const int scatra_column_stride = std::invoke(
@@ -420,17 +420,18 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate_d_s
 }
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Recover(const DRT::Element& ele,
-    const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
-    Teuchos::ParameterList& params)
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Recover(
+    const CORE::Elements::Element& ele, const DRT::Discretization& discretization,
+    const CORE::Elements::Element::LocationArray& la, Teuchos::ParameterList& params)
 {
   // nothing needs to be done for simple displacement based elements
 }
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Update(const DRT::Element& ele,
-    MAT::So3Material& solid_material, const DRT::Discretization& discretization,
-    const DRT::Element::LocationArray& la, Teuchos::ParameterList& params)
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Update(
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
+    const DRT::Discretization& discretization, const CORE::Elements::Element::LocationArray& la,
+    Teuchos::ParameterList& params)
 {
   const ElementNodes<celltype> nodal_coordinates =
       EvaluateElementNodes<celltype>(ele, discretization, la[0].lm_);
@@ -463,8 +464,8 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Update(const
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
 double DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calculate_internal_energy(
-    const DRT::Element& ele, MAT::So3Material& solid_material,
-    const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
+    const DRT::Discretization& discretization, const CORE::Elements::Element::LocationArray& la,
     Teuchos::ParameterList& params)
 {
   const ElementNodes<celltype> nodal_coordinates =
@@ -503,9 +504,9 @@ double DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calculate_
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
 void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::CalculateStress(
-    const DRT::Element& ele, MAT::So3Material& solid_material, const StressIO& stressIO,
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material, const StressIO& stressIO,
     const StrainIO& strainIO, const DRT::Discretization& discretization,
-    const DRT::Element::LocationArray& la, Teuchos::ParameterList& params)
+    const CORE::Elements::Element::LocationArray& la, Teuchos::ParameterList& params)
 {
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;
   std::vector<char>& serialized_strain_data = strainIO.mutable_data;
@@ -552,10 +553,10 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::CalculateStr
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
 double DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::GetCauchyNDirAtXi(
-    const DRT::Element& ele, MAT::So3Material& solid_material, const std::vector<double>& disp,
-    const std::optional<std::vector<double>>& scalars, const CORE::LINALG::Matrix<3, 1>& xi,
-    const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
-    SolidScatraCauchyNDirLinearizations<3>& linearizations)
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
+    const std::vector<double>& disp, const std::optional<std::vector<double>>& scalars,
+    const CORE::LINALG::Matrix<3, 1>& xi, const CORE::LINALG::Matrix<3, 1>& n,
+    const CORE::LINALG::Matrix<3, 1>& dir, SolidScatraCauchyNDirLinearizations<3>& linearizations)
 {
   if constexpr (has_gauss_point_history<SolidFormulation>)
   {
@@ -612,7 +613,7 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Setup(
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
 void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::material_post_setup(
-    const DRT::Element& ele, MAT::So3Material& solid_material)
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material)
 {
   Teuchos::ParameterList params{};
 
@@ -626,7 +627,7 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::material_pos
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
 void DRT::ELEMENTS::SolidScatraEleCalc<celltype,
-    SolidFormulation>::initialize_gauss_point_data_output(const DRT::Element& ele,
+    SolidFormulation>::initialize_gauss_point_data_output(const CORE::Elements::Element& ele,
     const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
@@ -639,7 +640,7 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype,
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
 void DRT::ELEMENTS::SolidScatraEleCalc<celltype,
-    SolidFormulation>::evaluate_gauss_point_data_output(const DRT::Element& ele,
+    SolidFormulation>::evaluate_gauss_point_data_output(const CORE::Elements::Element& ele,
     const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
@@ -652,7 +653,7 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype,
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
 void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::reset_to_last_converged(
-    const DRT::Element& ele, MAT::So3Material& solid_material)
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material)
 {
   solid_material.reset_step();
 }

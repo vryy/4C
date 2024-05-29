@@ -39,12 +39,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::RedInterAcinarDepType::Create(const std::v
 /*----------------------------------------------------------------------*
  |  Create                                                              |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedInterAcinarDepType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RedInterAcinarDepType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "RED_ACINAR_INTER_DEP")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::RedInterAcinarDep(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::RedInterAcinarDep(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -54,10 +55,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedInterAcinarDepType::Create(
 /*----------------------------------------------------------------------*
  |  Create                                                              |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedInterAcinarDepType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RedInterAcinarDepType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::RedInterAcinarDep(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::RedInterAcinarDep(id, owner));
   return ele;
 }
 
@@ -79,14 +81,17 @@ void DRT::ELEMENTS::RedInterAcinarDepType::setup_element_definition(
  |  ctor (public)                                           ismail 01/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedInterAcinarDep::RedInterAcinarDep(int id, int owner) : DRT::Element(id, owner) {}
+DRT::ELEMENTS::RedInterAcinarDep::RedInterAcinarDep(int id, int owner)
+    : CORE::Elements::Element(id, owner)
+{
+}
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      ismail 01/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedInterAcinarDep::RedInterAcinarDep(const DRT::ELEMENTS::RedInterAcinarDep& old)
-    : DRT::Element(old), elem_params_(old.elem_params_), generation_(old.generation_)
+    : CORE::Elements::Element(old), elem_params_(old.elem_params_), generation_(old.generation_)
 {
 }
 
@@ -95,7 +100,7 @@ DRT::ELEMENTS::RedInterAcinarDep::RedInterAcinarDep(const DRT::ELEMENTS::RedInte
  |  to it                                                      (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::RedInterAcinarDep::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::RedInterAcinarDep::Clone() const
 {
   DRT::ELEMENTS::RedInterAcinarDep* newelement = new DRT::ELEMENTS::RedInterAcinarDep(*this);
   return newelement;
@@ -214,7 +219,7 @@ void DRT::ELEMENTS::RedInterAcinarDep::VisNames(std::map<std::string, int>& name
 bool DRT::ELEMENTS::RedInterAcinarDep::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (DRT::Element::VisData(name, data)) return true;
+  if (CORE::Elements::Element::VisData(name, data)) return true;
 
   return false;
 }
@@ -256,7 +261,7 @@ void DRT::ELEMENTS::RedInterAcinarDep::getParams(std::string name, int& var)
 /*----------------------------------------------------------------------*
  |  Get vector of lines (public)                           ismail  02/13|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::RedInterAcinarDep::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::RedInterAcinarDep::Lines()
 {
   FOUR_C_ASSERT(NumLine() == 1, "RED_AIRWAY element must have one and only one line");
 

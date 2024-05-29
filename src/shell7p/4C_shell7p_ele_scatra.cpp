@@ -51,14 +51,15 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Shell7pScatraType::Create(const std::vecto
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell7pScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Shell7pScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SHELL7PSCATRA") return Create(id, owner);
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell7pScatraType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Shell7pScatraType::Create(
+    const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::Shell7pScatra(id, owner));
 }
@@ -187,14 +188,14 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Shell7pScatraType::ComputeNullSpa
 }
 
 void DRT::ELEMENTS::Shell7pScatraType::nodal_block_information(
-    Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   STR::UTILS::SHELL::NodalBlockInformationShell(dwele, numdf, dimns, nv, np);
 }
 
 
 DRT::ELEMENTS::Shell7pScatra::Shell7pScatra(const DRT::ELEMENTS::Shell7pScatra& other)
-    : DRT::Element(other),
+    : CORE::Elements::Element(other),
       distype_(other.distype_),
       interface_ptr_(other.interface_ptr_),
       eletech_(other.eletech_),
@@ -212,7 +213,7 @@ DRT::ELEMENTS::Shell7pScatra& DRT::ELEMENTS::Shell7pScatra::operator=(
     const DRT::ELEMENTS::Shell7pScatra& other)
 {
   if (this == &other) return *this;
-  DRT::Element::operator=(other);
+  CORE::Elements::Element::operator=(other);
   distype_ = other.distype_;
   interface_ptr_ = other.interface_ptr_;
   eletech_ = other.eletech_;
@@ -225,7 +226,7 @@ DRT::ELEMENTS::Shell7pScatra& DRT::ELEMENTS::Shell7pScatra::operator=(
   return *this;
 }
 
-DRT::Element* DRT::ELEMENTS::Shell7pScatra::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Shell7pScatra::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::Shell7pScatra(*this);
   return newelement;
@@ -240,7 +241,7 @@ void DRT::ELEMENTS::Shell7pScatra::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class Element
-  DRT::Element::Pack(data);
+  CORE::Elements::Element::Pack(data);
   // discretization type
   AddtoPack(data, (int)distype_);
   // element technology
@@ -291,7 +292,8 @@ void DRT::ELEMENTS::Shell7pScatra::Unpack(const std::vector<char>& data)
 
 Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::Shell7pScatra::SolidMaterial(int nummat) const
 {
-  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat), true);
+  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(
+      CORE::Elements::Element::Material(nummat), true);
 }
 
 void DRT::ELEMENTS::Shell7pScatra::set_params_interface_ptr(const Teuchos::ParameterList& p)
@@ -299,7 +301,7 @@ void DRT::ELEMENTS::Shell7pScatra::set_params_interface_ptr(const Teuchos::Param
   if (p.isParameter("interface"))
   {
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface"));
+        p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface"));
   }
   else
   {
@@ -319,7 +321,7 @@ void DRT::ELEMENTS::Shell7pScatra::VisNames(std::map<std::string, int>& names)
 bool DRT::ELEMENTS::Shell7pScatra::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (DRT::Element::VisData(name, data)) return true;
+  if (CORE::Elements::Element::VisData(name, data)) return true;
 
   shell_interface_->VisData(name, data);
 
@@ -335,13 +337,13 @@ void DRT::ELEMENTS::Shell7pScatra::Print(std::ostream& os) const
   Element::Print(os);
 }
 
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Shell7pScatra::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Shell7pScatra::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<Shell7pLine, Shell7pScatra>(
       CORE::COMM::buildLines, *this);
 }
 
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Shell7pScatra::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Shell7pScatra::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

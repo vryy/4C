@@ -60,8 +60,8 @@ void ADAPTER::CouplingEhlMortar::read_mortar_condition(Teuchos::RCP<DRT::Discret
     Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
     const std::string& couplingcond, Teuchos::ParameterList& input,
     std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
-    std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
-    std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements)
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements)
 {
   ADAPTER::CouplingNonLinMortar::read_mortar_condition(masterdis, slavedis, coupleddof,
       couplingcond, input, mastergnodes, slavegnodes, masterelements, slaveelements);

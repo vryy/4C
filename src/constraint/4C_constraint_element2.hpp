@@ -13,8 +13,8 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
@@ -34,7 +34,7 @@ namespace DRT
     // forward declarations
     // class ConstraintElementLine;
 
-    class ConstraintElement2Type : public DRT::ElementType
+    class ConstraintElement2Type : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "ConstraintElement2Type"; }
@@ -43,13 +43,13 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -60,7 +60,7 @@ namespace DRT
 
     /*!
      */
-    class ConstraintElement2 : public DRT::Element
+    class ConstraintElement2 : public CORE::Elements::Element
     {
      public:
       //! @name Friends
@@ -91,7 +91,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
@@ -137,7 +137,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
@@ -148,7 +148,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -159,7 +159,10 @@ namespace DRT
       */
       int num_dof_per_element() const override { return 0; }
 
-      DRT::ElementType& ElementType() const override { return ConstraintElement2Type::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return ConstraintElement2Type::Instance();
+      }
 
       //@}
 
@@ -208,7 +211,7 @@ namespace DRT
       };
 
       //! vector of surfaces of this element (length 1)
-      std::vector<DRT::Element*> surface_;
+      std::vector<CORE::Elements::Element*> surface_;
 
       // don't want = operator
       ConstraintElement2& operator=(const ConstraintElement2& old);

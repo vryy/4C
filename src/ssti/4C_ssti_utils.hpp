@@ -256,11 +256,11 @@ namespace SSTI
 
    protected:
     //! provide cloned element with element specific data (material etc.)
-    void set_element_data(
-        Teuchos::RCP<DRT::Element> newele,  //! current cloned element on target discretization
-        DRT::Element* oldele,               //! current element on source discretization
-        const int matid,                    //! material of cloned element
-        const bool isnurbs                  //! nurbs flag
+    void set_element_data(Teuchos::RCP<CORE::Elements::Element>
+                              newele,     //! current cloned element on target discretization
+        CORE::Elements::Element* oldele,  //! current element on source discretization
+        const int matid,                  //! material of cloned element
+        const bool isnurbs                //! nurbs flag
         ) override;
   };
 

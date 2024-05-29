@@ -27,10 +27,13 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
-  // forward declarations
-  class Element;
   class Discretization;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::Conditions
 {
@@ -152,9 +155,9 @@ namespace CORE::Conditions
     \brief Get a reference to the geometry description of the condition
 
     */
-    std::map<int, Teuchos::RCP<DRT::Element>>& Geometry() { return *geometry_; }
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& Geometry() { return *geometry_; }
 
-    [[nodiscard]] const std::map<int, Teuchos::RCP<DRT::Element>>& Geometry() const
+    [[nodiscard]] const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& Geometry() const
     {
       return *geometry_;
     }
@@ -206,7 +209,7 @@ namespace CORE::Conditions
                       Do not mess with their Teuchos::RCP!
 
     */
-    void add_geometry(Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geom)
+    void add_geometry(Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::Elements::Element>>> geom)
     {
       geometry_ = geom;
     }
@@ -238,7 +241,7 @@ namespace CORE::Conditions
     CORE::Conditions::GeometryType gtype_{};
 
     //! Geometry description of this condition
-    Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geometry_{};
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::Elements::Element>>> geometry_{};
 
     IO::InputParameterContainer container_;
   };  // class Condition

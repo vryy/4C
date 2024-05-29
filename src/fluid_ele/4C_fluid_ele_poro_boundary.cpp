@@ -21,7 +21,7 @@ DRT::ELEMENTS::FluidPoroBoundaryType& DRT::ELEMENTS::FluidPoroBoundaryType::Inst
   return instance_;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroBoundaryType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidPoroBoundaryType::Create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -38,7 +38,7 @@ DRT::ELEMENTS::FluidPoroBoundary::FluidPoroBoundary(const DRT::ELEMENTS::FluidPo
 {
 }
 
-DRT::Element* DRT::ELEMENTS::FluidPoroBoundary::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::FluidPoroBoundary::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::FluidPoroBoundary(*this);
   return newelement;

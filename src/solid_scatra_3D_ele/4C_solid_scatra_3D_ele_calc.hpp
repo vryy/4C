@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_gausspoints.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_solid_3D_ele_calc_interface.hpp"
 #include "4C_solid_3D_ele_formulation.hpp"
 #include "4C_solid_scatra_3D_ele_calc_lib_nitsche.hpp"
@@ -44,46 +44,48 @@ namespace DRT::ELEMENTS
 
     void Setup(MAT::So3Material& solid_material, INPUT::LineDefinition* linedef);
 
-    void material_post_setup(const DRT::Element& ele, MAT::So3Material& solid_material);
+    void material_post_setup(const CORE::Elements::Element& ele, MAT::So3Material& solid_material);
 
-    void Recover(const DRT::Element& ele, const DRT::Discretization& discretization,
-        const DRT::Element::LocationArray& la, Teuchos::ParameterList& params);
+    void Recover(const CORE::Elements::Element& ele, const DRT::Discretization& discretization,
+        const CORE::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
 
-    void Update(const DRT::Element& ele, MAT::So3Material& solid_material,
-        const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
+    void Update(const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
+        const DRT::Discretization& discretization, const CORE::Elements::Element::LocationArray& la,
         Teuchos::ParameterList& params);
 
-    void CalculateStress(const DRT::Element& ele, MAT::So3Material& solid_material,
+    void CalculateStress(const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
         const StressIO& stressIO, const StrainIO& strainIO,
-        const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
+        const DRT::Discretization& discretization, const CORE::Elements::Element::LocationArray& la,
         Teuchos::ParameterList& params);
 
-    double calculate_internal_energy(const DRT::Element& ele, MAT::So3Material& solid_material,
-        const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
-        Teuchos::ParameterList& params);
-
-    void initialize_gauss_point_data_output(const DRT::Element& ele,
-        const MAT::So3Material& solid_material,
-        STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
-
-    void evaluate_gauss_point_data_output(const DRT::Element& ele,
-        const MAT::So3Material& solid_material,
-        STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
-
-    void reset_to_last_converged(const DRT::Element& ele, MAT::So3Material& solid_material);
-
-    void evaluate_nonlinear_force_stiffness_mass(const DRT::Element& ele,
+    double calculate_internal_energy(const CORE::Elements::Element& ele,
         MAT::So3Material& solid_material, const DRT::Discretization& discretization,
-        const DRT::Element::LocationArray& la, Teuchos::ParameterList& params,
+        const CORE::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
+
+    void initialize_gauss_point_data_output(const CORE::Elements::Element& ele,
+        const MAT::So3Material& solid_material,
+        STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
+
+    void evaluate_gauss_point_data_output(const CORE::Elements::Element& ele,
+        const MAT::So3Material& solid_material,
+        STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
+
+    void reset_to_last_converged(
+        const CORE::Elements::Element& ele, MAT::So3Material& solid_material);
+
+    void evaluate_nonlinear_force_stiffness_mass(const CORE::Elements::Element& ele,
+        MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+        const CORE::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
         CORE::LINALG::SerialDenseVector* force_vector,
         CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
         CORE::LINALG::SerialDenseMatrix* mass_matrix);
 
-    void evaluate_d_stress_d_scalar(const DRT::Element& ele, MAT::So3Material& solid_material,
-        const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
-        Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& stiffness_matrix_dScalar);
+    void evaluate_d_stress_d_scalar(const CORE::Elements::Element& ele,
+        MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+        const CORE::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
+        CORE::LINALG::SerialDenseMatrix& stiffness_matrix_dScalar);
 
-    double GetCauchyNDirAtXi(const DRT::Element& ele, MAT::So3Material& solid_material,
+    double GetCauchyNDirAtXi(const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
         const std::vector<double>& disp, const std::optional<std::vector<double>>& scalars,
         const CORE::LINALG::Matrix<3, 1>& xi, const CORE::LINALG::Matrix<3, 1>& n,
         const CORE::LINALG::Matrix<3, 1>& dir,

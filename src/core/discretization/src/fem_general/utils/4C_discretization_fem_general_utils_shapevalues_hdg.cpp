@@ -78,7 +78,7 @@ CORE::FE::ShapeValues<distype>::ShapeValues(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void CORE::FE::ShapeValues<distype>::Evaluate(
-    const DRT::Element& ele, const std::vector<double>& aleDis)
+    const CORE::Elements::Element& ele, const std::vector<double>& aleDis)
 {
   FOUR_C_ASSERT(ele.Shape() == distype, "Internal error");
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(&ele, xyze);
@@ -195,7 +195,7 @@ CORE::FE::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void CORE::FE::ShapeValuesFace<distype>::EvaluateFace(
-    const DRT::Element& ele, const unsigned int face, const std::vector<double>& aleDis)
+    const CORE::Elements::Element& ele, const unsigned int face, const std::vector<double>& aleDis)
 {
   const CORE::FE::CellType facedis = CORE::FE::DisTypeToFaceShapeType<distype>::shape;
 
@@ -264,7 +264,7 @@ void CORE::FE::ShapeValuesFace<distype>::EvaluateFace(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void CORE::FE::ShapeValuesFace<distype>::adjust_face_orientation(
-    const DRT::Element& ele, const unsigned int face)
+    const CORE::Elements::Element& ele, const unsigned int face)
 {
   // For the shape values on faces, we need to figure out how the master element of
   // a face walks over the face and how the current face element wants to walk over
@@ -480,7 +480,7 @@ void CORE::FE::ShapeValuesFace<distype>::adjust_face_orientation(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void CORE::FE::ShapeValuesFace<distype>::compute_face_reference_system(
-    const DRT::Element& ele, const unsigned int face)
+    const CORE::Elements::Element& ele, const unsigned int face)
 {
   // In the case in which the element is not the master element for the face there is the need to
   // find the master element and build the face reference system from the master side.

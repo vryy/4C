@@ -25,7 +25,8 @@ namespace GEOMETRYPAIR
   template <>
   struct SetShapeFunctionData<t_hermite>
   {
-    static void Set(ShapeFunctionData<t_hermite>& shape_function_data, const DRT::Element* element)
+    static void Set(
+        ShapeFunctionData<t_hermite>& shape_function_data, const CORE::Elements::Element* element)
     {
       // Get the reference length of the beam element
       const auto* beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element);

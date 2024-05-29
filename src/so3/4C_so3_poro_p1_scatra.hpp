@@ -15,8 +15,8 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_pack_buffer.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_inpar_scatra.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_so3_poro_p1.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -71,7 +71,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -104,7 +104,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override;
+      CORE::Elements::ElementType& ElementType() const override;
 
       //! @name Input and Creation
       /*!

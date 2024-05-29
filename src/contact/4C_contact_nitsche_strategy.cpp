@@ -441,16 +441,16 @@ void CONTACT::NitscheStrategy::reconnect_parent_elements()
     {
       const int gid = ielecolmap->GID(i);
 
-      DRT::Element* ele = contact_interface->Discret().gElement(gid);
+      CORE::Elements::Element* ele = contact_interface->Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
-      auto* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+      auto* faceele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
 
       const int volgid = faceele->ParentElementId();
       if (elecolmap->LID(volgid) == -1)  // Volume discretization has not Element
         FOUR_C_THROW(
             "Manager::reconnect_parent_elements: Element %d does not exist on this Proc!", volgid);
 
-      DRT::Element* vele = voldis->gElement(volgid);
+      CORE::Elements::Element* vele = voldis->gElement(volgid);
       if (!vele) FOUR_C_THROW("Cannot find element with gid %", volgid);
 
       faceele->set_parent_master_element(vele, faceele->FaceParentNumber());

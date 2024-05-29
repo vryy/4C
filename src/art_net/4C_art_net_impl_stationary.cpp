@@ -364,7 +364,7 @@ void ART::ArtNetImplStationary::reset_artery_diam_previous_time_step()
   for (int i = 0; i < discret_->NumMyColElements(); ++i)
   {
     // pointer to current element
-    DRT::Element* actele = discret_->lColElement(i);
+    CORE::Elements::Element* actele = discret_->lColElement(i);
 
     // get the artery-material
     Teuchos::RCP<MAT::Cnst1dArt> arterymat =
@@ -511,7 +511,7 @@ void ART::ArtNetImplStationary::OutputRadius()
   const int numrowele = discret_->NumMyRowElements();
   for (int i = 0; i < numrowele; ++i)
   {
-    DRT::Element* actele = discret_->lRowElement(i);
+    CORE::Elements::Element* actele = discret_->lRowElement(i);
     // cast the material to artery material material
     const Teuchos::RCP<const MAT::Cnst1dArt>& arterymat =
         Teuchos::rcp_dynamic_cast<const MAT::Cnst1dArt>(actele->Material());
@@ -549,13 +549,13 @@ void ART::ArtNetImplStationary::OutputFlow()
   for (int i = 0; i < discret_->NumMyRowElements(); ++i)
   {
     // pointer to current element
-    DRT::Element* actele = discret_->lRowElement(i);
+    CORE::Elements::Element* actele = discret_->lRowElement(i);
 
     // list to define routines at elementlevel
     Teuchos::ParameterList p;
     p.set<int>("action", ARTERY::calc_flow_pressurebased);
 
-    DRT::Element::LocationArray la(discret_->NumDofSets());
+    CORE::Elements::Element::LocationArray la(discret_->NumDofSets());
     actele->LocationVector(*discret_, la, false);
     CORE::LINALG::SerialDenseVector flowVec(1);
 
@@ -630,7 +630,7 @@ void ART::ArtNetImplStationary::read_restart(int step, bool coupledTo3D)
   for (int i = 0; i < discret_->NumMyColElements(); ++i)
   {
     // pointer to current element
-    DRT::Element* actele = discret_->lColElement(i);
+    CORE::Elements::Element* actele = discret_->lColElement(i);
 
     // get the artery-material
     Teuchos::RCP<MAT::Cnst1dArt> arterymat =

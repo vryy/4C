@@ -12,9 +12,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
@@ -26,17 +26,17 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    class StructuralLineType : public DRT::ElementType
+    class StructuralLineType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "StructuralLineType"; }
 
       static StructuralLineType& Instance();
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -57,7 +57,7 @@ namespace DRT
            Note that this element should not be used in 2D cases!
 
     */
-    class StructuralLine : public DRT::FaceElement
+    class StructuralLine : public CORE::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -74,7 +74,7 @@ namespace DRT
       \param lline: the local line number of this line w.r.t. the parent element
       */
       StructuralLine(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
-          DRT::Element* parent, const int lline);
+          CORE::Elements::Element* parent, const int lline);
 
       /*!
       \brief Copy Constructor
@@ -91,7 +91,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -131,7 +131,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
@@ -142,7 +142,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -158,7 +158,10 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return StructuralLineType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return StructuralLineType::Instance();
+      }
 
       //@}
 

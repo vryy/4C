@@ -39,17 +39,17 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
   set_params_interface_ptr(params);
 
   // start with "none"
-  ELEMENTS::ActionType act = params_interface().GetActionType();
+  CORE::Elements::ActionType act = params_interface().GetActionType();
 
   switch (act)
   {
-    case ELEMENTS::struct_calc_linstiff:
-    case ELEMENTS::struct_calc_nlnstiff:
-    case ELEMENTS::struct_calc_internalforce:
-    case ELEMENTS::struct_calc_linstiffmass:
-    case ELEMENTS::struct_calc_nlnstiffmass:
-    case ELEMENTS::struct_calc_nlnstifflmass:
-    case ELEMENTS::struct_calc_internalinertiaforce:
+    case CORE::Elements::struct_calc_linstiff:
+    case CORE::Elements::struct_calc_nlnstiff:
+    case CORE::Elements::struct_calc_internalforce:
+    case CORE::Elements::struct_calc_linstiffmass:
+    case CORE::Elements::struct_calc_nlnstiffmass:
+    case CORE::Elements::struct_calc_nlnstifflmass:
+    case CORE::Elements::struct_calc_internalinertiaforce:
     {
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacement and residual
@@ -69,28 +69,30 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myacc(lm.size());
       myacc.clear();
 
-      if (act == ELEMENTS::struct_calc_nlnstiffmass or act == ELEMENTS::struct_calc_nlnstifflmass or
-          act == ELEMENTS::struct_calc_linstiffmass)
+      if (act == CORE::Elements::struct_calc_nlnstiffmass or
+          act == CORE::Elements::struct_calc_nlnstifflmass or
+          act == CORE::Elements::struct_calc_linstiffmass)
       {
         nlnstiffmass(params, myacc, myvel, mydisp, &elemat1, &elemat2, &elevec1, &elevec2);
       }
-      else if (act == ELEMENTS::struct_calc_linstiff or act == ELEMENTS::struct_calc_nlnstiff)
+      else if (act == CORE::Elements::struct_calc_linstiff or
+               act == CORE::Elements::struct_calc_nlnstiff)
       {
         nlnstiffmass(params, myacc, myvel, mydisp, &elemat1, nullptr, &elevec1, nullptr);
       }
-      else if (act == ELEMENTS::struct_calc_internalforce)
+      else if (act == CORE::Elements::struct_calc_internalforce)
       {
         nlnstiffmass(params, myacc, myvel, mydisp, nullptr, nullptr, &elevec1, nullptr);
       }
-      else if (act == ELEMENTS::struct_calc_internalinertiaforce)
+      else if (act == CORE::Elements::struct_calc_internalinertiaforce)
       {
         nlnstiffmass(params, myacc, myvel, mydisp, nullptr, nullptr, &elevec1, &elevec2);
       }
     }
     break;
 
-    case ELEMENTS::struct_calc_brownianforce:
-    case ELEMENTS::struct_calc_brownianstiff:
+    case CORE::Elements::struct_calc_brownianforce:
+    case CORE::Elements::struct_calc_brownianstiff:
     {
       // get element displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -104,9 +106,9 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myvel(lm.size());
       CORE::FE::ExtractMyValues(*vel, myvel, lm);
 
-      if (act == ELEMENTS::struct_calc_brownianforce)
+      if (act == CORE::Elements::struct_calc_brownianforce)
         calc_brownian_forces_and_stiff(params, myvel, mydisp, nullptr, &elevec1);
-      else if (act == ELEMENTS::struct_calc_brownianstiff)
+      else if (act == CORE::Elements::struct_calc_brownianstiff)
         calc_brownian_forces_and_stiff(params, myvel, mydisp, &elemat1, &elevec1);
       else
         FOUR_C_THROW("You shouldn't be here.");
@@ -114,33 +116,33 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
-    case ELEMENTS::struct_calc_stress:
+    case CORE::Elements::struct_calc_stress:
     {
       FOUR_C_THROW("No stress output implemented for beam3 elements");
       break;
     }
-    case ELEMENTS::struct_calc_update_istep:
-    case ELEMENTS::struct_calc_reset_istep:
-    case ELEMENTS::struct_calc_recover:
+    case CORE::Elements::struct_calc_update_istep:
+    case CORE::Elements::struct_calc_reset_istep:
+    case CORE::Elements::struct_calc_recover:
     {
       // not necessary since no class variables are modified in predicting steps
       break;
     }
 
-    case ELEMENTS::struct_calc_predict:
+    case CORE::Elements::struct_calc_predict:
     {
       // do nothing here
       break;
     }
 
     // element based PTC scaling
-    case ELEMENTS::struct_calc_addjacPTC:
+    case CORE::Elements::struct_calc_addjacPTC:
     {
       // nothing to do here
       break;
     }
 
-    case ELEMENTS::struct_calc_energy:
+    case CORE::Elements::struct_calc_energy:
     {
       // no contribution of rigid sphere to system energy
       break;

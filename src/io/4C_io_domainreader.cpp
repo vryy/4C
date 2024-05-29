@@ -12,11 +12,11 @@
 #include "4C_io_domainreader.hpp"
 
 #include "4C_comm_parobject.hpp"
+#include "4C_io_elementdefinition.hpp"
 #include "4C_io_gridgenerator.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_io_utils_reader.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_elementdefinition.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_print.hpp"
 

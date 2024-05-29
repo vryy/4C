@@ -116,7 +116,7 @@ void CORE::FE::ComputeMetricTensorForSurface(const CORE::LINALG::SerialDenseMatr
  *----------------------------------------------------------------------*/
 template <int parent_ele_dim>
 CORE::LINALG::Matrix<parent_ele_dim, 1> CORE::FE::CalculateParentGPFromFaceElementData(
-    const double* faceele_xi, const DRT::FaceElement* faceele)
+    const double* faceele_xi, const CORE::Elements::FaceElement* faceele)
 {
   static CORE::LINALG::Matrix<parent_ele_dim - 1, 1> xi;
   for (int i = 0; i < parent_ele_dim - 1; ++i)
@@ -618,6 +618,6 @@ void CORE::FE::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
 
 
 template CORE::LINALG::Matrix<3, 1> CORE::FE::CalculateParentGPFromFaceElementData<3>(
-    const double* faceele_xi, const DRT::FaceElement* faceele);
+    const double* faceele_xi, const CORE::Elements::FaceElement* faceele);
 
 FOUR_C_NAMESPACE_CLOSE

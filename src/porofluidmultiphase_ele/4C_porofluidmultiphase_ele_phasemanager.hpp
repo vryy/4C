@@ -24,13 +24,6 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-// forward declarations
-namespace LINALG
-{
-  class SerialDenseMatrix;
-  class SerialDenseVector;
-}  // namespace LINALG
-
 namespace MAT
 {
   class Material;
@@ -39,9 +32,13 @@ namespace MAT
   class FluidPoroMultiPhase;
 }  // namespace MAT
 
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
+}
+
+namespace DRT
+{
 
   namespace ELEMENTS
   {
@@ -103,7 +100,7 @@ namespace DRT
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        virtual void Setup(const DRT::Element* ele, const int matnum = 0) = 0;
+        virtual void Setup(const CORE::Elements::Element* ele, const int matnum = 0) = 0;
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -193,7 +190,7 @@ namespace DRT
         virtual double SolidDensity() const = 0;
 
         //! get the current element the manager was set up with
-        virtual const DRT::Element* Element() const = 0;
+        virtual const CORE::Elements::Element* Element() const = 0;
 
         //! get porosity
         virtual double Porosity() const = 0;
@@ -364,7 +361,7 @@ namespace DRT
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void Setup(const DRT::Element* ele, const int matnum = 0) override;
+        void Setup(const CORE::Elements::Element* ele, const int matnum = 0) override;
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -445,7 +442,7 @@ namespace DRT
         double SolidDensity() const override;
 
         //! get the current element the manager was set up with
-        const DRT::Element* Element() const override { return ele_; };
+        const CORE::Elements::Element* Element() const override { return ele_; };
 
         //@}
 
@@ -820,7 +817,7 @@ namespace DRT
         double invbulkmodulussolid_;
 
         //! the current element
-        const DRT::Element* ele_;
+        const CORE::Elements::Element* ele_;
 
         //! flag indicating of gauss point state has been set and evaluated
         bool isevaluated_;
@@ -855,7 +852,7 @@ namespace DRT
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void Setup(const DRT::Element* ele, const int matnum = 0) override
+        void Setup(const CORE::Elements::Element* ele, const int matnum = 0) override
         {
           phasemanager_->Setup(ele, matnum);
         };
@@ -1039,7 +1036,10 @@ namespace DRT
         double SolidDensity() const override { return phasemanager_->SolidDensity(); };
 
         //! get the current element the manager was set up with
-        const DRT::Element* Element() const override { return phasemanager_->Element(); };
+        const CORE::Elements::Element* Element() const override
+        {
+          return phasemanager_->Element();
+        };
 
         //! get the reaction term
         double ReacTerm(int phasenum) const override { return phasemanager_->ReacTerm(phasenum); };
@@ -1401,7 +1401,7 @@ namespace DRT
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void Setup(const DRT::Element* ele, const int matnum = 0) override;
+        void Setup(const CORE::Elements::Element* ele, const int matnum = 0) override;
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -1490,7 +1490,7 @@ namespace DRT
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void Setup(const DRT::Element* ele, const int matnum = 0) override;
+        void Setup(const CORE::Elements::Element* ele, const int matnum = 0) override;
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -1592,7 +1592,7 @@ namespace DRT
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void Setup(const DRT::Element* ele, const int matnum = 0) override;
+        void Setup(const CORE::Elements::Element* ele, const int matnum = 0) override;
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a

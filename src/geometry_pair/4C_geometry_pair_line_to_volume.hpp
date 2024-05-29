@@ -30,13 +30,17 @@ namespace CORE::LINALG
 }
 namespace DRT
 {
-  class Element;
-
   namespace UTILS
   {
     struct IntegrationPoints1D;
   }
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace GEOMETRYPAIR
 {
   enum class DiscretizationTypeVolume;
@@ -69,7 +73,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToVolume(const DRT::Element* element1, const DRT::Element* element2,
+    GeometryPairLineToVolume(const CORE::Elements::Element* element1,
+        const CORE::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data);
 
 

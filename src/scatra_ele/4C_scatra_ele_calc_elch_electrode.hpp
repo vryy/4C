@@ -41,9 +41,10 @@ namespace DRT
 
 
       //! evaluate action
-      int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::Elements::Element::LocationArray& la,
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -103,12 +104,13 @@ namespace DRT
       /*========================================================================*/
 
       //! get material parameters
-      void get_material_params(const DRT::Element* ele,  //!< the element we are dealing with
-          std::vector<double>& densn,                    //!< density at t_(n)
-          std::vector<double>& densnp,                   //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,                   //!< density at t_(n+alpha_M)
-          double& visc,                                  //!< fluid viscosity
-          const int iquad = -1  //!< id of current gauss point (default = -1)
+      void get_material_params(
+          const CORE::Elements::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,          //!< density at t_(n)
+          std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,         //!< density at t_(n+alpha_M)
+          double& visc,                        //!< fluid viscosity
+          const int iquad = -1                 //!< id of current gauss point (default = -1)
           ) override;
 
       /*========================================================================*/
@@ -188,7 +190,7 @@ namespace DRT
 
       //! validity check with respect to input parameters, degrees of freedom, number of scalars
       //! etc.
-      void check_elch_element_parameter(DRT::Element* ele  //!< current element
+      void check_elch_element_parameter(CORE::Elements::Element* ele  //!< current element
           ) override;
 
       //! get conductivity
@@ -202,9 +204,9 @@ namespace DRT
 
       //! calculate electrode state of charge and C rate
       virtual void calculate_electrode_soc_and_c_rate(
-          const DRT::Element* const& ele,             //!< the element we are dealing with
-          const DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la,            //!< location array
+          const CORE::Elements::Element* const& ele,   //!< the element we are dealing with
+          const DRT::Discretization& discretization,   //!< discretization
+          CORE::Elements::Element::LocationArray& la,  //!< location array
           CORE::LINALG::SerialDenseVector&
               scalars  //!< result vector for scalar integrals to be computed
       );
@@ -214,8 +216,8 @@ namespace DRT
       //! \param discretization   discretization
       //! \param la               location array
       //! \param conc             result vector for scalar integrals to be computed
-      virtual void calculate_mean_electrode_concentration(const DRT::Element* const& ele,
-          const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      virtual void calculate_mean_electrode_concentration(const CORE::Elements::Element* const& ele,
+          const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseVector& conc);
 
       //! calculate weighted mass flux (no reactive flux so far)
@@ -225,8 +227,8 @@ namespace DRT
           ) override;
 
       //! calculate error of numerical solution with respect to analytical solution
-      void cal_error_compared_to_analyt_solution(const DRT::Element* ele,  //!< element
-          Teuchos::ParameterList& params,                                  //!< parameter list
+      void cal_error_compared_to_analyt_solution(const CORE::Elements::Element* ele,  //!< element
+          Teuchos::ParameterList& params,          //!< parameter list
           CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
           ) override;
 

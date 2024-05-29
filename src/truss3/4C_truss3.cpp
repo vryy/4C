@@ -30,27 +30,28 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Truss3Type::Create(const std::vector<char>
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Truss3Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TRUSS3")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Truss3(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Truss3(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Truss3Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Truss3(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Truss3(id, owner));
   return ele;
 }
 
 
 void DRT::ELEMENTS::Truss3Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
@@ -81,7 +82,7 @@ void DRT::ELEMENTS::Truss3Type::setup_element_definition(
  |  ctor (public)                                            cyron 08/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
-    : DRT::Element(id, owner),
+    : CORE::Elements::Element(id, owner),
       crosssec_(0.0),
       eint_(0.0),
       lrefe_(0.0),
@@ -100,7 +101,7 @@ DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
  |  copy-ctor (public)                                       cyron 08/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old)
-    : DRT::Element(old),
+    : CORE::Elements::Element(old),
       crosssec_(old.crosssec_),
       eint_(old.eint_),
       lrefe_(old.lrefe_),
@@ -120,7 +121,7 @@ DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old)
  |  Deep copy this instance of Truss3 and return pointer to it (public) |
  |                                                            cyron 08/08|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Truss3::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Truss3::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::Truss3(*this);
   return newelement;
@@ -192,7 +193,7 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              cyron 08/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Truss3::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Truss3::Lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -488,7 +489,7 @@ void DRT::ELEMENTS::Truss3::set_params_interface_ptr(const Teuchos::ParameterLis
   if (p.isParameter("interface"))
   {
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface"));
+        p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface"));
   }
   else
     interface_ptr_ = Teuchos::null;
@@ -496,7 +497,7 @@ void DRT::ELEMENTS::Truss3::set_params_interface_ptr(const Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Truss3::ParamsInterfacePtr()
+Teuchos::RCP<CORE::Elements::ParamsInterface> DRT::ELEMENTS::Truss3::ParamsInterfacePtr()
 {
   return interface_ptr_;
 }

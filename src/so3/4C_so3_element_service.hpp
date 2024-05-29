@@ -31,7 +31,8 @@ namespace DRT
      * \param global_count Add a 1 to all nodes belonging to this element
      * \param ele element
      */
-    void AssembleNodalElementCount(Epetra_IntVector& global_count, const DRT::Element& ele);
+    void AssembleNodalElementCount(
+        Epetra_IntVector& global_count, const CORE::Elements::Element& ele);
 
     /*!
      * \brief Assemble Gauss point data into an array of global cell data
@@ -41,7 +42,7 @@ namespace DRT
      * \param ele element
      */
     void AssembleGaussPointValues(std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
-        const CORE::LINALG::SerialDenseMatrix& gp_data, const DRT::Element& ele);
+        const CORE::LINALG::SerialDenseMatrix& gp_data, const CORE::Elements::Element& ele);
 
     /*!
      * @brief calculate and return the value of the quantity at position xi based on the

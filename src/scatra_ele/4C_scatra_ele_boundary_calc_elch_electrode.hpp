@@ -242,33 +242,35 @@ namespace DRT
       ScaTraEleBoundaryCalcElchElectrode(
           int numdofpernode, int numscal, const std::string& disname);
 
-      void evaluate_s2_i_coupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& eslavematrix,
+      void evaluate_s2_i_coupling(const CORE::Elements::FaceElement* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& eslavematrix,
           CORE::LINALG::SerialDenseMatrix& emastermatrix,
           CORE::LINALG::SerialDenseVector& eslaveresidual) override;
 
       void evaluate_s2_i_coupling_capacitance(const DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& eslavematrix,
+          CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& eslavematrix,
           CORE::LINALG::SerialDenseMatrix& emastermatrix,
           CORE::LINALG::SerialDenseVector& eslaveresidual,
           CORE::LINALG::SerialDenseVector& emasterresidual) override;
 
-      void evaluate_s2_i_coupling_od(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      void evaluate_s2_i_coupling_od(const CORE::Elements::FaceElement* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& eslavematrix) override;
 
       void evaluate_s2_i_coupling_capacitance_od(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& eslavematrix,
           CORE::LINALG::SerialDenseMatrix& emastermatrix) override;
 
       double get_valence(
           const Teuchos::RCP<const CORE::MAT::Material>& material, int k) const override;
 
-      void calc_s2_i_coupling_flux(const DRT::FaceElement* ele,
+      void calc_s2_i_coupling_flux(const CORE::Elements::FaceElement* ele,
           const Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::FaceElement::LocationArray& la, CORE::LINALG::SerialDenseVector& scalars) override;
+          CORE::Elements::FaceElement::LocationArray& la,
+          CORE::LINALG::SerialDenseVector& scalars) override;
 
       //! evaluate factor F/RT
       virtual double get_frt() const;

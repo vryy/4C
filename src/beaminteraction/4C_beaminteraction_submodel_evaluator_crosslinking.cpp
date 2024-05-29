@@ -345,7 +345,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
 
         // get set of neighboring beam elements (i.e. elements that somehow touch nb bins)
         // we also need col elements (flag = false) here (in contrast to "normal" crosslinking)
-        std::set<DRT::Element*> neighboring_beams;
+        std::set<CORE::Elements::Element*> neighboring_beams;
         std::vector<BINSTRATEGY::UTILS::BinContentType> bc(1, BINSTRATEGY::UTILS::Beam);
         BinStrategyPtr()->GetBinContent(neighboring_beams, bc, neighboring_binIds, false);
 
@@ -779,7 +779,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Reset()
       }
 
       int locbspotnum = elepairptr->GetLocBSpotNum(i);
-      DRT::Element* ele = DiscretPtr()->gElement(elegid);
+      CORE::Elements::Element* ele = DiscretPtr()->gElement(elegid);
 
       BEAMINTERACTION::UTILS::GetPosAndTriadOfBindingSpot(Discret(), ele,
           beam_interaction_data_state_ptr()->GetDisColNp(), periodic_bounding_box_ptr(),
@@ -1617,7 +1617,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
   for (auto const& iter : colbins)
   {
     // get current bin
-    DRT::Element* currbin = BinDiscret().gElement(iter);
+    CORE::Elements::Element* currbin = BinDiscret().gElement(iter);
     // get all crosslinker in current bin
     DRT::Node** clincurrentbin = currbin->Nodes();
 
@@ -2311,7 +2311,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::find_potential_binding_ev
 #endif
 
     // get bin that contains this crosslinker (can only be one)
-    DRT::Element* currentbin = currcrosslinker->Elements()[0];
+    CORE::Elements::Element* currentbin = currcrosslinker->Elements()[0];
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (currentbin->Id() < 0) FOUR_C_THROW(" negative bin id number %i ", currentbin->Id());
@@ -2331,7 +2331,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::find_potential_binding_ev
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
-    find_potential_binding_events_in_bin_and_neighborhood(DRT::Element* bin,
+    find_potential_binding_events_in_bin_and_neighborhood(CORE::Elements::Element* bin,
         std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>& mybonds,
         std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>>&
             undecidedbonds,
@@ -2349,10 +2349,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
   // get set of neighboring beam elements (i.e. elements that somehow touch nb bins)
   // as explained above, we only need row elements (true flag in GetBinContent())
-  std::set<DRT::Element*> neighboring_row_beams;
+  std::set<CORE::Elements::Element*> neighboring_row_beams;
   std::vector<BINSTRATEGY::UTILS::BinContentType> bc_beam(1, BINSTRATEGY::UTILS::Beam);
   BinStrategyPtr()->GetBinContent(neighboring_row_beams, bc_beam, neighboring_binIds, true);
-  std::set<DRT::Element*> neighboring_col_spheres;
+  std::set<CORE::Elements::Element*> neighboring_col_spheres;
   std::vector<BINSTRATEGY::UTILS::BinContentType> bc_sphere(1, BINSTRATEGY::UTILS::RigidSphere);
   BinStrategyPtr()->GetBinContent(neighboring_col_spheres, bc_sphere, neighboring_binIds, false);
 
@@ -2385,7 +2385,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_if_sphere_prohibits_binding(
-    std::set<DRT::Element*> const& neighboring_col_spheres, DRT::Node* node_i) const
+    std::set<CORE::Elements::Element*> const& neighboring_col_spheres, DRT::Node* node_i) const
 {
   check_init();
 
@@ -2423,7 +2423,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_if_sphere_prohibits
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(DRT::Node* node_i,
-    std::set<DRT::Element*> const& neighboring_beams,
+    std::set<CORE::Elements::Element*> const& neighboring_beams,
     std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>& mybonds,
     std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>>& undecidedbonds,
     std::map<int, std::vector<std::map<int, std::set<int>>>>& intendedbeambonds,
@@ -2446,7 +2446,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(DRT::Node
 
   // loop over all neighboring beam elements in random order (keep in mind
   // we are only looping over row elements)
-  std::vector<DRT::Element*> beamvec(neighboring_beams.begin(), neighboring_beams.end());
+  std::vector<CORE::Elements::Element*> beamvec(neighboring_beams.begin(), neighboring_beams.end());
 
   // -------------------------------------------------------------------------
   // NOTE: This is crucial for reproducibility to ensure that computation does
@@ -2459,7 +2459,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(DRT::Node
   for (auto const& randiter : randorder)
   {
     // get neighboring (nb) beam element
-    DRT::Element* nbbeam = beamvec[randiter];
+    CORE::Elements::Element* nbbeam = beamvec[randiter];
 
     // get pre computed data of current nbbeam
     BEAMINTERACTION::DATA::BeamData* beamdata_i = beam_data_[nbbeam->LID()].get();
@@ -2528,7 +2528,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(DRT::Node
  *----------------------------------------------------------------------------*/
 bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_bind_event_criteria(
     CROSSLINKING::CrosslinkerNode const* const crosslinker_i,
-    DRT::Element const* const potbeampartner, BEAMINTERACTION::DATA::CrosslinkerData* cldata_i,
+    CORE::Elements::Element const* const potbeampartner,
+    BEAMINTERACTION::DATA::CrosslinkerData* cldata_i,
     BEAMINTERACTION::DATA::BeamData const* beamdata_i, int locnbspot,
     std::map<int, std::vector<std::map<int, std::set<int>>>>& intendedbeambonds,
     bool checklinkingprop) const
@@ -2905,7 +2906,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_my_crosslinker_bin
     // get crosslinker data
     BEAMINTERACTION::DATA::CrosslinkerData* cldata_i = crosslinker_data_[clcollid].get();
 
-    DRT::Element* beamele_i = DiscretPtr()->lColElement(colelelid);
+    CORE::Elements::Element* beamele_i = DiscretPtr()->lColElement(colelelid);
     BEAMINTERACTION::DATA::BeamData* beamdata_i = beam_data_[colelelid].get();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -3220,7 +3221,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
         // check on existence of bin on this proc
         if (not BinDiscretPtr()->HaveGlobalElement(nb_iter)) continue;
 
-        DRT::Element* currentbin = BinDiscretPtr()->gElement(nb_iter);
+        CORE::Elements::Element* currentbin = BinDiscretPtr()->gElement(nb_iter);
 
         // if a bin has already been examined --> continue with next crosslinker
         if (examinedbins[currentbin->LID()]) continue;
@@ -3558,7 +3559,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unbind_crosslinker_in_bin
   for (auto const& nb_iter : binsonmyrank)
   {
     // get all crosslinker in current bin
-    DRT::Element* currentbin = BinDiscretPtr()->gElement(nb_iter);
+    CORE::Elements::Element* currentbin = BinDiscretPtr()->gElement(nb_iter);
     DRT::Node** clincurrentbin = currentbin->Nodes();
     const int numcrosslinker = currentbin->num_node();
 

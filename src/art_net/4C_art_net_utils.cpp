@@ -83,10 +83,10 @@ void ART::UTILS::SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discret
 
   for (int i = 0; i < numelements; ++i)
   {
-    DRT::Element* targetele = targetdis->lColElement(i);
+    CORE::Elements::Element* targetele = targetdis->lColElement(i);
     const int gid = targetele->Id();
 
-    DRT::Element* sourceele = sourcedis->gElement(gid);
+    CORE::Elements::Element* sourceele = sourcedis->gElement(gid);
 
     // for coupling we add the source material to the target element and vice versa
     targetele->AddMaterial(sourceele->Material());
@@ -98,7 +98,7 @@ void ART::UTILS::SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discret
  |                                                     kremheller 03/18 |
  *----------------------------------------------------------------------*/
 bool ART::ArteryScatraCloneStrategy::determine_ele_type(
-    DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // clone the element
   DRT::ELEMENTS::Artery* myele = static_cast<DRT::ELEMENTS::Artery*>(actele);
@@ -117,8 +117,8 @@ bool ART::ArteryScatraCloneStrategy::determine_ele_type(
 /*----------------------------------------------------------------------*
  | set the element data (protected)                    kremheller 03/18 |
  *----------------------------------------------------------------------*/
-void ART::ArteryScatraCloneStrategy::set_element_data(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbs)
+void ART::ArteryScatraCloneStrategy::set_element_data(Teuchos::RCP<CORE::Elements::Element> newele,
+    CORE::Elements::Element* oldele, const int matid, const bool isnurbs)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual

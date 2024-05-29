@@ -12,7 +12,7 @@
 
 #include "4C_discretization_fem_general_cell_type.hpp"
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_solid_3D_ele_calc_lib_formulation.hpp"
@@ -397,8 +397,9 @@ namespace DRT::ELEMENTS
 
   template <typename T, int dim>
   constexpr bool can_evaluate_cauchy_n_dir<T, dim,
-      std::void_t<decltype(std::declval<T>()->GetCauchyNDirAtXi(std::declval<const DRT::Element&>(),
-          std::declval<MAT::So3Material&>(), std::declval<const std::vector<double>&>(),
+      std::void_t<decltype(std::declval<T>()->GetCauchyNDirAtXi(
+          std::declval<const CORE::Elements::Element&>(), std::declval<MAT::So3Material&>(),
+          std::declval<const std::vector<double>&>(),
           std::declval<const CORE::LINALG::Matrix<dim, 1>&>(),
           std::declval<const CORE::LINALG::Matrix<dim, 1>&>(),
           std::declval<const CORE::LINALG::Matrix<dim, 1>&>(),
@@ -409,7 +410,7 @@ namespace DRT::ELEMENTS
     template <int dim>
     struct EvaluateCauchyNDirAction
     {
-      EvaluateCauchyNDirAction(const DRT::Element& e, MAT::So3Material& m,
+      EvaluateCauchyNDirAction(const CORE::Elements::Element& e, MAT::So3Material& m,
           const std::vector<double>& d, const CORE::LINALG::Matrix<dim, 1>& x,
           const CORE::LINALG::Matrix<dim, 1>& normal, const CORE::LINALG::Matrix<dim, 1>& direction,
           CauchyNDirLinearizations<dim>& lins)
@@ -433,7 +434,7 @@ namespace DRT::ELEMENTS
             CORE::UTILS::TryDemangle(typeid(T).name()).c_str(), dim);
       }
 
-      const DRT::Element& element;
+      const CORE::Elements::Element& element;
       MAT::So3Material& mat;
       const std::vector<double>& disp;
       const CORE::LINALG::Matrix<dim, 1>& xi;
@@ -450,10 +451,10 @@ namespace DRT::ELEMENTS
    * @return double
    */
   template <int dim, typename VariantType>
-  double GetCauchyNDirAtXi(VariantType& variant, const DRT::Element& element, MAT::So3Material& mat,
-      const std::vector<double>& disp, const CORE::LINALG::Matrix<dim, 1>& xi,
-      const CORE::LINALG::Matrix<dim, 1>& n, const CORE::LINALG::Matrix<dim, 1>& dir,
-      CauchyNDirLinearizations<dim>& linearizations)
+  double GetCauchyNDirAtXi(VariantType& variant, const CORE::Elements::Element& element,
+      MAT::So3Material& mat, const std::vector<double>& disp,
+      const CORE::LINALG::Matrix<dim, 1>& xi, const CORE::LINALG::Matrix<dim, 1>& n,
+      const CORE::LINALG::Matrix<dim, 1>& dir, CauchyNDirLinearizations<dim>& linearizations)
   {
     return std::visit(
         DETAILS::EvaluateCauchyNDirAction<dim>(element, mat, disp, xi, n, dir, linearizations),

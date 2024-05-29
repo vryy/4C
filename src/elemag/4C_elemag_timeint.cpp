@@ -236,11 +236,11 @@ void ELEMAG::ElemagTimeInt::ElementsInit()
   Teuchos::ParameterList initParams;
 
   // loop over all elements on the processor
-  DRT::Element::LocationArray la(2);
+  CORE::Elements::Element::LocationArray la(2);
   for (int el = 0; el < discret_->NumMyColElements(); ++el)
   {
     // Selecting the elements
-    DRT::Element *ele = discret_->lColElement(el);
+    CORE::Elements::Element *ele = discret_->lColElement(el);
 
     // This function is a void function and therefore the input goes to the vector "la"
     ele->LocationVector(*discret_, la, true);
@@ -310,11 +310,11 @@ void ELEMAG::ElemagTimeInt::SetInitialField(const INPAR::ELEMAG::InitialField in
       initParams.set<double>("dt", dtp_);
       initParams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
       // loop over all elements on the processor
-      DRT::Element::LocationArray la(2);
+      CORE::Elements::Element::LocationArray la(2);
       for (int el = 0; el < discret_->NumMyColElements(); ++el)
       {
         // Selecting the elements
-        DRT::Element *ele = discret_->lColElement(el);
+        CORE::Elements::Element *ele = discret_->lColElement(el);
 
         // This function is a void function and therefore the input goes to the vector "la"
         ele->LocationVector(*discret_, la, false);
@@ -353,7 +353,7 @@ void ELEMAG::ElemagTimeInt::set_initial_electric_field(
 {
   // we have to call an init for the elements first!
   Teuchos::ParameterList initParams;
-  DRT::Element::LocationArray la(2);
+  CORE::Elements::Element::LocationArray la(2);
 
   CORE::LINALG::SerialDenseVector elevec1, elevec2;  //, elevec3;
   CORE::LINALG::SerialDenseMatrix elemat;            //, elemat2;
@@ -378,8 +378,8 @@ void ELEMAG::ElemagTimeInt::set_initial_electric_field(
   for (int el = 0; el < discret_->NumMyColElements(); ++el)
   {
     // determine owner of the scatra element
-    DRT::Element *scatraele = scatradis->lColElement(el);
-    DRT::Element *elemagele = discret_->lColElement(el);
+    CORE::Elements::Element *scatraele = scatradis->lColElement(el);
+    CORE::Elements::Element *elemagele = discret_->lColElement(el);
 
     elemagele->LocationVector(*discret_, la, false);
     if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
@@ -531,11 +531,11 @@ void ELEMAG::ElemagTimeInt::ProjectFieldTest(const int startfuncno)
   initParams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
 
   // loop over all elements on the processor
-  DRT::Element::LocationArray la(2);
+  CORE::Elements::Element::LocationArray la(2);
   for (int el = 0; el < discret_->NumMyColElements(); ++el)
   {
     // Selecting the elements
-    DRT::Element *ele = discret_->lColElement(el);
+    CORE::Elements::Element *ele = discret_->lColElement(el);
 
     // This function is a void function and therefore the input goes to the vector "la"
     ele->LocationVector(*discret_, la, false);
@@ -567,11 +567,11 @@ void ELEMAG::ElemagTimeInt::project_field_test_trace(const int startfuncno)
   initParams.set<bool>("padaptivity", false);
   initParams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
   // loop over all elements on the processor
-  DRT::Element::LocationArray la(2);
+  CORE::Elements::Element::LocationArray la(2);
   for (int el = 0; el < discret_->NumMyColElements(); ++el)
   {
     // Selecting the elements
-    DRT::Element *ele = discret_->lColElement(el);
+    CORE::Elements::Element *ele = discret_->lColElement(el);
 
     // This function is a void function and therefore the input goes to the vector "la"
     ele->LocationVector(*discret_, la, false);
@@ -848,7 +848,7 @@ namespace
     // Setting a name to the dofs maps
     dis.set_state(0, "trace", traceValues);
     // Declaring all the necessary entry for Evaluate()
-    DRT::Element::LocationArray la(2);
+    CORE::Elements::Element::LocationArray la(2);
     CORE::LINALG::SerialDenseMatrix dummyMat;
     CORE::LINALG::SerialDenseVector dummyVec;
     CORE::LINALG::SerialDenseVector interpolVec;
@@ -858,7 +858,7 @@ namespace
     for (int el = 0; el < dis.NumMyColElements(); ++el)
     {
       // Opening the element
-      DRT::Element *ele = dis.lColElement(el);
+      CORE::Elements::Element *ele = dis.lColElement(el);
 
       // Making sure the vector is not a zero dimensional vector and in case
       // resizing it. The interpolVec has to contain all the unknown of the
@@ -930,7 +930,7 @@ namespace
     for (int el = 0; el < dis.NumMyRowElements(); ++el)
     {
       // Opening the element
-      DRT::Element *ele = dis.lRowElement(el);
+      CORE::Elements::Element *ele = dis.lRowElement(el);
 
       const MAT::ElectromagneticMat *elemagmat =
           static_cast<const MAT::ElectromagneticMat *>(ele->Material().get());

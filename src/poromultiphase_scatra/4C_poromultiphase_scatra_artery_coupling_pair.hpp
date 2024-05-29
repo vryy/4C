@@ -34,9 +34,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
-  class Element;
   class Discretization;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace MAT
 {
   class MatList;
@@ -66,7 +71,7 @@ namespace POROMULTIPHASESCATRA
     virtual ~PoroMultiPhaseScatraArteryCouplingPairBase() = default;
 
     //! Init
-    virtual void Init(std::vector<DRT::Element const*> elements,
+    virtual void Init(std::vector<CORE::Elements::Element const*> elements,
         const Teuchos::ParameterList& couplingparams,
         const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
@@ -163,7 +168,7 @@ namespace POROMULTIPHASESCATRA
     PoroMultiPhaseScatraArteryCouplingPair();
 
     //! Init
-    void Init(std::vector<DRT::Element const*> elements,
+    void Init(std::vector<CORE::Elements::Element const*> elements,
         const Teuchos::ParameterList& couplingparams,
         const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
@@ -519,10 +524,10 @@ namespace POROMULTIPHASESCATRA
     bool evaluate_on_lateral_surface_;
 
     //! first element of interacting pair (artery element)
-    const DRT::Element* element1_;
+    const CORE::Elements::Element* element1_;
 
     //! second element of interacting pair (2D/3D element)
-    const DRT::Element* element2_;
+    const CORE::Elements::Element* element2_;
 
     //! reference nodal positions element 1 (1D artery)
     CORE::LINALG::Matrix<numdim_ * numnodesart_, 1> ele1posref_;

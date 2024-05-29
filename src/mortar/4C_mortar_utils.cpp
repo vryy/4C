@@ -753,9 +753,9 @@ void MORTAR::UTILS::create_volume_ghosting(const DRT::Discretization& dis_src,
     {
       int gid = ielecolmap->GID(i);
 
-      DRT::Element* ele = dis_src.gElement(gid);
+      CORE::Elements::Element* ele = dis_src.gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
-      DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+      CORE::Elements::FaceElement* faceele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
       if (!faceele) FOUR_C_THROW("source element is not a face element");
       int volgid = faceele->ParentElementId();
       // Ghost the parent element additionally
@@ -783,16 +783,16 @@ void MORTAR::UTILS::create_volume_ghosting(const DRT::Discretization& dis_src,
     {
       int gid = ielecolmap->GID(i);
 
-      DRT::Element* ele = dis_src.gElement(gid);
+      CORE::Elements::Element* ele = dis_src.gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
-      DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+      CORE::Elements::FaceElement* faceele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
       if (!faceele) FOUR_C_THROW("source element is not a face element");
       int volgid = faceele->ParentElementId();
 
       if (elecolmap->LID(volgid) == -1)  // Volume discretization has not Element
         FOUR_C_THROW("create_volume_ghosting: Element %d does not exist on this Proc!", volgid);
 
-      DRT::Element* vele = voldis[0]->gElement(volgid);
+      CORE::Elements::Element* vele = voldis[0]->gElement(volgid);
       if (!vele) FOUR_C_THROW("Cannot find element with gid %", volgid);
 
       faceele->set_parent_master_element(vele, faceele->FaceParentNumber());
@@ -830,10 +830,10 @@ void MORTAR::UTILS::create_volume_ghosting(const DRT::Discretization& dis_src,
 
     for (int i = 0; i < dis_tar_mat->NumMyColElements(); ++i)
     {
-      DRT::Element* targetele = dis_tar_mat->lColElement(i);
+      CORE::Elements::Element* targetele = dis_tar_mat->lColElement(i);
       const int gid = targetele->Id();
 
-      DRT::Element* sourceele = dis_src_mat->gElement(gid);
+      CORE::Elements::Element* sourceele = dis_src_mat->gElement(gid);
 
       targetele->AddMaterial(sourceele->Material());
     }
@@ -846,7 +846,7 @@ void MORTAR::UTILS::create_volume_ghosting(const DRT::Discretization& dis_src,
  |  Prepare mortar element for nurbs-case                    farah 11/14|
  *----------------------------------------------------------------------*/
 void MORTAR::UTILS::prepare_nurbs_element(DRT::Discretization& discret,
-    Teuchos::RCP<DRT::Element> ele, Teuchos::RCP<MORTAR::Element> cele, int dim)
+    Teuchos::RCP<CORE::Elements::Element> ele, Teuchos::RCP<MORTAR::Element> cele, int dim)
 {
   DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discret));
@@ -856,7 +856,8 @@ void MORTAR::UTILS::prepare_nurbs_element(DRT::Discretization& discret,
   std::vector<CORE::LINALG::SerialDenseVector> mortarknots(dim - 1);
 
   double normalfac = 0.0;
-  Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
+  Teuchos::RCP<CORE::Elements::FaceElement> faceele =
+      Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(ele, true);
   bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
       faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
 

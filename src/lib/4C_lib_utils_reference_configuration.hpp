@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
@@ -36,7 +36,7 @@ namespace DRT
      *
      *  \author cschmidt \date 11/18 */
     template <int probdim, CORE::FE::CellType distype>
-    static void LocalToGlobalPositionAtXiRefConfig(const DRT::Element* element,
+    static void LocalToGlobalPositionAtXiRefConfig(const CORE::Elements::Element* element,
         const CORE::LINALG::Matrix<CORE::FE::dim<distype>, 1>& xi,
         CORE::LINALG::Matrix<probdim, 1>& coord)
     {
@@ -80,7 +80,7 @@ namespace DRT
      *
      *  \author cschmidt \date 11/18 */
     template <CORE::FE::CellType distype>
-    static void ComputeUnitNormalAtXiRefConfig(const DRT::Element* element,
+    static void ComputeUnitNormalAtXiRefConfig(const CORE::Elements::Element* element,
         const CORE::LINALG::Matrix<CORE::FE::dim<distype>, 1>& xi,
         CORE::LINALG::Matrix<3, 1>& normal)
     {

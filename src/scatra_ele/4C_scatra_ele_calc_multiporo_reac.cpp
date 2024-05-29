@@ -68,7 +68,7 @@ DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Instance(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
-    DRT::Element* ele, DRT::Discretization& discretization)
+    CORE::Elements::Element* ele, DRT::Discretization& discretization)
 {
   pororeac::SetupCalc(ele, discretization);
 
@@ -358,8 +358,8 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and_node_values(
-    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
 {
   // extract action parameter
   const auto action = Teuchos::getIntegralValue<SCATRA::Action>(params, "action");
@@ -486,9 +486,10 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and_nod
  | extract element based or nodal values (L2-projection)    vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_nodal_flux(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, const int numfluidphases)
+void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_nodal_flux(
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
+    const int numfluidphases)
 {
   // resize state vectors based on number of phases
   efluxnp_.resize(numfluidphases);

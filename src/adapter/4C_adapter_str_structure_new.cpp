@@ -565,7 +565,7 @@ void ADAPTER::StructureBaseAlgorithmNew::detect_element_technologies(
 
   for (int i = 0; i < actdis_->NumMyRowElements(); ++i)
   {
-    DRT::Element* actele = actdis_->lRowElement(i);
+    CORE::Elements::Element* actele = actdis_->lRowElement(i);
     // Detect plasticity -------------------------------------------------------
     if (actele->ElementType() == DRT::ELEMENTS::SoHex8PlastType::Instance() or
         actele->ElementType() == DRT::ELEMENTS::SoHex27PlastType::Instance() or

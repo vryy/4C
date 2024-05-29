@@ -426,25 +426,30 @@ namespace IO
       s << "};";
     }
 
-    //! take an entire DRT::Element and print it with constant scalar value at its initial position
+    //! take an entire CORE::Elements::Element and print it with constant scalar value at its
+    //! initial position
     void elementAtInitialPositionToStream(
-        const double scalar, const DRT::Element* ele, std::ostream& s);
+        const double scalar, const CORE::Elements::Element* ele, std::ostream& s);
 
-    //! take an entire DRT::Element and print it with constant scalar value at its initial position
-    std::string elementAtInitialPositionToString(const double scalar, const DRT::Element* ele);
+    //! take an entire CORE::Elements::Element and print it with constant scalar value at its
+    //! initial position
+    std::string elementAtInitialPositionToString(
+        const double scalar, const CORE::Elements::Element* ele);
 
-    //! take an entire DRT::Element and print it with constant scalar value at the given position
+    //! take an entire CORE::Elements::Element and print it with constant scalar value at the given
+    //! position
     void elementAtCurrentPositionToStream(
-        const double scalar,      ///< scalar value for the entire element
-        const DRT::Element* ele,  ///< element to print
+        const double scalar,                 ///< scalar value for the entire element
+        const CORE::Elements::Element* ele,  ///< element to print
         const std::map<int, CORE::LINALG::Matrix<3, 1>>&
             currentelepositions,  ///< nodal position array
         std::ostream& s);
 
-    //! take an entire DRT::Element and print it with constant scalar value at the given position
+    //! take an entire CORE::Elements::Element and print it with constant scalar value at the given
+    //! position
     std::string elementAtCurrentPositionToString(
-        const double scalar,      ///< scalar value for the entire element
-        const DRT::Element* ele,  ///< element to print
+        const double scalar,                 ///< scalar value for the entire element
+        const CORE::Elements::Element* ele,  ///< element to print
         const std::map<int, CORE::LINALG::Matrix<3, 1>>&
             currentelepositions  ///< nodal position array
     );

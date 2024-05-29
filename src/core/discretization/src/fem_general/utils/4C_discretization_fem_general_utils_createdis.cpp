@@ -147,9 +147,9 @@ CORE::FE::DiscretizationCreatorBase::create_matching_discretization(
   // clone elements
   for (int i = 0; i < sourcedis->ElementColMap()->NumMyElements(); ++i)
   {
-    DRT::Element* ele = sourcedis->lColElement(i);
+    CORE::Elements::Element* ele = sourcedis->lColElement(i);
     if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
-    Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
+    Teuchos::RCP<CORE::Elements::Element> newele = Teuchos::rcp(ele->Clone());
     targetdis->add_element(newele);
   }
 

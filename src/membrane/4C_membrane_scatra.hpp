@@ -54,7 +54,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-constructor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -116,7 +116,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override
+      CORE::Elements::ElementType& ElementType() const override
       {
         switch (distype)
         {
@@ -171,7 +171,7 @@ namespace DRT
       \param la (in)        : location array for de-assembly
       */
       void pre_evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la);
+          CORE::Elements::Element::LocationArray& la);
 
       /*!
       \brief Evaluate an element
@@ -200,7 +200,8 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::Elements::Element::LocationArray& la,
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,

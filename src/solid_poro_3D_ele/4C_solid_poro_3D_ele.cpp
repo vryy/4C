@@ -70,14 +70,15 @@ void DRT::ELEMENTS::SolidPoroType::setup_element_definition(
       GetDefaultLineDefinitionBuilder<CORE::FE::CellType::tet10>().Build();
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidPoroType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SolidPoroType::Create(
     const std::string eletype, const std::string elecelltype, const int id, const int owner)
 {
   if (eletype == "SOLIDPORO") return Create(id, owner);
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidPoroType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SolidPoroType::Create(
+    const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::SolidPoro(id, owner));
 }
@@ -90,7 +91,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SolidPoroType::Create(const std::vector<ch
 }
 
 void DRT::ELEMENTS::SolidPoroType::nodal_block_information(
-    Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   STR::UTILS::NodalBlockInformationSolid(dwele, numdf, dimns, nv, np);
 }
@@ -101,9 +102,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SolidPoroType::ComputeNullSpace(
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-DRT::ELEMENTS::SolidPoro::SolidPoro(int id, int owner) : DRT::Element(id, owner) {}
+DRT::ELEMENTS::SolidPoro::SolidPoro(int id, int owner) : CORE::Elements::Element(id, owner) {}
 
-DRT::Element* DRT::ELEMENTS::SolidPoro::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::SolidPoro::Clone() const
 {
   return new DRT::ELEMENTS::SolidPoro(*this);
 }
@@ -123,12 +124,12 @@ int DRT::ELEMENTS::SolidPoro::NumVolume() const
   return CORE::FE::getNumberOfElementVolumes(celltype_);
 }
 
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SolidPoro::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SolidPoro::Lines()
 {
   return CORE::COMM::GetElementLines<StructuralLine, SolidPoro>(*this);
 }
 
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SolidPoro::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SolidPoro::Surfaces()
 {
   return CORE::COMM::GetElementSurfaces<StructuralSurface, SolidPoro>(*this);
 }
@@ -138,7 +139,7 @@ void DRT::ELEMENTS::SolidPoro::set_params_interface_ptr(const Teuchos::Parameter
   if (p.isParameter("interface"))
   {
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface"));
+        p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface"));
   }
   else
     interface_ptr_ = Teuchos::null;
@@ -200,7 +201,8 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
 
 MAT::So3Material& DRT::ELEMENTS::SolidPoro::SolidPoroMaterial(int nummat) const
 {
-  return *Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat), true);
+  return *Teuchos::rcp_dynamic_cast<MAT::So3Material>(
+      CORE::Elements::Element::Material(nummat), true);
 }
 
 void DRT::ELEMENTS::SolidPoro::Pack(CORE::COMM::PackBuffer& data) const
@@ -211,7 +213,7 @@ void DRT::ELEMENTS::SolidPoro::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, UniqueParObjectId());
 
   // add base class Element
-  DRT::Element::Pack(data);
+  CORE::Elements::Element::Pack(data);
 
   AddtoPack(data, (int)celltype_);
 
@@ -237,7 +239,7 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::Element::Unpack(basedata);
+  CORE::Elements::Element::Unpack(basedata);
 
   celltype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
@@ -262,14 +264,14 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
 
 void DRT::ELEMENTS::SolidPoro::VisNames(std::map<std::string, int>& names)
 {
-  DRT::Element::VisNames(names);
+  CORE::Elements::Element::VisNames(names);
   SolidPoroMaterial().VisNames(names);
 }
 
 bool DRT::ELEMENTS::SolidPoro::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (DRT::Element::VisData(name, data)) return true;
+  if (CORE::Elements::Element::VisData(name, data)) return true;
 
   return SolidPoroMaterial().VisData(name, data, Id());
 }
@@ -277,7 +279,7 @@ bool DRT::ELEMENTS::SolidPoro::VisData(const std::string& name, std::vector<doub
 MAT::StructPoro& DRT::ELEMENTS::SolidPoro::StructPoroMaterial(int nummat) const
 {
   auto porostruct_mat =
-      Teuchos::rcp_dynamic_cast<MAT::StructPoro>(DRT::Element::Material(nummat), true);
+      Teuchos::rcp_dynamic_cast<MAT::StructPoro>(CORE::Elements::Element::Material(nummat), true);
 
   if (porostruct_mat == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
 
@@ -295,8 +297,8 @@ MAT::FluidPoroMultiPhase& DRT::ELEMENTS::SolidPoro::fluid_poro_multi_material(in
     FOUR_C_THROW("No second material defined for SolidPoro element %i", Id());
   }
 
-  auto fluidmulti_mat =
-      Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(DRT::Element::Material(1), true);
+  auto fluidmulti_mat = Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(
+      CORE::Elements::Element::Material(1), true);
 
   if (fluidmulti_mat == Teuchos::null)
     FOUR_C_THROW("cast to multiphase fluid poro material failed");

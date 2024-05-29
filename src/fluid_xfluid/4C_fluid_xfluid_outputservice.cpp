@@ -534,7 +534,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
   const int numrowele = (discret_)->NumMyRowElements();
   for (int i = 0; i < numrowele; ++i)
   {
-    DRT::Element* actele = (discret_)->lRowElement(i);
+    CORE::Elements::Element* actele = (discret_)->lRowElement(i);
     CORE::GEO::CUT::ElementHandle* e = wizard->GetElement(actele);
 
     if (e != nullptr)
@@ -631,7 +631,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
     std::ofstream& vel_f,                     ///< output file stream for velocity
     std::ofstream& press_f,                   ///< output file stream for pressure
     std::ofstream& acc_f,                     ///< output file stream for acceleration
-    DRT::Element* actele,                     ///< element
+    CORE::Elements::Element* actele,          ///< element
     std::vector<int>& nds,                    ///< vector holding the nodal dofsets
     Teuchos::RCP<const Epetra_Vector> vel,    ///< vector holding velocity and pressure dofs
     Teuchos::RCP<const Epetra_Vector> acc,    ///< vector holding acceleration
@@ -650,7 +650,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
   // output for accvec ?
   const bool acc_output(acc != Teuchos::null);
 
-  DRT::Element::LocationArray la(1);
+  CORE::Elements::Element::LocationArray la(1);
 
 
   if (nds.size() != 0)  // for element output of ghost values
@@ -764,7 +764,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
     std::ofstream& vel_f,                      ///< output file stream for velocity
     std::ofstream& press_f,                    ///< output file stream for pressure
     std::ofstream& acc_f,                      ///< output file stream for acceleration
-    DRT::Element* actele,                      ///< element
+    CORE::Elements::Element* actele,           ///< element
     CORE::GEO::CUT::ElementHandle* e,          ///< elementhandle
     CORE::GEO::CUT::VolumeCell* vc,            ///< volumecell
     const std::vector<int>& nds,               ///< vector holding the nodal dofsets
@@ -787,7 +787,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
   bool acc_output = true;
   if (accvec == Teuchos::null) acc_output = false;
 
-  DRT::Element::LocationArray la(1);
+  CORE::Elements::Element::LocationArray la(1);
 
   // get element location vector, dirichlet flags and ownerships
   actele->LocationVector(discret, nds, la, false);
@@ -1171,7 +1171,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
 
     if (!cond_manager_->IsMeshCoupling(sid)) continue;
 
-    DRT::Element* side = cond_manager_->get_side(sid);
+    CORE::Elements::Element* side = cond_manager_->get_side(sid);
 
     CORE::GEO::CUT::SideHandle* s = wizard->GetMeshCuttingSide(sid, 0);
 
@@ -1347,7 +1347,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
                       << "ghost penalty stabilized \" {\n";
       for (int i = 0; i < xdiscret->NumMyRowFaces(); ++i)
       {
-        const DRT::Element* actele = xdiscret->lRowFace(i);
+        const CORE::Elements::Element* actele = xdiscret->lRowFace(i);
 
 
         std::map<int, int>::iterator it = ghost_penalty_map.find(actele->Id());
@@ -1376,7 +1376,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
 
       for (int i = 0; i < xdiscret->NumMyRowFaces(); ++i)
       {
-        const DRT::Element* actele = xdiscret->lRowFace(i);
+        const CORE::Elements::Element* actele = xdiscret->lRowFace(i);
         std::map<int, int>::iterator it = edge_based_map.find(actele->Id());
 
         if (it != edge_based_map.end())

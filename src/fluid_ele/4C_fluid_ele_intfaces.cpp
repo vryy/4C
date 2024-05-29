@@ -23,7 +23,8 @@ DRT::ELEMENTS::FluidIntFaceType DRT::ELEMENTS::FluidIntFaceType::instance_;
 DRT::ELEMENTS::FluidIntFaceType& DRT::ELEMENTS::FluidIntFaceType::Instance() { return instance_; }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidIntFaceType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidIntFaceType::Create(
+    const int id, const int owner)
 {
   return Teuchos::null;
 }
@@ -47,7 +48,7 @@ DRT::ELEMENTS::FluidIntFace::FluidIntFace(int id,  ///< element id
                        ///< face w.r.t the master parent element's face's coordinate system and the
                        ///< slave element's face's coordinate system
     )
-    : DRT::FaceElement(id, owner)
+    : CORE::Elements::FaceElement(id, owner)
 {
   set_parent_master_element(parent_master, lsurface_master);
   set_parent_slave_element(parent_slave, lsurface_slave);
@@ -61,7 +62,7 @@ DRT::ELEMENTS::FluidIntFace::FluidIntFace(int id,  ///< element id
  |  copy-ctor (public)                                      schott 03/12|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidIntFace::FluidIntFace(const DRT::ELEMENTS::FluidIntFace& old)
-    : DRT::FaceElement(old)
+    : CORE::Elements::FaceElement(old)
 {
   return;
 }
@@ -70,7 +71,7 @@ DRT::ELEMENTS::FluidIntFace::FluidIntFace(const DRT::ELEMENTS::FluidIntFace& old
  |  Deep copy this instance return pointer to it               (public) |
  |                                                          schott 03/12|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::FluidIntFace::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::FluidIntFace::Clone() const
 {
   DRT::ELEMENTS::FluidIntFace* newelement = new DRT::ELEMENTS::FluidIntFace(*this);
   return newelement;
@@ -573,7 +574,7 @@ void DRT::ELEMENTS::FluidIntFace::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                           schott 03/12 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidIntFace::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::FluidIntFace::Lines()
 {
   FOUR_C_THROW("Lines of FluidIntFace not implemented");
 }
@@ -581,7 +582,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidIntFace::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                           schott 03/12 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidIntFace::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::FluidIntFace::Surfaces()
 {
   FOUR_C_THROW("Surfaces of FluidIntFace not implemented");
 }

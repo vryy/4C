@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -37,7 +37,7 @@ namespace DRT
   namespace ELEMENTS
   {
     //! A wrapper for structural elements
-    class SoBase : public DRT::Element
+    class SoBase : public CORE::Elements::Element
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -275,14 +275,14 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr() override;
 
      protected:
       /** \brief get access to the interface
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline DRT::ELEMENTS::ParamsInterface& params_interface()
+      inline CORE::Elements::ParamsInterface& params_interface()
       {
         if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
@@ -326,7 +326,7 @@ namespace DRT
       /** \brief interface ptr
        *
        *  data exchange between the element and the time integrator. */
-      Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> interface_ptr_;
+      Teuchos::RCP<CORE::Elements::ParamsInterface> interface_ptr_;
 
       //! Flag of the status of the material post setup routine
       bool material_post_setup_;

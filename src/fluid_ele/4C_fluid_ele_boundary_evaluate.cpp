@@ -152,7 +152,7 @@ void DRT::ELEMENTS::FluidBoundary::LocationVector(const Discretization& dis, Loc
       break;
     default:
       // standard case: element assembles into its own dofs only
-      DRT::Element::LocationVector(dis, la, doDirichlet);
+      CORE::Elements::Element::LocationVector(dis, la, doDirichlet);
       break;
   }
   return;

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_ELEMENT_HPP
-#define FOUR_C_LIB_ELEMENT_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_ELEMENT_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_ELEMENT_HPP
 
 
 #include "4C_config.hpp"
@@ -18,6 +18,7 @@
 #include "4C_comm_parobject.hpp"
 #include "4C_discretization_condition.hpp"
 #include "4C_discretization_fem_general_cell_type.hpp"
+#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
@@ -55,17 +56,15 @@ namespace DRT
     class MeshfreeBin;
   }
 
-  namespace ELEMENTS
-  {
-    class ParamsInterface;
-  }
-
   // forward declarations
   class Discretization;
   class DiscretizationHDG;
   class Node;
-  class ElementType;
+}  // namespace DRT
 
+namespace CORE::Elements
+{
+  class ElementType;
   class FaceElement;
 
   /*!
@@ -90,7 +89,7 @@ namespace DRT
     //! @name Enums and Friends
 
     template <typename>
-    friend class MESHFREE::MeshfreeBin;
+    friend class DRT::MESHFREE::MeshfreeBin;
 
     //@}
 
@@ -184,7 +183,7 @@ namespace DRT
     Makes a deep copy of a Element
 
     */
-    Element(const DRT::Element& old);
+    Element(const Element& old);
 
     Element& operator=(const Element&) = default;
 
@@ -197,7 +196,7 @@ namespace DRT
     actually is using the base class Element.
 
     */
-    virtual DRT::Element* Clone() const = 0;
+    virtual Element* Clone() const = 0;
 
 
     /*!
@@ -225,7 +224,7 @@ namespace DRT
     void Unpack(const std::vector<char>& data) override;
 
     /// return ElementType instance
-    virtual DRT::ElementType& ElementType() const = 0;
+    virtual CORE::Elements::ElementType& ElementType() const = 0;
 
     //@}
 
@@ -311,7 +310,7 @@ namespace DRT
     \return Ptr to pointers to nodes of the element in local nodal ordering.
             Returns nullptr if pointers to not exist.
     */
-    virtual Node** Nodes()
+    virtual DRT::Node** Nodes()
     {
       if (node_.size())
         return node_.data();
@@ -335,7 +334,7 @@ namespace DRT
     \return Ptr to pointers to nodes of the element in local nodal ordering.
             Returns nullptr if pointers to not exist.
     */
-    virtual const Node* const* Nodes() const
+    virtual const DRT::Node* const* Nodes() const
     {
       if (node_.size())
         return (const DRT::Node* const*)(node_.data());
@@ -359,7 +358,7 @@ namespace DRT
      * discretization where the integration cell (i.e. the "element") is not
      * formed by the nodes and many more nodes can have influence.
      */
-    virtual Node** Points() { return Nodes(); }
+    virtual DRT::Node** Points() { return Nodes(); }
 
     /*!
      * \brief Get const vector of ptrs to points forming the geometry of this element
@@ -368,7 +367,7 @@ namespace DRT
      * discretization where the integration cell (i.e. the "element") is not
      * formed by the nodes and many more nodes can have influence.
      */
-    virtual const Node* const* Points() const { return Nodes(); }
+    virtual const DRT::Node* const* Points() const { return Nodes(); }
 
 
     /*!
@@ -388,9 +387,9 @@ namespace DRT
     \note Do not store line elements inside parent elements since the nodes
 might become invalid after a redistribution of the discretization.
     */
-    virtual std::vector<Teuchos::RCP<DRT::Element>> Lines()
+    virtual std::vector<Teuchos::RCP<Element>> Lines()
     {
-      return std::vector<Teuchos::RCP<DRT::Element>>(0);
+      return std::vector<Teuchos::RCP<Element>>(0);
     }
 
     // virtual const Element*const* Lines() const { FOUR_C_THROW("unexpected base method called.");
@@ -413,9 +412,9 @@ might become invalid after a redistribution of the discretization.
     \note Do not store surface elements inside parent elements since the nodes
 might become invalid after a redistribution of the discretization.
     */
-    virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces()
+    virtual std::vector<Teuchos::RCP<Element>> Surfaces()
     {
-      return std::vector<Teuchos::RCP<DRT::Element>>(0);
+      return std::vector<Teuchos::RCP<Element>>(0);
     }
 
     /*!
@@ -439,13 +438,13 @@ might become invalid after a redistribution of the discretization.
     \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or
     Surfaces)
     */
-    Teuchos::RCP<DRT::FaceElement>* Faces() { return face_.empty() ? nullptr : face_.data(); }
+    Teuchos::RCP<FaceElement>* Faces() { return face_.empty() ? nullptr : face_.data(); }
 
     /*!
     \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or
     Surfaces)
     */
-    Teuchos::RCP<DRT::FaceElement> const* Faces() const
+    Teuchos::RCP<FaceElement> const* Faces() const
     {
       return face_.empty() ? nullptr : face_.data();
     }
@@ -454,7 +453,7 @@ might become invalid after a redistribution of the discretization.
     \brief Get a pointer to the neighboring element behind the given face. Returns 0 if at boundary
     or faces are not created
     */
-    DRT::Element* Neighbor(const int face) const;
+    Element* Neighbor(const int face) const;
 
     /*!
     \brief Construct a face element between this element and the given slave element
@@ -470,8 +469,8 @@ might become invalid after a redistribution of the discretization.
 
     \author schott 03/12
     */
-    virtual Teuchos::RCP<DRT::Element> CreateFaceElement(
-        DRT::Element* parent_slave,            //!< parent slave element
+    virtual Teuchos::RCP<Element> CreateFaceElement(
+        Element* parent_slave,                 //!< parent slave element
         int nnode,                             //!< number of nodes
         const int* nodeids,                    //!< node ids
         DRT::Node** nodes,                     //!< nodeids
@@ -480,7 +479,7 @@ might become invalid after a redistribution of the discretization.
         const std::vector<int>& localtrafomap  //!< local trafo map
     )
     {
-      Teuchos::RCP<DRT::FaceElement> face;
+      Teuchos::RCP<FaceElement> face;
       return face;
     }
 
@@ -760,7 +759,7 @@ might become invalid after a redistribution of the discretization.
     \param faceindex   : index of the given face
     \param faceelement : face object
     */
-    void SetFace(const int faceindex, DRT::FaceElement* faceelement);
+    void SetFace(const int faceindex, FaceElement* faceelement);
 
     /*!
     \brief Set a the face with index faceindex this element is connected to
@@ -774,7 +773,7 @@ might become invalid after a redistribution of the discretization.
     \param faceindex   : index of the given face
     \param faceelement : face object
     */
-    void SetFace(const int faceindex, Teuchos::RCP<DRT::FaceElement> faceelement);
+    void SetFace(const int faceindex, Teuchos::RCP<FaceElement> faceelement);
 
     /// @brief Set specific element material
     /*!
@@ -900,7 +899,7 @@ might become invalid after a redistribution of the discretization.
 
     */
     virtual void LocationVector(const DRT::Discretization& dis, const std::vector<int>& nds,
-        DRT::Element::LocationArray& la, bool doDirichlet) const;
+        LocationArray& la, bool doDirichlet) const;
 
     /*!
     \brief Return the location vector of this element
@@ -927,7 +926,7 @@ might become invalid after a redistribution of the discretization.
 
     */
     virtual void LocationVector(
-        const Discretization& dis, LocationArray& la, bool doDirichlet) const;
+        const DRT::Discretization& dis, LocationArray& la, bool doDirichlet) const;
 
 
     /*!
@@ -961,7 +960,7 @@ might become invalid after a redistribution of the discretization.
     \param condstring (in): Name of condition to be evaluated
     \param condstring (in):  List of parameters for use at element level
     */
-    virtual void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
+    virtual void LocationVector(const DRT::Discretization& dis, LocationArray& la, bool doDirichlet,
         const std::string& condstring, Teuchos::ParameterList& params) const;
     /*!
     \brief Return the location vector of this element
@@ -992,7 +991,7 @@ might become invalid after a redistribution of the discretization.
                            matches dofs in lm.
 
     */
-    virtual void LocationVector(const Discretization& dis, std::vector<int>& lm,
+    virtual void LocationVector(const DRT::Discretization& dis, std::vector<int>& lm,
         std::vector<int>& lmdirich, std::vector<int>& lmowner, std::vector<int>& lmstride) const;
 
     /*!
@@ -1021,7 +1020,7 @@ might become invalid after a redistribution of the discretization.
                            matches dofs in lm.
 
     */
-    virtual void LocationVector(const Discretization& dis, std::vector<int>& lm,
+    virtual void LocationVector(const DRT::Discretization& dis, std::vector<int>& lm,
         std::vector<int>& lmowner, std::vector<int>& lmstride) const;
 
     /*!
@@ -1156,7 +1155,7 @@ might become invalid after a redistribution of the discretization.
 
     \param elements (in): A map of all elements of a discretization
     */
-    virtual bool build_element_pointers(std::map<int, Teuchos::RCP<DRT::Element>>& elements)
+    virtual bool build_element_pointers(std::map<int, Teuchos::RCP<Element>>& elements)
     {
       return true;
     }
@@ -1188,7 +1187,7 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief get access to the interface pointer
     */
-    virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr()
+    virtual Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr()
     {
       FOUR_C_THROW(
           "This is a dummy function. Please implement the function in the derived classes, if "
@@ -1245,8 +1244,8 @@ might become invalid after a redistribution of the discretization.
     Element()
     {
       FOUR_C_THROW(
-          "Default constructor of DRT::Element must not be called. Due to virtual"
-          "inheritance from DRT::Element it can be necessary to call the non-default constructor "
+          "Default constructor of Element must not be called. Due to virtual"
+          "inheritance from Element it can be necessary to call the non-default constructor "
           "explicitly.");
     }
 
@@ -1267,7 +1266,7 @@ might become invalid after a redistribution of the discretization.
 
     //! \brief List of my faces, length NumFace(). Only filled if face elements are created, when
     //! using DiscretizationFaces
-    std::vector<Teuchos::RCP<DRT::FaceElement>> face_;
+    std::vector<Teuchos::RCP<FaceElement>> face_;
 
     //! \brief Some conditions e.g. BCs
     std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>> condition_;
@@ -1351,14 +1350,14 @@ might become invalid after a redistribution of the discretization.
 
     If no parent master has been assigned, nullptr is returned (e.g. on non-face discretizations)
     */
-    DRT::Element* parent_element() const { return parent_master_; }
+    Element* parent_element() const { return parent_master_; }
 
     /*!
     \brief Return the master element the face element is connected to
 
     If no parent master has been assigned, nullptr is returned (e.g. on non-face discretizations)
     */
-    DRT::Element* ParentMasterElement() const { return parent_master_; }
+    Element* ParentMasterElement() const { return parent_master_; }
 
     /*!
     \brief Return the slave element the face element is connected to
@@ -1366,7 +1365,7 @@ might become invalid after a redistribution of the discretization.
     If no parent slave has been assigned, nullptr is returned (non-face discretizations, boundary
     faces)
     */
-    DRT::Element* ParentSlaveElement() const { return parent_slave_; }
+    Element* ParentSlaveElement() const { return parent_slave_; }
 
     /*!
      \brief Get the index of a face element within the parent element
@@ -1418,7 +1417,7 @@ might become invalid after a redistribution of the discretization.
     \param master: parent element which shares the orientation of faces
     \param lface_master: local number of face within master element
     */
-    void set_parent_master_element(DRT::Element* master, const int lface_master)
+    void set_parent_master_element(Element* master, const int lface_master)
     {
       parent_master_ = master;
       lface_master_ = lface_master;
@@ -1436,7 +1435,7 @@ might become invalid after a redistribution of the discretization.
     \param slave: second parent element when there already is a master element
     \param lface_slave: local number of face within slave element
     */
-    void set_parent_slave_element(DRT::Element* slave, const int lface_slave)
+    void set_parent_slave_element(Element* slave, const int lface_slave)
     {
       parent_slave_ = slave;
       lface_slave_ = lface_slave;
@@ -1458,10 +1457,10 @@ might become invalid after a redistribution of the discretization.
 
    private:
     //! \brief The master parent element of face element. nullptr for usual elements
-    DRT::Element* parent_master_;
+    Element* parent_master_;
 
     //! \brief The master parent element of face element. nullptr for usual elements
-    DRT::Element* parent_slave_;
+    Element* parent_slave_;
 
     //! The local surface number of this surface w.r.t to the parent_master_ element
     int lface_master_;
@@ -1485,13 +1484,11 @@ might become invalid after a redistribution of the discretization.
 
   /// translate shards::key to enum
   CORE::FE::CellType ShardsKeyToDisType(const unsigned& key);
-
-
-}  // namespace DRT
+}  // namespace CORE::Elements
 
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
+std::ostream& operator<<(std::ostream& os, const CORE::Elements::Element& ele);
 
 
 

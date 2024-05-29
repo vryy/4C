@@ -80,7 +80,7 @@ DRT::ELEMENTS::So3Plast<distype>::So3Plast(const DRT::ELEMENTS::So3Plast<distype
  | it (public)                                                          |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::So3Plast<distype>::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::So3Plast<distype>::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::So3Plast<distype>(*this);
 
@@ -268,9 +268,9 @@ int DRT::ELEMENTS::So3Plast<distype>::NumLine() const
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3Plast<distype>::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::So3Plast<distype>::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, CORE::Elements::Element>(
       CORE::COMM::buildLines, *this);
 }
 
@@ -278,9 +278,9 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3Plast<distype>::Lines(
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3Plast<distype>::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::So3Plast<distype>::Surfaces()
 {
-  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, CORE::Elements::Element>(
       CORE::COMM::buildSurfaces, *this);
 }
 
@@ -705,7 +705,7 @@ int DRT::ELEMENTS::So3Plast<distype>::UniqueParObjectId() const
  | get the nodes from so3 (public)                          seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::ElementType& DRT::ELEMENTS::So3Plast<distype>::ElementType() const
+CORE::Elements::ElementType& DRT::ELEMENTS::So3Plast<distype>::ElementType() const
 {
   switch (distype)
   {
@@ -739,7 +739,7 @@ DRT::ElementType& DRT::ELEMENTS::So3Plast<distype>::ElementType() const
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3Plast<distype>::VisNames(std::map<std::string, int>& names)
 {
-  DRT::Element::VisNames(names);
+  CORE::Elements::Element::VisNames(names);
   SolidMaterial()->VisNames(names);
 
   return;
@@ -752,7 +752,7 @@ template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::So3Plast<distype>::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (DRT::Element::VisData(name, data)) return true;
+  if (CORE::Elements::Element::VisData(name, data)) return true;
 
   return SolidMaterial()->VisData(name, data, numgpt_, Id());
 

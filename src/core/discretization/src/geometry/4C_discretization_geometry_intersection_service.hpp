@@ -62,7 +62,7 @@ namespace CORE::GEO
   \param xyze_element   (in)         : coordinates of the element
   \param eleGeoType     (out)        : element geometric type CARTESIAN LINEAR or HIGHERORDER
    */
-  void checkGeoType(const DRT::Element* element,
+  void checkGeoType(const CORE::Elements::Element* element,
       const CORE::LINALG::SerialDenseMatrix& xyze_element, EleGeoType& eleGeoType);
 
 }  // namespace CORE::GEO

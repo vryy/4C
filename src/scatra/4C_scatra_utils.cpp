@@ -177,7 +177,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
   for (int iele = 0; iele < discret->NumMyColElements(); iele++)
   {
     // get element from fluid discretization
-    const DRT::Element* actele = discret->lColElement(iele);
+    const CORE::Elements::Element* actele = discret->lColElement(iele);
 
     // get number of nodes of this element (number of vertices)
     const int numberOfNodes = actele->num_node();
@@ -217,10 +217,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
     const int nodegid = ptToNode->Id();
 
     // vector of elements located around this node
-    std::vector<const DRT::Element*> elements;
+    std::vector<const CORE::Elements::Element*> elements;
 
     // get adjacent elements for this node
-    const DRT::Element* const* adjelements = ptToNode->Elements();
+    const CORE::Elements::Element* const* adjelements = ptToNode->Elements();
 
     const CORE::FE::CellType DISTYPE = adjelements[0]->Shape();  // CORE::FE::CellType::hex8;
 
@@ -282,7 +282,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
         // get coupled pbc node (master or slave)
         const DRT::Node* ptToCoupNode = discret->gNode(icoupnode);
         // get adjacent elements of this node
-        const DRT::Element* const* pbcelements = ptToCoupNode->Elements();
+        const CORE::Elements::Element* const* pbcelements = ptToCoupNode->Elements();
         // add elements to list
         for (int iele = 0; iele < ptToCoupNode->NumElement(); iele++)  // = ptToNode->Elements();
         {
@@ -351,7 +351,7 @@ template Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAt
 
 template <const int dim, CORE::FE::CellType DISTYPE>
 CORE::LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradientNode(
-    Teuchos::RCP<DRT::Discretization> discret, std::vector<const DRT::Element*> elements,
+    Teuchos::RCP<DRT::Discretization> discret, std::vector<const CORE::Elements::Element*> elements,
     Teuchos::RCP<Epetra_Vector> phinp_node, const int nodegid, const int scatra_dofid)
 {
   // number of nodes of this element for interpolation
@@ -368,7 +368,7 @@ CORE::LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementG
     for (int ele_current = 0; ele_current < numberOfElements; ele_current++)
     {
       // get current element
-      const DRT::Element* ele_adj = elements[ele_current];
+      const CORE::Elements::Element* ele_adj = elements[ele_current];
 
       const int* ptToNodeIds_adj = ele_adj->NodeIds();
 
@@ -484,12 +484,12 @@ CORE::LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementG
 // Templates for Mean value averaging -- For now only HEX-type elements allowed!
 template CORE::LINALG::Matrix<3, 1>
 SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradientNode<3, CORE::FE::CellType::hex8>(
-    Teuchos::RCP<DRT::Discretization> discret, std::vector<const DRT::Element*> elements,
+    Teuchos::RCP<DRT::Discretization> discret, std::vector<const CORE::Elements::Element*> elements,
     Teuchos::RCP<Epetra_Vector> phinp_node, const int nodegid, const int scatra_dofid);
 
 template CORE::LINALG::Matrix<3, 1>
 SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradientNode<3, CORE::FE::CellType::hex27>(
-    Teuchos::RCP<DRT::Discretization> discret, std::vector<const DRT::Element*> elements,
+    Teuchos::RCP<DRT::Discretization> discret, std::vector<const CORE::Elements::Element*> elements,
     Teuchos::RCP<Epetra_Vector> phinp_node, const int nodegid, const int scatra_dofid);
 
 FOUR_C_NAMESPACE_CLOSE

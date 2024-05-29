@@ -8,9 +8,9 @@ Evaluate(...), evaluate_neumann(...), etc.
 \level 1
 */
 
+#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_elements_paramsinterface.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_solid_3D_ele.hpp"
@@ -75,18 +75,18 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
   // get ptr to interface to time integration
   set_params_interface_ptr(params);
 
-  const ELEMENTS::ActionType action = std::invoke(
+  const CORE::Elements::ActionType action = std::invoke(
       [&]()
       {
         if (IsParamsInterface())
           return params_interface().GetActionType();
         else
-          return String2ActionType(params.get<std::string>("action", "none"));
+          return CORE::Elements::String2ActionType(params.get<std::string>("action", "none"));
       });
 
   switch (action)
   {
-    case DRT::ELEMENTS::struct_calc_nlnstiff:
+    case CORE::Elements::struct_calc_nlnstiff:
     {
       std::visit(
           [&](auto& interface)
@@ -97,7 +97,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
           solid_calc_variant_);
       return 0;
     }
-    case struct_calc_internalforce:
+    case CORE::Elements::struct_calc_internalforce:
     {
       std::visit(
           [&](auto& interface)
@@ -109,7 +109,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
 
       return 0;
     }
-    case struct_calc_nlnstiffmass:
+    case CORE::Elements::struct_calc_nlnstiffmass:
     {
       std::visit(
           [&](auto& interface)
@@ -122,7 +122,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       EvaluateInertiaForce(discretization, lm, elemat2, elevec2);
       return 0;
     }
-    case struct_calc_nlnstifflmass:
+    case CORE::Elements::struct_calc_nlnstifflmass:
     {
       std::visit(
           [&](auto& interface)
@@ -137,7 +137,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       EvaluateInertiaForce(discretization, lm, elemat2, elevec2);
       return 0;
     }
-    case struct_calc_internalinertiaforce:
+    case CORE::Elements::struct_calc_internalinertiaforce:
     {
       const int num_dof_per_ele = static_cast<int>(lm.size());
       CORE::LINALG::SerialDenseMatrix mass_matrix(num_dof_per_ele, num_dof_per_ele);
@@ -153,7 +153,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       EvaluateInertiaForce(discretization, lm, mass_matrix, elevec2);
       return 0;
     }
-    case DRT::ELEMENTS::struct_calc_update_istep:
+    case CORE::Elements::struct_calc_update_istep:
     {
       std::visit([&](auto& interface)
           { interface->Update(*this, *SolidMaterial(), discretization, lm, params); },
@@ -161,19 +161,19 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
 
       return 0;
     }
-    case DRT::ELEMENTS::struct_update_prestress:
+    case CORE::Elements::struct_update_prestress:
     {
       UpdatePrestress(solid_calc_variant_, *this, *SolidMaterial(), discretization, lm, params);
       return 0;
     }
-    case DRT::ELEMENTS::struct_calc_recover:
+    case CORE::Elements::struct_calc_recover:
     {
       std::visit([&](auto& interface) { interface->Recover(*this, discretization, lm, params); },
           solid_calc_variant_);
 
       return 0;
     }
-    case struct_calc_stress:
+    case CORE::Elements::struct_calc_stress:
     {
       std::visit(
           [&](auto& interface)
@@ -187,7 +187,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
 
       return 0;
     }
-    case DRT::ELEMENTS::struct_calc_energy:
+    case CORE::Elements::struct_calc_energy:
     {
       double int_energy = std::visit(
           [&](auto& interface)
@@ -213,7 +213,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       }
       return 0;
     }
-    case struct_init_gauss_point_data_output:
+    case CORE::Elements::struct_init_gauss_point_data_output:
     {
       std::visit(
           [&](auto& interface)
@@ -225,7 +225,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
 
       return 0;
     }
-    case struct_gauss_point_data_output:
+    case CORE::Elements::struct_gauss_point_data_output:
     {
       std::visit(
           [&](auto& interface)
@@ -237,7 +237,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
 
       return 0;
     }
-    case ELEMENTS::struct_calc_reset_istep:
+    case CORE::Elements::struct_calc_reset_istep:
     {
       std::visit([&](auto& interface)
           { interface->reset_to_last_converged(*this, *SolidMaterial()); },
@@ -245,7 +245,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
 
       return 0;
     }
-    case DRT::ELEMENTS::struct_calc_predict:
+    case CORE::Elements::struct_calc_predict:
     {
       // do nothing for now
       return 0;

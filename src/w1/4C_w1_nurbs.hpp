@@ -23,7 +23,7 @@ namespace DRT
   {
     namespace NURBS
     {
-      class Wall1NurbsType : public DRT::ElementType
+      class Wall1NurbsType : public CORE::Elements::ElementType
       {
        public:
         std::string Name() const override { return "Wall1NurbsType"; }
@@ -32,17 +32,17 @@ namespace DRT
 
         CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-        Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-            const int id, const int owner) override;
+        Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+            const std::string eledistype, const int id, const int owner) override;
 
-        Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+        Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
         void setup_element_definition(
             std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
             override;
 
         void nodal_block_information(
-            DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+            CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
         CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
             DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -76,7 +76,7 @@ namespace DRT
         \brief Deep copy this instance of Wall1 and return pointer to it
         */
 
-        DRT::Element* Clone() const override;
+        CORE::Elements::Element* Clone() const override;
 
 
         /*!
@@ -96,7 +96,10 @@ namespace DRT
         /// Print this element
         void Print(std::ostream& os) const override;
 
-        DRT::ElementType& ElementType() const override { return Wall1NurbsType::Instance(); }
+        CORE::Elements::ElementType& ElementType() const override
+        {
+          return Wall1NurbsType::Instance();
+        }
 
         /*!
         \brief Get shape type of element
@@ -127,13 +130,13 @@ namespace DRT
         /*!
         \brief Get vector of Teuchos::RCPs to the lines of this element
         */
-        std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+        std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
 
         /*!
         \brief Get vector of Teuchos::RCPs to the surfaces of this element
         */
-        std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+        std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
 
        private:

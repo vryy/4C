@@ -10,11 +10,11 @@
 
 #include "4C_scatra_ele_calc_cardiac_monodomain.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_cardiac_monodomain.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_myocard.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
@@ -157,7 +157,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::mat_myocar
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat(
-    DRT::Element* ele,                          ///< the element whose matrix is calculated
+    CORE::Elements::Element* ele,               ///< the element whose matrix is calculated
     CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix to calculate
     CORE::LINALG::SerialDenseVector& erhs,      ///< element rhs to calculate
     CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector
@@ -310,8 +310,9 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,
-    probdim>::extract_element_and_node_values(DRT::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la)
+    probdim>::extract_element_and_node_values(CORE::Elements::Element* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    CORE::Elements::Element::LocationArray& la)
 {
   my::extract_element_and_node_values(ele, params, discretization, la);
 

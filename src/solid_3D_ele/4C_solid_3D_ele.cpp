@@ -89,14 +89,15 @@ void DRT::ELEMENTS::SolidType::setup_element_definition(
                                .Build();
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SolidType::Create(
     const std::string eletype, const std::string elecelltype, const int id, const int owner)
 {
   if (eletype == "SOLID") return Create(id, owner);
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SolidType::Create(
+    const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::Solid(id, owner));
 }
@@ -109,7 +110,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SolidType::Create(const std::vector<char>&
 }
 
 void DRT::ELEMENTS::SolidType::nodal_block_information(
-    Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   STR::UTILS::NodalBlockInformationSolid(dwele, numdf, dimns, nv, np);
 }
@@ -131,10 +132,10 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SolidType::ComputeNullSpace(
   exit(1);
 }
 
-DRT::ELEMENTS::Solid::Solid(int id, int owner) : DRT::Element(id, owner) {}
+DRT::ELEMENTS::Solid::Solid(int id, int owner) : CORE::Elements::Element(id, owner) {}
 
 
-DRT::Element* DRT::ELEMENTS::Solid::Clone() const { return new Solid(*this); }
+CORE::Elements::Element* DRT::ELEMENTS::Solid::Clone() const { return new Solid(*this); }
 
 int DRT::ELEMENTS::Solid::NumLine() const { return CORE::FE::getNumberOfElementLines(celltype_); }
 
@@ -148,12 +149,12 @@ int DRT::ELEMENTS::Solid::NumVolume() const
   return CORE::FE::getNumberOfElementVolumes(celltype_);
 }
 
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Solid::Lines()
 {
   return CORE::COMM::GetElementLines<StructuralLine, Solid>(*this);
 }
 
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Solid::Surfaces()
 {
   return CORE::COMM::GetElementSurfaces<StructuralSurface, Solid>(*this);
 }
@@ -166,7 +167,7 @@ void DRT::ELEMENTS::Solid::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, UniqueParObjectId());
 
   // add base class Element
-  DRT::Element::Pack(data);
+  CORE::Elements::Element::Pack(data);
 
   AddtoPack(data, (int)celltype_);
 
@@ -186,7 +187,7 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::Element::Unpack(basedata);
+  CORE::Elements::Element::Unpack(basedata);
 
   celltype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
@@ -213,7 +214,7 @@ void DRT::ELEMENTS::Solid::set_params_interface_ptr(const Teuchos::ParameterList
   if (p.isParameter("interface"))
   {
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface"));
+        p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface"));
   }
   else
     interface_ptr_ = Teuchos::null;
@@ -260,19 +261,20 @@ bool DRT::ELEMENTS::Solid::ReadElement(
 
 Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::Solid::SolidMaterial(int nummat) const
 {
-  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat), true);
+  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(
+      CORE::Elements::Element::Material(nummat), true);
 }
 
 void DRT::ELEMENTS::Solid::VisNames(std::map<std::string, int>& names)
 {
-  DRT::Element::VisNames(names);
+  CORE::Elements::Element::VisNames(names);
   SolidMaterial()->VisNames(names);
 }
 
 bool DRT::ELEMENTS::Solid::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (DRT::Element::VisData(name, data)) return true;
+  if (CORE::Elements::Element::VisData(name, data)) return true;
 
   return SolidMaterial()->VisData(name, data, Id());
 }

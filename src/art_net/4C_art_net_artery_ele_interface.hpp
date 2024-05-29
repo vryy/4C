@@ -15,7 +15,7 @@
 
 #include "4C_art_net_artery.hpp"
 #include "4C_art_net_artery_ele_action.hpp"
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
@@ -25,10 +25,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace DRT
 {
   class Discretization;
-  class Element;
 
   namespace ELEMENTS
   {
@@ -45,7 +49,7 @@ namespace DRT
 
       //! evaluate the element
       virtual int Evaluate(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -56,7 +60,8 @@ namespace DRT
       //! evaluate service (other quantities apart from rhs and matrix)
       virtual int EvaluateService(Artery* ele, const ARTERY::Action action,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::Elements::Element::LocationArray& la,
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,

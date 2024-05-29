@@ -31,9 +31,13 @@ namespace CORE::LINALG
 namespace DRT
 {
   class Node;
-  class Element;
   class Discretization;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::GEO
 {
@@ -65,7 +69,7 @@ namespace BEAMINTERACTION
       MAP_EXTRACTOR_VECTOR_METHODS(Solid, solid)
     };
 
-    /// class for comparing DRT::Element* (and DRT::Node*) in a std::set
+    /// class for comparing CORE::Elements::Element* (and DRT::Node*) in a std::set
     /*! -------------------------------------------------------------------------
      * overwrites standard < for pointers, this is necessary to ensure same order
      * of neighboring elements for crosslink check and therefore for random numbers
@@ -101,11 +105,11 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    bool IsBeamElement(DRT::Element const& element);
+    bool IsBeamElement(CORE::Elements::Element const& element);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    bool IsRigidSphereElement(DRT::Element const& element);
+    bool IsRigidSphereElement(CORE::Elements::Element const& element);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
@@ -140,13 +144,14 @@ namespace BEAMINTERACTION
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void GetCurrentElementDis(DRT::Discretization const& discret, DRT::Element const* ele,
-        Teuchos::RCP<const Epetra_Vector> const& ia_discolnp, std::vector<double>& eledisp);
+    void GetCurrentElementDis(DRT::Discretization const& discret,
+        CORE::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
+        std::vector<double>& eledisp);
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void GetCurrentUnshiftedElementDis(DRT::Discretization const& discret, DRT::Element const* ele,
-        Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
+    void GetCurrentUnshiftedElementDis(DRT::Discretization const& discret,
+        CORE::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
         CORE::GEO::MESHFREE::BoundingBox const& pbb, std::vector<double>& eledisp);
 
     /*-----------------------------------------------------------------------------*
@@ -168,19 +173,20 @@ namespace BEAMINTERACTION
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void ComputeFilamentLengthAndSortItsElements(std::vector<DRT::Element*>& sortedfilamenteles,
-        std::vector<int> const* nodeids, double& filreflength,
-        Teuchos::RCP<DRT::Discretization> discret);
+    void ComputeFilamentLengthAndSortItsElements(
+        std::vector<CORE::Elements::Element*>& sortedfilamenteles, std::vector<int> const* nodeids,
+        double& filreflength, Teuchos::RCP<DRT::Discretization> discret);
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void SetBindingSpotsPositionsOnFilament(std::vector<DRT::Element*>& sortedfilamenteles,
-        double start, INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int numbspot,
+    void SetBindingSpotsPositionsOnFilament(
+        std::vector<CORE::Elements::Element*>& sortedfilamenteles, double start,
+        INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int numbspot,
         double filamentbspotinterval, double tol);
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void GetPosAndTriadOfBindingSpot(DRT::Element* ele,
+    void GetPosAndTriadOfBindingSpot(CORE::Elements::Element* ele,
         Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotnum,
         CORE::LINALG::Matrix<3, 1>& bspotpos, CORE::LINALG::Matrix<3, 3>& bspottriad,
@@ -188,8 +194,8 @@ namespace BEAMINTERACTION
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void GetPosAndTriadOfBindingSpot(DRT::Discretization const& discret, DRT::Element* ele,
-        Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
+    void GetPosAndTriadOfBindingSpot(DRT::Discretization const& discret,
+        CORE::Elements::Element* ele, Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
         Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotnum,
         CORE::LINALG::Matrix<3, 1>& bspotpos, CORE::LINALG::Matrix<3, 3>& bspottriad);
@@ -207,7 +213,8 @@ namespace BEAMINTERACTION
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    bool DoBeamElementsShareNodes(DRT::Element const* const beam, DRT::Element const* const nbbeam);
+    bool DoBeamElementsShareNodes(
+        CORE::Elements::Element const* const beam, CORE::Elements::Element const* const nbbeam);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
@@ -225,7 +232,7 @@ namespace BEAMINTERACTION
      * \brief Get the number of centerline DOFs for a given beam element.
      * @param ele (in) Pointer to the element.
      */
-    unsigned int GetNumberOfElementCenterlineDof(const DRT::Element* elerline_gid);
+    unsigned int GetNumberOfElementCenterlineDof(const CORE::Elements::Element* elerline_gid);
 
     /**
      * \brief Get the global indices of the centerline DOFs of a beam element.
@@ -235,7 +242,8 @@ namespace BEAMINTERACTION
      * element.
      */
     template <unsigned int n_centerline_dof>
-    void GetElementCenterlineGIDIndices(DRT::Discretization const& discret, const DRT::Element* ele,
+    void GetElementCenterlineGIDIndices(DRT::Discretization const& discret,
+        const CORE::Elements::Element* ele,
         CORE::LINALG::Matrix<n_centerline_dof, 1, int>& centerline_gid);
 
     /**
@@ -246,8 +254,9 @@ namespace BEAMINTERACTION
      * element.
      * @param num_dof (out) Number total DOFs on the element.
      */
-    void GetElementCenterlineDOFIndices(DRT::Discretization const& discret, const DRT::Element* ele,
-        std::vector<unsigned int>& ele_centerline_dof_indices, unsigned int& num_dof);
+    void GetElementCenterlineDOFIndices(DRT::Discretization const& discret,
+        const CORE::Elements::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
+        unsigned int& num_dof);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
@@ -273,19 +282,19 @@ namespace BEAMINTERACTION
      * (the rest will be 0).
      */
     void AssembleCenterlineDofColMatrixIntoElementColMatrix(DRT::Discretization const& discret,
-        const DRT::Element* element,
+        const CORE::Elements::Element* element,
         CORE::LINALG::SerialDenseMatrix const& row_matrix_centerlineDOFs,
         CORE::LINALG::SerialDenseMatrix& row_matrix_elementDOFs);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void ExtractPosDofVecAbsoluteValues(DRT::Discretization const& discret, DRT::Element const* ele,
-        Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
+    void ExtractPosDofVecAbsoluteValues(DRT::Discretization const& discret,
+        CORE::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
         std::vector<double>& element_posdofvec_absolutevalues);
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void ExtractPosDofVecValues(DRT::Discretization const& discret, DRT::Element const* ele,
-        Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
+    void ExtractPosDofVecValues(DRT::Discretization const& discret,
+        CORE::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
         std::vector<double>& element_posdofvec_values);
 
     /*----------------------------------------------------------------------------*

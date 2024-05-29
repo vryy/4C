@@ -36,27 +36,30 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoPyramid5fbarType::Create(const std::vect
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoPyramid5fbarType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoPyramid5fbarType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoPyramid5fbar(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::SoPyramid5fbar(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoPyramid5fbarType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoPyramid5fbarType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoPyramid5fbar(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::SoPyramid5fbar(id, owner));
   return ele;
 }
 
 
 void DRT::ELEMENTS::SoPyramid5fbarType::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
@@ -124,7 +127,7 @@ DRT::ELEMENTS::SoPyramid5fbar::SoPyramid5fbar(const DRT::ELEMENTS::SoPyramid5fba
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                          seitz 03/15 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::SoPyramid5fbar::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::SoPyramid5fbar::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::SoPyramid5fbar(*this);
   return newelement;

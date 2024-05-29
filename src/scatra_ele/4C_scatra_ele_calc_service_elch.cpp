@@ -31,10 +31,10 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const SCATRA::Action& action, DRT::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, const SCATRA::Action& action,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -239,7 +239,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(DRT::Ele
  *----------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::cal_error_compared_to_analyt_solution(
-    const DRT::Element* ele,                 //!< element
+    const CORE::Elements::Element* ele,      //!< element
     Teuchos::ParameterList& params,          //!< parameter list
     CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
 )
@@ -254,7 +254,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::cal_error_compared_to_a
   *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calculate_conductivity(
-    const DRT::Element* ele, const enum INPAR::ELCH::EquPot equpot,
+    const CORE::Elements::Element* ele, const enum INPAR::ELCH::EquPot equpot,
     CORE::LINALG::SerialDenseVector& sigma_domint, bool effCond, bool specresist)
 {
   // integration points and weights
@@ -322,7 +322,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calculate_conductivity(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_kinetics_point(
-    DRT::Element* ele,                                ///< current element
+    CORE::Elements::Element* ele,                     ///< current element
     Teuchos::ParameterList& params,                   ///< parameter list
     DRT::Discretization& discretization,              ///< discretization
     std::vector<int>& lm,                             ///< location vector
@@ -474,7 +474,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_kine
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_elch_boundary_kinetics_point(
-    const DRT::Element* ele,                                   ///< current element
+    const CORE::Elements::Element* ele,                        ///< current element
     CORE::LINALG::SerialDenseMatrix& emat,                     ///< element matrix
     CORE::LINALG::SerialDenseVector& erhs,                     ///< element right-hand side vector
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
@@ -563,7 +563,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_elch_boundary_
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_electrode_status_point(
-    const DRT::Element* ele,                                   ///< current element
+    const CORE::Elements::Element* ele,                        ///< current element
     CORE::LINALG::SerialDenseVector& scalars,                  ///< scalars to be integrated
     Teuchos::ParameterList& params,                            ///< parameter list
     Teuchos::RCP<CORE::Conditions::Condition> cond,            ///< condition
@@ -669,7 +669,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_electrode_stat
  | finite difference check on element level (for debugging only) (protected)   fang 10/14 |
  *----------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::fd_check(DRT::Element* ele,
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::fd_check(CORE::Elements::Element* ele,
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
     CORE::LINALG::SerialDenseVector& subgrdiff)
 {

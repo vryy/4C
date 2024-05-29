@@ -21,7 +21,7 @@ namespace CONTACT
 {
   // forward declarations
 
-  class ElementType : public DRT::ElementType
+  class ElementType : public CORE::Elements::ElementType
   {
    public:
     std::string Name() const override { return "CONTACT::ElementType"; }
@@ -30,10 +30,10 @@ namespace CONTACT
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-    Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
     void nodal_block_information(
-        DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+        CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
     CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -80,7 +80,7 @@ namespace CONTACT
      \brief Deep copy the derived class and return pointer to it
 
      */
-    DRT::Element* Clone() const override;
+    CORE::Elements::Element* Clone() const override;
 
     /*!
      \brief Return unique ParObject id

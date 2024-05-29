@@ -43,13 +43,13 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -88,7 +88,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
 
       /*!
@@ -224,20 +224,20 @@ namespace DRT
       }
 
       //! Get vector of Teuchos::RCPs to the lines of this element
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       //! Get vector of Teuchos::RCPs to the surfaces of this element
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       //! Get Teuchos::RCP to the internal face adjacent to this element as master element and the
       //! parent_slave element
-      Teuchos::RCP<DRT::Element> CreateFaceElement(
-          DRT::Element* parent_slave,  //!< parent slave fluid3 element
-          int nnode,                   //!< number of surface nodes
-          const int* nodeids,          //!< node ids of surface element
-          DRT::Node** nodes,           //!< nodes of surface element
-          const int lsurface_master,   //!< local surface number w.r.t master parent element
-          const int lsurface_slave,    //!< local surface number w.r.t slave parent element
+      Teuchos::RCP<CORE::Elements::Element> CreateFaceElement(
+          CORE::Elements::Element* parent_slave,  //!< parent slave fluid3 element
+          int nnode,                              //!< number of surface nodes
+          const int* nodeids,                     //!< node ids of surface element
+          DRT::Node** nodes,                      //!< nodes of surface element
+          const int lsurface_master,  //!< local surface number w.r.t master parent element
+          const int lsurface_slave,   //!< local surface number w.r.t slave parent element
           const std::vector<int>& localtrafomap  //! local trafo map
           ) override;
       //@}
@@ -287,7 +287,10 @@ namespace DRT
       //! Print this element
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return ScaTraHDGType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return ScaTraHDGType::Instance();
+      }
 
       // element matrices are stored to save calculation time, since they stay the same in the pure
       // diffusion reaction problem If necessary or worthwhile this can be changed and thus the
@@ -365,21 +368,22 @@ namespace DRT
     \note This is a pure Neumann boundary condition element. It's only
           purpose is to evaluate surface Neumann boundary conditions that might be
           adjacent to a parent scatrahdg element. It therefore does not implement
-          the DRT::Element::Evaluate method and does not have its own ElementRegister class.
+          the CORE::Elements::Element::Evaluate method and does not have its own ElementRegister
+    class.
 
     */
 
-    class ScaTraHDGBoundaryType : public DRT::ElementType
+    class ScaTraHDGBoundaryType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "ScaTraHDGBoundaryType"; }
 
       static ScaTraHDGBoundaryType& Instance();
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -397,7 +401,7 @@ namespace DRT
 
     // class ScaTraHDGBoundary
 
-    class ScaTraHDGBoundary : public DRT::FaceElement
+    class ScaTraHDGBoundary : public CORE::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -415,7 +419,7 @@ namespace DRT
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
       ScaTraHDGBoundary(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
-          DRT::Element* parent, const int lsurface);
+          CORE::Elements::Element* parent, const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -432,7 +436,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
@@ -452,12 +456,12 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -494,7 +498,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
@@ -513,7 +517,10 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return ScaTraHDGBoundaryType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return ScaTraHDGBoundaryType::Instance();
+      }
 
       //@}
 
@@ -642,17 +649,17 @@ namespace DRT
     /*!
     \brief An element representing an internal face element between two ScaTraHDG elements
     */
-    class ScaTraHDGIntFaceType : public DRT::ElementType
+    class ScaTraHDGIntFaceType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "ScaTraHDGIntFaceType"; }
 
       static ScaTraHDGIntFaceType& Instance();
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -671,7 +678,7 @@ namespace DRT
 
     // class ScaTraHDGIntFace
 
-    class ScaTraHDGIntFace : public DRT::FaceElement
+    class ScaTraHDGIntFace : public CORE::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -712,7 +719,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
@@ -732,7 +739,7 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -740,7 +747,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -775,7 +782,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
@@ -790,7 +797,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -845,7 +852,10 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return ScaTraHDGIntFaceType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return ScaTraHDGIntFaceType::Instance();
+      }
 
       //@}
 
@@ -905,7 +915,7 @@ namespace DRT
       */
       DRT::ELEMENTS::ScaTraHDG* ParentMasterElement() const
       {
-        DRT::Element* parent = this->DRT::FaceElement::ParentMasterElement();
+        CORE::Elements::Element* parent = this->CORE::Elements::FaceElement::ParentMasterElement();
         // make sure the static cast below is really valid
         FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(parent) != nullptr,
             "Master element is no ScaTraHDG element");
@@ -917,7 +927,7 @@ namespace DRT
       */
       DRT::ELEMENTS::ScaTraHDG* ParentSlaveElement() const
       {
-        DRT::Element* parent = this->DRT::FaceElement::ParentSlaveElement();
+        CORE::Elements::Element* parent = this->CORE::Elements::FaceElement::ParentSlaveElement();
         // make sure the static cast below is really valid
         FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(parent) != nullptr,
             "Slave element is no ScaTraHDG element");

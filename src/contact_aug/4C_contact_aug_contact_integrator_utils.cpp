@@ -258,7 +258,7 @@ double CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(
   std::fill(avg_nodal_normal.A(), avg_nodal_normal.A() + 3, 0.0);
 
   const unsigned num_adj_eles = slavenode.NumElement();
-  DRT::Element** adj_eles = slavenode.Elements();
+  CORE::Elements::Element** adj_eles = slavenode.Elements();
 
   adj_ele_normals.clear();
   adj_ele_normals.resize(num_adj_eles, ElementNormal());

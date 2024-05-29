@@ -56,7 +56,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
   // elevec3 is not used anyway
 
   // start with "none"
-  ELEMENTS::ActionType act = ELEMENTS::none;
+  CORE::Elements::ActionType act = CORE::Elements::none;
 
   if (IsParamsInterface())
     act = params_interface().GetActionType();
@@ -67,35 +67,35 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
     if (action == "none")
       FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_linstiff")
-      act = ELEMENTS::struct_calc_linstiff;
+      act = CORE::Elements::struct_calc_linstiff;
     else if (action == "calc_struct_nlnstiff")
-      act = ELEMENTS::struct_calc_nlnstiff;
+      act = CORE::Elements::struct_calc_nlnstiff;
     else if (action == "calc_struct_internalforce")
-      act = ELEMENTS::struct_calc_internalforce;
+      act = CORE::Elements::struct_calc_internalforce;
     else if (action == "calc_struct_linstiffmass")
-      act = ELEMENTS::struct_calc_linstiffmass;
+      act = CORE::Elements::struct_calc_linstiffmass;
     else if (action == "calc_struct_nlnstiffmass")
-      act = ELEMENTS::struct_calc_nlnstiffmass;
+      act = CORE::Elements::struct_calc_nlnstiffmass;
     else if (action == "calc_struct_nlnstifflmass")
-      act = ELEMENTS::struct_calc_nlnstifflmass;
+      act = CORE::Elements::struct_calc_nlnstifflmass;
     else if (action == "calc_struct_stress")
-      act = ELEMENTS::struct_calc_stress;
+      act = CORE::Elements::struct_calc_stress;
     else if (action == "calc_struct_eleload")
-      act = ELEMENTS::struct_calc_eleload;
+      act = CORE::Elements::struct_calc_eleload;
     else if (action == "calc_struct_fsiload")
-      act = ELEMENTS::struct_calc_fsiload;
+      act = CORE::Elements::struct_calc_fsiload;
     else if (action == "calc_struct_update_istep")
-      act = ELEMENTS::struct_calc_update_istep;
+      act = CORE::Elements::struct_calc_update_istep;
     else if (action == "calc_struct_reset_istep")
-      act = ELEMENTS::struct_calc_reset_istep;
+      act = CORE::Elements::struct_calc_reset_istep;
     else if (action == "multi_readrestart")
-      act = ELEMENTS::multi_readrestart;
+      act = CORE::Elements::multi_readrestart;
     else if (action == "multi_calc_dens")
-      act = ELEMENTS::multi_calc_dens;
+      act = CORE::Elements::multi_calc_dens;
     else if (action == "calc_struct_prestress_update")
-      act = ELEMENTS::struct_update_prestress;
+      act = CORE::Elements::struct_update_prestress;
     else if (action == "calc_struct_energy")
-      act = ELEMENTS::struct_calc_energy;
+      act = CORE::Elements::struct_calc_energy;
     else if (action == "calc_struct_predict")
       return 0;
     else if (action == "calc_struct_recover")
@@ -108,7 +108,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
   switch (act)
   {
     // linear stiffness
-    case ELEMENTS::struct_calc_linstiff:
+    case CORE::Elements::struct_calc_linstiff:
     {
       // need current displacement and residual forces
       std::vector<double> mydisp(lm.size());
@@ -122,7 +122,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
     break;
 
     // nonlinear stiffness and internal force vector
-    case ELEMENTS::struct_calc_nlnstiff:
+    case CORE::Elements::struct_calc_nlnstiff:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -143,7 +143,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
     break;
 
     // internal force vector only
-    case ELEMENTS::struct_calc_internalforce:
+    case CORE::Elements::struct_calc_internalforce:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -163,13 +163,13 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
     break;
 
     // linear stiffness and consistent mass matrix
-    case ELEMENTS::struct_calc_linstiffmass:
+    case CORE::Elements::struct_calc_linstiffmass:
       FOUR_C_THROW("Case 'calc_struct_linstiffmass' not yet implemented");
       break;
 
     // nonlinear stiffness, internal force vector, and consistent mass matrix
-    case ELEMENTS::struct_calc_nlnstiffmass:
-    case ELEMENTS::struct_calc_nlnstifflmass:
+    case CORE::Elements::struct_calc_nlnstiffmass:
+    case CORE::Elements::struct_calc_nlnstifflmass:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -190,18 +190,18 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
           nullptr, nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none,
           INPAR::STR::strain_none);
 
-      if (act == ELEMENTS::struct_calc_nlnstifflmass) soh8_lumpmass(&elemat2);
+      if (act == CORE::Elements::struct_calc_nlnstifflmass) soh8_lumpmass(&elemat2);
     }
     break;
     // recover elementwise stored quantities
-    case ELEMENTS::struct_calc_recover:
+    case CORE::Elements::struct_calc_recover:
     {
       /* ToDo Probably we have to recover the history information of some special
        * materials.                                           hiermeier 04/2016*/
     }
     break;
     // evaluate stresses and strains at gauss points
-    case ELEMENTS::struct_calc_stress:
+    case CORE::Elements::struct_calc_stress:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
@@ -272,15 +272,15 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case ELEMENTS::struct_calc_eleload:
+    case CORE::Elements::struct_calc_eleload:
       FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
 
-    case ELEMENTS::struct_calc_fsiload:
+    case CORE::Elements::struct_calc_fsiload:
       FOUR_C_THROW("Case not yet implemented");
       break;
 
-    case ELEMENTS::struct_calc_update_istep:
+    case CORE::Elements::struct_calc_update_istep:
     {
       // Update of history for materials
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -291,7 +291,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case ELEMENTS::struct_calc_reset_istep:
+    case CORE::Elements::struct_calc_reset_istep:
     {
       // Reset of history (if needed)
       SolidMaterial()->reset_step();
@@ -299,14 +299,14 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
     break;
 
     //==================================================================================
-    case ELEMENTS::multi_calc_dens:
+    case CORE::Elements::multi_calc_dens:
     {
       soh8_homog(params);
     }
     break;
 
     //==================================================================================
-    case ELEMENTS::struct_update_prestress:
+    case CORE::Elements::struct_update_prestress:
     {
       time_ = params.get<double>("total time");
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -343,7 +343,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
 
     //==================================================================================
     // read restart of microscale
-    case ELEMENTS::multi_readrestart:
+    case CORE::Elements::multi_readrestart:
     {
       Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
@@ -351,7 +351,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case ELEMENTS::struct_calc_energy:
+    case CORE::Elements::struct_calc_energy:
     {
       // initialization of internal energy
       double intenergy = 0.0;
@@ -563,7 +563,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case ELEMENTS::struct_calc_predict:
+    case CORE::Elements::struct_calc_predict:
     {
       // do nothing here
       break;

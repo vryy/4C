@@ -6,15 +6,15 @@
 \level 2
 
 *----------------------------------------------------------------------*/
+#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_global_data.hpp"
+#include "4C_io_element_vtk_cell_type_register.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element_vtk_cell_type_register.hpp"
-#include "4C_lib_elements_paramsinterface.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_so3_material.hpp"

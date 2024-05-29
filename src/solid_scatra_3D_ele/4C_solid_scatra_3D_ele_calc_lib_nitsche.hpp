@@ -56,8 +56,9 @@ namespace DRT::ELEMENTS
 
   template <typename T, int dim>
   constexpr bool can_evaluate_solid_scatra_cauchy_n_dir_at_xi<T, dim,
-      std::void_t<decltype(std::declval<T>()->GetCauchyNDirAtXi(std::declval<const DRT::Element&>(),
-          std::declval<MAT::So3Material&>(), std::declval<const std::vector<double>&>(),
+      std::void_t<decltype(std::declval<T>()->GetCauchyNDirAtXi(
+          std::declval<const CORE::Elements::Element&>(), std::declval<MAT::So3Material&>(),
+          std::declval<const std::vector<double>&>(),
           std::declval<const std::optional<std::vector<double>>&>(),
           std::declval<const CORE::LINALG::Matrix<dim, 1>&>(),
           std::declval<const CORE::LINALG::Matrix<dim, 1>&>(),
@@ -70,7 +71,7 @@ namespace DRT::ELEMENTS
     template <int dim>
     struct EvaluateSolidScatraCauchyNDirAction
     {
-      EvaluateSolidScatraCauchyNDirAction(const DRT::Element& e, MAT::So3Material& m,
+      EvaluateSolidScatraCauchyNDirAction(const CORE::Elements::Element& e, MAT::So3Material& m,
           const std::vector<double>& d, const std::optional<std::vector<double>>& s,
           const CORE::LINALG::Matrix<dim, 1>& x, const CORE::LINALG::Matrix<dim, 1>& normal,
           const CORE::LINALG::Matrix<dim, 1>& direction,
@@ -105,7 +106,7 @@ namespace DRT::ELEMENTS
             CORE::UTILS::TryDemangle(typeid(T).name()).c_str(), dim);
       }
 
-      const DRT::Element& element;
+      const CORE::Elements::Element& element;
       MAT::So3Material& mat;
       const std::vector<double>& disp;
       const std::optional<std::vector<double>>& scalars;
@@ -117,10 +118,11 @@ namespace DRT::ELEMENTS
   }  // namespace DETAILS
 
   template <typename VariantType>
-  double GetCauchyNDirAtXi(VariantType& variant, const DRT::Element& element, MAT::So3Material& mat,
-      const std::vector<double>& disp, const std::optional<std::vector<double>>& scalars,
-      const CORE::LINALG::Matrix<3, 1>& xi, const CORE::LINALG::Matrix<3, 1>& n,
-      const CORE::LINALG::Matrix<3, 1>& dir, SolidScatraCauchyNDirLinearizations<3>& linearizations)
+  double GetCauchyNDirAtXi(VariantType& variant, const CORE::Elements::Element& element,
+      MAT::So3Material& mat, const std::vector<double>& disp,
+      const std::optional<std::vector<double>>& scalars, const CORE::LINALG::Matrix<3, 1>& xi,
+      const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+      SolidScatraCauchyNDirLinearizations<3>& linearizations)
   {
     return std::visit(DETAILS::EvaluateSolidScatraCauchyNDirAction<3>(
                           element, mat, disp, scalars, xi, n, dir, linearizations),

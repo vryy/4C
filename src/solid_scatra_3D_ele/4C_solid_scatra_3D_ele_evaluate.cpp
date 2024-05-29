@@ -8,7 +8,7 @@ Evaluate(...), evaluate_neumann(...), etc.
 \level 1
 */
 
-#include "4C_lib_elements_paramsinterface.hpp"
+#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
 #include "4C_solid_3D_ele_neumann_evaluator.hpp"
 #include "4C_solid_scatra_3D_ele.hpp"
 #include "4C_solid_scatra_3D_ele_calc_lib_nitsche.hpp"
@@ -16,7 +16,7 @@ Evaluate(...), evaluate_neumann(...), etc.
 FOUR_C_NAMESPACE_OPEN
 
 int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
     CORE::LINALG::SerialDenseVector& elevec3)
@@ -31,18 +31,18 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
   // get ptr to interface to time integration
   set_params_interface_ptr(params);
 
-  const ELEMENTS::ActionType action = std::invoke(
+  const CORE::Elements::ActionType action = std::invoke(
       [&]()
       {
         if (IsParamsInterface())
           return params_interface().GetActionType();
         else
-          return String2ActionType(params.get<std::string>("action", "none"));
+          return CORE::Elements::String2ActionType(params.get<std::string>("action", "none"));
       });
 
   switch (action)
   {
-    case ELEMENTS::ActionType::calc_struct_stiffscalar:
+    case CORE::Elements::ActionType::calc_struct_stiffscalar:
       // Evaluate off-diagonal block for SSI
       std::visit(
           [&](auto& interface)
@@ -52,7 +52,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
           },
           solid_scatra_calc_variant_);
       return 0;
-    case DRT::ELEMENTS::struct_calc_nlnstiff:
+    case CORE::Elements::struct_calc_nlnstiff:
     {
       std::visit(
           [&](auto& interface)
@@ -63,7 +63,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
           solid_scatra_calc_variant_);
       return 0;
     }
-    case struct_calc_nlnstiffmass:
+    case CORE::Elements::struct_calc_nlnstiffmass:
     {
       std::visit(
           [&](auto& interface)
@@ -75,7 +75,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
 
       return 0;
     }
-    case struct_calc_internalforce:
+    case CORE::Elements::struct_calc_internalforce:
     {
       std::visit(
           [&](auto& interface)
@@ -87,7 +87,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
 
       return 0;
     }
-    case DRT::ELEMENTS::struct_calc_update_istep:
+    case CORE::Elements::struct_calc_update_istep:
     {
       std::visit([&](auto& interface)
           { interface->Update(*this, SolidMaterial(), discretization, la, params); },
@@ -95,14 +95,14 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
 
       return 0;
     }
-    case DRT::ELEMENTS::struct_calc_recover:
+    case CORE::Elements::struct_calc_recover:
     {
       std::visit([&](auto& interface) { interface->Recover(*this, discretization, la, params); },
           solid_scatra_calc_variant_);
 
       return 0;
     }
-    case struct_calc_stress:
+    case CORE::Elements::struct_calc_stress:
     {
       std::visit(
           [&](auto& interface)
@@ -116,7 +116,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
 
       return 0;
     }
-    case DRT::ELEMENTS::struct_calc_predict:
+    case CORE::Elements::struct_calc_predict:
       // do nothing for now
       return 0;
     default:

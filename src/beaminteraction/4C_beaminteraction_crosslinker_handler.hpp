@@ -22,10 +22,14 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Exporter;
-  class Element;
   class Discretization;
   class Node;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace IO
 {

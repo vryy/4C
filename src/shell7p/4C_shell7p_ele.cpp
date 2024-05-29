@@ -22,14 +22,15 @@ DRT::ELEMENTS::Shell7pType DRT::ELEMENTS::Shell7pType::instance_;
 DRT::ELEMENTS::Shell7pType& DRT::ELEMENTS::Shell7pType::Instance() { return instance_; }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell7pType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Shell7pType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SHELL7P") return Create(id, owner);
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell7pType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Shell7pType::Create(
+    const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::Shell7p(id, owner));
 }
@@ -42,7 +43,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Shell7pType::Create(const std::vector<char
 }
 
 void DRT::ELEMENTS::Shell7pType::nodal_block_information(
-    Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   STR::UTILS::SHELL::NodalBlockInformationShell(dwele, numdf, dimns, nv, np);
 }
@@ -167,7 +168,7 @@ int DRT::ELEMENTS::Shell7pType::Initialize(DRT::Discretization& dis)
 
 
 DRT::ELEMENTS::Shell7p::Shell7p(const DRT::ELEMENTS::Shell7p& other)
-    : DRT::Element(other),
+    : CORE::Elements::Element(other),
       distype_(other.distype_),
       interface_ptr_(other.interface_ptr_),
       eletech_(other.eletech_),
@@ -182,7 +183,7 @@ DRT::ELEMENTS::Shell7p::Shell7p(const DRT::ELEMENTS::Shell7p& other)
 DRT::ELEMENTS::Shell7p& DRT::ELEMENTS::Shell7p::operator=(const DRT::ELEMENTS::Shell7p& other)
 {
   if (this == &other) return *this;
-  DRT::Element::operator=(other);
+  CORE::Elements::Element::operator=(other);
   distype_ = other.distype_;
   interface_ptr_ = other.interface_ptr_;
   eletech_ = other.eletech_;
@@ -195,7 +196,7 @@ DRT::ELEMENTS::Shell7p& DRT::ELEMENTS::Shell7p::operator=(const DRT::ELEMENTS::S
 }
 
 
-DRT::Element* DRT::ELEMENTS::Shell7p::Clone() const { return new Shell7p(*this); }
+CORE::Elements::Element* DRT::ELEMENTS::Shell7p::Clone() const { return new Shell7p(*this); }
 
 
 int DRT::ELEMENTS::Shell7p::NumLine() const { return CORE::FE::getNumberOfElementLines(distype_); }
@@ -213,7 +214,7 @@ void DRT::ELEMENTS::Shell7p::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class Element
-  DRT::Element::Pack(data);
+  CORE::Elements::Element::Pack(data);
   // discretization type
   AddtoPack(data, (int)distype_);
   // element technology
@@ -264,7 +265,8 @@ void DRT::ELEMENTS::Shell7p::Unpack(const std::vector<char>& data)
 
 Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::Shell7p::SolidMaterial(int nummat) const
 {
-  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat), true);
+  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(
+      CORE::Elements::Element::Material(nummat), true);
 }
 
 
@@ -273,7 +275,7 @@ void DRT::ELEMENTS::Shell7p::set_params_interface_ptr(const Teuchos::ParameterLi
   if (p.isParameter("interface"))
   {
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface"));
+        p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface"));
   }
   else
   {
@@ -293,7 +295,7 @@ void DRT::ELEMENTS::Shell7p::VisNames(std::map<std::string, int>& names)
 bool DRT::ELEMENTS::Shell7p::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (DRT::Element::VisData(name, data)) return true;
+  if (CORE::Elements::Element::VisData(name, data)) return true;
 
   shell_interface_->VisData(name, data);
 
@@ -310,13 +312,13 @@ void DRT::ELEMENTS::Shell7p::Print(std::ostream& os) const
 }
 
 
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Shell7p::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Shell7p::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<Shell7pLine, Shell7p>(CORE::COMM::buildLines, *this);
 }
 
 
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Shell7p::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Shell7p::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

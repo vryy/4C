@@ -56,7 +56,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
-    probdim>::calc_mat_and_rhs_multi_scale(const DRT::Element* const ele,
+    probdim>::calc_mat_and_rhs_multi_scale(const CORE::Elements::Element* const ele,
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const int k,
     const int iquad, const double timefacfac, const double rhsfac)
 {
@@ -164,9 +164,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::sysmat(DRT::Element* ele,
-    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
-    CORE::LINALG::SerialDenseVector& subgrdiff)
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::sysmat(
+    CORE::Elements::Element* ele, CORE::LINALG::SerialDenseMatrix& emat,
+    CORE::LINALG::SerialDenseVector& erhs, CORE::LINALG::SerialDenseVector& subgrdiff)
 {
   // call base class routine
   mydiffcond::sysmat(ele, emat, erhs, subgrdiff);

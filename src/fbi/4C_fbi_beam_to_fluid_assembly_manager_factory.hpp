@@ -22,9 +22,13 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
-  class Element;
   class Discretization;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace FBI
 {

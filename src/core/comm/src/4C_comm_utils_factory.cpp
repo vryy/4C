@@ -26,7 +26,7 @@ CORE::COMM::ParObject* CORE::COMM::Factory(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  allocate an element of a specific type (public)          mwgee 03|07|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> CORE::COMM::Factory(
+Teuchos::RCP<CORE::Elements::Element> CORE::COMM::Factory(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   return ParObjectFactory::Instance().Create(eletype, eledistype, id, owner);

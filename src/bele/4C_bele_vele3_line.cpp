@@ -26,8 +26,8 @@ DRT::ELEMENTS::Vele3LineType& DRT::ELEMENTS::Vele3LineType::Instance() { return 
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Vele3Line::Vele3Line(int id, int owner, int nnode, const int* nodeids,
-    DRT::Node** nodes, DRT::Element* parent, const int lline)
-    : DRT::FaceElement(id, owner)
+    DRT::Node** nodes, CORE::Elements::Element* parent, const int lline)
+    : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -39,7 +39,8 @@ DRT::ELEMENTS::Vele3Line::Vele3Line(int id, int owner, int nnode, const int* nod
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3Line::Vele3Line(const DRT::ELEMENTS::Vele3Line& old) : DRT::FaceElement(old)
+DRT::ELEMENTS::Vele3Line::Vele3Line(const DRT::ELEMENTS::Vele3Line& old)
+    : CORE::Elements::FaceElement(old)
 {
   return;
 }
@@ -49,7 +50,7 @@ DRT::ELEMENTS::Vele3Line::Vele3Line(const DRT::ELEMENTS::Vele3Line& old) : DRT::
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Vele3Line::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Vele3Line::Clone() const
 {
   DRT::ELEMENTS::Vele3Line* newelement = new DRT::ELEMENTS::Vele3Line(*this);
   return newelement;

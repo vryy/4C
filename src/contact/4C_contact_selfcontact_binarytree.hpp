@@ -11,7 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_mortar_base_binarytree.hpp"
 
 #include <Epetra_Map.h>
@@ -650,7 +650,7 @@ namespace CONTACT
 
      */
     void calculate_adjacent_tree_nodes_and_dual_edges(std::vector<int>& possadjids, const int gid,
-        DRT::Element* adjElementk, Teuchos::RCP<SelfBinaryTreeNode>& node1,
+        CORE::Elements::Element* adjElementk, Teuchos::RCP<SelfBinaryTreeNode>& node1,
         std::vector<Teuchos::RCP<SelfBinaryTreeNode>>& adjtreenodes,
         std::vector<Teuchos::RCP<SelfDualEdge>>& adjdualedges);
 
@@ -660,7 +660,7 @@ namespace CONTACT
     \param [in] element:  element of which number of first order nodes shall be determined
 
     */
-    int get_ele_specific_num_nodes(DRT::Element* element);
+    int get_ele_specific_num_nodes(CORE::Elements::Element* element);
 
     /*!
     \brief Get the (contracted) node that combines the nodes of the contracted edge

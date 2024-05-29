@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_od(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_od(CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -61,9 +61,9 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_od(DRT::Element* el
  | evaluate action for off-diagonal system matrix block      fang 11/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateActionOD(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateActionOD(CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const SCATRA::Action& action, DRT::Element::LocationArray& la,
+    const SCATRA::Action& action, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -103,7 +103,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateActionOD(DRT::Elemen
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_mesh(
-    DRT::Element* ele,                      ///< the element those matrix is calculated
+    CORE::Elements::Element* ele,           ///< the element those matrix is calculated
     CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
     const int ndofpernodemesh               ///< number of DOF of mesh displacement field
 )
@@ -264,7 +264,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_mesh(
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_fluid(
-    DRT::Element* ele,                      ///< the element those matrix is calculated
+    CORE::Elements::Element* ele,           ///< the element those matrix is calculated
     CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
     const int numdofpernode_fluid           ///< number of DOF of fluid field
 )

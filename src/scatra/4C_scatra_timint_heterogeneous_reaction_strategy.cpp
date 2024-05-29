@@ -233,7 +233,7 @@ void SCATRA::HeterogeneousReactionStrategy::heterogeneous_reaction_sanity_check(
   {
     const int gid = element_row_map->GID(lid);
 
-    DRT::Element* ele = scatratimint_->discretization()->gElement(gid);
+    CORE::Elements::Element* ele = scatratimint_->discretization()->gElement(gid);
     DRT::Node** nodes = ele->Nodes();
     if (ele->Shape() == CORE::FE::CellType::quad4 or ele->Shape() == CORE::FE::CellType::tri3)
     {

@@ -137,8 +137,9 @@ DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>::create_vari
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerPhi<nsd, nen>::extract_element_and_node_values(
-    const DRT::Element& ele, const DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
+    const CORE::Elements::Element& ele, const DRT::Discretization& discretization,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::Matrix<nsd, nen>& xyze,
+    const int dofsetnum)
 {
   // extract local values from the global vectors
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState(dofsetnum, "phinp_fluid");
@@ -218,8 +219,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerPhiGradPhi<nsd, nen>::Evalu
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInstat<nsd,
-    nen>::extract_element_and_node_values(const DRT::Element& ele,
-    const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    nen>::extract_element_and_node_values(const CORE::Elements::Element& ele,
+    const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // extract local values from the global vectors
@@ -276,8 +277,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInstat<nsd, nen>::EvaluateG
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerStruct<nsd,
-    nen>::extract_element_and_node_values(const DRT::Element& ele,
-    const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    nen>::extract_element_and_node_values(const CORE::Elements::Element& ele,
+    const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   if (dofsetnum != 0)
@@ -363,8 +364,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerStruct<nsd, nen>::EvaluateG
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerScalar<nsd,
-    nen>::extract_element_and_node_values(const DRT::Element& ele,
-    const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    nen>::extract_element_and_node_values(const CORE::Elements::Element& ele,
+    const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // call internal class
@@ -423,8 +424,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerScalar<nsd, nen>::EvaluateG
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerMaximumNodalVolFracValue<nsd,
-    nen>::extract_element_and_node_values(const DRT::Element& ele,
-    const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    nen>::extract_element_and_node_values(const CORE::Elements::Element& ele,
+    const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // call internal class

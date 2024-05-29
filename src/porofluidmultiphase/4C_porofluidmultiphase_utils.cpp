@@ -51,7 +51,7 @@ namespace
       for (auto const nodeid : *ArteryNodeIds)
       {
         DRT::Node* artnode = artsearchdis->gNode(nodeid);
-        DRT::Element** artele = artnode->Elements();
+        CORE::Elements::Element** artele = artnode->Elements();
         // get Id of corresponding element; Note: in lung modeling only most distal nodes
         // are coupled, so coupling nodes can only belong to one element
         const int elementID = artele[0]->Id();
@@ -97,7 +97,7 @@ void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
   for (int i = 0; i < numelements; ++i)
   {
     // get current element
-    DRT::Element* ele = fluiddis->lColElement(i);
+    CORE::Elements::Element* ele = fluiddis->lColElement(i);
 
     // find the corresponding material in the matmap
     int src_matid = ele->Material()->Parameter()->Id();
@@ -350,7 +350,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
   for (unsigned int iart = 0; iart < artEleGIDs.size(); ++iart)
   {
     const int artelegid = artEleGIDs[iart];
-    DRT::Element* artele = artsearchdis->gElement(artelegid);
+    CORE::Elements::Element* artele = artsearchdis->gElement(artelegid);
 
     // axis-aligned bounding box of artery
     const CORE::LINALG::Matrix<3, 2> aabb_artery =
@@ -399,7 +399,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
 /*----------------------------------------------------------------------*
  | get axis-aligned bounding box of element            kremheller 03/19 |
  *----------------------------------------------------------------------*/
-CORE::LINALG::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(DRT::Element* ele,
+CORE::LINALG::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(CORE::Elements::Element* ele,
     std::map<int, CORE::LINALG::Matrix<3, 1>>& positions, const bool evaluate_on_lateral_surface)
 {
   const CORE::LINALG::SerialDenseMatrix xyze_element(
@@ -452,7 +452,7 @@ std::map<int, CORE::LINALG::Matrix<3, 1>> POROFLUIDMULTIPHASE::UTILS::GetNodalPo
  | get maximum nodal distance                          kremheller 05/18 |
  *----------------------------------------------------------------------*/
 double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
-    DRT::Element* ele, Teuchos::RCP<DRT::Discretization> dis)
+    CORE::Elements::Element* ele, Teuchos::RCP<DRT::Discretization> dis)
 {
   double maxdist = 0.0;
 

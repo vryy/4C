@@ -67,7 +67,8 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::PoroFluidMultiPhaseE
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::setup_calc(
-    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization)
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization)
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, CORE::LINALG::Matrix<nsd_ + 1, nen_>>(
@@ -80,9 +81,10 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::setup_calc(
  * Evaluate element                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
+    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec)
 {
   //--------------------------------------------------------------------------------
@@ -109,8 +111,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(DRT::El
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::extract_element_and_node_values(
-    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
 {
   // get additional state vector for ALE case: grid displacement
   if (params_->IsAle())
@@ -144,9 +146,10 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::extract_element
  * Action type: Evaluate                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_action(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    POROFLUIDMULTIPHASE::BoundaryAction action, DRT::Element::LocationArray& la,
+int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_action(
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, POROFLUIDMULTIPHASE::BoundaryAction action,
+    CORE::Elements::Element::LocationArray& la,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec)
 {
@@ -174,10 +177,10 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_action(
  | evaluate Neumann boundary condition                        vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neumann(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::Conditions::Condition& condition, DRT::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseVector& elevec1)
+int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neumann(
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1)
 {
   // integration points and weights
   const CORE::FE::IntPointsAndWeights<nsd_> intpoints(

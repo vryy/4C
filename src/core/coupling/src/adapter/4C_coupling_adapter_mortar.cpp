@@ -66,8 +66,8 @@ void CORE::ADAPTER::CouplingMortar::Setup(
   std::map<int, DRT::Node*> slavegnodes;
 
   // initialize maps for elements
-  std::map<int, Teuchos::RCP<DRT::Element>> masterelements;
-  std::map<int, Teuchos::RCP<DRT::Element>> slaveelements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> masterelements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> slaveelements;
 
   // Coupling condition is defined by "MORTAR COUPLING CONDITIONS"
   // There is only one discretization (masterdis == slavedis). Therefore, the node set have to be
@@ -259,9 +259,10 @@ void CORE::ADAPTER::CouplingMortar::setup_interface(
     const std::vector<int>& coupleddof,             ///< vector defining coupled degrees of freedom
     const std::map<int, DRT::Node*>& mastergnodes,  ///< master nodes, including ghosted nodes
     const std::map<int, DRT::Node*>& slavegnodes,   ///< slave nodes, including ghosted nodes
-    const std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,  ///< master elements
-    const std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,   ///< slave elements
-    const Epetra_Comm& comm,                                          ///< communicator
+    const std::map<int, Teuchos::RCP<CORE::Elements::Element>>&
+        masterelements,                                                         ///< master elements
+    const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements,  ///< slave elements
+    const Epetra_Comm& comm,                                                    ///< communicator
     const bool slavewithale,  ///< flag defining if slave is ALE
     const bool slidingale,    ///< flag indicating sliding ALE case
     const int nds_master,     ///< master dofset number
@@ -396,10 +397,10 @@ void CORE::ADAPTER::CouplingMortar::setup_interface(
   if (slidingale == true) eleoffset = masterdis->ElementRowMap()->MaxAllGID() + 1;
 
   // feeding master elements to the interface
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator elemiter;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator elemiter;
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
-    Teuchos::RCP<DRT::Element> ele = elemiter->second;
+    Teuchos::RCP<CORE::Elements::Element> ele = elemiter->second;
     Teuchos::RCP<MORTAR::Element> mrtrele = Teuchos::rcp(new MORTAR::Element(
         ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), false, nurbs));
 
@@ -410,7 +411,7 @@ void CORE::ADAPTER::CouplingMortar::setup_interface(
   // feeding slave elements to the interface
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
-    Teuchos::RCP<DRT::Element> ele = elemiter->second;
+    Teuchos::RCP<CORE::Elements::Element> ele = elemiter->second;
 
     // Here, we have to distinguish between standard and sliding ale since mortar elements are
     // generated from the identical element sets in the case of sliding ale Therefore, we introduce

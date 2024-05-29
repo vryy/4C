@@ -57,7 +57,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
   CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  ELEMENTS::ActionType act = ELEMENTS::none;
+  CORE::Elements::ActionType act = CORE::Elements::none;
 
   if (IsParamsInterface())
   {
@@ -70,43 +70,43 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     if (action == "none")
       FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_linstiff")
-      act = ELEMENTS::struct_calc_linstiff;
+      act = CORE::Elements::struct_calc_linstiff;
     else if (action == "calc_struct_nlnstiff")
-      act = ELEMENTS::struct_calc_nlnstiff;
+      act = CORE::Elements::struct_calc_nlnstiff;
     else if (action == "calc_struct_internalforce")
-      act = ELEMENTS::struct_calc_internalforce;
+      act = CORE::Elements::struct_calc_internalforce;
     else if (action == "calc_struct_linstiffmass")
-      act = ELEMENTS::struct_calc_linstiffmass;
+      act = CORE::Elements::struct_calc_linstiffmass;
     else if (action == "calc_struct_nlnstiffmass")
-      act = ELEMENTS::struct_calc_nlnstiffmass;
+      act = CORE::Elements::struct_calc_nlnstiffmass;
     else if (action == "calc_struct_nlnstifflmass")
-      act = ELEMENTS::struct_calc_nlnstifflmass;
+      act = CORE::Elements::struct_calc_nlnstifflmass;
     else if (action == "calc_struct_stress")
-      act = ELEMENTS::struct_calc_stress;
+      act = CORE::Elements::struct_calc_stress;
     else if (action == "calc_struct_eleload")
-      act = ELEMENTS::struct_calc_eleload;
+      act = CORE::Elements::struct_calc_eleload;
     else if (action == "calc_struct_fsiload")
-      act = ELEMENTS::struct_calc_fsiload;
+      act = CORE::Elements::struct_calc_fsiload;
     else if (action == "calc_struct_update_istep")
-      act = ELEMENTS::struct_calc_update_istep;
+      act = CORE::Elements::struct_calc_update_istep;
     else if (action == "calc_struct_reset_istep")
-      act = ELEMENTS::struct_calc_reset_istep;
+      act = CORE::Elements::struct_calc_reset_istep;
     else if (action == "multi_eas_init")
-      act = ELEMENTS::multi_init_eas;
+      act = CORE::Elements::multi_init_eas;
     else if (action == "multi_eas_set")
-      act = ELEMENTS::multi_set_eas;
+      act = CORE::Elements::multi_set_eas;
     else if (action == "multi_calc_dens")
-      act = ELEMENTS::multi_calc_dens;
+      act = CORE::Elements::multi_calc_dens;
     else if (action == "multi_readrestart")
-      act = ELEMENTS::multi_readrestart;
+      act = CORE::Elements::multi_readrestart;
     else if (action == "calc_stc_matrix")
-      act = ELEMENTS::shell_calc_stc_matrix;
+      act = CORE::Elements::shell_calc_stc_matrix;
     else if (action == "calc_stc_matrix_inverse")
-      act = ELEMENTS::shell_calc_stc_matrix_inverse;
+      act = CORE::Elements::shell_calc_stc_matrix_inverse;
     else if (action == "calc_struct_recover")
-      act = ELEMENTS::struct_calc_recover;
+      act = CORE::Elements::struct_calc_recover;
     else if (action == "calc_struct_energy")
-      act = ELEMENTS::struct_calc_energy;
+      act = CORE::Elements::struct_calc_energy;
     else if (action == "calc_struct_predict")
       return 0;
     else
@@ -117,7 +117,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
   switch (act)
   {
     // linear stiffness
-    case ELEMENTS::struct_calc_linstiff:
+    case CORE::Elements::struct_calc_linstiff:
     {
       // need current displacement and residual forces
       std::vector<double> mydisp(lm.size());
@@ -148,7 +148,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     break;
 
     // nonlinear stiffness and internal force vector
-    case ELEMENTS::struct_calc_nlnstiff:
+    case CORE::Elements::struct_calc_nlnstiff:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -183,7 +183,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     break;
 
     // internal force vector only
-    case ELEMENTS::struct_calc_internalforce:
+    case CORE::Elements::struct_calc_internalforce:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -220,13 +220,13 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     break;
 
     // linear stiffness and consistent mass matrix
-    case ELEMENTS::struct_calc_linstiffmass:
+    case CORE::Elements::struct_calc_linstiffmass:
       FOUR_C_THROW("Case 'calc_struct_linstiffmass' not yet implemented");
       break;
 
     // nonlinear stiffness, internal force vector, and consistent/lumped mass matrix
-    case ELEMENTS::struct_calc_nlnstiffmass:
-    case ELEMENTS::struct_calc_nlnstifflmass:
+    case CORE::Elements::struct_calc_nlnstiffmass:
+    case CORE::Elements::struct_calc_nlnstifflmass:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -259,12 +259,12 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
             INPAR::STR::strain_none, INPAR::STR::strain_none);
       }
       // lump mass
-      if (act == ELEMENTS::struct_calc_nlnstifflmass) soh8_lumpmass(&elemat2);
+      if (act == CORE::Elements::struct_calc_nlnstifflmass) soh8_lumpmass(&elemat2);
     }
     break;
 
     // evaluate stresses and strains at gauss points
-    case ELEMENTS::struct_calc_stress:
+    case CORE::Elements::struct_calc_stress:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
@@ -340,15 +340,15 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case ELEMENTS::struct_calc_eleload:
+    case CORE::Elements::struct_calc_eleload:
       FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
 
-    case ELEMENTS::struct_calc_fsiload:
+    case CORE::Elements::struct_calc_fsiload:
       FOUR_C_THROW("Case not yet implemented");
       break;
 
-    case ELEMENTS::struct_calc_update_istep:
+    case CORE::Elements::struct_calc_update_istep:
     {
       // update internal EAS parameters
       if (eastype_ == soh8_eassosh8)
@@ -377,7 +377,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case ELEMENTS::struct_calc_reset_istep:
+    case CORE::Elements::struct_calc_reset_istep:
     {
       // restore internal EAS parameters
       if (eastype_ == soh8_eassosh8)
@@ -406,7 +406,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case ELEMENTS::multi_calc_dens:
+    case CORE::Elements::multi_calc_dens:
     {
       soh8_homog(params);
     }
@@ -416,7 +416,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     // have to be stored in every macroscopic Gauss point
     // allocation and initializiation of these data arrays can only be
     // done in the elements that know the number of EAS parameters
-    case ELEMENTS::multi_init_eas:
+    case CORE::Elements::multi_init_eas:
     {
       if (eastype_ != soh8_easnone)
       {
@@ -429,7 +429,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     // have to be stored in every macroscopic Gauss point
     // before any microscale simulation, EAS internal data has to be
     // set accordingly
-    case ELEMENTS::multi_set_eas:
+    case CORE::Elements::multi_set_eas:
     {
       if (eastype_ != soh8_easnone)
       {
@@ -439,7 +439,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     break;
 
     // read restart of microscale
-    case ELEMENTS::multi_readrestart:
+    case CORE::Elements::multi_readrestart:
     {
       Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
@@ -447,7 +447,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case ELEMENTS::shell_calc_stc_matrix:
+    case CORE::Elements::shell_calc_stc_matrix:
     {
       const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::StcScale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
@@ -461,7 +461,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
       }
     }
     break;
-    case ELEMENTS::shell_calc_stc_matrix_inverse:
+    case CORE::Elements::shell_calc_stc_matrix_inverse:
     {
       const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::StcScale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
@@ -475,11 +475,11 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
       }
     }
     break;
-    case ELEMENTS::struct_calc_recover:
+    case CORE::Elements::struct_calc_recover:
       SoHex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
       break;
-    case ELEMENTS::struct_calc_energy:
+    case CORE::Elements::struct_calc_energy:
     {
       if (eastype_ == DRT::ELEMENTS::SoHex8::soh8_easmild)
       {
@@ -512,15 +512,15 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
 
       break;
     }
-    case ELEMENTS::struct_calc_predict:
+    case CORE::Elements::struct_calc_predict:
     {
       // do nothing here
       break;
     }
-    case ELEMENTS::struct_create_backup:
-    case ELEMENTS::struct_recover_from_backup:
-    case ELEMENTS::struct_calc_mass_volume:
-    case ELEMENTS::analyse_jacobian_determinant:
+    case CORE::Elements::struct_create_backup:
+    case CORE::Elements::struct_recover_from_backup:
+    case CORE::Elements::struct_calc_mass_volume:
+    case CORE::Elements::analyse_jacobian_determinant:
     {
       SoHex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
@@ -529,7 +529,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     default:
     {
       FOUR_C_THROW("Unknown type of action for So_sh8: %s | %d",
-          ELEMENTS::ActionType2String(act).c_str(), act);
+          CORE::Elements::ActionType2String(act).c_str(), act);
       exit(EXIT_FAILURE);
     }
   }

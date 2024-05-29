@@ -81,7 +81,7 @@ void BEAMINTERACTION::BeamToSolidCondition::Clear()
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidCondition::CreateContactPair(
-    const std::vector<DRT::Element const*>& ele_ptrs)
+    const std::vector<CORE::Elements::Element const*>& ele_ptrs)
 {
   // Check if the given elements are in this condition.
   if (!IdsInCondition(ele_ptrs[0]->Id(), ele_ptrs[1]->Id())) return Teuchos::null;
@@ -261,7 +261,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::CreateBeamToSoli
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::create_contact_pair_internal(
-    const std::vector<DRT::Element const*>& ele_ptrs)
+    const std::vector<CORE::Elements::Element const*>& ele_ptrs)
 {
   const CORE::FE::CellType shape = ele_ptrs[1]->Shape();
   const auto beam_to_volume_params =
@@ -356,8 +356,8 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::BuildIdSets(
   for (const auto& map_item : condition_other_->Geometry())
   {
     if (!map_item.second->IsFaceElement()) FOUR_C_THROW("Expected FaceElement");
-    Teuchos::RCP<const DRT::FaceElement> face_element =
-        Teuchos::rcp_dynamic_cast<const DRT::FaceElement>(map_item.second);
+    Teuchos::RCP<const CORE::Elements::FaceElement> face_element =
+        Teuchos::rcp_dynamic_cast<const CORE::Elements::FaceElement>(map_item.second);
     const int solid_id = face_element->ParentElementId();
     surface_ids_[solid_id] = face_element;
   }
@@ -452,7 +452,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
          i_node++)
     {
       // Loop over the elements connected to that node and check if they are in this condition.
-      const DRT::Element* const* elements = nodes[i_node]->Elements();
+      const CORE::Elements::Element* const* elements = nodes[i_node]->Elements();
       for (int i_element = 0; i_element < nodes[i_node]->NumElement(); i_element++)
       {
         const int element_id = elements[i_element]->Id();
@@ -516,14 +516,15 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::set_state(
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
-    const std::vector<DRT::Element const*>& ele_ptrs)
+    const std::vector<CORE::Elements::Element const*>& ele_ptrs)
 {
   using namespace GEOMETRYPAIR;
 
   const auto* beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
   const bool beam_is_hermite = beam_element->hermite_centerline_interpolation();
 
-  const Teuchos::RCP<const DRT::FaceElement>& face_element = surface_ids_[ele_ptrs[1]->Id()];
+  const Teuchos::RCP<const CORE::Elements::FaceElement>& face_element =
+      surface_ids_[ele_ptrs[1]->Id()];
   const CORE::FE::CellType shape = face_element->Shape();
 
   auto line_to_surface_evaluation_data =

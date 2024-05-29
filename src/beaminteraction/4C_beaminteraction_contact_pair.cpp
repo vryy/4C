@@ -16,8 +16,8 @@
 #include "4C_beaminteraction_beam_to_sphere_contact_pair.hpp"
 #include "4C_beaminteraction_conditions.hpp"
 #include "4C_beaminteraction_contact_params.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_geometry_pair.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_rigidsphere.hpp"
 #include "4C_so3_base.hpp"
 #include "4C_solid_3D_ele.hpp"
@@ -45,7 +45,7 @@ BEAMINTERACTION::BeamContactPair::BeamContactPair()
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactPair::Init(
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-    std::vector<DRT::Element const*> elements)
+    std::vector<CORE::Elements::Element const*> elements)
 {
   issetup_ = false;
 
@@ -69,7 +69,7 @@ void BEAMINTERACTION::BeamContactPair::Setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair::Create(
-    std::vector<DRT::Element const*> const& ele_ptrs,
+    std::vector<CORE::Elements::Element const*> const& ele_ptrs,
     const Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions>& beam_interaction_conditions_ptr)
 {
   // Check the type of the second element.

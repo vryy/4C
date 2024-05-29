@@ -90,8 +90,8 @@ void sti_dyn(const int& restartstep  //! time step for restart
   // add material of scatra elements to thermo elements and vice versa
   for (int i = 0; i < scatradis->NumMyColElements(); ++i)
   {
-    DRT::Element* scatraele = scatradis->lColElement(i);
-    DRT::Element* thermoele = thermodis->gElement(scatraele->Id());
+    CORE::Elements::Element* scatraele = scatradis->lColElement(i);
+    CORE::Elements::Element* thermoele = thermodis->gElement(scatraele->Id());
 
     thermoele->AddMaterial(scatraele->Material());
     scatraele->AddMaterial(thermoele->Material());

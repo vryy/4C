@@ -46,8 +46,8 @@ no direct physical interpretation. For 2D rotations both variants are identical.
 #include "4C_config.hpp"
 
 #include "4C_beam3_base.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_largerotations.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -115,7 +115,7 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    class Beam3kType : public DRT::ElementType
+    class Beam3kType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Beam3kType"; }
@@ -124,15 +124,15 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       int Initialize(DRT::Discretization& dis) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& actnode, const double* x0, const int numdof, const int dimnsp) override;
@@ -182,7 +182,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
     .
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
      \brief Get shape type of element
@@ -214,7 +214,7 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      DRT::ElementType& ElementType() const override { return Beam3kType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override { return Beam3kType::Instance(); }
 
       //@}
 
@@ -391,7 +391,7 @@ namespace DRT
       /*!
       \brief Get vector of RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
 
       /*!
@@ -1727,7 +1727,7 @@ namespace DRT
     };
 
     // << operator
-    std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
+    std::ostream& operator<<(std::ostream& os, const CORE::Elements::Element& ele);
 
   }  // namespace ELEMENTS
 

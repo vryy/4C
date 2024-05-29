@@ -34,8 +34,8 @@ FOUR_C_NAMESPACE_OPEN
 template <const int numnodes, const int numnodalvalues>
 CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
     const DRT::Discretization& pdiscret, const DRT::Discretization& cdiscret,
-    const std::map<int, int>& dofoffsetmap, DRT::Element* element1, DRT::Element* element2,
-    Teuchos::ParameterList& beamcontactparams)
+    const std::map<int, int>& dofoffsetmap, CORE::Elements::Element* element1,
+    CORE::Elements::Element* element2, Teuchos::ParameterList& beamcontactparams)
     : pdiscret_(pdiscret),
       cdiscret_(cdiscret),
       dofoffsetmap_(dofoffsetmap),
@@ -110,7 +110,7 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   smoothing_ = CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Smoothing>(
       beamcontactparams, "BEAMS_SMOOTHING");
 
-  const DRT::ElementType& eot1 = element1_->ElementType();
+  const CORE::Elements::ElementType& eot1 = element1_->ElementType();
 
   if (smoothing_ == INPAR::BEAMCONTACT::bsm_cpp and eot1 != DRT::ELEMENTS::Beam3rType::Instance())
     FOUR_C_THROW("Tangent smoothing only implemented for beams of type beam3r!");
@@ -3841,10 +3841,11 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::check_boundary_contact(
 }
 
 template <const int numnodes, const int numnodalvalues>
-double CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_jacobi(DRT::Element* element1)
+double CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_jacobi(
+    CORE::Elements::Element* element1)
 {
   double jacobi = 1.0;
-  const DRT::ElementType& eot1 = element1->ElementType();
+  const CORE::Elements::ElementType& eot1 = element1->ElementType();
 
   // The jacobi factor is only needed in order to scale the CPP condition. Therefore, we only use
   // the jacobi_ factor corresponding to the first gauss point of the beam element

@@ -22,7 +22,7 @@ problems.
 FOUR_C_NAMESPACE_OPEN
 
 // Forward declarations.
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
 }
@@ -41,7 +41,7 @@ namespace GEOMETRYPAIR
      * @param element1 Pointer to the first element.
      * @param element2 Pointer to the second element.
      */
-    GeometryPair(const DRT::Element* element1, const DRT::Element* element2)
+    GeometryPair(const CORE::Elements::Element* element1, const CORE::Elements::Element* element2)
         : element1_(element1), element2_(element2){};
 
     /**
@@ -52,12 +52,12 @@ namespace GEOMETRYPAIR
     /**
      * \brief Pointer to the first element.
      */
-    inline const DRT::Element* Element1() const { return element1_; };
+    inline const CORE::Elements::Element* Element1() const { return element1_; };
 
     /**
      * \brief Pointer to the second element.
      */
-    inline const DRT::Element* Element2() const { return element2_; };
+    inline const CORE::Elements::Element* Element2() const { return element2_; };
 
     /**
      * \brief Set the pointer to the second element.
@@ -65,14 +65,17 @@ namespace GEOMETRYPAIR
      * For surface elements the pairs need the face element representing the surface, not the volume
      * element.
      */
-    virtual inline void SetElement2(const DRT::Element* element2) { element2_ = element2; };
+    virtual inline void SetElement2(const CORE::Elements::Element* element2)
+    {
+      element2_ = element2;
+    };
 
    private:
     //! Link to the element containing the first geometry.
-    const DRT::Element* element1_;
+    const CORE::Elements::Element* element1_;
 
     //! Link to the element containing the second geometry.
-    const DRT::Element* element2_;
+    const CORE::Elements::Element* element2_;
   };
 }  // namespace GEOMETRYPAIR
 

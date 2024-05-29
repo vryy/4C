@@ -458,7 +458,7 @@ namespace XFEM
 
 
     /// get the side element of the respective boundary discretization
-    DRT::Element* get_side(const int coup_sid  ///< the overall global coupling side id
+    CORE::Elements::Element* get_side(const int coup_sid  ///< the overall global coupling side id
     )
     {
       // get the mesh coupling object index
@@ -473,11 +473,12 @@ namespace XFEM
 
     /// get the coupling element (the side for xfluid-sided averaging) for a given global coupl.
     /// side id
-    DRT::Element* GetCouplingElement(const int coup_sid,  ///< the overall global coupling side id
-        DRT::Element* ele);
+    CORE::Elements::Element* GetCouplingElement(
+        const int coup_sid,  ///< the overall global coupling side id
+        CORE::Elements::Element* ele);
 
     //! get the element from the conditioned dis for a local coupling side element id
-    DRT::Element* GetCondElement(
+    CORE::Elements::Element* GetCondElement(
         const int coup_sid  ///< global side element id w.r.t cutter discretization
     )
     {
@@ -651,14 +652,14 @@ namespace XFEM
 
     /// Get the average weights from the coupling objects
     void GetAverageWeights(const int coup_sid,  ///< the overall global coupling side id
-        DRT::Element* xfele,                    ///< xfluid ele
+        CORE::Elements::Element* xfele,         ///< xfluid ele
         double& kappa_m,                        ///< Weight parameter (parameter +/master side)
         double& kappa_s,                        ///< Weight parameter (parameter -/slave  side)
         bool& non_xfluid_coupling);
 
     /// compute viscous part of Nitsche's penalty term scaling for Nitsche's method
     void get_visc_penalty_stabfac(const int coup_sid,  ///< the overall global coupling side id
-        DRT::Element* xfele,                           ///< xfluid ele
+        CORE::Elements::Element* xfele,                ///< xfluid ele
         const double& kappa_m,  ///< Weight parameter (parameter +/master side)
         const double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
         const double& inv_h_k,  ///< the inverse characteristic element length h_k
@@ -676,16 +677,16 @@ namespace XFEM
     );
 
     /// set material pointer for volume
-    void get_volume_cell_material(DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat,
-        const CORE::GEO::CUT::VolumeCell* vc);
+    void get_volume_cell_material(CORE::Elements::Element* actele,
+        Teuchos::RCP<CORE::MAT::Material>& mat, const CORE::GEO::CUT::VolumeCell* vc);
 
     /// set material pointer for volume cell for (coupling) master side
-    void get_interface_master_material(DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat,
-        const CORE::GEO::CUT::VolumeCell* vc);
+    void get_interface_master_material(CORE::Elements::Element* actele,
+        Teuchos::RCP<CORE::MAT::Material>& mat, const CORE::GEO::CUT::VolumeCell* vc);
 
     /// set material pointer for coupling slave side
     void get_interface_slave_material(
-        DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat, int coup_sid);
+        CORE::Elements::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat, int coup_sid);
 
     /// Initialize Fluid intersection/Cut State
     bool initialize_fluid_state(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,

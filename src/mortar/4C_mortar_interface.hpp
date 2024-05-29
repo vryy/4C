@@ -36,9 +36,12 @@ namespace BINSTRATEGY
 namespace DRT
 {
   class Discretization;
-  class Element;
-  class Exporter;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::LINALG
 {
@@ -1408,7 +1411,8 @@ namespace MORTAR
     virtual void pre_mortar_coupling(const MORTAR::Element* sele,
         const std::vector<MORTAR::Element*> mele,
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) const {
-        /* does nothing in the default case */};
+        /* does nothing in the default case */
+    };
 
     /** \brief function called at the end of each MortarCoupling call
      *
@@ -1421,7 +1425,8 @@ namespace MORTAR
     virtual void post_mortar_coupling(const MORTAR::Element* sele,
         const std::vector<MORTAR::Element*> mele,
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) const {
-        /* does nothing in the default case */};
+        /* does nothing in the default case */
+    };
 
     /*!
     \brief Evaluate segment-to-segment coupling (mortar...)

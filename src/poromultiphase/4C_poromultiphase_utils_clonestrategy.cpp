@@ -9,8 +9,8 @@
 
 #include "4C_poromultiphase_utils_clonestrategy.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_input_base.hpp"
@@ -52,7 +52,8 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::check_material_typ
  | set element-specific data (material etc.)                 vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::set_element_data(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
+    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+    const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual
@@ -78,7 +79,7 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::set_element_data(
  | determine whether element is copied or not               vuong 08/16 |
  *----------------------------------------------------------------------*/
 bool POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::determine_ele_type(
-    DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // note: ismyele, actele remain unused here! Used only for ALE creation
 

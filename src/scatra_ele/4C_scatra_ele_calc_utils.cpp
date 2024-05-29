@@ -68,7 +68,7 @@ namespace SCATRA
    |find elements of inflow section                                rasthofer 01/12 |
    |for turbulent low Mach number flows with turbulent inflow condition            |
    *-------------------------------------------------------------------------------*/
-  bool inflow_element(const DRT::Element* ele)
+  bool inflow_element(const CORE::Elements::Element* ele)
   {
     bool inflow_ele = false;
 

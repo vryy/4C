@@ -27,7 +27,8 @@ CORE::COMM::ParObject* DRT::ELEMENTS::FluidTypeImmersed::Create(const std::vecto
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidTypeImmersed::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidTypeImmersed::Create(
+    const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::FluidImmersed(id, owner));
 }
@@ -78,7 +79,7 @@ DRT::ELEMENTS::FluidImmersed::FluidImmersed(const DRT::ELEMENTS::FluidImmersed& 
  |  Deep copy this instance of Fluid and return pointer to it (public)  |
  |                                                          rauch 03/14 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::FluidImmersed::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::FluidImmersed::Clone() const
 {
   DRT::ELEMENTS::FluidImmersed* newelement = new DRT::ELEMENTS::FluidImmersed(*this);
   return newelement;

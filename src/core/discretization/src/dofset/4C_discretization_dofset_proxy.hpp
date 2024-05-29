@@ -95,8 +95,8 @@ namespace CORE::Dofsets
     };
 
     /// Get number of dofs for given element
-    int NumDof(
-        const DRT::Element* element  ///< element, for which you want to know the number of dofs
+    int NumDof(const CORE::Elements::Element*
+            element  ///< element, for which you want to know the number of dofs
     ) const override
     {
       check_is_assigned();
@@ -120,7 +120,8 @@ namespace CORE::Dofsets
     };
 
     /// Get the gid of a dof for given element
-    int Dof(const DRT::Element* element,  ///< element, for which you want the dof positions
+    int Dof(
+        const CORE::Elements::Element* element,  ///< element, for which you want the dof positions
         int dof) const override
     {
       check_is_assigned();
@@ -146,7 +147,7 @@ namespace CORE::Dofsets
     };
 
     /// Get the gid of all dofs of a element
-    std::vector<int> Dof(const DRT::Element* element) const override
+    std::vector<int> Dof(const CORE::Elements::Element* element) const override
     {
       check_is_assigned();
       return dofset_->Dof(element);
@@ -170,14 +171,14 @@ namespace CORE::Dofsets
     };
 
     /// Get the gid of all dofs of a element and the location matrix
-    void Dof(const DRT::Element* element, std::vector<int>& lm) const override
+    void Dof(const CORE::Elements::Element* element, std::vector<int>& lm) const override
     {
       check_is_assigned();
       dofset_->Dof(element, lm);
     };
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    void Dof(const DRT::Element*
+    void Dof(const CORE::Elements::Element*
                  element,       ///< element which provides its expected number of DOFs per node
         const DRT::Node* node,  ///< node, for which you want the DOF positions
         std::vector<int>& lm    ///< already allocated vector to be filled with DOF positions

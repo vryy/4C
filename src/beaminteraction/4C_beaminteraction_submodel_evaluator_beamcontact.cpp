@@ -260,7 +260,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
   {
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
 
-    std::vector<const DRT::Element*> element_ptr(2);
+    std::vector<const CORE::Elements::Element*> element_ptr(2);
 
     element_ptr[0] = elepairptr->Element1();
     element_ptr[1] = elepairptr->Element2();
@@ -810,7 +810,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
     for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
     {
       int const elegid = ele_type_map_extractor_ptr()->BeamMap()->GID(rowele_i);
-      DRT::Element* currele = DiscretPtr()->gElement(elegid);
+      CORE::Elements::Element* currele = DiscretPtr()->gElement(elegid);
 
       // (unique) set of neighboring bins for all col bins assigned to current element
       std::set<int> neighboring_binIds;
@@ -833,7 +833,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
       // get set of elements that reside in neighboring bins
       std::vector<int> glob_neighboring_binIds(
           neighboring_binIds.begin(), neighboring_binIds.end());
-      std::set<DRT::Element*> neighboring_elements;
+      std::set<CORE::Elements::Element*> neighboring_elements;
       BinStrategyPtr()->GetBinContent(
           neighboring_elements, contactelementtypes_, glob_neighboring_binIds);
 
@@ -852,7 +852,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
     for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
     {
       int const elegid = ele_type_map_extractor_ptr()->BeamMap()->GID(rowele_i);
-      DRT::Element* currele = Discret().gElement(elegid);
+      CORE::Elements::Element* currele = Discret().gElement(elegid);
 
       beam_bounding_boxes.emplace_back(std::make_pair(elegid,
           currele->GetBoundingVolume(Discret(), *beam_interaction_data_state_ptr()->GetDisColNp(),
@@ -866,7 +866,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
     for (int colele_i = 0; colele_i < numcoleles; ++colele_i)
     {
       // Check if the current element is relevant for beam-to-xxx contact.
-      DRT::Element* currele = Discret().lColElement(colele_i);
+      CORE::Elements::Element* currele = Discret().lColElement(colele_i);
       const BINSTRATEGY::UTILS::BinContentType contact_type =
           BINSTRATEGY::UTILS::ConvertElementToBinContentType(currele);
       if (std::find(contactelementtypes_.begin(), contactelementtypes_.end(), contact_type) !=
@@ -886,8 +886,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
     for (size_t i_beam = 0; i_beam < beam_bounding_boxes.size(); i_beam++)
     {
       const int beam_gid = beam_bounding_boxes[i_beam].first;
-      DRT::Element* currele = Discret().gElement(beam_gid);
-      std::set<DRT::Element*> neighboring_elements;
+      CORE::Elements::Element* currele = Discret().gElement(beam_gid);
+      std::set<CORE::Elements::Element*> neighboring_elements;
       for (int j = offsets[i_beam]; j < offsets[i_beam + 1]; j++)
       {
         neighboring_elements.insert(Discret().gElement(other_bounding_boxes[indices[j]].first));
@@ -916,12 +916,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     select_eles_to_be_considered_for_contact_evaluation(
-        DRT::Element* currele, std::set<DRT::Element*>& neighbors) const
+        CORE::Elements::Element* currele, std::set<CORE::Elements::Element*>& neighbors) const
 {
   check_init();
 
   // sort out elements that should not be considered in contact evaluation
-  std::set<DRT::Element*>::iterator eiter;
+  std::set<CORE::Elements::Element*>::iterator eiter;
   for (eiter = neighbors.begin(); eiter != neighbors.end();)
   {
     bool toerase = false;
@@ -965,13 +965,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
   // clear the geometry evaluation data
   beam_interaction_conditions_ptr_->Clear();
 
-  std::map<int, std::set<DRT::Element*>>::const_iterator nearbyeleiter;
+  std::map<int, std::set<CORE::Elements::Element*>>::const_iterator nearbyeleiter;
 
   for (nearbyeleiter = nearby_elements_map_.begin(); nearbyeleiter != nearby_elements_map_.end();
        ++nearbyeleiter)
   {
     const int elegid = nearbyeleiter->first;
-    std::vector<DRT::Element const*> ele_ptrs(2);
+    std::vector<CORE::Elements::Element const*> ele_ptrs(2);
     ele_ptrs[0] = DiscretPtr()->gElement(elegid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -979,7 +979,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
       FOUR_C_THROW("first element of element pair must be a beam element");
 #endif
 
-    std::set<DRT::Element*>::const_iterator secondeleiter;
+    std::set<CORE::Elements::Element*>::const_iterator secondeleiter;
     for (secondeleiter = nearbyeleiter->second.begin();
          secondeleiter != nearbyeleiter->second.end(); ++secondeleiter)
     {

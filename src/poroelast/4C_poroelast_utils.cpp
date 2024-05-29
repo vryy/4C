@@ -33,7 +33,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-bool POROELAST::UTILS::IsPoroElement(const DRT::Element* actele)
+bool POROELAST::UTILS::IsPoroElement(const CORE::Elements::Element* actele)
 {
   // all poro elements need to be listed here
   return actele->ElementType() == DRT::ELEMENTS::SoHex8PoroType::Instance() or
@@ -50,7 +50,7 @@ bool POROELAST::UTILS::IsPoroElement(const DRT::Element* actele)
          IsPoroP1Element(actele);
 }
 
-bool POROELAST::UTILS::IsPoroP1Element(const DRT::Element* actele)
+bool POROELAST::UTILS::IsPoroP1Element(const CORE::Elements::Element* actele)
 {
   // all poro-p1 elements need to be listed here
   return actele->ElementType() == DRT::ELEMENTS::SoHex8PoroP1Type::Instance() or
@@ -161,10 +161,10 @@ void POROELAST::UTILS::SetMaterialPointersMatchingGrid(
 
   for (int i = 0; i < numelements; ++i)
   {
-    DRT::Element* targetele = targetdis->lColElement(i);
+    CORE::Elements::Element* targetele = targetdis->lColElement(i);
     const int gid = targetele->Id();
 
-    DRT::Element* sourceele = sourcedis->gElement(gid);
+    CORE::Elements::Element* sourceele = sourcedis->gElement(gid);
 
     // for coupling we add the source material to the target element and vice versa
     targetele->AddMaterial(sourceele->Material());
@@ -215,9 +215,9 @@ void POROELAST::UTILS::create_volume_ghosting(DRT::Discretization& idiscret)
     {
       int gid = ielecolmap->GID(i);
 
-      DRT::Element* ele = idiscret.gElement(gid);
+      CORE::Elements::Element* ele = idiscret.gElement(gid);
       if (!ele) FOUR_C_THROW("ERROR: Cannot find element with gid %", gid);
-      auto* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+      auto* faceele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
 
       int volgid = 0;
       if (!faceele)
@@ -264,10 +264,10 @@ void POROELAST::UTILS::reconnect_parent_pointers(DRT::Discretization& idiscret,
   {
     int gid = ielecolmap->GID(i);
 
-    DRT::Element* ele = idiscret.gElement(gid);
+    CORE::Elements::Element* ele = idiscret.gElement(gid);
     if (!ele) FOUR_C_THROW("ERROR: Cannot find element with gid %", gid);
 
-    auto* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+    auto* faceele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
 
     if (!faceele) FOUR_C_THROW("Cast to FaceElement failed!");
     SetSlaveAndMaster(voldiscret, voldiscret2, elecolmap, faceele);
@@ -275,14 +275,15 @@ void POROELAST::UTILS::reconnect_parent_pointers(DRT::Discretization& idiscret,
 }
 
 void POROELAST::UTILS::SetSlaveAndMaster(const DRT::Discretization& voldiscret,
-    const DRT::Discretization* voldiscret2, const Epetra_Map* elecolmap, DRT::FaceElement* faceele)
+    const DRT::Discretization* voldiscret2, const Epetra_Map* elecolmap,
+    CORE::Elements::FaceElement* faceele)
 {
   int volgid = faceele->ParentElementId();
 
   if (elecolmap->LID(volgid) == -1)  // Volume discretization has not Element
     FOUR_C_THROW("create_volume_ghosting: Element %d does not exist on this Proc!", volgid);
 
-  DRT::Element* vele = voldiscret.gElement(volgid);
+  CORE::Elements::Element* vele = voldiscret.gElement(volgid);
   if (!vele) FOUR_C_THROW("ERROR: Cannot find element with gid %", volgid);
   faceele->set_parent_master_element(vele, faceele->FaceParentNumber());
 
@@ -376,7 +377,7 @@ double POROELAST::UTILS::calculate_vector_norm(
 }
 
 void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
-    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1,
+    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, CORE::Elements::Element* ele1,
     const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
     Teuchos::RCP<DRT::Discretization> dis2)
 {
@@ -385,14 +386,14 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
       volmortar, ele1, ids_2, dis1, dis2);
 
   // default strategy: take material of element with closest center in reference coordinates
-  DRT::Element* ele2 = nullptr;
+  CORE::Elements::Element* ele2 = nullptr;
   double mindistance = 1e10;
   {
     std::vector<double> centercoords1 = CORE::FE::element_center_refe_coords(*ele1);
 
     for (int id_2 : ids_2)
     {
-      DRT::Element* actele2 = dis2->gElement(id_2);
+      CORE::Elements::Element* actele2 = dis2->gElement(id_2);
       std::vector<double> centercoords2 = CORE::FE::element_center_refe_coords(*actele2);
 
       CORE::LINALG::Matrix<3, 1> diffcoords(true);
@@ -423,7 +424,7 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
 }
 
 void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
-    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele2,
+    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, CORE::Elements::Element* ele2,
     const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
     Teuchos::RCP<DRT::Discretization> dis2)
 {
@@ -435,14 +436,14 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
   if (ids_1.empty()) return;
 
   // default strategy: take material of element with closest center in reference coordinates
-  DRT::Element* ele1 = nullptr;
+  CORE::Elements::Element* ele1 = nullptr;
   double mindistance = 1e10;
   {
     std::vector<double> centercoords2 = CORE::FE::element_center_refe_coords(*ele2);
 
     for (int id_1 : ids_1)
     {
-      DRT::Element* actele1 = dis1->gElement(id_1);
+      CORE::Elements::Element* actele1 = dis1->gElement(id_1);
       std::vector<double> centercoords1 = CORE::FE::element_center_refe_coords(*actele1);
 
       CORE::LINALG::Matrix<3, 1> diffcoords(true);

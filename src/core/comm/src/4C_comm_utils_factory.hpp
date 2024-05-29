@@ -44,7 +44,7 @@ namespace CORE::COMM
   /*!
   \brief Create an instance of a finite element depending on the type of element
 
-  A DRT::Element derived class is allocated and returned. The type of element
+  A CORE::Elements::Element derived class is allocated and returned. The type of element
   allocated depends on the input parameter eletype.
 
   \param eletype (in): A string containing the type of element
@@ -53,7 +53,7 @@ namespace CORE::COMM
   \param owner   (in): owner of the new element
 
   */
-  Teuchos::RCP<DRT::Element> Factory(
+  Teuchos::RCP<CORE::Elements::Element> Factory(
       const std::string eletype, const std::string distype, const int id, const int owner);
 
   //! flag, whether surfaces or lines have to be created in the ElementBoundaryFactory
@@ -84,7 +84,7 @@ namespace CORE::COMM
    * \date 05/08
    */
   template <class BoundaryEle, class ParentEle>
-  std::vector<Teuchos::RCP<DRT::Element>> ElementBoundaryFactory(
+  std::vector<Teuchos::RCP<CORE::Elements::Element>> ElementBoundaryFactory(
       const BoundaryBuildType
           buildtype,  ///< flag, whether volumes, surfaces or lines have to be created
       ParentEle& ele  ///< pointer on the parent element
@@ -113,7 +113,7 @@ namespace CORE::COMM
         FOUR_C_THROW("buildNothing case not handled in ElementBoundaryFactory");
     }
     // create vectors that will contain the volume, surface or line elements
-    std::vector<Teuchos::RCP<DRT::Element>> boundaryeles(nele);
+    std::vector<Teuchos::RCP<CORE::Elements::Element>> boundaryeles(nele);
 
     // does DRT::UTILS convention match your implementation of NumSurface() or NumLine()?
     if (nele != connectivity.size()) FOUR_C_THROW("number of surfaces or lines does not match!");
@@ -161,7 +161,7 @@ namespace CORE::COMM
    * \date 03/12
    */
   template <class IntFaceEle, class ParentEle>
-  Teuchos::RCP<DRT::Element> ElementIntFaceFactory(int id,  ///< element id
+  Teuchos::RCP<CORE::Elements::Element> ElementIntFaceFactory(int id,  ///< element id
       int owner,                  ///< owner (= owner of parent element with smallest gid)
       int nnode,                  ///< number of nodes
       const int* nodeids,         ///< node ids
@@ -179,7 +179,7 @@ namespace CORE::COMM
   }
 
   template <class BoundaryEle, class ParentEle>
-  std::vector<Teuchos::RCP<DRT::Element>> GetElementLines(ParentEle& ele)
+  std::vector<Teuchos::RCP<CORE::Elements::Element>> GetElementLines(ParentEle& ele)
   {
     // 1D boundary element and 2D/3D parent element
     if (CORE::FE::getDimension(ele.Shape()) > 1)
@@ -196,7 +196,7 @@ namespace CORE::COMM
   }
 
   template <class BoundaryEle, class ParentEle>
-  std::vector<Teuchos::RCP<DRT::Element>> GetElementSurfaces(ParentEle& ele)
+  std::vector<Teuchos::RCP<CORE::Elements::Element>> GetElementSurfaces(ParentEle& ele)
   {
     if (CORE::FE::getDimension(ele.Shape()) > 2)
     {

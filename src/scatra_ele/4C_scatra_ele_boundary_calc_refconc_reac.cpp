@@ -57,13 +57,13 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ScaTraEleBoun
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::fac_for_ref_conc(
-    const int iquad,                     ///< current boundary integration point
-    const DRT::FaceElement* bele,        ///< current boundary element
-    Teuchos::ParameterList& params,      ///< parameter list
-    DRT::Discretization& discretization  ///< discretization
+    const int iquad,                          ///< current boundary integration point
+    const CORE::Elements::FaceElement* bele,  ///< current boundary element
+    Teuchos::ParameterList& params,           ///< parameter list
+    DRT::Discretization& discretization       ///< discretization
 )
 {
-  const DRT::Element* pele = bele->parent_element();
+  const CORE::Elements::Element* pele = bele->parent_element();
 
   double J = 1.0;
   // only 3D cases:
@@ -102,11 +102,11 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::fac_fo
 template <CORE::FE::CellType distype, int probdim>
 template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::calc_jat_int_point(
-    const int iquad,                     ///< current boundary integration point
-    const DRT::FaceElement* bele,        ///< current boundary element
-    const DRT::Element* pele,            ///< current parent element
-    Teuchos::ParameterList& params,      ///< parameter list
-    DRT::Discretization& discretization  ///< discretization
+    const int iquad,                          ///< current boundary integration point
+    const CORE::Elements::FaceElement* bele,  ///< current boundary element
+    const CORE::Elements::Element* pele,      ///< current parent element
+    Teuchos::ParameterList& params,           ///< parameter list
+    DRT::Discretization& discretization       ///< discretization
 )
 {
   // NOTE: we want to evaluate J=det(F) on the current gauss point of the current boundary element.
@@ -143,7 +143,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::calc_j
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // parent element location array
-    DRT::Element::LocationArray pla(discretization.NumDofSets());
+    CORE::Elements::Element::LocationArray pla(discretization.NumDofSets());
     pele->LocationVector(discretization, pla, false);
 
     // determine number of velocity related dofs per node

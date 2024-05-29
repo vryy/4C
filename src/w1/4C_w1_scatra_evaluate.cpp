@@ -8,9 +8,9 @@
 */
 /*---------------------------------------------------------------------------*/
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  |  preevaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la)
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
 {
   const int numnode = num_node();
 
@@ -56,7 +56,7 @@ void DRT::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params,
     // Get pointer for scatra material in the same element
     Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
     scatradis = GLOBAL::Problem::Instance()->GetDis("scatra");
-    DRT::Element* scatraele = scatradis->gElement(Id());
+    CORE::Elements::Element* scatraele = scatradis->gElement(Id());
     Teuchos::RCP<CORE::MAT::Material> scatramat =
         Teuchos::rcp_dynamic_cast<CORE::MAT::Material>(scatraele->Material());
     params.set<Teuchos::RCP<CORE::MAT::Material>>("scatramat", scatramat);
@@ -75,7 +75,7 @@ void DRT::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params,
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Wall1Scatra::my_evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -89,7 +89,7 @@ int DRT::ELEMENTS::Wall1Scatra::my_evaluate(Teuchos::ParameterList& params,
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Wall1Scatra::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -99,7 +99,7 @@ int DRT::ELEMENTS::Wall1Scatra::Evaluate(Teuchos::ParameterList& params,
   set_params_interface_ptr(params);
 
   // start with "none"
-  ELEMENTS::ActionType act = ELEMENTS::none;
+  CORE::Elements::ActionType act = CORE::Elements::none;
 
   if (IsParamsInterface())
   {

@@ -31,7 +31,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Wall1Type::Create(const std::vector<char>&
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Wall1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALL")
@@ -45,14 +45,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1Type::Create(
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Wall1Type::Create(
+    const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::Wall1(id, owner));
 }
 
 
 void DRT::ELEMENTS::Wall1Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 2;
   dimns = 3;
@@ -142,7 +143,8 @@ void DRT::ELEMENTS::Wall1Type::setup_element_definition(
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1LineType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Wall1LineType::Create(
+    const int id, const int owner)
 {
   // return Teuchos::rcp( new Wall1Line( id, owner ) );
   return Teuchos::null;
@@ -197,7 +199,7 @@ DRT::ELEMENTS::Wall1::Wall1(const DRT::ELEMENTS::Wall1& old)
  |  Deep copy this instance of Wall1 and return pointer to it (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Wall1::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Wall1::Clone() const
 {
   DRT::ELEMENTS::Wall1* newelement = new DRT::ELEMENTS::Wall1(*this);
   return newelement;
@@ -297,7 +299,7 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             mgit 07/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Wall1::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1>(CORE::COMM::buildLines, *this);
 }
@@ -306,7 +308,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          mgit 03/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Wall1::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

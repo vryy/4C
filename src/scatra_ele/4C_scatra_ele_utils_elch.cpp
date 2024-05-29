@@ -58,7 +58,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::ScaTraEleUtilsElch(
  *---------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integration_point(
-    const DRT::Element* ele,                                   ///< current element
+    const CORE::Elements::Element* ele,                        ///< current element
     CORE::LINALG::SerialDenseMatrix& emat,                     ///< element matrix
     CORE::LINALG::SerialDenseVector& erhs,                     ///< element right-hand side vector
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
@@ -675,7 +675,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integ
  *----------------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_integration_point(
-    const DRT::Element* ele,                                ///< current element
+    const CORE::Elements::Element* ele,                     ///< current element
     CORE::LINALG::SerialDenseVector& scalars,               ///< scalars to be computed
     const Teuchos::ParameterList& params,                   ///< parameter list
     const Teuchos::RCP<CORE::Conditions::Condition>& cond,  ///< condition

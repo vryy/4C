@@ -172,7 +172,7 @@ void MORTAR::STRATEGY::Factory::CheckDimension() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::prepare_nurbs_element(const DRT::Discretization& discret,
-    Teuchos::RCP<DRT::Element> ele, Teuchos::RCP<MORTAR::Element> cele) const
+    Teuchos::RCP<CORE::Elements::Element> ele, Teuchos::RCP<MORTAR::Element> cele) const
 {
   const DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&(discret));
@@ -183,7 +183,8 @@ void MORTAR::STRATEGY::Factory::prepare_nurbs_element(const DRT::Discretization&
   std::vector<CORE::LINALG::SerialDenseVector> mortarknots(dim() - 1);
 
   double normalfac = 0.0;
-  Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
+  Teuchos::RCP<CORE::Elements::FaceElement> faceele =
+      Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(ele, true);
   if (faceele.is_null()) FOUR_C_THROW("Cast to FaceElement failed!");
 
   bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,

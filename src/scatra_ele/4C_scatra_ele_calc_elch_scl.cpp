@@ -413,7 +413,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_mat_and_rhs_out
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::get_material_params(
-    const DRT::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
+    const CORE::Elements::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
     std::vector<double>& densam, double& visc, const int iquad)
 {
   // extract material from element

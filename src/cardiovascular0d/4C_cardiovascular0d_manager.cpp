@@ -650,9 +650,9 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
 
     CORE::LINALG::SerialDenseVector elevector;
     CORE::LINALG::SerialDenseMatrix elematrix;
-    std::map<int, Teuchos::RCP<DRT::Element>>& geom = coupcond->Geometry();
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = coupcond->Geometry();
 
-    std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
       // get element location vector, dirichlet flags and ownerships

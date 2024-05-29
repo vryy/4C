@@ -4341,7 +4341,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     for (int i = 0; i < SlaveColElements()->NumMyElements(); ++i)
     {
       int gid = SlaveColElements()->GID(i);
-      DRT::Element* ele = Discret().gElement(gid);
+      CORE::Elements::Element* ele = Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
       MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
@@ -4407,7 +4407,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
     {
       int gid1 = selecolmap_->GID(i);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
       MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
@@ -4419,7 +4419,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
       {
         int gid2 = selement->MoData().SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
+        CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
         if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
         MORTAR::Element* melement = dynamic_cast<MORTAR::Element*>(ele2);
         melements.push_back(melement);
@@ -4543,7 +4543,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     for (int i = 0; i < SlaveColElements()->NumMyElements(); ++i)
     {
       int gid = SlaveColElements()->GID(i);
-      DRT::Element* ele = Discret().gElement(gid);
+      CORE::Elements::Element* ele = Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
       MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
@@ -4609,7 +4609,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
     {
       int gid1 = selecolmap_->GID(i);
-      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
       MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
@@ -4621,7 +4621,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
       {
         int gid2 = selement->MoData().SearchElements()[j];
-        DRT::Element* ele2 = idiscret_->gElement(gid2);
+        CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
         if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
         MORTAR::Element* melement = dynamic_cast<MORTAR::Element*>(ele2);
         melements.push_back(melement);
@@ -4744,7 +4744,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   for (int i = 0; i < SlaveColElements()->NumMyElements(); ++i)
   {
     int gid = SlaveColElements()->GID(i);
-    DRT::Element* ele = Discret().gElement(gid);
+    CORE::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
@@ -4782,7 +4782,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
@@ -4794,7 +4794,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
     {
       int gid2 = selement->MoData().SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       MORTAR::Element* melement = dynamic_cast<MORTAR::Element*>(ele2);
       melements.push_back(melement);

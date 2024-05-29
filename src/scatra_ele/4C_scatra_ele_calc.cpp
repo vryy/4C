@@ -95,7 +95,7 @@ DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
-    DRT::Element* ele, DRT::Discretization& discretization)
+    CORE::Elements::Element* ele, DRT::Discretization& discretization)
 {
   // get element coordinates
   read_element_coordinates(ele);
@@ -146,9 +146,9 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Evaluate(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Evaluate(CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -202,8 +202,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Evaluate(DRT::Element* ele,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_node_values(
-    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
 {
   // get number of dofset associated with velocity related dofs
   const int ndsvel = scatrapara_->NdsVel();
@@ -336,9 +336,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_node_va
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_turbulence_approach(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, int& nlayer)
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_turbulence_approach(
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la, int& nlayer)
 {
   if (turbparams_->TurbModel() != INPAR::FLUID::no_model or
       (scatraparatimint_->IsIncremental() and turbparams_->FSSGD()))
@@ -408,7 +408,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_turbulence_approach
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat(DRT::Element* ele,
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat(CORE::Elements::Element* ele,
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
     CORE::LINALG::SerialDenseVector& subgrdiff)
 {
@@ -828,7 +828,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat(DRT::Element* ele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::body_force(const DRT::Element* ele)
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::body_force(const CORE::Elements::Element* ele)
 {
   std::vector<CORE::Conditions::Condition*> myneumcond;
 
@@ -923,7 +923,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::other_node_based_source_ter
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::read_element_coordinates(
-    const DRT::Element* ele)
+    const CORE::Elements::Element* ele)
 {
   // Directly copy the coordinates since in 3D the transformation is just the identity
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
@@ -1134,9 +1134,9 @@ DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_in_pa
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_material_params(const DRT::Element* ele,
-    std::vector<double>& densn, std::vector<double>& densnp, std::vector<double>& densam,
-    double& visc, const int iquad)
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_material_params(
+    const CORE::Elements::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
+    std::vector<double>& densam, double& visc, const int iquad)
 {
   // get the material
   Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
@@ -1221,7 +1221,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::mat_scatra(
     Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
     fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
     // get corresponding fluid element (it has the same global ID as the scatra element)
-    DRT::Element* fluidele = fluiddis->gElement(eid_);
+    CORE::Elements::Element* fluidele = fluiddis->gElement(eid_);
     if (fluidele == nullptr)
       FOUR_C_THROW("Fluid element %i not on local processor", eid_);
     else
@@ -2038,7 +2038,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhsmfs(
  *-----------------------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_and_rhs_multi_scale(
-    const DRT::Element* const ele, CORE::LINALG::SerialDenseMatrix& emat,
+    const CORE::Elements::Element* const ele, CORE::LINALG::SerialDenseMatrix& emat,
     CORE::LINALG::SerialDenseVector& erhs, const int k, const int iquad, const double timefacfac,
     const double rhsfac)
 {
@@ -2080,7 +2080,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_and_rhs_multi_scal
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhsemd(
-    const DRT::Element* const ele, CORE::LINALG::SerialDenseVector& erhs, const double rhsfac)
+    const CORE::Elements::Element* const ele, CORE::LINALG::SerialDenseVector& erhs,
+    const double rhsfac)
 {
   // (SPATIAL) FUNCTION BUSINESS
   const int functno = scatrapara_->EMDSource();

@@ -430,11 +430,12 @@ namespace DRT
       };
 
       /// reads from global vectors
-      void read_global_vectors(
-          const DRT::Element& ele, DRT::Discretization& discretization, const std::vector<int>& lm);
+      void read_global_vectors(const CORE::Elements::Element& ele,
+          DRT::Discretization& discretization, const std::vector<int>& lm);
 
       /// reads ale vectors
-      void read_ale_vectors(const DRT::Element& ele, DRT::Discretization& discretization);
+      void read_ale_vectors(
+          const CORE::Elements::Element& ele, DRT::Discretization& discretization);
 
       /// evaluate mixed variable, density and momentum
       void evaluate_all(const int funcnum, const CORE::LINALG::Matrix<nsd_, 1>& xyz, const double t,

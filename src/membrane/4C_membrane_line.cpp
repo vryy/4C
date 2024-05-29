@@ -34,7 +34,7 @@ DRT::ELEMENTS::MembraneLine3Type& DRT::ELEMENTS::MembraneLine3Type::Instance() {
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(int id, int owner, int nnode, const int* nodeids,
     DRT::Node** nodes, DRT::ELEMENTS::Membrane<distype>* parent, const int lline)
-    : DRT::FaceElement(id, owner), intpointsline_(CORE::FE::GaussRule1D::line_2point)
+    : CORE::Elements::FaceElement(id, owner), intpointsline_(CORE::FE::GaussRule1D::line_2point)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -68,7 +68,7 @@ DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(int id, int owner, int nnode,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(const DRT::ELEMENTS::MembraneLine<distype>& old)
-    : DRT::FaceElement(old), intpointsline_(old.intpointsline_)
+    : CORE::Elements::FaceElement(old), intpointsline_(old.intpointsline_)
 {
   return;
 }
@@ -78,7 +78,7 @@ DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(const DRT::ELEMENTS::Membrane
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::MembraneLine<distype>::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::MembraneLine<distype>::Clone() const
 {
   DRT::ELEMENTS::MembraneLine<distype>* newelement =
       new DRT::ELEMENTS::MembraneLine<distype>(*this);

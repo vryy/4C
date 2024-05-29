@@ -49,12 +49,13 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! get the material parameters
-      void get_material_params(const DRT::Element* ele,  //!< the element we are dealing with
-          std::vector<double>& densn,                    //!< density at t_(n)
-          std::vector<double>& densnp,                   //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,                   //!< density at t_(n+alpha_M)
-          double& visc,                                  //!< fluid viscosity
-          const int iquad = -1  //!< id of current gauss point (default = -1)
+      void get_material_params(
+          const CORE::Elements::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,          //!< density at t_(n)
+          std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,         //!< density at t_(n+alpha_M)
+          double& visc,                        //!< fluid viscosity
+          const int iquad = -1                 //!< id of current gauss point (default = -1)
           ) override;
 
       //! evaluate material

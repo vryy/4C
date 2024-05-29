@@ -3069,7 +3069,8 @@ bool MAT::ConstraintMixture::VisData(
              params_->elastindegrad_ == "RectanglePlate" || params_->elastindegrad_ == "Wedge" ||
              params_->elastindegrad_ == "Circles")
     {
-      DRT::Element* myele = GLOBAL::Problem::Instance()->GetDis("structure")->gElement(eleID);
+      CORE::Elements::Element* myele =
+          GLOBAL::Problem::Instance()->GetDis("structure")->gElement(eleID);
       DRT::Node** mynodes = myele->Nodes();
       for (int idnodes = 0; idnodes < myele->num_node(); idnodes++)
       {
@@ -3129,7 +3130,7 @@ void MAT::ConstraintMixtureOutputToGmsh(
 
   for (int iele = 0; iele < dis->NumMyColElements(); ++iele)
   {
-    const DRT::Element* actele = dis->lColElement(iele);
+    const CORE::Elements::Element* actele = dis->lColElement(iele);
 
     // build current configuration
     std::vector<int> lm;

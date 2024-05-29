@@ -97,10 +97,11 @@ namespace DRT
           ) = 0;
 
       //! extract quantities for element evaluation
-      virtual void extract_element_and_node_values(DRT::Element* ele,  //!< current element
-          Teuchos::ParameterList& params,                              //!< parameter list
-          DRT::Discretization& discretization,                         //!< discretization
-          DRT::Element::LocationArray& la                              //!< location array
+      virtual void extract_element_and_node_values(
+          CORE::Elements::Element* ele,               //!< current element
+          Teuchos::ParameterList& params,             //!< parameter list
+          DRT::Discretization& discretization,        //!< discretization
+          CORE::Elements::Element::LocationArray& la  //!< location array
       );
 
       //! local nodal values of concentration

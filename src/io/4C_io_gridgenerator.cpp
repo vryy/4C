@@ -13,9 +13,9 @@
 #include "4C_io_gridgenerator.hpp"
 
 #include "4C_comm_utils_factory.hpp"
+#include "4C_io_elementdefinition.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_elementdefinition.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_graph_based.hpp"
 
@@ -26,11 +26,11 @@ FOUR_C_NAMESPACE_OPEN
 namespace IO::GRIDGENERATOR
 {
   // forward declarations
-  Teuchos::RCP<DRT::Element> CreateHexElement(int eleid, int nodeoffset, int myrank,
+  Teuchos::RCP<CORE::Elements::Element> CreateHexElement(int eleid, int nodeoffset, int myrank,
       INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
       std::string distype);
 
-  Teuchos::RCP<DRT::Element> CreateWedgeElement(int eleid, int nodeoffset, int myrank,
+  Teuchos::RCP<CORE::Elements::Element> CreateWedgeElement(int eleid, int nodeoffset, int myrank,
       INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
       std::string distype);
 
@@ -181,7 +181,7 @@ namespace IO::GRIDGENERATOR
         case CORE::FE::CellType::hex20:
         case CORE::FE::CellType::hex27:
         {
-          Teuchos::RCP<DRT::Element> ele =
+          Teuchos::RCP<CORE::Elements::Element> ele =
               CreateHexElement(eleid, inputData.node_gid_of_first_new_node_, myrank, linedef,
                   inputData.interval_, inputData.elementtype_, inputData.distype_);
           // add element to discretization
@@ -191,7 +191,7 @@ namespace IO::GRIDGENERATOR
         case CORE::FE::CellType::wedge6:
         case CORE::FE::CellType::wedge15:
         {
-          Teuchos::RCP<DRT::Element> ele =
+          Teuchos::RCP<CORE::Elements::Element> ele =
               IO::GRIDGENERATOR::CreateWedgeElement(eleid, inputData.node_gid_of_first_new_node_,
                   myrank, linedef, inputData.interval_, inputData.elementtype_, inputData.distype_);
           dis.add_element(ele);
@@ -316,7 +316,7 @@ namespace IO::GRIDGENERATOR
   /*----------------------------------------------------------------------*
    | create HEX type elements for the partition                           |
    *----------------------------------------------------------------------*/
-  Teuchos::RCP<DRT::Element> CreateHexElement(int eleid, int nodeOffset, int myrank,
+  Teuchos::RCP<CORE::Elements::Element> CreateHexElement(int eleid, int nodeOffset, int myrank,
       INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
       std::string distype)
   {
@@ -374,7 +374,8 @@ namespace IO::GRIDGENERATOR
         break;
     }
     // let the factory create a matching empty element
-    Teuchos::RCP<DRT::Element> ele = CORE::COMM::Factory(elementtype, distype, eleid, myrank);
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        CORE::COMM::Factory(elementtype, distype, eleid, myrank);
     ele->SetNodeIds(nodeids.size(), &(nodeids[0]));
     ele->ReadElement(elementtype, distype, linedef);
     return ele;
@@ -386,7 +387,7 @@ namespace IO::GRIDGENERATOR
    | part of HEX equivalent.                                              |
    | Wedges aligned in z-direction.                                       |
    *----------------------------------------------------------------------*/
-  Teuchos::RCP<DRT::Element> CreateWedgeElement(int eleid, int nodeoffset, int myrank,
+  Teuchos::RCP<CORE::Elements::Element> CreateWedgeElement(int eleid, int nodeoffset, int myrank,
       INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
       std::string distype)
   {
@@ -471,7 +472,8 @@ namespace IO::GRIDGENERATOR
     }
 
     // let the factory create a matching empty element
-    Teuchos::RCP<DRT::Element> ele = CORE::COMM::Factory(elementtype, distype, eleid, myrank);
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        CORE::COMM::Factory(elementtype, distype, eleid, myrank);
     ele->SetNodeIds(nodeids.size(), &(nodeids[0]));
     ele->ReadElement(elementtype, distype, linedef);
     return ele;

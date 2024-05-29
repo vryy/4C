@@ -45,12 +45,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::RigidsphereType::Create(const std::vector<
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RigidsphereType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RigidsphereType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "RIGIDSPHERE")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Rigidsphere(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::Rigidsphere(id, owner));
     return (ele);
   }
   return (Teuchos::null);
@@ -58,7 +59,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RigidsphereType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RigidsphereType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RigidsphereType::Create(
+    const int id, const int owner)
 {
   return (Teuchos::rcp(new Rigidsphere(id, owner)));
 }
@@ -66,7 +68,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RigidsphereType::Create(const int id, 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::RigidsphereType::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   nv = 3;
@@ -101,7 +103,7 @@ void DRT::ELEMENTS::RigidsphereType::setup_element_definition(
  |  ctor (public)                                            meier 05/12|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Rigidsphere::Rigidsphere(int id, int owner)
-    : DRT::Element(id, owner), radius_(0.0), rho_(0.0)
+    : CORE::Elements::Element(id, owner), radius_(0.0), rho_(0.0)
 {
   mybondstobeams_.clear();
 }
@@ -109,7 +111,7 @@ DRT::ELEMENTS::Rigidsphere::Rigidsphere(int id, int owner)
  |  copy-ctor (public)                                       meier 05/12|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Rigidsphere::Rigidsphere(const DRT::ELEMENTS::Rigidsphere& old)
-    : DRT::Element(old), radius_(old.radius_), rho_(old.rho_)
+    : CORE::Elements::Element(old), radius_(old.radius_), rho_(old.rho_)
 {
   mybondstobeams_.clear();
   if (old.mybondstobeams_.size())
@@ -130,7 +132,7 @@ DRT::ELEMENTS::Rigidsphere::Rigidsphere(const DRT::ELEMENTS::Rigidsphere& old)
  |  Deep copy this instance of Rigidsphere and return pointer to it (public) |
  |                                                            meier 05/12 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Rigidsphere::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Rigidsphere::Clone() const
 {
   DRT::ELEMENTS::Rigidsphere* newelement = new DRT::ELEMENTS::Rigidsphere(*this);
   return (newelement);
@@ -218,7 +220,7 @@ void DRT::ELEMENTS::Rigidsphere::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             meier 02/14|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Rigidsphere::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Rigidsphere::Lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -235,14 +237,14 @@ void DRT::ELEMENTS::Rigidsphere::set_params_interface_ptr(const Teuchos::Paramet
 {
   if (p.isParameter("interface"))
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface"));
+        p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface"));
   else
     interface_ptr_ = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Rigidsphere::ParamsInterfacePtr()
+Teuchos::RCP<CORE::Elements::ParamsInterface> DRT::ELEMENTS::Rigidsphere::ParamsInterfacePtr()
 {
   return interface_ptr_;
 }

@@ -70,7 +70,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Setu
       INPAR::BEAMPOTENTIAL::MasterSlaveChoice::higher_eleGID_is_slave)
   {
     // interchange order, i.e., role of elements
-    DRT::Element const* tmp_ele_ptr = Element1();
+    CORE::Elements::Element const* tmp_ele_ptr = Element1();
     set_element1(Element2());
     set_element2(tmp_ele_ptr);
   }

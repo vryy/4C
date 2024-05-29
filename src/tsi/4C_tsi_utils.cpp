@@ -64,7 +64,8 @@ void TSI::UTILS::ThermoStructureCloneStrategy::check_material_type(const int mat
  | set element data for cloned element                       dano 12/11 |
  *----------------------------------------------------------------------*/
 void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbs)
+    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+    const bool isnurbs)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual
@@ -106,7 +107,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
  | cloned element has to be a THERMO element                 dano 12/11 |
  *----------------------------------------------------------------------*/
 bool TSI::UTILS::ThermoStructureCloneStrategy::determine_ele_type(
-    DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // we only support thermo elements here
   eletype.push_back("THERMO");
@@ -242,10 +243,10 @@ void TSI::UTILS::SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discret
 
   for (int i = 0; i < numelements; ++i)
   {
-    DRT::Element* targetele = targetdis->lColElement(i);
+    CORE::Elements::Element* targetele = targetdis->lColElement(i);
     const int gid = targetele->Id();
 
-    DRT::Element* sourceele = sourcedis->gElement(gid);
+    CORE::Elements::Element* sourceele = sourcedis->gElement(gid);
 
     // for coupling we add the source material to the target element and vice versa
     targetele->AddMaterial(sourceele->Material());
@@ -257,7 +258,7 @@ void TSI::UTILS::SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discret
  |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
 void TSI::UTILS::TSIMaterialStrategy::AssignMaterial2To1(
-    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele1,
+    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, CORE::Elements::Element* ele1,
     const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
     Teuchos::RCP<DRT::Discretization> dis2)
 {
@@ -274,7 +275,7 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterial2To1(
 |  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
 void TSI::UTILS::TSIMaterialStrategy::AssignMaterial1To2(
-    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, DRT::Element* ele2,
+    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, CORE::Elements::Element* ele2,
     const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
     Teuchos::RCP<DRT::Discretization> dis2)
 {
@@ -290,14 +291,14 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterial1To2(
   INPAR::STR::KinemType kintype = INPAR::STR::KinemType::linear;
 
   // default strategy: take material of element with closest center in reference coordinates
-  DRT::Element* ele1 = nullptr;
+  CORE::Elements::Element* ele1 = nullptr;
   double mindistance = 1e10;
   {
     std::vector<double> centercoords2 = CORE::FE::element_center_refe_coords(*ele2);
 
     for (unsigned i = 0; i < ids_1.size(); ++i)
     {
-      DRT::Element* actele1 = dis1->gElement(ids_1[i]);
+      CORE::Elements::Element* actele1 = dis1->gElement(ids_1[i]);
       std::vector<double> centercoords1 = CORE::FE::element_center_refe_coords(*actele1);
 
       CORE::LINALG::Matrix<3, 1> diffcoords(true);

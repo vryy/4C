@@ -11,6 +11,7 @@
 
 #include "4C_fluid_ele_calc_poro.hpp"
 
+#include "4C_discretization_fem_general_element_integration_select.hpp"
 #include "4C_discretization_fem_general_utils_gder2.hpp"
 #include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_discretization_geometry_position_array.hpp"
@@ -19,7 +20,6 @@
 #include "4C_fluid_ele_poro.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_element_integration_select.hpp"
 #include "4C_mat_elasthyper.hpp"
 #include "4C_mat_fluidporo.hpp"
 #include "4C_mat_structporo.hpp"

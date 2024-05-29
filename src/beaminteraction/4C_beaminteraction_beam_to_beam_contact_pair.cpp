@@ -1807,8 +1807,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_par_
  *----------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::create_segments(
-    const DRT::Element* ele, std::vector<CORE::LINALG::Matrix<3, 1, double>>& endpoints_final,
-    int& numsegment, int i)
+    const CORE::Elements::Element* ele,
+    std::vector<CORE::LINALG::Matrix<3, 1, double>>& endpoints_final, int& numsegment, int i)
 {
   // endpoints of the segments
   std::vector<CORE::LINALG::Matrix<3, 1, double>> endpoints(
@@ -2421,12 +2421,12 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::closest_p
           // element2_ are pure copies of these elements generated once in the beginning of the
           // simulation and which do therefore not contain the current values of such element
           // quantities
-          //          DRT::Element* element1 =
+          //          CORE::Elements::Element* element1 =
           //          pdiscret_.lColElement(pdiscret_.ElementColMap()->LID(element1_->Id()));
-          //          DRT::Element* element2 =
+          //          CORE::Elements::Element* element2 =
           //          pdiscret_.lColElement(pdiscret_.ElementColMap()->LID(element2_->Id()));
           //
-          //          const DRT::ElementType & eot = element1->ElementType();
+          //          const CORE::Elements::ElementType & eot = element1->ElementType();
           //          if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
           //          {
           //            const DRT::ELEMENTS::Beam3eb* beam3ebelement1 = dynamic_cast<const
@@ -4419,7 +4419,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_shape
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_shape_functions(
     CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N, const TYPE& eta, int deriv,
-    const DRT::Element* ele) const
+    const CORE::Elements::Element* ele) const
 {
   // get both discretization types
   const CORE::FE::CellType distype = ele->Shape();
@@ -4496,7 +4496,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_shape
 template <unsigned int numnodes, unsigned int numnodalvalues>
 CORE::LINALG::Matrix<3, 1, TYPE>
 BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::r(
-    const TYPE& eta, const DRT::Element* ele) const
+    const TYPE& eta, const CORE::Elements::Element* ele) const
 {
   CORE::LINALG::Matrix<3, 1, TYPE> r(true);
   CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N(true);
@@ -4539,7 +4539,7 @@ BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::r(
 template <unsigned int numnodes, unsigned int numnodalvalues>
 CORE::LINALG::Matrix<3, 1, TYPE>
 BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::r_xi(
-    const TYPE& eta, const DRT::Element* ele)
+    const TYPE& eta, const CORE::Elements::Element* ele)
 {
   CORE::LINALG::Matrix<3, 1, TYPE> r_xi(true);
   CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N_xi(true);
@@ -4958,10 +4958,10 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ResetStat
  *----------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_jacobi(
-    const DRT::Element* element1)
+    const CORE::Elements::Element* element1)
 {
   double jacobi = 1.0;
-  const DRT::ElementType& eot1 = element1->ElementType();
+  const CORE::Elements::ElementType& eot1 = element1->ElementType();
 
   // The jacobi factor is only needed in order to scale the CPP condition. Therefore, we only use
   // the jacobi_ factor corresponding to the first gauss point of the beam element

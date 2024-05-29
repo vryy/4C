@@ -114,10 +114,10 @@ namespace
     Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
 
     //! Vector of line elements.
-    std::vector<Teuchos::RCP<DRT::Element>> line_elements_;
+    std::vector<Teuchos::RCP<CORE::Elements::Element>> line_elements_;
 
     //! Vector of volume elements.
-    std::vector<Teuchos::RCP<DRT::Element>> volume_elements_;
+    std::vector<Teuchos::RCP<CORE::Elements::Element>> volume_elements_;
   };
 
   /**

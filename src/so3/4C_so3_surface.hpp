@@ -11,10 +11,10 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
@@ -25,7 +25,7 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    class StructuralSurfaceType : public DRT::ElementType
+    class StructuralSurfaceType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "StructuralSurfaceType"; }
@@ -34,10 +34,10 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -60,7 +60,7 @@ namespace DRT
     common types of loads currently demanded in 4C
 
     */
-    class StructuralSurface : public DRT::FaceElement
+    class StructuralSurface : public CORE::Elements::FaceElement
     {
      public:
       //! @name Friends
@@ -78,7 +78,7 @@ namespace DRT
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
       explicit StructuralSurface(int id, int owner, int nnode, const int* nodeids,
-          DRT::Node** nodes, DRT::Element* parent, const int lsurface);
+          DRT::Node** nodes, CORE::Elements::Element* parent, const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -95,7 +95,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
@@ -131,7 +131,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
@@ -142,7 +142,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -158,9 +158,12 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return StructuralSurfaceType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return StructuralSurfaceType::Instance();
+      }
 
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       int NumLine() const override;
 
@@ -205,7 +208,7 @@ namespace DRT
       virtual double estimate_nitsche_trace_max_eigenvalue_tsi(std::vector<double>& parent_disp);
 
       //! Return a pointer to the parent element of this boundary element
-      virtual DRT::Element* parent_element() const { return ParentMasterElement(); }
+      virtual CORE::Elements::Element* parent_element() const { return ParentMasterElement(); }
 
       //! Return local surface number
       int LSurfNumber() const { return FaceMasterNumber(); }
@@ -471,7 +474,7 @@ namespace DRT
           CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, CORE::FE::num_nodes<dt_vol> - 1>& proj);
       //@}
 
-    };  // class StructuralSurface : public DRT::Element
+    };  // class StructuralSurface : public CORE::Elements::Element
 
 
   }  // namespace ELEMENTS

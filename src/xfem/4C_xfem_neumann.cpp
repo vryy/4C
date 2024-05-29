@@ -180,8 +180,8 @@ void XFEM::EvaluateNeumannStandard(
     if (fool->first == (std::string) "LineNeumann" || fool->first == (std::string) "SurfaceNeumann")
     {
       CORE::Conditions::Condition& cond = *(fool->second);
-      std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
-      std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond.Geometry();
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
       CORE::LINALG::SerialDenseVector elevector;
       CORE::LINALG::SerialDenseMatrix elematrix;
       for (curr = geom.begin(); curr != geom.end(); ++curr)

@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_elementtype.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -27,7 +27,7 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  TRI 3 Element                                          fbraeu 06/16 |
      *----------------------------------------------------------------------*/
-    class MembraneTri3Type : public DRT::ElementType
+    class MembraneTri3Type : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Membrane_tri3Type"; }
@@ -36,15 +36,15 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       int Initialize(DRT::Discretization& dis) override { return 0; };
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -60,7 +60,7 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  TRI 6 Element                                          fbraeu 06/16 |
      *----------------------------------------------------------------------*/
-    class MembraneTri6Type : public DRT::ElementType
+    class MembraneTri6Type : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Membrane_tri6Type"; }
@@ -69,15 +69,15 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       int Initialize(DRT::Discretization& dis) override { return 0; };
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -93,7 +93,7 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  QUAD 4 Element                                         fbraeu 06/16 |
      *----------------------------------------------------------------------*/
-    class MembraneQuad4Type : public DRT::ElementType
+    class MembraneQuad4Type : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Membrane_quad4Type"; }
@@ -102,15 +102,15 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       int Initialize(DRT::Discretization& dis) override { return 0; };
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -126,7 +126,7 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  QUAD 9 Element                                         fbraeu 06/16 |
      *----------------------------------------------------------------------*/
-    class MembraneQuad9Type : public DRT::ElementType
+    class MembraneQuad9Type : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Membrane_quad9Type"; }
@@ -135,15 +135,15 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       int Initialize(DRT::Discretization& dis) override { return 0; };
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;

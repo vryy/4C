@@ -13,17 +13,15 @@
 
 #include "4C_comm_exporter.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_discretization_fem_general_dg_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_dg_element.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_lib_utils_discret.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
-
-
 
 DRT::DiscretizationHDG::DiscretizationHDG(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
     : DiscretizationFaces(name, comm)
@@ -44,7 +42,7 @@ int DRT::DiscretizationHDG::fill_complete(
   // packing, extract the node ids, communicate them, and change the node ids in the element
   CORE::COMM::Exporter nodeexporter(*facerowmap_, *facecolmap_, Comm());
   std::map<int, std::vector<int>> nodeIds, trafoMap;
-  for (std::map<int, Teuchos::RCP<DRT::FaceElement>>::const_iterator f = faces_.begin();
+  for (std::map<int, Teuchos::RCP<CORE::Elements::FaceElement>>::const_iterator f = faces_.begin();
        f != faces_.end(); ++f)
   {
     std::vector<int> ids(f->second->num_node());
@@ -56,7 +54,7 @@ int DRT::DiscretizationHDG::fill_complete(
   nodeexporter.Export(nodeIds);
   nodeexporter.Export(trafoMap);
 
-  for (std::map<int, Teuchos::RCP<DRT::FaceElement>>::iterator f = faces_.begin();
+  for (std::map<int, Teuchos::RCP<CORE::Elements::FaceElement>>::iterator f = faces_.begin();
        f != faces_.end(); ++f)
   {
     if (f->second->Owner() == Comm().MyPID()) continue;
@@ -102,7 +100,7 @@ int DRT::DiscretizationHDG::fill_complete(
     }
     if (exchangeMasterAndSlave)
     {
-      DRT::Element* faceMaster = f->second->ParentMasterElement();
+      CORE::Elements::Element* faceMaster = f->second->ParentMasterElement();
       const int faceMasterNo = f->second->FaceMasterNumber();
       // new master element might be nullptr on MPI computations
       f->second->set_parent_master_element(f->second->ParentSlaveElement(),
@@ -122,7 +120,7 @@ int DRT::DiscretizationHDG::fill_complete(
       if (this->NumDofSets() == 1)
       {
         int ndof_ele = this->NumMyRowElements() > 0
-                           ? dynamic_cast<DRT::DgElement*>(this->lRowElement(0))
+                           ? dynamic_cast<CORE::Elements::DgElement*>(this->lRowElement(0))
                                  ->num_dof_per_element_auxiliary()
                            : 0;
         Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofset_ele =
@@ -134,10 +132,10 @@ int DRT::DiscretizationHDG::fill_complete(
       // add nds 2
       if (this->NumDofSets() == 2)
       {
-        int ndof_node =
-            this->NumMyRowElements() > 0
-                ? dynamic_cast<DRT::DgElement*>(this->lRowElement(0))->num_dof_per_node_auxiliary()
-                : 0;
+        int ndof_node = this->NumMyRowElements() > 0
+                            ? dynamic_cast<CORE::Elements::DgElement*>(this->lRowElement(0))
+                                  ->num_dof_per_node_auxiliary()
+                            : 0;
         Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofset_node =
             Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(ndof_node, 0, 0, false));
 
@@ -153,8 +151,8 @@ int DRT::DiscretizationHDG::fill_complete(
  | assign_global_i_ds                                        schoeder 06/14|
  *----------------------------------------------------------------------*/
 void DRT::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
-    const std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>& elementmap,
-    std::map<int, Teuchos::RCP<DRT::Element>>& finalelements)
+    const std::map<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>>& elementmap,
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& finalelements)
 {
   // The point here is to make sure the element gid are the same on any
   // parallel distribution of the elements. Thus we allreduce thing to
@@ -168,7 +166,7 @@ void DRT::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
   // pack elements on all processors
 
   int size = 0;
-  std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>::const_iterator elemsiter;
+  std::map<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>>::const_iterator elemsiter;
   for (elemsiter = elementmap.begin(); elemsiter != elementmap.end(); ++elemsiter)
   {
     size += elemsiter->first.size() + 2;
@@ -262,7 +260,7 @@ void DRT::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
     index += esize;
 
     // set gid to my elements
-    std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>::const_iterator iter =
+    std::map<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>>::const_iterator iter =
         elementmap.find(element);
     if (iter != elementmap.end())
     {
@@ -324,7 +322,8 @@ void DRT::UTILS::DbcHDG::read_dirichlet_condition(const DRT::DiscretizationFaces
     // loop over all faces
     for (int i = 0; i < discret.NumMyRowFaces(); ++i)
     {
-      const DRT::FaceElement* faceele = dynamic_cast<const DRT::FaceElement*>(discret.lRowFace(i));
+      const CORE::Elements::FaceElement* faceele =
+          dynamic_cast<const CORE::Elements::FaceElement*>(discret.lRowFace(i));
       const unsigned int dofperface =
           faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
       const unsigned int dofpercomponent =
@@ -462,7 +461,7 @@ void DRT::UTILS::DbcHDG::do_dirichlet_condition(const DRT::DiscretizationFaces& 
   {
     CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
     CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
-    DRT::Element::LocationArray dummy(1);
+    CORE::Elements::Element::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
     if (GLOBAL::Problem::Instance(0)->GetProblemType() == GLOBAL::ProblemType::elemag or
         GLOBAL::Problem::Instance(0)->GetProblemType() == GLOBAL::ProblemType::scatra)
@@ -489,7 +488,8 @@ void DRT::UTILS::DbcHDG::do_dirichlet_condition(const DRT::DiscretizationFaces& 
     // loop over all faces
     for (int i = 0; i < discret.NumMyRowFaces(); ++i)
     {
-      const DRT::FaceElement* faceele = dynamic_cast<const DRT::FaceElement*>(discret.lRowFace(i));
+      const CORE::Elements::FaceElement* faceele =
+          dynamic_cast<const CORE::Elements::FaceElement*>(discret.lRowFace(i));
       const unsigned int dofperface =
           faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
       const unsigned int dofpercomponent =
