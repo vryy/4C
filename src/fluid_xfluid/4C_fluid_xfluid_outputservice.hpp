@@ -27,7 +27,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class DiscretizationXFEM;
 }  // namespace DRT
 
 namespace CORE::Elements
@@ -59,6 +58,7 @@ namespace CORE::GEO
 namespace XFEM
 {
   class ConditionManager;
+  class DiscretizationXFEM;
   class XfemEdgeStab;
 }  // namespace XFEM
 
@@ -72,7 +72,7 @@ namespace FLD
   class XFluidOutputService
   {
    public:
-    XFluidOutputService(const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
+    XFluidOutputService(const Teuchos::RCP<XFEM::DiscretizationXFEM>& discret,
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager);
 
     virtual ~XFluidOutputService() = default;
@@ -145,7 +145,7 @@ namespace FLD
    protected:
     //! @name XFEM discretization
     //@{
-    const Teuchos::RCP<DRT::DiscretizationXFEM> discret_;
+    const Teuchos::RCP<XFEM::DiscretizationXFEM> discret_;
     //@}
 
     //! XFEM condition manager
@@ -173,7 +173,7 @@ namespace FLD
   {
    public:
     XFluidOutputServiceGmsh(Teuchos::ParameterList& params_xfem,
-        const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
+        const Teuchos::RCP<XFEM::DiscretizationXFEM>& discret,
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager, const bool include_inner);
 
     /// Gmsh solution output

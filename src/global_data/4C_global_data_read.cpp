@@ -28,7 +28,6 @@
 #include "4C_io_materialdefinition.hpp"
 #include "4C_io_meshreader.hpp"
 #include "4C_lib_discret_hdg.hpp"
-#include "4C_lib_discret_xfem.hpp"
 #include "4C_lib_discret_xwall.hpp"
 #include "4C_mat_elchmat.hpp"
 #include "4C_mat_elchphase.hpp"
@@ -39,6 +38,7 @@
 #include "4C_nurbs_discret.hpp"
 #include "4C_particle_engine_particlereader.hpp"
 #include "4C_rebalance_graph_based.hpp"
+#include "4C_xfem_discretization.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -100,7 +100,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
         if (CORE::UTILS::IntegralValue<bool>(
                 problem.XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID"))
-          xfluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid", reader.Comm()));
+          xfluiddis = Teuchos::rcp(new XFEM::DiscretizationXFEM("xfluid", reader.Comm()));
         aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
       }
 
@@ -265,7 +265,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
             Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
         problem.AddDis("fluid", fluiddis);
 
-        xfluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid", reader.Comm()));
+        xfluiddis = Teuchos::rcp(new XFEM::DiscretizationXFEM("xfluid", reader.Comm()));
         xfluiddis->SetWriter(
             Teuchos::rcp(new IO::DiscretizationWriter(xfluiddis, output_control, distype)));
         problem.AddDis("xfluid", xfluiddis);
@@ -275,7 +275,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       }
       else
       {
-        fluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid", reader.Comm()));
+        fluiddis = Teuchos::rcp(new XFEM::DiscretizationXFEM("fluid", reader.Comm()));
         fluiddis->SetWriter(
             Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
         problem.AddDis("fluid", fluiddis);
@@ -295,7 +295,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
     case GLOBAL::ProblemType::fpsi_xfem:
     {
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
-      fluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid", reader.Comm()));
+      fluiddis = Teuchos::rcp(new XFEM::DiscretizationXFEM("fluid", reader.Comm()));
       porofluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("porofluid", reader.Comm()));
       aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
 
@@ -502,7 +502,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
         if (CORE::UTILS::IntegralValue<bool>(
                 problem.XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID"))
-          xfluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid", reader.Comm()));
+          xfluiddis = Teuchos::rcp(new XFEM::DiscretizationXFEM("xfluid", reader.Comm()));
         aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
       }
 
@@ -680,7 +680,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
       if (problem.GetProblemType() == GLOBAL::ProblemType::fluid_xfem_ls)
-        fluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid", reader.Comm()));
+        fluiddis = Teuchos::rcp(new XFEM::DiscretizationXFEM("fluid", reader.Comm()));
       else
         fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));

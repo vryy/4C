@@ -21,9 +21,9 @@
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret_xfem.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_xfem_discretization.hpp"
 #include "4C_xfem_discretization_utils.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -304,8 +304,8 @@ void XFEM::MeshProjector::project_in_full_target_discretization(
     Teuchos::RCP<const Epetra_Vector> targetdisp)
 {
   // this routine supports only non-XFEM discretizations!
-  Teuchos::RCP<const DRT::DiscretizationXFEM> xdiscret =
-      Teuchos::rcp_dynamic_cast<const DRT::DiscretizationXFEM>(targetdis_);
+  Teuchos::RCP<const XFEM::DiscretizationXFEM> xdiscret =
+      Teuchos::rcp_dynamic_cast<const XFEM::DiscretizationXFEM>(targetdis_);
   if (xdiscret != Teuchos::null)
     FOUR_C_THROW(
         "Value projection for between different mesh deformation states does not support "

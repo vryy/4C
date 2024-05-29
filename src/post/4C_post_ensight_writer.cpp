@@ -15,10 +15,10 @@
 #include "4C_inpar_problemtype.hpp"
 #include "4C_io_legacy_table.hpp"
 #include "4C_io_legacy_table_iter.hpp"
-#include "4C_lib_discret_xfem.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_nurbs_discret.hpp"
 #include "4C_post_common.hpp"
+#include "4C_xfem_discretization.hpp"
 
 #include <numeric>
 #include <string>

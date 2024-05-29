@@ -28,7 +28,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class DiscretizationXFEM;
 }  // namespace DRT
 
 namespace CORE::GEO
@@ -51,6 +50,7 @@ namespace IO
 namespace XFEM
 {
   class ConditionManager;
+  class DiscretizationXFEM;
   class XFEMDofSet;
 }  // namespace XFEM
 
@@ -290,7 +290,7 @@ namespace FLD
      \brief initialize ALE state vectors
      @param dispnp and grivnp vectors w.r.t initial full dofrowmap
      */
-    void InitALEStateVectors(const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,
+    void InitALEStateVectors(const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,
         Teuchos::RCP<const Epetra_Vector> dispnp_initmap,
         Teuchos::RCP<const Epetra_Vector> gridvnp_initmap);
 

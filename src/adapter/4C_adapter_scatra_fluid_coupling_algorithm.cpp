@@ -20,7 +20,7 @@
 #include "4C_io.hpp"
 #include "4C_levelset_algorithm.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_discret_xfem.hpp"
+#include "4C_xfem_discretization.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

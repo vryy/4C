@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_DISCRET_XFEM_HPP
-#define FOUR_C_LIB_DISCRET_XFEM_HPP
+#ifndef FOUR_C_XFEM_DISCRETIZATION_HPP
+#define FOUR_C_XFEM_DISCRETIZATION_HPP
 
 #include "4C_config.hpp"
 
@@ -24,14 +24,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace XFEM
 {
   class XFEMDofSet;
-}  // namespace XFEM
-namespace DRT
-{
+
   /*!
   \brief A class to manage a discretization in parallel with changing dofs
 
   */
-  class DiscretizationXFEM : public DiscretizationFaces
+  class DiscretizationXFEM : public DRT::DiscretizationFaces
   {
    public:
     /*!
@@ -275,7 +273,7 @@ namespace DRT
 
 
   };  // class DiscretizationXFEM
-}  // namespace DRT
+}  // namespace XFEM
 
 FOUR_C_NAMESPACE_CLOSE
 

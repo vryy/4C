@@ -20,10 +20,10 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret_xfem.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_utils_parameter_list.hpp"
 #include "4C_xfem_condition_manager.hpp"
+#include "4C_xfem_discretization.hpp"
 #include "4C_xfem_dofset.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Perform the cut and fill state container               schott 01/15 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
-    const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
+    const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
     Teuchos::RCP<const Epetra_Vector>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis
     Teuchos::ParameterList& solver_params,  //!< solver parameters
@@ -76,7 +76,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
  |  Perform the cut and fill state container                kruse 08/14 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::Create(
-    const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,     //!< xfluid background discretization
+    const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,    //!< xfluid background discretization
     const Teuchos::RCP<DRT::Discretization>& embfluiddiscret,  //!< embedded fluid discretization
     Teuchos::RCP<const Epetra_Vector>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis
@@ -125,7 +125,7 @@ void FLD::XFluidStateCreator::create_new_cut_state(
     Teuchos::RCP<XFEM::XFEMDofSet>& dofset,  //!< xfem dofset obtained from the new wizard
     Teuchos::RCP<CORE::GEO::CutWizard>&
         wizard,  //!< cut wizard associated with current intersection state
-    const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
+    const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
     Teuchos::RCP<const Epetra_Vector>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis
     Teuchos::ParameterList& solver_params,  //!< solver parameters

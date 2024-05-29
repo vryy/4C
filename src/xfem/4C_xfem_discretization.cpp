@@ -9,7 +9,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "4C_lib_discret_xfem.hpp"
+#include "4C_xfem_discretization.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                             ager 11/14|
  |  comm             (in)  a communicator object                        |
  *----------------------------------------------------------------------*/
-DRT::DiscretizationXFEM::DiscretizationXFEM(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
-    : DiscretizationFaces(name, comm),
+XFEM::DiscretizationXFEM::DiscretizationXFEM(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
+    : DRT::DiscretizationFaces(name, comm),
       initialized_(false),
       initialfulldofrowmap_(Teuchos::null),
       initialpermdofrowmap_(Teuchos::null)
@@ -35,7 +35,7 @@ DRT::DiscretizationXFEM::DiscretizationXFEM(const std::string name, Teuchos::RCP
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                             ager 11/14|
  *----------------------------------------------------------------------*/
-int DRT::DiscretizationXFEM::InitialFillComplete(const std::vector<int>& nds,
+int XFEM::DiscretizationXFEM::InitialFillComplete(const std::vector<int>& nds,
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   // Call from BaseClass
@@ -54,7 +54,7 @@ int DRT::DiscretizationXFEM::InitialFillComplete(const std::vector<int>& nds,
 /*----------------------------------------------------------------------*
  |  checks if discretization is initialized (protected)  ager 11/14|
  *----------------------------------------------------------------------*/
-bool DRT::DiscretizationXFEM::Initialized() const
+bool XFEM::DiscretizationXFEM::Initialized() const
 {
   if (!initialized_)
     FOUR_C_THROW("DiscretizationXFEM is not initialized! - Call InitialFillComplete() once!");
@@ -64,7 +64,7 @@ bool DRT::DiscretizationXFEM::Initialized() const
 /*----------------------------------------------------------------------*
  |  Store Initial Dofs (private)                               ager 11/14|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationXFEM::store_initial_dofs(const std::vector<int>& nds)
+void XFEM::DiscretizationXFEM::store_initial_dofs(const std::vector<int>& nds)
 {
   if (nds.size() != 1)
     FOUR_C_THROW(
@@ -119,7 +119,7 @@ void DRT::DiscretizationXFEM::store_initial_dofs(const std::vector<int>& nds)
  * Export Vector with initialdofrowmap (all nodes have one dofset) - to Vector  |
  * with all active dofs (public)                                       ager 11/14|
  *  *---------------------------------------------------------------------------*/
-void DRT::DiscretizationXFEM::export_initialto_active_vector(
+void XFEM::DiscretizationXFEM::export_initialto_active_vector(
     Teuchos::RCP<const Epetra_Vector>& initialvec, Teuchos::RCP<Epetra_Vector>& activevec)
 {
   // Is the discretization initialized?
@@ -151,7 +151,7 @@ void DRT::DiscretizationXFEM::export_initialto_active_vector(
  * Export Vector with initialdofrowmap (all nodes have one dofset) - to Vector  |
  * with all active dofs (public)                                       ager 11/14|
  *  *---------------------------------------------------------------------------*/
-void DRT::DiscretizationXFEM::export_activeto_initial_vector(
+void XFEM::DiscretizationXFEM::export_activeto_initial_vector(
     Teuchos::RCP<const Epetra_Vector> activevec, Teuchos::RCP<Epetra_Vector> initialvec)
 {
   // Is the discretization initialized?
@@ -163,7 +163,7 @@ void DRT::DiscretizationXFEM::export_activeto_initial_vector(
 /*----------------------------------------------------------------------*
  |  get dof row map (public)                                 ager 11/14 |
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::DiscretizationXFEM::InitialDofRowMap(unsigned nds) const
+const Epetra_Map* XFEM::DiscretizationXFEM::InitialDofRowMap(unsigned nds) const
 {
   Initialized();
   FOUR_C_ASSERT(nds < initialdofsets_.size(), "undefined initial dof set");
@@ -175,7 +175,7 @@ const Epetra_Map* DRT::DiscretizationXFEM::InitialDofRowMap(unsigned nds) const
 /*----------------------------------------------------------------------*
  |  get dof column map (public)                              ager 11/14 |
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::DiscretizationXFEM::InitialDofColMap(unsigned nds) const
+const Epetra_Map* XFEM::DiscretizationXFEM::InitialDofColMap(unsigned nds) const
 {
   Initialized();
   FOUR_C_ASSERT(nds < initialdofsets_.size(), "undefined initial dof set");
@@ -187,7 +187,7 @@ const Epetra_Map* DRT::DiscretizationXFEM::InitialDofColMap(unsigned nds) const
  * Takes dof_row_map with just one xfem-Dofset and duplicates                  |
  * the dof gids for export to active dofs                          ager 11/14|
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> DRT::DiscretizationXFEM::extend_map(
+Teuchos::RCP<Epetra_Map> XFEM::DiscretizationXFEM::extend_map(
     const Epetra_Map* srcmap, int numdofspernodedofset, int numdofsets, bool uniquenumbering)
 {
   int numsrcelements = srcmap->NumMyElements();
@@ -211,10 +211,10 @@ Teuchos::RCP<Epetra_Map> DRT::DiscretizationXFEM::extend_map(
 /*----------------------------------------------------------------------*
  |  set a reference to a data vector (public)                mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationXFEM::SetInitialState(
+void XFEM::DiscretizationXFEM::SetInitialState(
     unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::DiscretizationXFEM::SetInitialState");
+  TEUCHOS_FUNC_TIME_MONITOR("XFEM::DiscretizationXFEM::SetInitialState");
 
   if (!HaveDofs()) FOUR_C_THROW("fill_complete() was not called");
   const Epetra_Map* colmap = InitialDofColMap(nds);
@@ -249,7 +249,7 @@ void DRT::DiscretizationXFEM::SetInitialState(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool DRT::DiscretizationXFEM::IsEqualXDofSet(int nds, const XFEM::XFEMDofSet& xdofset_new) const
+bool XFEM::DiscretizationXFEM::IsEqualXDofSet(int nds, const XFEM::XFEMDofSet& xdofset_new) const
 {
   const XFEM::XFEMDofSet* xdofset_old = dynamic_cast<XFEM::XFEMDofSet*>(dofsets_[nds].get());
   if (not xdofset_old) return false;

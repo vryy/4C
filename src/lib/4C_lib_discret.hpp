@@ -389,7 +389,7 @@ namespace DRT
      *
      *  In the default case, we can use the NumDof() routine. This method
      *  gives you only for enriched nodes a different result!
-     *  ( see DRT::DiscretizationXFEM )
+     *  ( see XFEM::DiscretizationXFEM )
      *
      *  \param nds (in)       : number of dofset
      *  \param node (in)      : the node those number of DoF's are requested

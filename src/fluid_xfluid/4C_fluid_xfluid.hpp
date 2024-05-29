@@ -46,7 +46,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class DiscretizationXFEM;
   class IndependentDofSet;
 }  // namespace DRT
 namespace CORE::LINALG
@@ -78,6 +77,7 @@ namespace IO
 namespace XFEM
 {
   class ConditionManager;
+  class DiscretizationXFEM;
   class MeshCoupling;
   class XFEMDofSet;
   class XfemEdgeStab;
@@ -344,7 +344,7 @@ namespace FLD
     void UpdateGridv() override;
 
     /// Get xFluid Background discretization
-    Teuchos::RCP<DRT::DiscretizationXFEM> DiscretisationXFEM() { return xdiscret_; }
+    Teuchos::RCP<XFEM::DiscretizationXFEM> DiscretisationXFEM() { return xdiscret_; }
 
     /// Get XFEM Condition Manager
     Teuchos::RCP<XFEM::ConditionManager> GetConditionManager() { return condition_manager_; }
@@ -380,7 +380,7 @@ namespace FLD
     /// get a new state class
     virtual Teuchos::RCP<FLD::XFluidState> get_new_state();
 
-    void extract_node_vectors(Teuchos::RCP<DRT::DiscretizationXFEM> dis,
+    void extract_node_vectors(Teuchos::RCP<XFEM::DiscretizationXFEM> dis,
         std::map<int, CORE::LINALG::Matrix<3, 1>>& nodevecmap,
         Teuchos::RCP<Epetra_Vector> dispnp_col);
 
@@ -677,7 +677,7 @@ namespace FLD
     //! @name discretizations
 
     //! xfem fluid discretization
-    Teuchos::RCP<DRT::DiscretizationXFEM> xdiscret_;
+    Teuchos::RCP<XFEM::DiscretizationXFEM> xdiscret_;
 
     //! vector of all coupling discretizations, the fluid is coupled with
     std::vector<Teuchos::RCP<DRT::Discretization>> meshcoupl_dis_;

@@ -28,7 +28,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class DiscretizationXFEM;
 }  // namespace DRT
 
 namespace CORE::GEO
@@ -51,6 +50,7 @@ namespace IO
 namespace XFEM
 {
   class ConditionManager;
+  class DiscretizationXFEM;
   class XFEMDofSet;
 }  // namespace XFEM
 
@@ -91,7 +91,7 @@ namespace FLD
     }
 
     /// create a state-object after a cut (pure XFEM fluid)
-    Teuchos::RCP<XFluidState> Create(const Teuchos::RCP<DRT::DiscretizationXFEM>&
+    Teuchos::RCP<XFluidState> Create(const Teuchos::RCP<XFEM::DiscretizationXFEM>&
                                          xdiscret,  //!< xfluid background discretization
         Teuchos::RCP<const Epetra_Vector>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis
@@ -101,7 +101,7 @@ namespace FLD
     );
 
     /// create a state-object after a cut (XFEM fluid with embedded fluid mesh)
-    Teuchos::RCP<XFluidFluidState> Create(const Teuchos::RCP<DRT::DiscretizationXFEM>&
+    Teuchos::RCP<XFluidFluidState> Create(const Teuchos::RCP<XFEM::DiscretizationXFEM>&
                                               xdiscret,  //!< xfluid background discretization
         const Teuchos::RCP<DRT::Discretization>&
             embfluiddiscret,  //!< embedded fluid discretization
@@ -119,7 +119,7 @@ namespace FLD
         Teuchos::RCP<XFEM::XFEMDofSet>& dofset,  //!< xfem dofset obtained from the new wizard
         Teuchos::RCP<CORE::GEO::CutWizard>&
             wizard,  //!< cut wizard associated with current intersection state
-        const Teuchos::RCP<DRT::DiscretizationXFEM>&
+        const Teuchos::RCP<XFEM::DiscretizationXFEM>&
             xdiscret,  //!< xfluid background discretization
         Teuchos::RCP<const Epetra_Vector>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis

@@ -9,10 +9,10 @@
 #include "4C_fsi_xfem_XFFcoupling_manager.hpp"
 
 #include "4C_fluid_xfluid.hpp"
-#include "4C_lib_discret_xfem.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_xfem_condition_manager.hpp"
+#include "4C_xfem_discretization.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

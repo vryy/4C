@@ -33,7 +33,6 @@ interface
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret_xfem.hpp"
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
@@ -44,6 +43,7 @@ interface
 #include "4C_utils_function.hpp"
 #include "4C_utils_parameter_list.hpp"
 #include "4C_xfem_condition_manager.hpp"
+#include "4C_xfem_discretization.hpp"
 #include "4C_xfem_discretization_utils.hpp"
 #include "4C_xfem_dofset.hpp"
 #include "4C_xfem_edgestab.hpp"
@@ -66,7 +66,7 @@ FLD::XFluid::XFluid(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
-      xdiscret_(Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(actdis, true)),
+      xdiscret_(Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(actdis, true)),
       xfluid_timint_check_interfacetips_(true),
       xfluid_timint_check_sliding_on_surface_(true),
       edgestab_(Teuchos::rcp(new XFEM::XfemEdgeStab())),
@@ -698,7 +698,7 @@ void FLD::XFluid::update_ale_state_vectors(Teuchos::RCP<FLD::XFluidState> state)
   }
 }
 
-void FLD::XFluid::extract_node_vectors(Teuchos::RCP<DRT::DiscretizationXFEM> dis,
+void FLD::XFluid::extract_node_vectors(Teuchos::RCP<XFEM::DiscretizationXFEM> dis,
     std::map<int, CORE::LINALG::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> dispnp_col)
 {
   nodevecmap.clear();
