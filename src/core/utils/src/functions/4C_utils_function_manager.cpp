@@ -9,12 +9,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "4C_global_data.hpp"
-#include "4C_io.hpp"
+#include "4C_io_dat_file_utils.hpp"
+#include "4C_io_linedefinition.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
-
-#include <stdexcept>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -138,19 +137,16 @@ void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& functio
 }
 
 
-INPUT::Lines CORE::UTILS::FunctionManager::ValidFunctionLines()
+std::vector<INPUT::LineDefinition> CORE::UTILS::FunctionManager::valid_function_lines()
 {
-  INPUT::Lines lines(
-      "FUNCT", "Definition of functions for various cases, mainly boundary conditions");
-
+  std::vector<INPUT::LineDefinition> lines;
   for (const auto& [possible_lines, _] : attached_function_data_)
   {
     for (const auto& single_line : possible_lines)
     {
-      lines.Add(single_line);
+      lines.emplace_back(single_line);
     }
   }
-
   return lines;
 }
 
@@ -176,7 +172,7 @@ void CORE::UTILS::FunctionManager::ReadInput(INPUT::DatFileReader& reader)
         {
           for (auto& [possible_lines, function_factory] : attached_function_data_)
           {
-            auto [parsed_lines, unparsed_lines] = INPUT::ReadMatchingLines(
+            auto [parsed_lines, unparsed_lines] = IO::DatFileUtils::read_matching_lines_in_section(
                 reader, "FUNCT" + std::to_string(funct_suffix), possible_lines);
 
             // A convoluted way of saying that there are no lines in the section, thus, stop

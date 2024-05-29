@@ -41,11 +41,9 @@ struct ModuleCallbacks
   std::function<void(CORE::UTILS::FunctionManager& function_manager)> AttachFunctionDefinitions;
 
   /**
-   * A callback to attach valid result description lines to.
-   * Modules should use the Add() function on the Lines object to add their own valid lines.
+   * A callback to return valid result description lines.
    */
-
-  std::function<void(INPUT::Lines&)> AttachResultLines;
+  std::function<std::vector<INPUT::LineDefinition>()> valid_result_description_lines;
 };
 
 FOUR_C_NAMESPACE_CLOSE

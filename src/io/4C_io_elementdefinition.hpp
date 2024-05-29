@@ -30,8 +30,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace INPUT
 {
-  class Lines;
-
   /// Collection of valid element dat file line definitions
   /*!
     The actual definition is done by each element's type class.

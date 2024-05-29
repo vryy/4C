@@ -13,6 +13,7 @@
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
 #include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_legacy_module.hpp"
+#include "4C_io_dat_file_utils.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_io_utils_reader.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -155,7 +156,7 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteParagraph(std::ostream &stream, std::string &paragraph, size_t indent)
+  void WriteParagraph(std::ostream &stream, std::string paragraph, size_t indent)
   {
     size_t mathstartpos = paragraph.find("\f$");
     size_t mathendpos = 0;
@@ -279,9 +280,18 @@ namespace RTD
     // adding the section for the CLONING MATERIAL MAP
     WriteLinktarget(stream, "cloningmaterialsreference");
     write_header(stream, 0, "Cloning material reference");
-    const INPUT::Lines lines = CORE::FE::ValidCloningMaterialMapLines();
+    WriteParagraph(stream,
+        "This section is used for multi physics simulations, where one wants to discretize two "
+        "different fields on the same mesh. "
+        "Instead of creating the same mesh twice, the user only needs to create it once. "
+        "The pre-defined mesh is read in and results in a discretization object with material "
+        "SRC_MAT. "
+        "This discretization is then cloned/duplicated such that the resulting discretization "
+        "is assigned the material TAR_MAT.");
+
+    const std::vector<INPUT::LineDefinition> lines = CORE::FE::valid_cloning_material_map_lines();
     std::stringstream cloningMatStream;
-    lines.Print(cloningMatStream);
+    IO::DatFileUtils::print_section(cloningMatStream, "CLONING MATERIAL MAP", lines);
     const std::vector<std::string> cloningMatList = DRT::UTILS::Split(cloningMatStream.str(), "\n");
 
     WriteCode(stream, cloningMatList);
@@ -691,15 +701,14 @@ namespace RTD
     {
       WriteLinktarget(stream, "restultdescriptionreference");
       write_header(stream, 0, "Result description reference");
-      CORE::UTILS::ResultTestManager resulttestmanager;
-      INPUT::Lines lines("RESULT DESCRIPTION",
+
+      std::vector<INPUT::LineDefinition> lines =
+          GlobalLegacyModuleCallbacks().valid_result_description_lines();
+      WriteParagraph(stream,
           "The result of the simulation with respect to specific quantities at concrete points "
           "can be tested against particular values with a given tolerance.");
-      GlobalLegacyModuleCallbacks().AttachResultLines(lines);
-      std::string sectionDescription = lines.Description();
-      WriteParagraph(stream, sectionDescription);
       std::stringstream resultDescriptionStream;
-      lines.Print(resultDescriptionStream);
+      IO::DatFileUtils::print_section(resultDescriptionStream, "RESULT DESCRIPTION", lines);
       const std::vector<std::string> resultDescriptionList =
           DRT::UTILS::Split(resultDescriptionStream.str(), "\n");
       WriteCode(stream, resultDescriptionList);
@@ -709,11 +718,15 @@ namespace RTD
     {
       WriteLinktarget(stream, "functionreference");
       write_header(stream, 0, "Functions reference");
-      const auto lines = CORE::UTILS::FunctionManager().ValidFunctionLines();
-      std::string sectionDescription = lines.Description();
-      WriteParagraph(stream, sectionDescription);
+      CORE::UTILS::FunctionManager function_manager;
+      GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
+
+      const auto lines = function_manager.valid_function_lines();
+
+      WriteParagraph(
+          stream, "Definition of functions for various cases, mainly boundary conditions");
       std::stringstream functionStream;
-      lines.Print(functionStream);
+      IO::DatFileUtils::print_section(functionStream, "FUNCT", lines);
       const std::vector<std::string> functionList = DRT::UTILS::Split(functionStream.str(), "\n");
       WriteCode(stream, functionList);
     }

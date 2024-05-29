@@ -26,7 +26,6 @@ namespace INPUT
 {
   class DatFileReader;
   class LineDefinition;
-  class Lines;
 }  // namespace INPUT
 
 namespace CORE::UTILS

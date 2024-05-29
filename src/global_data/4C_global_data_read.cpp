@@ -21,6 +21,7 @@
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_io.hpp"
 #include "4C_io_condition_definition.hpp"
+#include "4C_io_dat_file_utils.hpp"
 #include "4C_io_elementreader.hpp"
 #include "4C_io_geometry_type.hpp"
 #include "4C_io_inputreader.hpp"
@@ -2100,10 +2101,11 @@ void GLOBAL::ReadContactConstitutiveLaws(GLOBAL::Problem& problem, INPUT::DatFil
 /*----------------------------------------------------------------------*/
 void GLOBAL::ReadCloningMaterialMap(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
-  INPUT::Lines lines = CORE::FE::ValidCloningMaterialMapLines();
+  const std::vector<INPUT::LineDefinition> lines = CORE::FE::valid_cloning_material_map_lines();
 
   // perform the actual reading and extract the input parameters
-  std::vector<INPUT::LineDefinition> input_line_vec = lines.Read(reader);
+  std::vector<INPUT::LineDefinition> input_line_vec =
+      IO::DatFileUtils::read_all_lines_in_section(reader, "CLONING MATERIAL MAP", lines);
   for (const auto& input_line : input_line_vec)
   {
     // extract what was read from the input file
@@ -2130,13 +2132,10 @@ void GLOBAL::ReadCloningMaterialMap(GLOBAL::Problem& problem, INPUT::DatFileRead
 /*----------------------------------------------------------------------*/
 void GLOBAL::ReadResult(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
-  INPUT::Lines lines("RESULT DESCRIPTION",
-      "The result of the simulation with respect to specific quantities at concrete points "
-      "can be tested against particular values with a given tolerance.");
+  const auto lines = GlobalLegacyModuleCallbacks().valid_result_description_lines();
 
-  GlobalLegacyModuleCallbacks().AttachResultLines(lines);
-
-  problem.get_result_test_manager().SetParsedLines(lines.Read(reader));
+  problem.get_result_test_manager().SetParsedLines(
+      IO::DatFileUtils::read_all_lines_in_section(reader, "RESULT DESCRIPTION", lines));
 }
 
 /*----------------------------------------------------------------------*/

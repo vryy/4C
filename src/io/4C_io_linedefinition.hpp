@@ -279,68 +279,6 @@ namespace INPUT
   };
 
 
-  /// a collection of LineDefinitions
-  /*!
-    The Lines class is used to describe and read input lines from the dat
-    file. The point is, the description of the line is used for the actual
-    reading. This way the description is never out of sync with the reading
-    routines. Furthermore, the reading code and the line definition code are
-    separated. All the user needs to do is add a new definition.
-
-    Lines describes a dat file section that consists of any number of specific
-    lines. At the time being Lines is used for curves and functions
-    sections. Here, each line can be of one of a list of given formats.
-
-    Reading means finding the LineDefinition that matches the input line
-    exactly and filling its internal values. After reading the user has to
-    extract the values from the LineDefinition.
-
-    \author u.kue
-    \date 08/09
-   */
-  class Lines
-  {
-   public:
-    /// construct to read a given section
-    explicit Lines(std::string sectionname, std::string descriptionstring = "")
-        : sectionname_(std::move(sectionname)), description_(std::move(descriptionstring))
-    {
-    }
-
-    /// Return the section description
-    [[nodiscard]] const std::string& Description() const { return description_; }
-
-    /// Add a new LineDefinition
-    void Add(const LineDefinition& ld) { definitions_.push_back(ld); }
-
-    /// Print all LineDefinitions as dat file comment
-    void Print(std::ostream& stream) const;
-
-    /// Read section and return one LineDefinition per line read
-    std::vector<LineDefinition> Read(DatFileReader& reader, int suffix = -1);
-
-   private:
-    /// Name of the section we read
-    std::string sectionname_;
-
-    /// Description of the section
-    std::string description_;
-
-    /// All possible LineDefinitions
-    std::vector<LineDefinition> definitions_;
-  };
-
-
-  /**
-   * Read all lines in a @p section of @p reader that match the @p possible_lines. This implies
-   * that, potentially, no lines are read at all, resulting in an empty returned vector. In
-   * addition to the vector of parsed lines, the second returned value contains all unparsed input
-   * lines.
-   */
-  std::pair<std::vector<LineDefinition>, std::vector<std::string>> ReadMatchingLines(
-      DatFileReader& reader, const std::string& section,
-      const std::vector<LineDefinition>& possible_lines);
-
   /**
    * Helper functor to parse the length of a vector input from an integer component. This
    * functor is compatible with LengthDefinition.

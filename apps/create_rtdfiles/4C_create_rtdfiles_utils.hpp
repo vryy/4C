@@ -145,11 +145,11 @@ namespace RTD
    * indentation
    *
    * \param[in] stream: stream for the restructuredText file
-   * \param[in] line: The link target to be printed
+   * \param[in] paragraph: The text to be printed
    * \param[in] indent: Optional indentation of the paragraph (default 0)
    *
    */
-  void WriteParagraph(std::ostream& stream, std::string& paragraph, size_t indent = 0);
+  void WriteParagraph(std::ostream& stream, std::string paragraph, size_t indent = 0);
   /*----------------------------------------------------------------------*/
   /*!
    * \brief Write a code block to the restructuredText stream
