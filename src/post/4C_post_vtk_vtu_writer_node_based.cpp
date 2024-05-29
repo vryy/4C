@@ -12,11 +12,11 @@
 #include "4C_post_vtk_vtu_writer_node_based.hpp"
 
 #include "4C_beam3_base.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_io_element_vtk_cell_type_register.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_element_vtk_cell_type_register.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_nurbs_discret.hpp"
@@ -105,7 +105,7 @@ void PostVtuWriterNode::write_geo()
   int outNodeId = 0;
   for (int e = 0; e < nelements; ++e)
   {
-    const DRT::Element* ele = dis->lRowElement(e);
+    const CORE::Elements::Element* ele = dis->lRowElement(e);
     // check for beam element that potentially needs special treatment due to Hermite interpolation
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
@@ -119,10 +119,9 @@ void PostVtuWriterNode::write_geo()
     }
     else
     {
-      celltypes.push_back(
-          DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).first);
+      celltypes.push_back(IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).first);
       const std::vector<int>& numbering =
-          DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
+          IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
       const DRT::Node* const* nodes = ele->Nodes();
       for (int n = 0; n < ele->num_node(); ++n)
       {
@@ -432,7 +431,7 @@ void PostVtuWriterNode::write_element_result_step(std::ofstream& file,
   }
 }
 
-void PostVtuWriterNode::write_geo_nurbs_ele(const DRT::Element* ele,
+void PostVtuWriterNode::write_geo_nurbs_ele(const CORE::Elements::Element* ele,
     std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
     std::vector<double>& coordinates)
 {
@@ -446,9 +445,9 @@ void PostVtuWriterNode::write_geo_beam_ele(const DRT::ELEMENTS::Beam3Base* beame
   FOUR_C_THROW("VTU node based filter cannot handle beam elements");
 }
 
-void PostVtuWriterNode::wirte_dof_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
-    const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
-    const int from, const bool fillzeros)
+void PostVtuWriterNode::wirte_dof_result_step_nurbs_ele(const CORE::Elements::Element* ele,
+    int ncomponents, const int numdf, std::vector<double>& solution,
+    Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros)
 {
   FOUR_C_THROW("VTU node based filter cannot handle NURBS elements");
 }
@@ -460,8 +459,9 @@ void PostVtuWriterNode::write_dof_result_step_beam_ele(const DRT::ELEMENTS::Beam
   FOUR_C_THROW("VTU node based filter cannot handle beam elements");
 }
 
-void PostVtuWriterNode::write_nodal_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
-    const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData)
+void PostVtuWriterNode::write_nodal_result_step_nurbs_ele(const CORE::Elements::Element* ele,
+    int ncomponents, const int numdf, std::vector<double>& solution,
+    Teuchos::RCP<Epetra_MultiVector> ghostedData)
 {
   FOUR_C_THROW("VTU node based filter cannot handle NURBS elements");
 }

@@ -26,8 +26,12 @@ namespace DRT
 {
   class Discretization;
   class Node;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace POROFLUIDMULTIPHASE
 {
@@ -69,7 +73,7 @@ namespace POROFLUIDMULTIPHASE
 
     //! get element result to be tested
     double result_element(const std::string quantity,  //! name of quantity to be tested
-        const DRT::Element* element                    //! element carrying the result to be tested
+        const CORE::Elements::Element* element         //! element carrying the result to be tested
     ) const;
 
     //! get special result to be tested

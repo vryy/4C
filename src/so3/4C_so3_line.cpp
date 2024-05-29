@@ -21,7 +21,8 @@ DRT::ELEMENTS::StructuralLineType& DRT::ELEMENTS::StructuralLineType::Instance()
   return instance_;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::StructuralLineType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::StructuralLineType::Create(
+    const int id, const int owner)
 {
   // return Teuchos::rcp( new StructuralLine( id, owner ) );
   return Teuchos::null;
@@ -32,8 +33,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::StructuralLineType::Create(const int i
  |  ctor (public)                                              gee 04/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::StructuralLine::StructuralLine(int id, int owner, int nnode, const int* nodeids,
-    DRT::Node** nodes, DRT::Element* parent, const int lline)
-    : DRT::FaceElement(id, owner)
+    DRT::Node** nodes, CORE::Elements::Element* parent, const int lline)
+    : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -57,7 +58,7 @@ DRT::ELEMENTS::StructuralLine::StructuralLine(int id, int owner, int nnode, cons
  |  copy-ctor (public)                                         gee 04/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::StructuralLine::StructuralLine(const DRT::ELEMENTS::StructuralLine& old)
-    : DRT::FaceElement(old), gaussrule_(old.gaussrule_)
+    : CORE::Elements::FaceElement(old), gaussrule_(old.gaussrule_)
 {
   return;
 }
@@ -65,7 +66,7 @@ DRT::ELEMENTS::StructuralLine::StructuralLine(const DRT::ELEMENTS::StructuralLin
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it               gee 04/08|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::StructuralLine::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::StructuralLine::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::StructuralLine(*this);
   return newelement;

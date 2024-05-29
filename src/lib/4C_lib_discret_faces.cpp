@@ -103,11 +103,11 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
   // REMARK: in a first step: find all surfaces and adjacent elements and fill InternalFacesData
   //         without creating the internal faces elements
 
-  std::vector<DRT::Element*>::iterator fool;
+  std::vector<CORE::Elements::Element*>::iterator fool;
 
   for (fool = elecolptr_.begin(); fool != elecolptr_.end(); ++fool)
   {
-    DRT::Element* ele = *fool;
+    CORE::Elements::Element* ele = *fool;
 
     //-------------------------------------------
     // create
@@ -236,7 +236,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
   //    -> the owner of this node will be the owner for the face
   //       (this criterion is working in the same way on all procs holding this face)
 
-  std::map<std::vector<int>, Teuchos::RCP<DRT::Element>> faces;
+  std::map<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>> faces;
 
   // get pbcs
   std::map<int, std::vector<int>>* col_pbcmapmastertoslave = get_all_pbc_coupled_col_nodes();
@@ -771,7 +771,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
           if (add_salve_ele_to_face)
           {
             // get master element
-            DRT::Element* master_ele = elecolptr_[0];
+            CORE::Elements::Element* master_ele = elecolptr_[0];
             for (fool = elecolptr_.begin(); fool != elecolptr_.end(); ++fool)
             {
               if ((*fool)->Id() == master_peid) master_ele = *fool;
@@ -864,8 +864,8 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
     if (doboundaryfaces_ || (master_peid != -1 && slave_peid != -1))
     {
       FOUR_C_ASSERT(master_peid != -1, "At least the master element should be present");
-      DRT::Element* parent_master = gElement(master_peid);
-      DRT::Element* parent_slave = slave_peid != -1 ? gElement(slave_peid) : nullptr;
+      CORE::Elements::Element* parent_master = gElement(master_peid);
+      CORE::Elements::Element* parent_slave = slave_peid != -1 ? gElement(slave_peid) : nullptr;
 
       FOUR_C_ASSERT(master_peid == parent_master->Id(), "Internal error");
       FOUR_C_ASSERT(slave_peid == -1 || slave_peid == parent_slave->Id(), "Internal error");
@@ -878,18 +878,19 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
       std::transform(nodes.begin(), nodes.end(), nodeids.begin(), std::mem_fn(&DRT::Node::Id));
 
       // create the internal face element
-      Teuchos::RCP<DRT::FaceElement> surf = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(
-          parent_master->CreateFaceElement(parent_slave, nodeids.size(), nodeids.data(),
-              nodes.data(), face_it->second.GetLSurfaceMaster(), face_it->second.GetLSurfaceSlave(),
-              face_it->second.get_local_numbering_map()),
-          true);
+      Teuchos::RCP<CORE::Elements::FaceElement> surf =
+          Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
+              parent_master->CreateFaceElement(parent_slave, nodeids.size(), nodeids.data(),
+                  nodes.data(), face_it->second.GetLSurfaceMaster(),
+                  face_it->second.GetLSurfaceSlave(), face_it->second.get_local_numbering_map()),
+              true);
       FOUR_C_ASSERT(surf != Teuchos::null,
           "Creating a face element failed. Check overloading of CreateFaceElement");
 
       // create a clone (the internally created element does not exist anymore when all
       // Teuchos::RCP's finished)
-      Teuchos::RCP<DRT::FaceElement> surf_clone =
-          Teuchos::rcp(dynamic_cast<DRT::FaceElement*>(surf->Clone()));
+      Teuchos::RCP<CORE::Elements::FaceElement> surf_clone =
+          Teuchos::rcp(dynamic_cast<CORE::Elements::FaceElement*>(surf->Clone()));
       if (surf_clone.get() == nullptr)
         FOUR_C_THROW("Invalid element detected. Expected face element");
 
@@ -902,8 +903,8 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
       surf_clone->SetOwner(owner);
 
       // insert the newly created element
-      faces.insert(
-          std::pair<std::vector<int>, Teuchos::RCP<DRT::Element>>(face_it->first, surf_clone));
+      faces.insert(std::pair<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>>(
+          face_it->first, surf_clone));
 
       // set face to elements
       parent_master->SetFace(face_it->second.GetLSurfaceMaster(), surf_clone.get());
@@ -917,11 +918,12 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
   // if the discretization has been redistributed (combustion module), we have to
   // rebuild the faces and therefore we have to be sure that the map faces_ is clear
   // therefore, the old faces are deleted and replaced by new ones
-  std::map<int, Teuchos::RCP<DRT::Element>> finalFaces;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> finalFaces;
   assign_global_i_ds(Comm(), faces, finalFaces);
-  for (std::map<int, Teuchos::RCP<DRT::Element>>::iterator faceit = finalFaces.begin();
+  for (std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator faceit = finalFaces.begin();
        faceit != finalFaces.end(); ++faceit)
-    faces_[faceit->first] = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(faceit->second, true);
+    faces_[faceit->first] =
+        Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(faceit->second, true);
 
   if (verbose and comm_->MyPID() == 0)
   {
@@ -940,7 +942,7 @@ void DRT::DiscretizationFaces::BuildFaceRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
-  std::map<int, Teuchos::RCP<DRT::FaceElement>>::iterator curr;
+  std::map<int, Teuchos::RCP<CORE::Elements::FaceElement>>::iterator curr;
   for (curr = faces_.begin(); curr != faces_.end(); ++curr)
     if (curr->second->Owner() == myrank) nummyeles++;
   std::vector<int> eleids(nummyeles);
@@ -967,7 +969,7 @@ void DRT::DiscretizationFaces::BuildFaceColMap()
   int nummyeles = (int)faces_.size();
   std::vector<int> eleids(nummyeles);
   facecolptr_.resize(nummyeles);
-  std::map<int, Teuchos::RCP<DRT::FaceElement>>::iterator curr;
+  std::map<int, Teuchos::RCP<CORE::Elements::FaceElement>>::iterator curr;
   int count = 0;
   for (curr = faces_.begin(); curr != faces_.end(); ++curr)
   {
@@ -1062,7 +1064,7 @@ void DRT::DiscretizationFaces::PrintFaces(std::ostream& os) const
   else
   {
     int nummyfaces = 0;
-    std::map<int, Teuchos::RCP<DRT::FaceElement>>::const_iterator ecurr;
+    std::map<int, Teuchos::RCP<CORE::Elements::FaceElement>>::const_iterator ecurr;
     for (ecurr = faces_.begin(); ecurr != faces_.end(); ++ecurr)
       if (ecurr->second->Owner() == Comm().MyPID()) nummyfaces++;
 
@@ -1089,7 +1091,7 @@ void DRT::DiscretizationFaces::PrintFaces(std::ostream& os) const
     if (proc == Comm().MyPID())
     {
       if ((int)faces_.size()) os << "-------------------------- Proc " << proc << " :\n";
-      std::map<int, Teuchos::RCP<DRT::FaceElement>>::const_iterator curr;
+      std::map<int, Teuchos::RCP<CORE::Elements::FaceElement>>::const_iterator curr;
       for (curr = faces_.begin(); curr != faces_.end(); ++curr)
       {
         os << *(curr->second);

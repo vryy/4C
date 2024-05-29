@@ -111,7 +111,7 @@ void DRT::Discretization::proc_zero_distribute_elements_to_all(
     for (int i = 0; i < size; ++i)
     {
       if (pidlist[i] == myrank or pidlist[i] < 0) continue;  // do not send to myself
-      Element* actele = gElement(gidlist[i]);
+      CORE::Elements::Element* actele = gElement(gidlist[i]);
       if (!actele) FOUR_C_THROW("Cannot find global element %d", gidlist[i]);
       actele->Pack(sendpb[pidlist[i]]);
     }
@@ -121,7 +121,7 @@ void DRT::Discretization::proc_zero_distribute_elements_to_all(
     for (int i = 0; i < size; ++i)
     {
       if (pidlist[i] == myrank or pidlist[i] < 0) continue;  // do not send to myself
-      Element* actele = gElement(gidlist[i]);
+      CORE::Elements::Element* actele = gElement(gidlist[i]);
       actele->Pack(sendpb[pidlist[i]]);
       element_.erase(actele->Id());
     }
@@ -182,10 +182,10 @@ void DRT::Discretization::proc_zero_distribute_elements_to_all(
       std::vector<char> data;
       CORE::COMM::ParObject::ExtractfromPack(index, recvdata, data);
       CORE::COMM::ParObject* object = CORE::COMM::Factory(data);
-      DRT::Element* ele = dynamic_cast<DRT::Element*>(object);
+      CORE::Elements::Element* ele = dynamic_cast<CORE::Elements::Element*>(object);
       if (!ele) FOUR_C_THROW("Received object is not an element");
       ele->SetOwner(myrank);
-      Teuchos::RCP<DRT::Element> rcpele = Teuchos::rcp(ele);
+      Teuchos::RCP<CORE::Elements::Element> rcpele = Teuchos::rcp(ele);
       add_element(rcpele);
       // printf("proc %d index %d\n",myrank,index); fflush(stdout);
     }
@@ -323,7 +323,7 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killd
 
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
   for (curr = element_.begin(); curr != element_.end();)
   {
     if (curr->second->Owner() != myrank)
@@ -355,7 +355,7 @@ void DRT::Discretization::export_column_elements(
 {
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
   for (curr = element_.begin(); curr != element_.end();)
   {
     if (curr->second->Owner() != myrank)
@@ -403,7 +403,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
   // if a proc stores the appropiate ghosted elements, the resulting
   // graph will be the correct and complete graph of the distributed
   // discretization even if nodes are not ghosted.
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator curr;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator curr;
   for (curr = element_.begin(); curr != element_.end(); ++curr)
   {
     const int nnode = curr->second->num_node();
@@ -479,10 +479,10 @@ DRT::Discretization::build_element_row_column(
   int stoposize = 2000;
   int count = 0;
   std::vector<int> stopo(stoposize);
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator ecurr;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator ecurr;
   for (ecurr = element_.begin(); ecurr != element_.end(); ++ecurr)
   {
-    const DRT::Element& actele = *(ecurr->second);
+    const CORE::Elements::Element& actele = *(ecurr->second);
     int gid = actele.Id();
     int nnode = actele.num_node();
     const int* nodeids = actele.NodeIds();
@@ -740,7 +740,7 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
   std::set<int> nodes;
   for (int lid = 0; lid < elecolmap.NumMyElements(); ++lid)
   {
-    DRT::Element* ele = this->gElement(elecolmap.GID(lid));
+    CORE::Elements::Element* ele = this->gElement(elecolmap.GID(lid));
     const int* nodeids = ele->NodeIds();
     for (int inode = 0; inode < ele->num_node(); ++inode)
     {
@@ -814,7 +814,7 @@ void DRT::Discretization::SetupGhosting(
 
   // build the graph ourselves
   std::map<int, std::set<int>> localgraph;
-  for (std::map<int, Teuchos::RCP<DRT::Element>>::iterator i = element_.begin();
+  for (std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator i = element_.begin();
        i != element_.end(); ++i)
   {
     int numnodes = i->second->num_node();

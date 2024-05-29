@@ -14,7 +14,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_lib_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -106,9 +106,9 @@ namespace CORE::FE
   /*  \author henke
    *  \date 06/09
    */
-  void ExtractMyNodeBasedValues(const DRT::Element* ele,  ///< pointer to current element
-      std::vector<double>& local,                         ///< local vector on element-level
-      const Epetra_MultiVector& global                    ///< global (multi) vector
+  void ExtractMyNodeBasedValues(const CORE::Elements::Element* ele,  ///< pointer to current element
+      std::vector<double>& local,       ///< local vector on element-level
+      const Epetra_MultiVector& global  ///< global (multi) vector
   );
 
 
@@ -116,10 +116,10 @@ namespace CORE::FE
   /*  \author g.bau
    *  \date 08/08
    */
-  void ExtractMyNodeBasedValues(const DRT::Element* ele,  ///< pointer to current element
-      CORE::LINALG::SerialDenseVector& local,             ///< local vector on element-level
-      const Teuchos::RCP<Epetra_MultiVector>& global,     ///< global vector
-      const int nsd                                       ///< number of space dimensions
+  void ExtractMyNodeBasedValues(const CORE::Elements::Element* ele,  ///< pointer to current element
+      CORE::LINALG::SerialDenseVector& local,          ///< local vector on element-level
+      const Teuchos::RCP<Epetra_MultiVector>& global,  ///< global vector
+      const int nsd                                    ///< number of space dimensions
   );
 
   /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
@@ -139,10 +139,10 @@ namespace CORE::FE
    *  \date 04/09
    */
   template <class M>
-  void ExtractMyNodeBasedValues(const DRT::Element* ele,  ///< pointer to current element
-      M& localmatrix,                                     ///< local matrix on element-level
-      const Teuchos::RCP<Epetra_MultiVector>& global,     ///< global vector
-      const int nsd                                       ///< number of space dimensions
+  void ExtractMyNodeBasedValues(const CORE::Elements::Element* ele,  ///< pointer to current element
+      M& localmatrix,                                  ///< local matrix on element-level
+      const Teuchos::RCP<Epetra_MultiVector>& global,  ///< global vector
+      const int nsd                                    ///< number of space dimensions
   )
   {
     if (global == Teuchos::null) FOUR_C_THROW("received a TEUCHOS::null pointer");
@@ -178,7 +178,8 @@ namespace CORE::FE
   \author henke
  */
   template <class M>
-  void ExtractMyNodeBasedValues(const DRT::Element* ele, M& local, const Epetra_MultiVector& global)
+  void ExtractMyNodeBasedValues(
+      const CORE::Elements::Element* ele, M& local, const Epetra_MultiVector& global)
   {
     const int numnode = ele->num_node();
     const int numcol = global.NumVectors();

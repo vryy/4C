@@ -12,6 +12,7 @@
 #include "4C_beam3_euler_bernoulli.hpp"
 #include "4C_beaminteraction_contact_pair.hpp"
 #include "4C_beaminteraction_geometry_pair_access_traits.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_fbi_beam_to_fluid_meshtying_pair_gauss_point.hpp"
 #include "4C_fbi_beam_to_fluid_meshtying_params.hpp"
 #include "4C_fluid_ele.hpp"
@@ -20,7 +21,6 @@
 #include "4C_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "4C_geometry_pair_line_to_volume_segmentation.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
 #include <vector>
@@ -70,7 +70,8 @@ namespace
 
       // Create the elements.
       const int dummy_node_ids[2] = {0, 1};
-      Teuchos::RCP<DRT::Element> beam_element = Teuchos::rcp(new DRT::ELEMENTS::Beam3eb(0, 0));
+      Teuchos::RCP<CORE::Elements::Element> beam_element =
+          Teuchos::rcp(new DRT::ELEMENTS::Beam3eb(0, 0));
       beam_element->SetNodeIds(2, dummy_node_ids);
       Teuchos::RCP<DRT::ELEMENTS::Fluid> fluid_element =
           Teuchos::rcp(new DRT::ELEMENTS::Fluid(1, 0));
@@ -94,7 +95,7 @@ namespace
           Teuchos::rcp(new FBI::BeamToFluidMeshtyingParams());
 
       // Call Init on the beam contact pair.
-      std::vector<const DRT::Element*> pair_elements;
+      std::vector<const CORE::Elements::Element*> pair_elements;
       pair_elements.push_back(&(*beam_element));
       pair_elements.push_back(&(*fluid_element));
       pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);

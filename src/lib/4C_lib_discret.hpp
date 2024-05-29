@@ -14,8 +14,8 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_dofset_interface.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_shape_function_type.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_std_cxx20_ranges.hpp"
@@ -227,7 +227,7 @@ namespace DRT
     - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param element (in)      : the element those number of dofs are requested
     */
-    virtual int NumDof(const Element* element) const
+    virtual int NumDof(const CORE::Elements::Element* element) const
     {
       FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
       return NumDof(0, element);
@@ -242,7 +242,7 @@ namespace DRT
     \param element (in)      : the element
     \param dof (in)          : the element local dof number
     */
-    virtual int Dof(const Element* element, const int dof) const
+    virtual int Dof(const CORE::Elements::Element* element, const int dof) const
     {
       FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
       return Dof(0, element, dof);
@@ -257,7 +257,7 @@ namespace DRT
     - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param element (in)      : the element
     */
-    virtual std::vector<int> Dof(const Element* element) const
+    virtual std::vector<int> Dof(const CORE::Elements::Element* element) const
     {
       FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
       return Dof(0, element);
@@ -274,7 +274,8 @@ namespace DRT
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void Dof(const Element* element, const Node* node, std::vector<int>& lm) const
+    virtual void Dof(
+        const CORE::Elements::Element* element, const Node* node, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
       Dof(0, element, node, lm);
@@ -290,7 +291,7 @@ namespace DRT
     \param element (in)      : the element
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void Dof(const Element* element, std::vector<int>& lm) const
+    virtual void Dof(const CORE::Elements::Element* element, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
       Dof(0, element, lm);
@@ -376,7 +377,7 @@ namespace DRT
     \param nds (in)          : number of dofset
     \param element (in)      : the element those number of dofs are requested
     */
-    virtual int NumDof(unsigned nds, const Element* element) const
+    virtual int NumDof(unsigned nds, const CORE::Elements::Element* element) const
     {
       FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(havedof_, "no dofs assigned");
@@ -440,7 +441,7 @@ namespace DRT
     \param element (in)      : the element
     \param dof (in)          : the element local dof number
     */
-    virtual int Dof(unsigned nds, const Element* element, const int dof) const
+    virtual int Dof(unsigned nds, const CORE::Elements::Element* element, const int dof) const
     {
       FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(havedof_, "no dofs assigned");
@@ -497,7 +498,7 @@ namespace DRT
     \param element     (in) : the element (optionally)
     */
     virtual void Dof(std::vector<int>& dof, const Node* node, unsigned nds, unsigned nodaldofset,
-        const Element* element = nullptr) const
+        const CORE::Elements::Element* element = nullptr) const
     {
       FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(havedof_, "no dofs assigned");
@@ -514,7 +515,7 @@ namespace DRT
     \param nds     (in) : number of dofset
     \param element (in) : the element
     */
-    virtual std::vector<int> Dof(unsigned nds, const Element* element) const
+    virtual std::vector<int> Dof(unsigned nds, const CORE::Elements::Element* element) const
     {
       FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(havedof_, "no dofs assigned");
@@ -567,8 +568,8 @@ namespace DRT
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void Dof(
-        unsigned nds, const Element* element, const Node* node, std::vector<int>& lm) const
+    virtual void Dof(unsigned nds, const CORE::Elements::Element* element, const Node* node,
+        std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(havedof_, "no dofs assigned");
@@ -586,7 +587,8 @@ namespace DRT
     \param element (in)      : the element
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void Dof(unsigned nds, const Element* element, std::vector<int>& lm) const
+    virtual void Dof(
+        unsigned nds, const CORE::Elements::Element* element, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(havedof_, "no dofs assigned");
@@ -751,8 +753,8 @@ namespace DRT
     \brief Query whether an element with global id @p gid is stored (i.e. owned or ghosted) on this
     proc.
 
-    \note: this query does not tell, if the element is owned by this proc. Use DRT::Element.Owner()
-    for this.
+    \note: this query does not tell, if the element is owned by this proc. Use
+    CORE::Elements::Element.Owner() for this.
 
     */
     virtual bool HaveGlobalElement(int gid) const;
@@ -769,7 +771,7 @@ namespace DRT
     \return Address of element if element is owned by calling proc, returns nullptr
             otherwise
     */
-    [[nodiscard]] virtual DRT::Element* gElement(int gid) const;
+    [[nodiscard]] virtual CORE::Elements::Element* gElement(int gid) const;
 
     /*!
     \brief Get the element with local row id lid (Filled()==true prerequisite)
@@ -780,7 +782,7 @@ namespace DRT
 
     \return Address of element if element is owned by calling proc
     */
-    [[nodiscard]] virtual DRT::Element* lRowElement(int lid) const
+    [[nodiscard]] virtual CORE::Elements::Element* lRowElement(int lid) const
     {
       FOUR_C_ASSERT(Filled(), "discretization not Filled().");
       return elerowptr_[lid];
@@ -795,7 +797,7 @@ namespace DRT
 
     \return Address of element if element is stored by calling proc
     */
-    virtual DRT::Element* lColElement(int lid) const
+    virtual CORE::Elements::Element* lColElement(int lid) const
     {
       FOUR_C_ASSERT(Filled(), "discretization not Filled().");
       return elecolptr_[lid];
@@ -805,7 +807,7 @@ namespace DRT
      * This function is useful for range based for-loops over all row elements.
      *
      * \code
-     *      for (Element* actele : MyRowElementRange()) {}
+     *      for (CORE::Elements::Element* actele : MyRowElementRange()) {}
      * \endcode
      *
      * \return A range of all local row elements.
@@ -924,7 +926,7 @@ namespace DRT
 
     \note Sets Filled()=false
     */
-    virtual void add_element(Teuchos::RCP<DRT::Element> ele);
+    virtual void add_element(Teuchos::RCP<CORE::Elements::Element> ele);
 
     /*!
     \brief Add a node to the discretization  (Filled()==true NOT prerequisite)
@@ -1012,7 +1014,7 @@ namespace DRT
 
     \note Sets Filled()=false and calls Reset() upon discretization.
     */
-    virtual bool DeleteElement(Teuchos::RCP<DRT::Element> ele);
+    virtual bool DeleteElement(Teuchos::RCP<CORE::Elements::Element> ele);
 
     /*!
     \brief Delete an element with global id gid from the discretization
@@ -1672,7 +1674,7 @@ namespace DRT
      * actual Element's Evaluate call.
      */
     virtual void Evaluate(Teuchos::ParameterList& params, CORE::FE::AssembleStrategy& strategy,
-        const std::function<void(DRT::Element&, Element::LocationArray&,
+        const std::function<void(CORE::Elements::Element&, CORE::Elements::Element::LocationArray&,
             CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
             CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&,
             CORE::LINALG::SerialDenseVector&)>& element_action);
@@ -1716,7 +1718,7 @@ namespace DRT
    */
     void Evaluate(Teuchos::ParameterList& params);
 
-    virtual void Evaluate(const std::function<void(DRT::Element&)>& element_action);
+    virtual void Evaluate(const std::function<void(CORE::Elements::Element&)>& element_action);
 
     /** \brief Evaluate Neumann boundary conditions
      *
@@ -2189,8 +2191,8 @@ namespace DRT
      *  \author h.kue
      *  \date 09/07    */
     virtual void assign_global_i_ds(const Epetra_Comm& comm,
-        const std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>& elementmap,
-        std::map<int, Teuchos::RCP<DRT::Element>>& finalgeometry);
+        const std::map<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>>& elementmap,
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& finalgeometry);
 
 
     //! Name of this discretization
@@ -2219,13 +2221,13 @@ namespace DRT
     Teuchos::RCP<Epetra_Map> elecolmap_;
 
     //! Vector of pointers to row elements for faster access
-    std::vector<DRT::Element*> elerowptr_;
+    std::vector<CORE::Elements::Element*> elerowptr_;
 
     //! Vector of pointers to column elements for faster access
-    std::vector<DRT::Element*> elecolptr_;
+    std::vector<CORE::Elements::Element*> elecolptr_;
 
     //! Map of elements
-    std::map<int, Teuchos::RCP<DRT::Element>> element_;
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>> element_;
 
     //! @}
 

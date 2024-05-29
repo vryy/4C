@@ -377,10 +377,10 @@ void SSTI::SSTIAlgorithm::assign_material_pointers()
   const int numscatraelements = ScaTraField()->discretization()->NumMyColElements();
   for (int i = 0; i < numscatraelements; ++i)
   {
-    DRT::Element* scatratele = ScaTraField()->discretization()->lColElement(i);
+    CORE::Elements::Element* scatratele = ScaTraField()->discretization()->lColElement(i);
     const int gid = scatratele->Id();
 
-    DRT::Element* structele = structure_field()->discretization()->gElement(gid);
+    CORE::Elements::Element* structele = structure_field()->discretization()->gElement(gid);
 
     // for coupling we add the source material to the target element and vice versa
     scatratele->AddMaterial(structele->Material());
@@ -391,10 +391,10 @@ void SSTI::SSTIAlgorithm::assign_material_pointers()
   const int numthermoelements = ThermoField()->discretization()->NumMyColElements();
   for (int i = 0; i < numthermoelements; ++i)
   {
-    DRT::Element* thermotele = ThermoField()->discretization()->lColElement(i);
+    CORE::Elements::Element* thermotele = ThermoField()->discretization()->lColElement(i);
     const int gid = thermotele->Id();
 
-    DRT::Element* scatraele = ScaTraField()->discretization()->gElement(gid);
+    CORE::Elements::Element* scatraele = ScaTraField()->discretization()->gElement(gid);
 
     // for coupling we add the source material to the target element and vice versa
     thermotele->AddMaterial(scatraele->Material());

@@ -136,7 +136,7 @@ namespace CONTACT
        *  \author Ager */
       void set_poro_parent_element(enum MORTAR::Element::PhysicalType& slavetype,
           enum MORTAR::Element::PhysicalType& mastertype, Teuchos::RCP<CONTACT::Element>& cele,
-          Teuchos::RCP<DRT::Element>& ele, const DRT::Discretization& discret) const;
+          Teuchos::RCP<CORE::Elements::Element>& ele, const DRT::Discretization& discret) const;
 
       /*! \brief Find Physical Type (Poro or Structure) of Poro Interface
        *

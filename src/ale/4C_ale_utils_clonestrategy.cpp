@@ -52,8 +52,8 @@ void ALE::UTILS::AleCloneStrategy::check_material_type(const int matid)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::UTILS::AleCloneStrategy::set_element_data(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool nurbsdis)
+void ALE::UTILS::AleCloneStrategy::set_element_data(Teuchos::RCP<CORE::Elements::Element> newele,
+    CORE::Elements::Element* oldele, const int matid, const bool nurbsdis)
 {
   if (nurbsdis == false)
   {
@@ -105,7 +105,7 @@ void ALE::UTILS::AleCloneStrategy::set_element_data(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 bool ALE::UTILS::AleCloneStrategy::determine_ele_type(
-    DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   bool cloneit = true;
 

@@ -74,7 +74,7 @@ void BEAMINTERACTION::BeamToBeamContactCondition::Clear()
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToBeamContactCondition::CreateContactPair(
-    const std::vector<DRT::Element const*>& ele_ptrs)
+    const std::vector<CORE::Elements::Element const*>& ele_ptrs)
 {
   // Check if the given elements are in this condition.
   if (!IdsInCondition(ele_ptrs[0]->Id(), ele_ptrs[1]->Id())) return Teuchos::null;

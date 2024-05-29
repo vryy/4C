@@ -27,7 +27,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Wall1ScatraType::Create(const std::vector<
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1ScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Wall1ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLSCATRA")
@@ -40,7 +40,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1ScatraType::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1ScatraType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Wall1ScatraType::Create(
+    const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::Wall1Scatra(id, owner));
 }
@@ -83,7 +84,7 @@ DRT::ELEMENTS::Wall1Scatra::Wall1Scatra(const DRT::ELEMENTS::Wall1Scatra& old)
  |  Deep copy this instance of Wall1 and return pointer to it (public) |
  |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Wall1Scatra::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Wall1Scatra::Clone() const
 {
   DRT::ELEMENTS::Wall1Scatra* newelement = new DRT::ELEMENTS::Wall1Scatra(*this);
   return newelement;

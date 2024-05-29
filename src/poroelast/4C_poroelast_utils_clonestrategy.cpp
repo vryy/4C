@@ -47,7 +47,8 @@ void POROELAST::UTILS::PoroelastCloneStrategy::check_material_type(const int mat
 }
 
 void POROELAST::UTILS::PoroelastCloneStrategy::set_element_data(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbs)
+    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+    const bool isnurbs)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual
@@ -68,7 +69,8 @@ void POROELAST::UTILS::PoroelastCloneStrategy::set_element_data(
     if (so_base)
       fluid->SetKinematicType(so_base->KinematicType());
     else
-      FOUR_C_THROW(" dynamic cast from DRT::Element* to DRT::ELEMENTS::So_base* failed ");
+      FOUR_C_THROW(
+          " dynamic cast from CORE::Elements::Element* to DRT::ELEMENTS::So_base* failed ");
 
     set_anisotropic_permeability_directions_onto_fluid(newele, oldele);
     set_anisotropic_permeability_nodal_coeffs_onto_fluid(newele, oldele);
@@ -80,7 +82,7 @@ void POROELAST::UTILS::PoroelastCloneStrategy::set_element_data(
 }
 
 void POROELAST::UTILS::PoroelastCloneStrategy::set_anisotropic_permeability_directions_onto_fluid(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele)
+    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele)
 {
   Teuchos::RCP<DRT::ELEMENTS::FluidPoro> fluid =
       Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidPoro>(newele);
@@ -139,7 +141,7 @@ void POROELAST::UTILS::PoroelastCloneStrategy::set_anisotropic_permeability_dire
 }
 
 void POROELAST::UTILS::PoroelastCloneStrategy::set_anisotropic_permeability_nodal_coeffs_onto_fluid(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele)
+    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele)
 {
   Teuchos::RCP<DRT::ELEMENTS::FluidPoro> fluid =
       Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidPoro>(newele);
@@ -179,7 +181,7 @@ void POROELAST::UTILS::PoroelastCloneStrategy::set_anisotropic_permeability_noda
 }
 
 bool POROELAST::UTILS::PoroelastCloneStrategy::determine_ele_type(
-    DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // clone the element only if it is a poro element (we support submeshes here)
   if (IsPoroElement(actele))

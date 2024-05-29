@@ -70,7 +70,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToSurface(const DRT::Element* element1, const DRT::Element* element2,
+    GeometryPairLineToSurface(const CORE::Elements::Element* element1,
+        const CORE::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
             line_to_surface_evaluation_data);
 
@@ -222,7 +223,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToSurfaceFADWrapper(const DRT::Element* element1, const DRT::Element* element2,
+    GeometryPairLineToSurfaceFADWrapper(const CORE::Elements::Element* element1,
+        const CORE::Elements::Element* element2,
         const Teuchos::RCP<GeometryPairLineToSurface<double, line, surface>>& double_geometry_pair)
         : base_class(element1, element2, double_geometry_pair->GetEvaluationData()),
           geometry_pair_double_(double_geometry_pair){};
@@ -233,7 +235,7 @@ namespace GEOMETRYPAIR
      * For surface elements the pairs need the face element representing the surface, not the volume
      * element.
      */
-    inline void SetElement2(const DRT::Element* element2) override
+    inline void SetElement2(const CORE::Elements::Element* element2) override
     {
       base_class::SetElement2(element2);
       geometry_pair_double_->SetElement2(element2);

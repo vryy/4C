@@ -350,7 +350,7 @@ void SCATRA::LevelSetAlgorithm::apply_contact_point_boundary_condition()
         if (actnode->Owner() == myrank_)
         {
           // get adjacent elements
-          const DRT::Element* const* adjelements = actnode->Elements();
+          const CORE::Elements::Element* const* adjelements = actnode->Elements();
 
           // initialize vector for averaged center velocity
           // note: velocity in scatra algorithm has three components (see also basic constructor)
@@ -373,7 +373,7 @@ void SCATRA::LevelSetAlgorithm::apply_contact_point_boundary_condition()
               const int nsd = CORE::FE::dim<distype>;
 
               // get nodal values of velocity field from secondary dofset
-              DRT::Element::LocationArray la(discret_->NumDofSets());
+              CORE::Elements::Element::LocationArray la(discret_->NumDofSets());
               adjelements[iele]->LocationVector(*discret_, la, false);
               const std::vector<int>& lmvel = la[NdsVel()].lm_;
               std::vector<double> myconvel(lmvel.size());
@@ -581,7 +581,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       //-------------------------------------------------------------------------------------------------
       for (int lroweleid = 0; lroweleid < discret_->NumMyRowElements(); lroweleid++)
       {
-        DRT::Element* ele = discret_->lRowElement(lroweleid);
+        CORE::Elements::Element* ele = discret_->lRowElement(lroweleid);
         const int* nodeids = ele->NodeIds();
         bool gotpositivephi = false;
         bool gotnegativephi = false;
@@ -615,10 +615,10 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       {
         const int nodelid = discret_->NodeRowMap()->LID(*nodeit);
         DRT::Node* node = discret_->lRowNode(nodelid);
-        DRT::Element** elements = node->Elements();
+        CORE::Elements::Element** elements = node->Elements();
         for (int iele = 0; iele < node->NumElement(); ++iele)
         {
-          DRT::Element* ele = elements[iele];
+          CORE::Elements::Element* ele = elements[iele];
           allcollectedelements->insert(ele->Id());
         }
       }  // loop over elements
@@ -635,7 +635,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     for (eleit = allcollectedelements->begin(); eleit != allcollectedelements->end(); ++eleit)
     {
       const int elelid = discret_->ElementColMap()->LID(*eleit);
-      DRT::Element* ele = discret_->lColElement(elelid);
+      CORE::Elements::Element* ele = discret_->lColElement(elelid);
       DRT::Node** nodes = ele->Nodes();
       for (int inode = 0; inode < ele->num_node(); ++inode)
       {
@@ -718,11 +718,11 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   {
     const int nodelid = discret_->NodeRowMap()->LID(*nodeit);
     DRT::Node* node = discret_->lRowNode(nodelid);
-    DRT::Element** eles = node->Elements();
+    CORE::Elements::Element** eles = node->Elements();
     int elementcount = 0;
     for (int iele = 0; iele < node->NumElement(); ++iele)
     {
-      DRT::Element* ele = eles[iele];
+      CORE::Elements::Element* ele = eles[iele];
       std::set<int>::const_iterator foundit = allcollectedelements->find(ele->Id());
       if (foundit != allcollectedelements->end()) elementcount++;
     }

@@ -71,12 +71,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoSh8PlastType::Create(const std::vector<c
 | create the new element type (public)                     seitz 05/14 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh8PlastType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoSh8PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh8Plast(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::SoSh8Plast(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -86,9 +87,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh8PlastType::Create(
 | create the new element type (public)                     seitz 05/14 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh8PlastType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoSh8PlastType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh8Plast(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::SoSh8Plast(id, owner));
   return ele;
 }
 
@@ -336,7 +339,7 @@ DRT::ELEMENTS::SoSh8Plast::SoSh8Plast(const DRT::ELEMENTS::SoSh8Plast& old)
  | deep copy this instance of Solid3 and return pointer to              |
  | it (public)                                              seitz 05/14 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::SoSh8Plast::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::SoSh8Plast::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::SoSh8Plast(*this);
   return newelement;

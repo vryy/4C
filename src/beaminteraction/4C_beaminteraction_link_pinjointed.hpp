@@ -28,13 +28,17 @@ namespace CORE::COMM
 }
 namespace DRT
 {
-  class Element;
   namespace ELEMENTS
   {
     class Beam3Base;
     class Beam3r;
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::LINALG
 {

@@ -97,7 +97,7 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Unpack(
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
 void DRT::ELEMENTS::SolidEleCalc<celltype,
-    ElementFormulation>::evaluate_nonlinear_force_stiffness_mass(const DRT::Element& ele,
+    ElementFormulation>::evaluate_nonlinear_force_stiffness_mass(const CORE::Elements::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector* force_vector,
@@ -183,16 +183,17 @@ void DRT::ELEMENTS::SolidEleCalc<celltype,
 }
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
-void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Recover(const DRT::Element& ele,
-    const DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params)
+void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Recover(
+    const CORE::Elements::Element& ele, const DRT::Discretization& discretization,
+    const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
 }
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
-void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Update(const DRT::Element& ele,
-    MAT::So3Material& solid_material, const DRT::Discretization& discretization,
-    const std::vector<int>& lm, Teuchos::ParameterList& params)
+void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Update(
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
+    const DRT::Discretization& discretization, const std::vector<int>& lm,
+    Teuchos::ParameterList& params)
 {
   const ElementNodes<celltype> nodal_coordinates =
       EvaluateElementNodes<celltype>(ele, discretization, lm);
@@ -221,7 +222,7 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Update(const DRT
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
 double DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::calculate_internal_energy(
-    const DRT::Element& ele, MAT::So3Material& solid_material,
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
@@ -257,7 +258,7 @@ double DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::calculate_inte
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
 void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::CalculateStress(
-    const DRT::Element& ele, MAT::So3Material& solid_material, const StressIO& stressIO,
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material, const StressIO& stressIO,
     const StrainIO& strainIO, const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
@@ -302,7 +303,7 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::CalculateStress(
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
 void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::UpdatePrestress(
-    const DRT::Element& ele, MAT::So3Material& solid_material,
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
@@ -343,7 +344,7 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Setup(
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
 void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::material_post_setup(
-    const DRT::Element& ele, MAT::So3Material& solid_material)
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material)
 {
   Teuchos::ParameterList params{};
 
@@ -357,7 +358,7 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::material_post_se
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
 void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::initialize_gauss_point_data_output(
-    const DRT::Element& ele, const MAT::So3Material& solid_material,
+    const CORE::Elements::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   FOUR_C_ASSERT(ele.IsParamsInterface(),
@@ -369,7 +370,7 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::initialize_gauss
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
 void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::evaluate_gauss_point_data_output(
-    const DRT::Element& ele, const MAT::So3Material& solid_material,
+    const CORE::Elements::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   FOUR_C_ASSERT(ele.IsParamsInterface(),
@@ -381,16 +382,17 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::evaluate_gauss_p
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
 void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::reset_to_last_converged(
-    const DRT::Element& ele, MAT::So3Material& solid_material)
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material)
 {
   solid_material.reset_step();
 }
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
 double DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::GetCauchyNDirAtXi(
-    const DRT::Element& ele, MAT::So3Material& solid_material, const std::vector<double>& disp,
-    const CORE::LINALG::Matrix<3, 1>& xi, const CORE::LINALG::Matrix<3, 1>& n,
-    const CORE::LINALG::Matrix<3, 1>& dir, CauchyNDirLinearizations<3>& linearizations)
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
+    const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& xi,
+    const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+    CauchyNDirLinearizations<3>& linearizations)
 {
   if constexpr (has_gauss_point_history<ElementFormulation>)
   {

@@ -30,27 +30,30 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8P1J1Type::Create(const std::vector<c
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8P1J1Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8P1J1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoHex8P1J1(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::SoHex8P1J1(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8P1J1Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8P1J1Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoHex8P1J1(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::SoHex8P1J1(id, owner));
   return ele;
 }
 
 
 void DRT::ELEMENTS::SoHex8P1J1Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   //   numdf = 3;
   //   dimns = 6;
@@ -151,7 +154,7 @@ DRT::ELEMENTS::SoHex8P1J1::SoHex8P1J1(const DRT::ELEMENTS::SoHex8P1J1& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                              lw 12/08|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::SoHex8P1J1::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::SoHex8P1J1::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::SoHex8P1J1(*this);
   return newelement;

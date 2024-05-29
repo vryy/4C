@@ -11,8 +11,8 @@
 
 #include "4C_scatra_utils_clonestrategy.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_input_base.hpp"
 #include "4C_scatra_ele.hpp"
@@ -70,7 +70,8 @@ void SCATRA::ScatraFluidCloneStrategy::check_material_type(const int matid)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SCATRA::ScatraFluidCloneStrategy::set_element_data(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
+    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+    const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual
@@ -94,7 +95,7 @@ void SCATRA::ScatraFluidCloneStrategy::set_element_data(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool SCATRA::ScatraFluidCloneStrategy::determine_ele_type(
-    DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // note: ismyele, actele remain unused here! Used only for ALE creation
 
@@ -139,7 +140,8 @@ void SCATRA::ScatraReactionCloneStrategy::check_material_type(const int matid)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SCATRA::ScatraReactionCloneStrategy::set_element_data(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
+    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+    const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual
@@ -163,7 +165,7 @@ void SCATRA::ScatraReactionCloneStrategy::set_element_data(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool SCATRA::ScatraReactionCloneStrategy::determine_ele_type(
-    DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // note: ismyele, actele remain unused here! Used only for ALE creation
 

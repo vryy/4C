@@ -12,7 +12,7 @@
 
 #include "4C_discretization_fem_general_cell_type.hpp"
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_solid_3D_ele_calc.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_3D_ele_calc_lib_fbar.H"
@@ -113,7 +113,7 @@ namespace DRT::ELEMENTS
     using GlobalHistory = MulfHistoryData<celltype>;
     using PreparationData = MulfFBarPreparationData<celltype>;
 
-    static MulfFBarPreparationData<celltype> Prepare(const DRT::Element& ele,
+    static MulfFBarPreparationData<celltype> Prepare(const CORE::Elements::Element& ele,
         const ElementNodes<celltype>& nodal_coordinates, GlobalHistory& global_history)
     {
       if (!global_history.is_setup)
@@ -144,7 +144,8 @@ namespace DRT::ELEMENTS
     }
 
     template <typename Evaluator>
-    static auto Evaluate(const DRT::Element& ele, const ElementNodes<celltype>& element_nodes,
+    static auto Evaluate(const CORE::Elements::Element& ele,
+        const ElementNodes<celltype>& element_nodes,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
@@ -248,7 +249,7 @@ namespace DRT::ELEMENTS
       history_data.is_setup = static_cast<bool>(is_setup_int);
     }
 
-    static inline void UpdatePrestress(const DRT::Element& ele,
+    static inline void UpdatePrestress(const CORE::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
         const MulfFBarPreparationData<celltype>& mapping_center,
         MulfHistoryData<celltype>& mulf_data_centeroid)
@@ -262,7 +263,7 @@ namespace DRT::ELEMENTS
       DETAILS::UpdateMulfHistory(element_nodes, shape_functions_centeroid, mulf_data_centeroid);
     }
 
-    static inline void UpdatePrestress(const DRT::Element& ele,
+    static inline void UpdatePrestress(const CORE::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,

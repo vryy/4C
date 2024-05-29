@@ -21,8 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Element;
 }  // namespace DRT
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace IO
 {
   class VisualizationManager;
@@ -50,8 +54,8 @@ namespace IO
     DiscretizationVisualizationWriterMesh(
         const Teuchos::RCP<const DRT::Discretization>& discretization,
         VisualizationParameters parameters,
-        std::function<bool(const DRT::Element* element)> element_filter = [](const DRT::Element*)
-        { return true; });
+        std::function<bool(const CORE::Elements::Element* element)> element_filter =
+            [](const CORE::Elements::Element*) { return true; });
 
     /**
      * @brief Destructor
@@ -172,7 +176,7 @@ namespace IO
     Teuchos::RCP<VisualizationManager> visualization_manager_;
 
     //! A filter function that returns true for all elements that should be visualized.
-    std::function<bool(const DRT::Element* element)> element_filter_;
+    std::function<bool(const CORE::Elements::Element* element)> element_filter_;
 
     //! Node row and col maps the geometry of visualization writer is based on
     Teuchos::RCP<Epetra_Map> noderowmap_last_geometry_set_;
@@ -189,7 +193,7 @@ namespace IO
    */
   void append_element_ghosting_information(const DRT::Discretization& discretization,
       VisualizationManager& visualization_manager,
-      const std::function<bool(const DRT::Element* ele)>& element_predicate);
+      const std::function<bool(const CORE::Elements::Element* ele)>& element_predicate);
 
 }  // namespace IO
 FOUR_C_NAMESPACE_CLOSE

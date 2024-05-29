@@ -30,8 +30,13 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace BEAMINTERACTION
 {
   class BeamContactPair;
@@ -82,7 +87,7 @@ namespace BEAMINTERACTION
      * @return Pointer to the created pair.
      */
     virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
-        const std::vector<DRT::Element const*>& ele_ptrs) = 0;
+        const std::vector<CORE::Elements::Element const*>& ele_ptrs) = 0;
 
     /**
      * \brief Build the ID sets for this condition. The ID sets will be used to check if an element
@@ -203,7 +208,7 @@ namespace BEAMINTERACTION
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
      */
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
-        const std::vector<DRT::Element const*>& ele_ptrs);
+        const std::vector<CORE::Elements::Element const*>& ele_ptrs);
 
     /**
      * Create all needed indirect assembly managers.

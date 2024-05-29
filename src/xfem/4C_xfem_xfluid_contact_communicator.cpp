@@ -181,7 +181,7 @@ double XFEM::XFluidContactComm::Get_FSI_Traction(MORTAR::Element* ele,
   static std::vector<double> velpres;
   static std::vector<double> disp;
   static std::vector<double> ivel;
-  DRT::Element* fluidele = nullptr;
+  CORE::Elements::Element* fluidele = nullptr;
   CORE::LINALG::SerialDenseMatrix ele_xyze;
   double pres_m;
   static CORE::LINALG::Matrix<3, 1> vel_m;
@@ -292,7 +292,7 @@ bool XFEM::XFluidContactComm::Get_Contact_State(int sid,        // Solid Surface
 
 void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vector<int>& fluid_nds,
     const DRT::ELEMENTS::StructuralSurface* sele, const CORE::LINALG::Matrix<2, 1>& selexsi,
-    const CORE::LINALG::Matrix<3, 1>& x, DRT::Element*& fluidele,
+    const CORE::LINALG::Matrix<3, 1>& x, CORE::Elements::Element*& fluidele,
     CORE::LINALG::SerialDenseMatrix& ele_xyze, std::vector<double>& velpres,
     std::vector<double>& disp, std::vector<double>& ivel, double& pres_m,
     CORE::LINALG::Matrix<3, 1>& vel_m, CORE::LINALG::Matrix<3, 1>& vel_s,
@@ -302,7 +302,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
   DRT::ELEMENTS::Fluid* ffluidele = dynamic_cast<DRT::ELEMENTS::Fluid*>(fluidele);
   // 1 // get element states
   {
-    DRT::Element::LocationArray laf(1);
+    CORE::Elements::Element::LocationArray laf(1);
     fluidele->LocationVector(*fluiddis_, fluid_nds, laf, false);
     Teuchos::RCP<const Epetra_Vector> matrix_state = fluiddis_->GetState("velaf");
     CORE::FE::ExtractMyValues(*matrix_state, velpres, laf[0].lm_);
@@ -319,7 +319,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
     }
   }
   {
-    DRT::Element::LocationArray las(1);
+    CORE::Elements::Element::LocationArray las(1);
     sele->LocationVector(*mc_[mcidx_]->GetCutterDis(), las, false);
     Teuchos::RCP<const Epetra_Vector> matrix_state =
         mc_[mcidx_]->GetCutterDis()->GetState("ivelnp");
@@ -328,7 +328,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
   static std::vector<double> ipfvel;
   if (isporo_)
   {
-    DRT::Element::LocationArray las(1);
+    CORE::Elements::Element::LocationArray las(1);
     sele->LocationVector(*mcfpi_ps_pf_->GetCutterDis(), las, false);
     Teuchos::RCP<const Epetra_Vector> matrix_state =
         mcfpi_ps_pf_->GetCutterDis()->GetState("ivelnp");
@@ -437,7 +437,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
   return;
 }
 
-void XFEM::XFluidContactComm::get_penalty_param(DRT::Element* fluidele,
+void XFEM::XFluidContactComm::get_penalty_param(CORE::Elements::Element* fluidele,
     CORE::GEO::CUT::VolumeCell* volumecell, CORE::LINALG::SerialDenseMatrix& ele_xyze,
     const CORE::LINALG::Matrix<3, 1>& elenormal, double& penalty_fac,
     const CORE::LINALG::Matrix<3, 1>& vel_m)

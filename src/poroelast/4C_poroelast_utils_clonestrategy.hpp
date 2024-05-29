@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
 }
@@ -46,23 +46,23 @@ namespace POROELAST
 
       //! determine element type string and whether element is copied or not
       bool determine_ele_type(
-          DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+          CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
      protected:
       //! set element-specific data (material etc.)
-      virtual void set_element_data(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele,
-          const int matid, const bool isnurbs);
+      virtual void set_element_data(Teuchos::RCP<CORE::Elements::Element> newele,
+          CORE::Elements::Element* oldele, const int matid, const bool isnurbs);
 
       //! check for correct material
       void check_material_type(const int matid);
 
       //! set anisotropic permeability directions onto fluid element
       void set_anisotropic_permeability_directions_onto_fluid(
-          Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele);
+          Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele);
 
       //! set anisotropic permeability nodal coefficients onto fluid element
       void set_anisotropic_permeability_nodal_coeffs_onto_fluid(
-          Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele);
+          Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele);
     };
 
   }  // namespace UTILS

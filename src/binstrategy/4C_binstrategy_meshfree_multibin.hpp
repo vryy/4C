@@ -15,7 +15,7 @@
 
 #include "4C_binstrategy_meshfree_bin.hpp"
 #include "4C_binstrategy_utils.hpp"
-#include "4C_lib_elementtype.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
@@ -33,7 +33,7 @@ namespace DRT
      * \date April, 2013
      */
     /*--------------------------------------------------------------------------*/
-    class MeshfreeMultiBinType : public DRT::ElementType
+    class MeshfreeMultiBinType : public CORE::Elements::ElementType
     {
      public:
       //!< name of specific element type
@@ -46,14 +46,14 @@ namespace DRT
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
       //!< create element of this element type
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
       //!< create element of this element type
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -79,7 +79,7 @@ namespace DRT
      * \date April, 2013
      */
     /*--------------------------------------------------------------------------*/
-    class MeshfreeMultiBin : public MeshfreeBin<DRT::Element>
+    class MeshfreeMultiBin : public MeshfreeBin<CORE::Elements::Element>
     {
      public:
       /*========================================================================*/
@@ -109,12 +109,12 @@ namespace DRT
        * \brief Deep copy the derived class and return pointer to it
        *
        * This method is sort of a copy constructor for a class derived from
-       * DRT::Element. It allows to copy construct the derived class without
+       * CORE::Elements::Element. It allows to copy construct the derived class without
        * knowing what it actually is using the base class Element.
        *
        *///                                                  (public) ghamm 04/13
       /*------------------------------------------------------------------------*/
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*------------------------------------------------------------------------*/
       /*!
@@ -150,7 +150,10 @@ namespace DRT
       void Unpack(const std::vector<char>& data) override;
 
       // return meshfree bin type instance
-      DRT::ElementType& ElementType() const override { return MeshfreeMultiBinType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return MeshfreeMultiBinType::Instance();
+      }
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -160,7 +163,7 @@ namespace DRT
       /*------------------------------------------------------------------------*/
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
        *
        * Meshfree bins do not have dofs
        *///
@@ -217,8 +220,8 @@ namespace DRT
       /*------------------------------------------------------------------------*/
       inline virtual void AddAssociatedEle(
           BINSTRATEGY::UTILS::BinContentType bin_content,  //!< (in): type of element to be added
-          const int gid,        //!< (in): global id of element to be added
-          DRT::Element* eleptr  //!< (in): pointer to element to be added
+          const int gid,                   //!< (in): global id of element to be added
+          CORE::Elements::Element* eleptr  //!< (in): pointer to element to be added
       )
       {
         associatedeleid_[bin_content].push_back(gid);
@@ -264,7 +267,8 @@ namespace DRT
                         is implicitly expected to be of length NumAssociatedEle() and contain
                         pointers to elements in the correct element local ordering scheme.
       */
-      bool BuildElePointers(BINSTRATEGY::UTILS::BinContentType bin_content, DRT::Element** eles);
+      bool BuildElePointers(
+          BINSTRATEGY::UTILS::BinContentType bin_content, CORE::Elements::Element** eles);
 
       /*------------------------------------------------------------------------*/
       /*!
@@ -313,7 +317,7 @@ namespace DRT
       std::vector<int> associatedeleid_[BINSTRATEGY::UTILS::enumsize];
 
       //! \brief pointers to elements contained in this bin
-      std::vector<DRT::Element*> associatedele_[BINSTRATEGY::UTILS::enumsize];
+      std::vector<CORE::Elements::Element*> associatedele_[BINSTRATEGY::UTILS::enumsize];
 
 
     };  // class MeshfreeMultiBin

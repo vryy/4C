@@ -36,10 +36,14 @@ namespace INPUT
 
 namespace DRT
 {
-  class Element;
-  class ElementType;
   class Discretization;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+  class ElementType;
+}  // namespace CORE::Elements
 
 namespace CORE::COMM
 {
@@ -108,7 +112,7 @@ namespace CORE::COMM
     ParObject* Create(const std::vector<char>& data);
 
     /// create an element from its name (and dis type if needed)
-    Teuchos::RCP<DRT::Element> Create(
+    Teuchos::RCP<CORE::Elements::Element> Create(
         const std::string eletype, const std::string eledistype, const int id, const int owner);
 
     /// initialize all element types
@@ -138,13 +142,13 @@ namespace CORE::COMM
     std::map<int, ParObjectType*> type_map_;
 
     /// element name cache
-    std::map<std::string, DRT::ElementType*> element_cache_;
+    std::map<std::string, CORE::Elements::ElementType*> element_cache_;
 
     /// preregistered types
     std::vector<ParObjectType*> types_;
 
     /// element types that are actually used
-    std::map<DRT::Discretization*, std::set<DRT::ElementType*>> active_elements_;
+    std::map<DRT::Discretization*, std::set<CORE::Elements::ElementType*>> active_elements_;
 
     // no copying
 

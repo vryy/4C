@@ -10,9 +10,9 @@
  *---------------------------------------------------------------------------*/
 #include "4C_particle_interaction_sph_virtual_wall_particle.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_particle_engine_container.hpp"
 #include "4C_particle_engine_interface.hpp"
 #include "4C_particle_interaction_sph_kernel.hpp"
@@ -169,7 +169,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::init_states_at_wall_contact_po
     const double* rad_j = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
 
     // get pointer to column wall element
-    DRT::Element* ele = particlewallpair.ele_;
+    CORE::Elements::Element* ele = particlewallpair.ele_;
 
     // number of nodes of wall element
     const int numnodes = ele->num_node();

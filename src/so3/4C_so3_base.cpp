@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::SoBase::SoBase(int id, int owner)
-    : DRT::Element(id, owner),
+    : CORE::Elements::Element(id, owner),
       kintype_(INPAR::STR::KinemType::vague),
       interface_ptr_(Teuchos::null),
       material_post_setup_(false)
@@ -35,7 +35,7 @@ DRT::ELEMENTS::SoBase::SoBase(int id, int owner)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::SoBase::SoBase(const DRT::ELEMENTS::SoBase& old)
-    : DRT::Element(old),
+    : CORE::Elements::Element(old),
       kintype_(old.kintype_),
       interface_ptr_(old.interface_ptr_),
       material_post_setup_(false)
@@ -92,7 +92,8 @@ void DRT::ELEMENTS::SoBase::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::SoBase::SolidMaterial(int nummat) const
 {
-  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat), true);
+  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(
+      CORE::Elements::Element::Material(nummat), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -100,14 +101,14 @@ Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::SoBase::SolidMaterial(int nummat) 
 void DRT::ELEMENTS::SoBase::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
-    interface_ptr_ = p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface");
+    interface_ptr_ = p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface");
   else
     interface_ptr_ = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::SoBase::ParamsInterfacePtr()
+Teuchos::RCP<CORE::Elements::ParamsInterface> DRT::ELEMENTS::SoBase::ParamsInterfacePtr()
 {
   return interface_ptr_;
 }

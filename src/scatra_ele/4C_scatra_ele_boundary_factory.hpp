@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_inpar_scatra.hpp"
-#include "4C_lib_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -35,7 +35,7 @@ namespace DRT
       virtual ~ScaTraBoundaryFactory() = default;
 
       //! ProvideImpl
-      static ScaTraBoundaryInterface* ProvideImpl(const DRT::Element* ele,
+      static ScaTraBoundaryInterface* ProvideImpl(const CORE::Elements::Element* ele,
           const enum INPAR::SCATRA::ImplType impltype, const int numdofpernode, const int numscal,
           const std::string& disname);
 

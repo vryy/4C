@@ -35,7 +35,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::FluidXWallType::Create(const std::vector<c
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidXWallType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidXWallType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDXW")
@@ -45,13 +45,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidXWallType::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidXWallType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidXWallType::Create(
+    const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::FluidXWall(id, owner));
 }
 
 void DRT::ELEMENTS::FluidXWallType::nodal_block_information(
-    Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   // this is necessary here! Otherwise it would not be consistent with the non-enriched nodes
   // since we are assuming that all elements are equal during nullspace computation
@@ -100,7 +101,7 @@ DRT::ELEMENTS::FluidXWall::FluidXWall(const DRT::ELEMENTS::FluidXWall& old) : Fl
  |  Deep copy this instance of Fluid and return pointer to it (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::FluidXWall::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::FluidXWall::Clone() const
 {
   DRT::ELEMENTS::FluidXWall* newelement = new DRT::ELEMENTS::FluidXWall(*this);
   return newelement;
@@ -111,7 +112,7 @@ DRT::Element* DRT::ELEMENTS::FluidXWall::Clone() const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)                           |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidXWall::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::FluidXWall::Lines()
 {
   return CORE::COMM::GetElementLines<FluidXWallBoundary, FluidXWall>(*this);
 }
@@ -120,7 +121,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidXWall::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                                     |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidXWall::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::FluidXWall::Surfaces()
 {
   return CORE::COMM::GetElementSurfaces<FluidXWallBoundary, FluidXWall>(*this);
 }

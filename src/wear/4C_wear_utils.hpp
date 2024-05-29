@@ -19,9 +19,9 @@
  *----------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_wear_defines.hpp"
@@ -45,7 +45,7 @@ namespace WEAR
   {
     // advection map for elements
     template <CORE::FE::CellType distype>
-    void av(DRT::Element* ele,                          // in
+    void av(CORE::Elements::Element* ele,               // in
         double* Xtarget,                                // out
         double* Xsource,                                // in
         Teuchos::RCP<const Epetra_Vector> disp_source,  // in

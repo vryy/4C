@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_geometry_pair_element.hpp"
-#include "4C_lib_element.hpp"
 
 #include <unordered_map>
 
@@ -93,7 +93,7 @@ namespace GEOMETRYPAIR
      * \brief Constructor.
      * @param face_element (in) Pointer to the DRT face element.
      */
-    FaceElement(const Teuchos::RCP<const DRT::FaceElement>& face_element)
+    FaceElement(const Teuchos::RCP<const CORE::Elements::FaceElement>& face_element)
         : drt_face_element_(face_element), part_of_pair_(false), patch_dof_gid_(){};
 
     /**
@@ -105,7 +105,10 @@ namespace GEOMETRYPAIR
      * \brief Get the RCP to the DRT face element.
      * @return RCP to the DRT face element.
      */
-    const DRT::FaceElement* GetDrtFaceElement() const { return drt_face_element_.getRawPtr(); }
+    const CORE::Elements::FaceElement* GetDrtFaceElement() const
+    {
+      return drt_face_element_.getRawPtr();
+    }
 
     /**
      * \brief Setup the object. Has to be implemented in derived class.
@@ -180,7 +183,7 @@ namespace GEOMETRYPAIR
 
    protected:
     //! Pointer to the drt face element.
-    Teuchos::RCP<const DRT::FaceElement> drt_face_element_;
+    Teuchos::RCP<const CORE::Elements::FaceElement> drt_face_element_;
 
     //! Flag if this face element is part of a contact pair, i.e. if it has evaluate it's averaged
     //! normals.
@@ -209,7 +212,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor (derived).
      */
-    FaceElementTemplate(const Teuchos::RCP<const DRT::FaceElement>& face_element)
+    FaceElementTemplate(const Teuchos::RCP<const CORE::Elements::FaceElement>& face_element)
         : FaceElement(face_element), n_dof_other_element_(0){};
 
 
@@ -336,7 +339,7 @@ namespace GEOMETRYPAIR
      * \brief Constructor (derived).
      * @param evaluate_current_normals (in) If the current normals should be evaluated.
      */
-    FaceElementPatchTemplate(const Teuchos::RCP<const DRT::FaceElement>& face_element,
+    FaceElementPatchTemplate(const Teuchos::RCP<const CORE::Elements::FaceElement>& face_element,
         const bool evaluate_current_normals)
         : base_class(face_element),
           connected_faces_(),
@@ -419,7 +422,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor (derived).
      */
-    FaceElementTemplateExtendedVolume(const Teuchos::RCP<const DRT::FaceElement>& face_element)
+    FaceElementTemplateExtendedVolume(
+        const Teuchos::RCP<const CORE::Elements::FaceElement>& face_element)
         : base_class(face_element),
           surface_dof_lid_map_(true),
           face_to_volume_coordinate_axis_map_(true),
@@ -504,7 +508,7 @@ namespace GEOMETRYPAIR
    * @return RCP to the created GEOMETRYPAIR FaceElement.
    */
   Teuchos::RCP<FaceElement> FaceElementFactory(
-      const Teuchos::RCP<const DRT::FaceElement>& drt_face_element, const int fad_order,
+      const Teuchos::RCP<const CORE::Elements::FaceElement>& drt_face_element, const int fad_order,
       const INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);
 
 }  // namespace GEOMETRYPAIR

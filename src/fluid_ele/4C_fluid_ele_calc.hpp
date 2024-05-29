@@ -1222,7 +1222,7 @@ namespace DRT
           const std::string state);                        ///< state of the global vector
 
       //! identify elements of inflow section
-      void inflow_element(DRT::Element* ele);
+      void inflow_element(CORE::Elements::Element* ele);
 
       // FLD::RotationallySymmetricPeriodicBC<distype> & rotsymmpbc, ///<
       //  {

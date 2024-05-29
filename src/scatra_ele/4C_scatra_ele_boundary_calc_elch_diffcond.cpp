@@ -60,11 +60,11 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_action(
-    DRT::FaceElement* ele,                            //!< boundary element
+    CORE::Elements::FaceElement* ele,                 //!< boundary element
     Teuchos::ParameterList& params,                   //!< parameter list
     DRT::Discretization& discretization,              //!< discretization
     SCATRA::BoundaryAction action,                    //!< action
-    DRT::Element::LocationArray& la,                  //!< location array
+    CORE::Elements::Element::LocationArray& la,       //!< location array
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
     CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
@@ -128,9 +128,10 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_neumann(
-    DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::Conditions::Condition& condition, DRT::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseVector& elevec1, const double scalar)
+    CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
+    const double scalar)
 {
   // get material of parent element
   Teuchos::RCP<CORE::MAT::Material> mat = ele->parent_element()->Material();
@@ -198,9 +199,10 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
-    probdim>::evaluate_elch_boundary_kinetics(const DRT::Element* ele,  ///< current element
-    CORE::LINALG::SerialDenseMatrix& emat,                              ///< element matrix
-    CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
+    probdim>::evaluate_elch_boundary_kinetics(const CORE::Elements::Element*
+                                                  ele,  ///< current element
+    CORE::LINALG::SerialDenseMatrix& emat,              ///< element matrix
+    CORE::LINALG::SerialDenseVector& erhs,              ///< element right-hand side vector
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
         ephinp,  ///< nodal values of concentration and electric potential
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
@@ -263,8 +265,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_s2_i_coupling(
-    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    const CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& eslavematrix, CORE::LINALG::SerialDenseMatrix& emastermatrix,
     CORE::LINALG::SerialDenseVector& eslaveresidual)
 {
@@ -293,8 +295,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluat
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_s2_i_coupling_od(
-    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    const CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& eslavematrix)
 {
   switch (my::scatraparamsboundary_->KineticModel())

@@ -12,6 +12,7 @@
 
 #include "4C_fluid_ele_boundary_calc.hpp"
 
+#include "4C_discretization_fem_general_element_integration_select.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_boundary_integration.hpp"
 #include "4C_fluid_ele.hpp"
@@ -20,7 +21,6 @@
 #include "4C_fluid_ele_parameter_timint.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_material.hpp"
-#include "4C_lib_element_integration_select.hpp"
 #include "4C_mat_arrhenius_pv.hpp"
 #include "4C_mat_carreauyasuda.hpp"
 #include "4C_mat_ferech_pv.hpp"
@@ -950,20 +950,20 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::element_mean_curvature(
     if (thisNode == nullptr) FOUR_C_THROW("No node!\n");
 #endif
     int NumElement = thisNode->NumElement();
-    DRT::Element** ElementsPtr = thisNode->Elements();
+    CORE::Elements::Element** ElementsPtr = thisNode->Elements();
 
     // loop over adjacent Fluid elements
     for (int ele = 0; ele < NumElement; ele++)
     {
-      DRT::Element* Element = ElementsPtr[ele];
+      CORE::Elements::Element* Element = ElementsPtr[ele];
 
       // get surfaces
-      std::vector<Teuchos::RCP<DRT::Element>> surfaces = Element->Surfaces();
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> surfaces = Element->Surfaces();
 
       // loop over surfaces: how many free surfaces with this node on it?
       for (unsigned int surf = 0; surf < surfaces.size(); ++surf)
       {
-        Teuchos::RCP<DRT::Element> surface = surfaces[surf];
+        Teuchos::RCP<CORE::Elements::Element> surface = surfaces[surf];
         DRT::Node** NodesPtr = surface->Nodes();
         int numfsnodes = 0;
         bool hasthisnode = false;

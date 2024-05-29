@@ -215,7 +215,7 @@ void CORE::GEO::MESHFREE::BoundingBox::setup_bounding_box_discretization()
     }
 
     // assign nodes to element
-    Teuchos::RCP<DRT::Element> newele = CORE::COMM::Factory("VELE3", "Polynomial", 0, 0);
+    Teuchos::RCP<CORE::Elements::Element> newele = CORE::COMM::Factory("VELE3", "Polynomial", 0, 0);
     newele->SetNodeIds(8, node_ids);
     boxdiscret_->add_element(newele);
   }

@@ -250,7 +250,7 @@ void PARTICLEWALL::WallHandlerBase::relate_bins_to_col_wall_eles()
   for (int collidofele = 0; collidofele < walldiscretization_->NumMyColElements(); ++collidofele)
   {
     // get pointer to current column wall element
-    DRT::Element* ele = walldiscretization_->lColElement(collidofele);
+    CORE::Elements::Element* ele = walldiscretization_->lColElement(collidofele);
 
     // get corresponding bin ids for element
     std::vector<int> binids;
@@ -309,7 +309,7 @@ void PARTICLEWALL::WallHandlerBase::build_particle_to_wall_neighbors(
     }
 
     // get pointer to current column wall element
-    DRT::Element* ele = walldiscretization_->lColElement(collidofele);
+    CORE::Elements::Element* ele = walldiscretization_->lColElement(collidofele);
 
     // determine nodal positions of column wall element
     std::map<int, CORE::LINALG::Matrix<3, 1>> colelenodalpos;
@@ -378,7 +378,7 @@ PARTICLEWALL::WallHandlerBase::get_potential_wall_neighbors() const
 }
 
 void PARTICLEWALL::WallHandlerBase::determine_col_wall_ele_nodal_pos(
-    DRT::Element* ele, std::map<int, CORE::LINALG::Matrix<3, 1>>& colelenodalpos) const
+    CORE::Elements::Element* ele, std::map<int, CORE::LINALG::Matrix<3, 1>>& colelenodalpos) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (walldiscretization_->ElementColMap()->LID(ele->Id()) < 0)
@@ -562,7 +562,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
     // initialize maps for particle wall conditions
     std::map<int, DRT::Node*> nodes;
     std::map<int, DRT::Node*> colnodes;
-    std::map<int, Teuchos::RCP<DRT::Element>> colelements;
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>> colelements;
 
     // get structure objects in wall condition
     CORE::Conditions::FindConditionObjects(
@@ -583,10 +583,10 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
     for (auto& eleit : colelements)
     {
       // get current element
-      Teuchos::RCP<DRT::Element> currele = eleit.second;
+      Teuchos::RCP<CORE::Elements::Element> currele = eleit.second;
 
       // create wall element
-      Teuchos::RCP<DRT::Element> wallele =
+      Teuchos::RCP<CORE::Elements::Element> wallele =
           CORE::COMM::Factory("BELE3_3", "Polynomial", currele->Id(), currele->Owner());
 
       // set node ids to element
@@ -714,7 +714,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::init_wall_discretization()
       for (int sign = 0; sign < 2; ++sign)
       {
         // create wall element
-        Teuchos::RCP<DRT::Element> wallele =
+        Teuchos::RCP<CORE::Elements::Element> wallele =
             CORE::COMM::Factory("BELE3_3", "Polynomial", eleid, myrank_);
 
         // set node ids to element

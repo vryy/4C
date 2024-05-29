@@ -277,7 +277,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(const PhaseM
  | setup                                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Setup(
-    const DRT::Element* ele, const int matnum)
+    const CORE::Elements::Element* ele, const int matnum)
 {
   FOUR_C_ASSERT(ele != nullptr, "Element is null pointer for setup of phase manager!");
   // save current element
@@ -1021,7 +1021,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::PhaseManagerReaction(
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::Setup(
-    const DRT::Element* ele, const int matnum)
+    const CORE::Elements::Element* ele, const int matnum)
 {
   // setup the wrapped class
   phasemanager_->Setup(ele, matnum);
@@ -1344,7 +1344,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::PhaseManagerDiffusi
  *----------------------------------------------------------------------*/
 template <int nsd>
 void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::Setup(
-    const DRT::Element* ele, const int matnum)
+    const CORE::Elements::Element* ele, const int matnum)
 {
   // setup the wrapped class
   phasemanager_->Setup(ele, matnum);
@@ -1677,7 +1677,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::PhaseManagerVolFrac(
  *----------------------------------------------------------------------*/
 template <int nsd>
 void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::Setup(
-    const DRT::Element* ele, const int matnum)
+    const CORE::Elements::Element* ele, const int matnum)
 {
   // setup the wrapped class
   phasemanager_->Setup(ele, matnum);

@@ -8776,7 +8776,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FDcheck(
  |find elements of inflow section                                rasthofer 10/12 |
  *-------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::inflow_element(DRT::Element* ele)
+void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::inflow_element(CORE::Elements::Element* ele)
 {
   is_inflow_ele_ = false;
 
@@ -9074,7 +9074,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_gradient
   xji.Invert(xjm);
 
   // fill locationarray
-  DRT::Element::LocationArray la(1);
+  CORE::Elements::Element::LocationArray la(1);
   ele->LocationVector(discretization, la, false);
   // extract local values of the global vectors
   std::vector<double> myvalues(la[0].lm_.size());
@@ -9519,7 +9519,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_veloci
     state = discretization.GetState("velnp");
 
     // fill locationarray
-    DRT::Element::LocationArray la(1);
+    CORE::Elements::Element::LocationArray la(1);
     ele->LocationVector(discretization, la, false);
 
     // extract local values of the global vectors

@@ -183,11 +183,11 @@ void FLD::TimIntStationaryHDG::SetInitialFlowField(
   initParams.set("startfuncno", startfuncno);
   initParams.set<int>("initfield", initfield);
   // loop over all elements on the processor
-  DRT::Element::LocationArray la(2);
+  CORE::Elements::Element::LocationArray la(2);
   double error = 0;
   for (int el = 0; el < discret_->NumMyColElements(); ++el)
   {
-    DRT::Element* ele = discret_->lColElement(el);
+    CORE::Elements::Element* ele = discret_->lColElement(el);
 
     ele->LocationVector(*discret_, la, false);
     if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())

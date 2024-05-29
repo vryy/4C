@@ -27,7 +27,7 @@ DRT::ELEMENTS::Bele3LineType& DRT::ELEMENTS::Bele3LineType::Instance() { return 
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3Line::Bele3Line(int id, int owner, int nnode, const int* nodeids,
     DRT::Node** nodes, DRT::ELEMENTS::Bele3* parent, const int lline)
-    : DRT::FaceElement(id, owner)
+    : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -40,7 +40,7 @@ DRT::ELEMENTS::Bele3Line::Bele3Line(int id, int owner, int nnode, const int* nod
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3Line::Bele3Line(const DRT::ELEMENTS::Bele3Line& old)
-    : DRT::FaceElement(old), numdofpernode_(old.numdofpernode_)
+    : CORE::Elements::FaceElement(old), numdofpernode_(old.numdofpernode_)
 {
   return;
 }
@@ -49,7 +49,7 @@ DRT::ELEMENTS::Bele3Line::Bele3Line(const DRT::ELEMENTS::Bele3Line& old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Bele3Line::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Bele3Line::Clone() const
 {
   DRT::ELEMENTS::Bele3Line* newelement = new DRT::ELEMENTS::Bele3Line(*this);
   return newelement;

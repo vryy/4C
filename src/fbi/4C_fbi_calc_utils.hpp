@@ -23,8 +23,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::LINALG
 {
@@ -51,7 +55,7 @@ namespace FBI
      *
      */
     void GetFBIElementCenterlineDOFIndices(DRT::Discretization const& discret,
-        const DRT::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
+        const CORE::Elements::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
         unsigned int& num_dof);
 
     /*----------------------------------------------------------------------------*

@@ -15,7 +15,7 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_dofset_base.hpp"
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -125,7 +125,7 @@ namespace CORE::Dofsets
     }
 
     /// Get number of dofs for given element
-    int NumDof(const DRT::Element* element) const override
+    int NumDof(const CORE::Elements::Element* element) const override
     {
       // check if this is a face element
       int lid = element->LID();
@@ -148,7 +148,7 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of a dof for given element
-    int Dof(const DRT::Element* element, int dof) const override
+    int Dof(const CORE::Elements::Element* element, int dof) const override
     {
       int lid = element->LID();
       if (lid == -1) return -1;
@@ -186,7 +186,7 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of all dofs of a element
-    std::vector<int> Dof(const DRT::Element* element) const override
+    std::vector<int> Dof(const CORE::Elements::Element* element) const override
     {
       int lid = element->LID();
       if (lid == -1) return std::vector<int>();
@@ -237,7 +237,7 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of all dofs of a element
-    void Dof(const DRT::Element* element, std::vector<int>& lm) const override
+    void Dof(const CORE::Elements::Element* element, std::vector<int>& lm) const override
     {
       int lid = element->LID();
       if (lid == -1) return;
@@ -250,7 +250,7 @@ namespace CORE::Dofsets
     }
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    void Dof(const DRT::Element*
+    void Dof(const CORE::Elements::Element*
                  element,       ///< element which provides its expected number of DOFs per node
         const DRT::Node* node,  ///< node, for which you want the DOF positions
         std::vector<int>& lm    ///< already allocated vector to be filled with DOF positions
@@ -330,25 +330,25 @@ namespace CORE::Dofsets
     int NumDofPerNode(const DRT::Node& node) const override
     {
       const int numele = node.NumElement();
-      const DRT::Element* const* myele = node.Elements();
+      const CORE::Elements::Element* const* myele = node.Elements();
       int numdf = 0;
       for (int j = 0; j < numele; ++j) numdf = std::max(numdf, NumDofPerNode(*myele[j], node));
       return numdf;
     }
 
     /// get number of nodal dofs for this element at this node
-    virtual int NumDofPerNode(const DRT::Element& element, const DRT::Node& node) const
+    virtual int NumDofPerNode(const CORE::Elements::Element& element, const DRT::Node& node) const
     {
       return element.NumDofPerNode(node);
     }
 
     /// get number of element dofs for this element
-    virtual int num_dof_per_element(const DRT::Element& element) const
+    virtual int num_dof_per_element(const CORE::Elements::Element& element) const
     {
       return element.num_dof_per_element();
     }
 
-    virtual int num_dof_per_face(const DRT::Element& element, int face) const
+    virtual int num_dof_per_face(const CORE::Elements::Element& element, int face) const
     {
       return element.num_dof_per_face(face);
     }

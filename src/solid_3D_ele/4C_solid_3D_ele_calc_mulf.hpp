@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_solid_3D_ele_calc.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_3D_ele_calc_lib_io.hpp"
@@ -46,7 +46,8 @@ namespace DRT::ELEMENTS
     using GaussPointHistory = MulfHistoryData<celltype>;
 
     template <typename Evaluator>
-    static auto Evaluate(const DRT::Element& ele, const ElementNodes<celltype>& element_nodes,
+    static auto Evaluate(const CORE::Elements::Element& ele,
+        const ElementNodes<celltype>& element_nodes,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping, MulfHistoryData<celltype>& history_data,
@@ -128,7 +129,7 @@ namespace DRT::ELEMENTS
       history_data.is_setup = static_cast<bool>(is_setup_int);
     }
 
-    static inline void UpdatePrestress(const DRT::Element& ele,
+    static inline void UpdatePrestress(const CORE::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -164,16 +165,16 @@ namespace DRT::ELEMENTS
 
   template <typename T>
   constexpr bool IsPrestressUpdateable<T,
-      std::void_t<decltype(std::declval<T>()->UpdatePrestress(std::declval<const DRT::Element&>(),
-          std::declval<MAT::So3Material&>(), std::declval<const DRT::Discretization&>(),
-          std::declval<const std::vector<int>&>(), std::declval<Teuchos::ParameterList&>()))>> =
-      true;
+      std::void_t<decltype(std::declval<T>()->UpdatePrestress(
+          std::declval<const CORE::Elements::Element&>(), std::declval<MAT::So3Material&>(),
+          std::declval<const DRT::Discretization&>(), std::declval<const std::vector<int>&>(),
+          std::declval<Teuchos::ParameterList&>()))>> = true;
 
   namespace DETAILS
   {
     struct UpdatePrestressAction
     {
-      UpdatePrestressAction(const DRT::Element& e, MAT::So3Material& m,
+      UpdatePrestressAction(const CORE::Elements::Element& e, MAT::So3Material& m,
           const DRT::Discretization& d, const std::vector<int>& lmvec, Teuchos::ParameterList& p)
           : element(e), mat(m), discretization(d), lm(lmvec), params(p)
       {
@@ -194,7 +195,7 @@ namespace DRT::ELEMENTS
             CORE::UTILS::TryDemangle(typeid(T).name()).c_str());
       }
 
-      const DRT::Element& element;
+      const CORE::Elements::Element& element;
       MAT::So3Material& mat;
       const DRT::Discretization& discretization;
       const std::vector<int>& lm;
@@ -203,8 +204,8 @@ namespace DRT::ELEMENTS
   }  // namespace DETAILS
 
   template <typename VariantType>
-  void UpdatePrestress(VariantType& variant, const DRT::Element& element, MAT::So3Material& mat,
-      const DRT::Discretization& discretization, const std::vector<int>& lm,
+  void UpdatePrestress(VariantType& variant, const CORE::Elements::Element& element,
+      MAT::So3Material& mat, const DRT::Discretization& discretization, const std::vector<int>& lm,
       Teuchos::ParameterList& params)
   {
     std::visit(DETAILS::UpdatePrestressAction(element, mat, discretization, lm, params), variant);

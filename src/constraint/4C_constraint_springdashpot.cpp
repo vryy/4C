@@ -84,7 +84,7 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
   if (springtype_ == cursurfnormal)
   {
     // get geometry
-    std::map<int, Teuchos::RCP<DRT::Element>>& geom = spring_->Geometry();
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = spring_->Geometry();
     // calculate nodal area
     if (!actdisc_->Comm().MyPID()) IO::cout << "Computing area for spring dashpot condition...\n";
     get_area(geom);
@@ -150,7 +150,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
   {
     case CORE::Conditions::geometry_type_surface:
     {
-      std::map<int, Teuchos::RCP<DRT::Element>>& geom = spring_->Geometry();
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = spring_->Geometry();
 
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
@@ -783,11 +783,12 @@ void CONSTRAINTS::SpringDashpot::initialize_cur_surf_normal()
 /*-----------------------------------------------------------------------*
 |(private) adapted from mhv 01/14                           pfaller Apr15|
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::get_area(const std::map<int, Teuchos::RCP<DRT::Element>>& geom)
+void CONSTRAINTS::SpringDashpot::get_area(
+    const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom)
 {
   for (const auto& ele : geom)
   {
-    DRT::Element* element = ele.second.get();
+    CORE::Elements::Element* element = ele.second.get();
 
     Teuchos::ParameterList eparams;
 

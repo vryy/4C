@@ -33,22 +33,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatraTri3Type::Create(const std::
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraTri3Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneScatraTri3Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANESCATRA3" && eledistype == "TRI3")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri3>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraTri3Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneScatraTri3Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri3>(id, owner));
   return ele;
 }
@@ -85,22 +85,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatraTri6Type::Create(const std::
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraTri6Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneScatraTri6Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANESCATRA6" && eledistype == "TRI6")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri6>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraTri6Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneScatraTri6Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri6>(id, owner));
   return ele;
 }
@@ -137,22 +137,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatraQuad4Type::Create(const std:
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraQuad4Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneScatraQuad4Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANESCATRA4" && eledistype == "QUAD4")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad4>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraQuad4Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneScatraQuad4Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad4>(id, owner));
   return ele;
 }
@@ -189,22 +189,22 @@ CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatraQuad9Type::Create(const std:
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraQuad9Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneScatraQuad9Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANESCATRA9" && eledistype == "QUAD9")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad9>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraQuad9Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneScatraQuad9Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad9>(id, owner));
   return ele;
 }

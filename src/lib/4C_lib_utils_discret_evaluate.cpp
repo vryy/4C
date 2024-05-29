@@ -77,7 +77,7 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
         strategy.Systemvector2(), strategy.Systemvector3());
   }
 
-  Element::LocationArray la(discret.NumDofSets());
+  CORE::Elements::Element::LocationArray la(discret.NumDofSets());
 
   bool is_subset = false;
   if (not col_ele_map)
@@ -91,7 +91,7 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
 
   for (int i = 0; i < numcolele; ++i)
   {
-    DRT::Element* actele = nullptr;
+    CORE::Elements::Element* actele = nullptr;
     if (is_subset)
     {
       const int egid = ele_gids[i];

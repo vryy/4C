@@ -10,11 +10,11 @@
  *---------------------------------------------------------------------------*/
 #include "4C_particle_interaction_dem_contact.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_io_visualization_manager.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_mat_particle_wall_dem.hpp"
 #include "4C_particle_engine_container.hpp"
 #include "4C_particle_engine_interface.hpp"
@@ -647,7 +647,7 @@ void PARTICLEINTERACTION::DEMContact::evaluate_particle_wall_contact()
     }
 
     // get pointer to column wall element
-    DRT::Element* ele = particlewallpair.ele_;
+    CORE::Elements::Element* ele = particlewallpair.ele_;
 
     // number of nodes of wall element
     const int numnodes = ele->num_node();
@@ -977,7 +977,7 @@ void PARTICLEINTERACTION::DEMContact::evaluate_particle_wall_elastic_potential_e
     const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
 
     // get pointer to column wall element
-    DRT::Element* ele = particlewallpair.ele_;
+    CORE::Elements::Element* ele = particlewallpair.ele_;
 
     // calculate normal potential energy
     double normalpotentialenergy(0.0);

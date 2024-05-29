@@ -9,8 +9,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element_integration_select.hpp"
 #include "4C_discretization_fem_general_utils_gausspoints.hpp"
-#include "4C_lib_element_integration_select.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_shell7p_ele_calc_interface.hpp"
@@ -56,7 +56,7 @@ namespace DRT
      public:
       Shell7pEleCalcEas();
 
-      void Setup(DRT::Element& ele, MAT::So3Material& solid_material,
+      void Setup(CORE::Elements::Element& ele, MAT::So3Material& solid_material,
           INPUT::LineDefinition* linedef, const STR::ELEMENTS::ShellLockingTypes& locking_types,
           const STR::ELEMENTS::ShellData& shell_data) override;
 
@@ -64,9 +64,10 @@ namespace DRT
 
       void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
-      void material_post_setup(DRT::Element& ele, MAT::So3Material& solid_material) override;
+      void material_post_setup(
+          CORE::Elements::Element& ele, MAT::So3Material& solid_material) override;
 
-      void evaluate_nonlinear_force_stiffness_mass(DRT::Element& ele,
+      void evaluate_nonlinear_force_stiffness_mass(CORE::Elements::Element& ele,
           MAT::So3Material& solid_material, const DRT::Discretization& discretization,
           const CORE::LINALG::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params,
@@ -74,27 +75,28 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
           CORE::LINALG::SerialDenseMatrix* mass_matrix) override;
 
-      void Recover(DRT::Element& ele, const DRT::Discretization& discretization,
+      void Recover(CORE::Elements::Element& ele, const DRT::Discretization& discretization,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params,
           STR::ELEMENTS::ParamsInterface& interface_ptr) override;
 
-      void calculate_stresses_strains(DRT::Element& ele, MAT::So3Material& solid_material,
-          const ShellStressIO& stressIO, const ShellStrainIO& strainIO,
+      void calculate_stresses_strains(CORE::Elements::Element& ele,
+          MAT::So3Material& solid_material, const ShellStressIO& stressIO,
+          const ShellStrainIO& strainIO, const DRT::Discretization& discretization,
+          const CORE::LINALG::SerialDenseMatrix& nodal_directors,
+          const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) override;
+
+      double calculate_internal_energy(CORE::Elements::Element& ele,
+          MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+          const CORE::LINALG::SerialDenseMatrix& nodal_directors,
+          const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) override;
+
+      void Update(CORE::Elements::Element& ele, MAT::So3Material& solid_material,
           const DRT::Discretization& discretization,
           const CORE::LINALG::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) override;
 
-      double calculate_internal_energy(DRT::Element& ele, MAT::So3Material& solid_material,
-          const DRT::Discretization& discretization,
-          const CORE::LINALG::SerialDenseMatrix& nodal_directors,
-          const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) override;
-
-      void Update(DRT::Element& ele, MAT::So3Material& solid_material,
-          const DRT::Discretization& discretization,
-          const CORE::LINALG::SerialDenseMatrix& nodal_directors,
-          const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) override;
-
-      void reset_to_last_converged(DRT::Element& ele, MAT::So3Material& solid_material) override;
+      void reset_to_last_converged(
+          CORE::Elements::Element& ele, MAT::So3Material& solid_material) override;
 
       void VisData(const std::string& name, std::vector<double>& data) override;
 

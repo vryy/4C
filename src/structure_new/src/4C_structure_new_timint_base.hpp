@@ -470,7 +470,7 @@ namespace STR
       }
 
       /// set evaluation action
-      void SetActionType(const DRT::ELEMENTS::ActionType& action) override;
+      void SetActionType(const CORE::Elements::ActionType& action) override;
 
       // group id in nested parallelity
       [[nodiscard]] int GroupId() const;

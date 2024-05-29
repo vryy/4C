@@ -60,7 +60,7 @@ DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Evaluate(Artery* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -86,7 +86,7 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Evaluate(Artery* ele,
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateService(Artery* ele,
     const ARTERY::Action action, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -125,7 +125,7 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::ScatraEvaluate(Artery* ele,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::Matrix<my::iel_, my::iel_>& sysmat, CORE::LINALG::Matrix<my::iel_, 1>& rhs,
     Teuchos::RCP<const CORE::MAT::Material> material)
 {
@@ -210,7 +210,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate_flow(Artery* ele,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& flowVec, Teuchos::RCP<const CORE::MAT::Material> material)
 {
   // get pressure
@@ -248,7 +248,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate_flow(Artery* ele,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::calculate_ele_length(
-    Artery* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la)
+    Artery* ele, DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
 {
   double length;
   // get current element length

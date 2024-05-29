@@ -13,8 +13,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
@@ -36,7 +36,7 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    class Torsion3Type : public DRT::ElementType
+    class Torsion3Type : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Torsion3Type"; }
@@ -45,13 +45,13 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -68,7 +68,7 @@ namespace DRT
     \brief three dimensional torsion element
 
     */
-    class Torsion3 : public DRT::Element
+    class Torsion3 : public CORE::Elements::Element
     {
      public:
       //! @name Friends
@@ -101,7 +101,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
     .
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
      \brief Get shape type of element
@@ -136,7 +136,7 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      DRT::ElementType& ElementType() const override { return Torsion3Type::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override { return Torsion3Type::Instance(); }
 
       //@}
 
@@ -149,7 +149,7 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
 
       /*!
@@ -275,7 +275,7 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr() override;
 
      protected:
       /** \brief get access to the interface
@@ -337,7 +337,7 @@ namespace DRT
 
 
     // << operator
-    std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
+    std::ostream& operator<<(std::ostream& os, const CORE::Elements::Element& ele);
 
 
   }  // namespace ELEMENTS

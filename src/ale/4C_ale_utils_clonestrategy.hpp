@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
 }
@@ -52,9 +52,9 @@ namespace ALE
 
      protected:
       /// determine element type string and whether element is copied or not
-      bool determine_ele_type(DRT::Element* actele,  ///< current element
-          const bool ismyele,                        ///< true if element belongs to my proc
-          std::vector<std::string>& eletype          ///< element type
+      bool determine_ele_type(CORE::Elements::Element* actele,  ///< current element
+          const bool ismyele,                ///< true if element belongs to my proc
+          std::vector<std::string>& eletype  ///< element type
       );
 
       /*! \brief Set element-specific data (material etc.)
@@ -63,11 +63,11 @@ namespace ALE
        *  setup. This is again really ugly as we have to extract the actual
        *  element type in order to access the material property.
        */
-      void set_element_data(
-          Teuchos::RCP<DRT::Element> newele,  ///< newly created element where data has to be set
-          DRT::Element* oldele,               ///< existing element, that has been cloned
-          const int matid,                    ///< ID of material law
-          const bool nurbsdis                 ///< Is this a Nurbs-based discretization?
+      void set_element_data(Teuchos::RCP<CORE::Elements::Element>
+                                newele,     ///< newly created element where data has to be set
+          CORE::Elements::Element* oldele,  ///< existing element, that has been cloned
+          const int matid,                  ///< ID of material law
+          const bool nurbsdis               ///< Is this a Nurbs-based discretization?
       );
 
       /// returns conditions names to be copied (source and target name)

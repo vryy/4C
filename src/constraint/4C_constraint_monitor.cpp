@@ -119,11 +119,11 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
     CORE::LINALG::SerialDenseVector elevector2;
     CORE::LINALG::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond->Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
       // get element location vector and ownerships

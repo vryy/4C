@@ -1503,8 +1503,8 @@ void SCATRA::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
  *--------------------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::evaluate_mortar_cell(const DRT::Discretization& idiscret,
     MORTAR::IntCell& cell, const INPAR::SCATRA::ImplType& impltype, MORTAR::Element& slaveelement,
-    MORTAR::Element& masterelement, DRT::Element::LocationArray& la_slave,
-    DRT::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
+    MORTAR::Element& masterelement, CORE::Elements::Element::LocationArray& la_slave,
+    CORE::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseMatrix& cellmatrix1, CORE::LINALG::SerialDenseMatrix& cellmatrix2,
     CORE::LINALG::SerialDenseMatrix& cellmatrix3, CORE::LINALG::SerialDenseMatrix& cellmatrix4,
     CORE::LINALG::SerialDenseVector& cellvector1,
@@ -1523,8 +1523,8 @@ void SCATRA::MeshtyingStrategyS2I::evaluate_mortar_cell(const DRT::Discretizatio
 void SCATRA::MeshtyingStrategyS2I::evaluate_slave_node(const DRT::Discretization& idiscret,
     const MORTAR::Node& slavenode, const double& lumpedarea,
     const INPAR::SCATRA::ImplType& impltype, MORTAR::Element& slaveelement,
-    MORTAR::Element& masterelement, DRT::Element::LocationArray& la_slave,
-    DRT::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
+    MORTAR::Element& masterelement, CORE::Elements::Element::LocationArray& la_slave,
+    CORE::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseMatrix& ntsmatrix1, CORE::LINALG::SerialDenseMatrix& ntsmatrix2,
     CORE::LINALG::SerialDenseMatrix& ntsmatrix3, CORE::LINALG::SerialDenseMatrix& ntsmatrix4,
     CORE::LINALG::SerialDenseVector& ntsvector1, CORE::LINALG::SerialDenseVector& ntsvector2) const
@@ -1542,7 +1542,7 @@ void SCATRA::MeshtyingStrategyS2I::evaluate_slave_node(const DRT::Discretization
  *--------------------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::evaluate_mortar_element(const DRT::Discretization& idiscret,
     MORTAR::Element& element, const INPAR::SCATRA::ImplType& impltype,
-    DRT::Element::LocationArray& la, const Teuchos::ParameterList& params,
+    CORE::Elements::Element::LocationArray& la, const Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseMatrix& elematrix1, CORE::LINALG::SerialDenseMatrix& elematrix2,
     CORE::LINALG::SerialDenseMatrix& elematrix3, CORE::LINALG::SerialDenseMatrix& elematrix4,
     CORE::LINALG::SerialDenseVector& elevector1, CORE::LINALG::SerialDenseVector& elevector2) const
@@ -1624,9 +1624,9 @@ void SCATRA::MeshtyingStrategyS2I::evaluate_mortar_cells(const DRT::Discretizati
       FOUR_C_THROW("Something is wrong with the slave-master element pairing!");
 
     // construct slave-side and master-side location arrays
-    DRT::Element::LocationArray la_slave(idiscret.NumDofSets());
+    CORE::Elements::Element::LocationArray la_slave(idiscret.NumDofSets());
     slaveelement->LocationVector(idiscret, la_slave, false);
-    DRT::Element::LocationArray la_master(idiscret.NumDofSets());
+    CORE::Elements::Element::LocationArray la_master(idiscret.NumDofSets());
     masterelement->LocationVector(idiscret, la_master, false);
 
     // initialize cell matrices and vectors
@@ -1696,9 +1696,9 @@ void SCATRA::MeshtyingStrategyS2I::evaluate_nts(const Epetra_IntVector& islaveno
       FOUR_C_THROW("Something is wrong with the slave-master element pairing!");
 
     // construct slave-side and master-side location arrays
-    DRT::Element::LocationArray la_slave(idiscret.NumDofSets());
+    CORE::Elements::Element::LocationArray la_slave(idiscret.NumDofSets());
     slaveelement->LocationVector(idiscret, la_slave, false);
-    DRT::Element::LocationArray la_master(idiscret.NumDofSets());
+    CORE::Elements::Element::LocationArray la_master(idiscret.NumDofSets());
     masterelement->LocationVector(idiscret, la_master, false);
 
     // initialize cell matrices and vectors
@@ -1754,7 +1754,7 @@ void SCATRA::MeshtyingStrategyS2I::evaluate_mortar_elements(const Epetra_Map& ie
     if (!element) FOUR_C_THROW("Couldn't extract mortar element from mortar discretization!");
 
     // construct location array for current mortar element
-    DRT::Element::LocationArray la(idiscret.NumDofSets());
+    CORE::Elements::Element::LocationArray la(idiscret.NumDofSets());
     element->LocationVector(idiscret, la, false);
 
     // initialize element matrices and vectors
@@ -2205,8 +2205,8 @@ void SCATRA::MeshtyingStrategyS2I::setup_meshtying()
         std::map<int, DRT::Node*> slavegnodes;
 
         // initialize maps for elements associated with current condition
-        std::map<int, Teuchos::RCP<DRT::Element>> masterelements;
-        std::map<int, Teuchos::RCP<DRT::Element>> slaveelements;
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>> masterelements;
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>> slaveelements;
 
         // extract current slave-side and associated master-side scatra-scatra interface coupling
         // conditions
@@ -2247,7 +2247,7 @@ void SCATRA::MeshtyingStrategyS2I::setup_meshtying()
 
             // add material
             idiscret.gElement(elegid)->SetMaterial(
-                0, MAT::Factory(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(
+                0, MAT::Factory(Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
                        kinetics_slave_cond.second->Geometry()[elegid])
                                     ->parent_element()
                                     ->Material()
@@ -2261,7 +2261,7 @@ void SCATRA::MeshtyingStrategyS2I::setup_meshtying()
           for (int iele = 0; iele < interface.SlaveRowElements()->NumMyElements(); ++iele)
           {
             impltypes_row[iele] = dynamic_cast<const DRT::ELEMENTS::Transport*>(
-                Teuchos::rcp_dynamic_cast<const DRT::FaceElement>(
+                Teuchos::rcp_dynamic_cast<const CORE::Elements::FaceElement>(
                     kinetics_slave_cond.second->Geometry()[interface.SlaveRowElements()->GID(iele)])
                     ->parent_element())
                                       ->ImplType();
@@ -2401,7 +2401,7 @@ void SCATRA::MeshtyingStrategyS2I::setup_meshtying()
             // determine physical implementation type of slave-side node based on first associated
             // element
             (*islavenodesimpltypes)[inode] = dynamic_cast<DRT::ELEMENTS::Transport*>(
-                Teuchos::rcp_dynamic_cast<DRT::FaceElement>(
+                Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
                     kinetics_slave_cond.second->Geometry()[slavenode->Elements()[0]->Id()])
                     ->parent_element())
                                                  ->ImplType();
@@ -2419,7 +2419,7 @@ void SCATRA::MeshtyingStrategyS2I::setup_meshtying()
           {
             // determine physical implementation type of current slave-side element
             islaveelementsimpltypes[ielement] = dynamic_cast<DRT::ELEMENTS::Transport*>(
-                Teuchos::rcp_dynamic_cast<DRT::FaceElement>(
+                Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
                     kinetics_slave_cond.second->Geometry()[elecolmap_slave.GID(ielement)])
                     ->parent_element())
                                                     ->ImplType();
@@ -4138,11 +4138,11 @@ SCATRA::MortarCellCalc<distypeS, distypeM>* SCATRA::MortarCellCalc<distypeS, dis
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::Evaluate(const DRT::Discretization& idiscret,
     MORTAR::IntCell& cell, MORTAR::Element& slaveelement, MORTAR::Element& masterelement,
-    DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master,
-    const Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& cellmatrix1,
-    CORE::LINALG::SerialDenseMatrix& cellmatrix2, CORE::LINALG::SerialDenseMatrix& cellmatrix3,
-    CORE::LINALG::SerialDenseMatrix& cellmatrix4, CORE::LINALG::SerialDenseVector& cellvector1,
-    CORE::LINALG::SerialDenseVector& cellvector2)
+    CORE::Elements::Element::LocationArray& la_slave,
+    CORE::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
+    CORE::LINALG::SerialDenseMatrix& cellmatrix1, CORE::LINALG::SerialDenseMatrix& cellmatrix2,
+    CORE::LINALG::SerialDenseMatrix& cellmatrix3, CORE::LINALG::SerialDenseMatrix& cellmatrix4,
+    CORE::LINALG::SerialDenseVector& cellvector1, CORE::LINALG::SerialDenseVector& cellvector2)
 {
   // extract and evaluate action
   switch (CORE::UTILS::GetAsEnum<INPAR::S2I::EvaluationActions>(params, "action"))
@@ -4178,8 +4178,8 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::Evaluate(const DRT::Discretizat
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::evaluate_nts(const DRT::Discretization& idiscret,
     const MORTAR::Node& slavenode, const double& lumpedarea, MORTAR::Element& slaveelement,
-    MORTAR::Element& masterelement, DRT::Element::LocationArray& la_slave,
-    DRT::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
+    MORTAR::Element& masterelement, CORE::Elements::Element::LocationArray& la_slave,
+    CORE::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseMatrix& ntsmatrix1, CORE::LINALG::SerialDenseMatrix& ntsmatrix2,
     CORE::LINALG::SerialDenseMatrix& ntsmatrix3, CORE::LINALG::SerialDenseMatrix& ntsmatrix4,
     CORE::LINALG::SerialDenseVector& ntsvector1, CORE::LINALG::SerialDenseVector& ntsvector2)
@@ -4218,11 +4218,11 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::evaluate_nts(const DRT::Discret
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::evaluate_mortar_element(
-    const DRT::Discretization& idiscret, MORTAR::Element& element, DRT::Element::LocationArray& la,
-    const Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& elematrix1,
-    CORE::LINALG::SerialDenseMatrix& elematrix2, CORE::LINALG::SerialDenseMatrix& elematrix3,
-    CORE::LINALG::SerialDenseMatrix& elematrix4, CORE::LINALG::SerialDenseVector& elevector1,
-    CORE::LINALG::SerialDenseVector& elevector2)
+    const DRT::Discretization& idiscret, MORTAR::Element& element,
+    CORE::Elements::Element::LocationArray& la, const Teuchos::ParameterList& params,
+    CORE::LINALG::SerialDenseMatrix& elematrix1, CORE::LINALG::SerialDenseMatrix& elematrix2,
+    CORE::LINALG::SerialDenseMatrix& elematrix3, CORE::LINALG::SerialDenseMatrix& elematrix4,
+    CORE::LINALG::SerialDenseVector& elevector1, CORE::LINALG::SerialDenseVector& elevector2)
 {
   // extract and evaluate action
   switch (CORE::UTILS::GetAsEnum<INPAR::S2I::EvaluationActions>(params, "action"))
@@ -4273,8 +4273,8 @@ SCATRA::MortarCellCalc<distypeS, distypeM>::MortarCellCalc(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::extract_node_values(
-    const DRT::Discretization& idiscret, DRT::Element::LocationArray& la_slave,
-    DRT::Element::LocationArray& la_master)
+    const DRT::Discretization& idiscret, CORE::Elements::Element::LocationArray& la_slave,
+    CORE::Elements::Element::LocationArray& la_master)
 {
   // extract nodal state variables associated with mortar integration cell
   extract_node_values(ephinp_slave_, ephinp_master_, idiscret, la_slave, la_master);
@@ -4286,7 +4286,8 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::extract_node_values(
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::extract_node_values(
     CORE::LINALG::Matrix<nen_slave_, 1>& estate_slave, const DRT::Discretization& idiscret,
-    DRT::Element::LocationArray& la_slave, const std::string& statename, const int& nds) const
+    CORE::Elements::Element::LocationArray& la_slave, const std::string& statename,
+    const int& nds) const
 {
   // extract interface state vector from interface discretization
   const Teuchos::RCP<const Epetra_Vector> state = idiscret.GetState(nds, statename);
@@ -4306,8 +4307,9 @@ template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::extract_node_values(
     std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>& estate_slave,
     std::vector<CORE::LINALG::Matrix<nen_master_, 1>>& estate_master,
-    const DRT::Discretization& idiscret, DRT::Element::LocationArray& la_slave,
-    DRT::Element::LocationArray& la_master, const std::string& statename, const int& nds) const
+    const DRT::Discretization& idiscret, CORE::Elements::Element::LocationArray& la_slave,
+    CORE::Elements::Element::LocationArray& la_master, const std::string& statename,
+    const int& nds) const
 {
   // extract interface state vector from interface discretization
   const Teuchos::RCP<const Epetra_Vector> state = idiscret.GetState(nds, statename);
@@ -4619,8 +4621,8 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::evaluate_mortar_matrices(MORTAR
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::evaluate_condition(
     const DRT::Discretization& idiscret, MORTAR::IntCell& cell, MORTAR::Element& slaveelement,
-    MORTAR::Element& masterelement, DRT::Element::LocationArray& la_slave,
-    DRT::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
+    MORTAR::Element& masterelement, CORE::Elements::Element::LocationArray& la_slave,
+    CORE::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,
     CORE::LINALG::SerialDenseMatrix& k_ms, CORE::LINALG::SerialDenseMatrix& k_mm,
     CORE::LINALG::SerialDenseVector& r_s, CORE::LINALG::SerialDenseVector& r_m)
@@ -4770,8 +4772,8 @@ SCATRA::MortarCellAssemblyStrategy::MortarCellAssemblyStrategy(
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
 void SCATRA::MortarCellAssemblyStrategy::assemble_cell_matrices_and_vectors(
-    DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master,
-    const int assembler_pid_master) const
+    CORE::Elements::Element::LocationArray& la_slave,
+    CORE::Elements::Element::LocationArray& la_master, const int assembler_pid_master) const
 {
   // assemble cell matrix 1 into system matrix 1
   if (AssembleMatrix1())
@@ -4810,11 +4812,12 @@ void SCATRA::MortarCellAssemblyStrategy::assemble_cell_matrices_and_vectors(
 void SCATRA::MortarCellAssemblyStrategy::assemble_cell_matrix(
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
     const CORE::LINALG::SerialDenseMatrix& cellmatrix, const INPAR::S2I::InterfaceSides side_rows,
-    const INPAR::S2I::InterfaceSides side_cols, DRT::Element::LocationArray& la_slave,
-    DRT::Element::LocationArray& la_master, const int assembler_pid_master) const
+    const INPAR::S2I::InterfaceSides side_cols, CORE::Elements::Element::LocationArray& la_slave,
+    CORE::Elements::Element::LocationArray& la_master, const int assembler_pid_master) const
 {
   // determine location array associated with matrix columns
-  DRT::Element::LocationArray& la_cols = side_cols == INPAR::S2I::side_slave ? la_slave : la_master;
+  CORE::Elements::Element::LocationArray& la_cols =
+      side_cols == INPAR::S2I::side_slave ? la_slave : la_master;
 
   // assemble cell matrix into system matrix
   switch (side_rows)
@@ -4849,8 +4852,8 @@ void SCATRA::MortarCellAssemblyStrategy::assemble_cell_matrix(
 void SCATRA::MortarCellAssemblyStrategy::assemble_cell_vector(
     const Teuchos::RCP<Epetra_MultiVector>& systemvector,
     const CORE::LINALG::SerialDenseVector& cellvector, const INPAR::S2I::InterfaceSides side,
-    DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master,
-    const int assembler_pid_master) const
+    CORE::Elements::Element::LocationArray& la_slave,
+    CORE::Elements::Element::LocationArray& la_master, const int assembler_pid_master) const
 {
   // assemble cell vector into system vector
   switch (side)
@@ -4889,7 +4892,8 @@ void SCATRA::MortarCellAssemblyStrategy::assemble_cell_vector(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SCATRA::MortarCellAssemblyStrategy::init_cell_matrices_and_vectors(
-    DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master)
+    CORE::Elements::Element::LocationArray& la_slave,
+    CORE::Elements::Element::LocationArray& la_master)
 {
   // initialize system matrix 1
   if (AssembleMatrix1())
@@ -4919,8 +4923,8 @@ void SCATRA::MortarCellAssemblyStrategy::init_cell_matrices_and_vectors(
  *---------------------------------------------------------------------------*/
 void SCATRA::MortarCellAssemblyStrategy::init_cell_matrix(
     CORE::LINALG::SerialDenseMatrix& cellmatrix, const INPAR::S2I::InterfaceSides side_rows,
-    const INPAR::S2I::InterfaceSides side_cols, DRT::Element::LocationArray& la_slave,
-    DRT::Element::LocationArray& la_master) const
+    const INPAR::S2I::InterfaceSides side_cols, CORE::Elements::Element::LocationArray& la_slave,
+    CORE::Elements::Element::LocationArray& la_master) const
 {
   // determine number of matrix rows and number of matrix columns
   const int nrows = side_rows == INPAR::S2I::side_slave ? la_slave[nds_rows_].Size()
@@ -4944,7 +4948,8 @@ void SCATRA::MortarCellAssemblyStrategy::init_cell_matrix(
  *---------------------------------------------------------------------------*/
 void SCATRA::MortarCellAssemblyStrategy::init_cell_vector(
     CORE::LINALG::SerialDenseVector& cellvector, const INPAR::S2I::InterfaceSides side,
-    DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master) const
+    CORE::Elements::Element::LocationArray& la_slave,
+    CORE::Elements::Element::LocationArray& la_master) const
 {
   // determine number of vector components
   const int ndofs =

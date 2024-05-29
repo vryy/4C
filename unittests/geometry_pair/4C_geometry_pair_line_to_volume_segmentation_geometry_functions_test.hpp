@@ -26,8 +26,9 @@ namespace
    * \brief The following code part is generated with meshpy. The function defines element
    * coordinates for unit test examples.
    */
-  void XtestLineAlongElementSurfaceGeometry(std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
-      std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
+  void XtestLineAlongElementSurfaceGeometry(
+      std::vector<Teuchos::RCP<CORE::Elements::Element>>& line_elements,
+      std::vector<Teuchos::RCP<CORE::Elements::Element>>& volume_elements,
       std::vector<CORE::LINALG::Matrix<12, 1, double>>& q_line_elements,
       std::vector<double>& line_ref_lengths,
       std::vector<CORE::LINALG::Matrix<24, 1, double>>& q_volume_elements)
@@ -111,8 +112,9 @@ namespace
   /**
    * \brief Create the geometry for two solid elements and a line between them.
    */
-  void XtestLineInSmallElementsGeometry(std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
-      std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
+  void XtestLineInSmallElementsGeometry(
+      std::vector<Teuchos::RCP<CORE::Elements::Element>>& line_elements,
+      std::vector<Teuchos::RCP<CORE::Elements::Element>>& volume_elements,
       std::vector<CORE::LINALG::Matrix<12, 1, double>>& q_line_elements,
       std::vector<double>& line_ref_lengths,
       std::vector<CORE::LINALG::Matrix<24, 1, double>>& q_volume_elements)
@@ -198,8 +200,8 @@ namespace
    * coordinates for unit test examples.
    */
   void XtestMultipleIntersectionsHex27Geometry(
-      std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
-      std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
+      std::vector<Teuchos::RCP<CORE::Elements::Element>>& line_elements,
+      std::vector<Teuchos::RCP<CORE::Elements::Element>>& volume_elements,
       std::vector<CORE::LINALG::Matrix<12, 1, double>>& q_line_elements,
       std::vector<double>& line_ref_lengths,
       std::vector<CORE::LINALG::Matrix<81, 1, double>>& q_volume_elements)
@@ -316,8 +318,8 @@ namespace
    * coordinates for unit test examples.
    */
   void XtestMultipleIntersectionsTet10Geometry(
-      std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
-      std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
+      std::vector<Teuchos::RCP<CORE::Elements::Element>>& line_elements,
+      std::vector<Teuchos::RCP<CORE::Elements::Element>>& volume_elements,
       std::vector<CORE::LINALG::Matrix<12, 1, double>>& q_line_elements,
       std::vector<double>& line_ref_lengths,
       std::vector<CORE::LINALG::Matrix<30, 1, double>>& q_volume_elements)
@@ -384,8 +386,8 @@ namespace
    * The solid is a 90degree element of a hollow cylinder.
    */
   void XtestMultipleIntersectionsNurbs27Geometry(
-      std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
-      std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
+      std::vector<Teuchos::RCP<CORE::Elements::Element>>& line_elements,
+      std::vector<Teuchos::RCP<CORE::Elements::Element>>& volume_elements,
       std::vector<CORE::LINALG::Matrix<12, 1, double>>& q_line_elements,
       std::vector<double>& line_ref_lengths,
       std::vector<CORE::LINALG::Matrix<81, 1, double>>& q_volume_elements,
@@ -577,8 +579,8 @@ namespace
    * script/unittest_geometry_pair_line_to_volume.wls
    */
   void XtestCreateGeometrySingleHex8WithPreCurvedLine(
-      std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
-      std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
+      std::vector<Teuchos::RCP<CORE::Elements::Element>>& line_elements,
+      std::vector<Teuchos::RCP<CORE::Elements::Element>>& volume_elements,
       std::vector<CORE::LINALG::Matrix<12, 1, double>>& q_line_elements,
       std::vector<double>& line_ref_lengths,
       std::vector<CORE::LINALG::Matrix<24, 1, double>>& q_volume_elements)

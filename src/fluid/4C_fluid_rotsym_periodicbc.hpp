@@ -15,9 +15,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_rotsym_periodicbc_utils.hpp"
-#include "4C_lib_element.hpp"
 
 #include <vector>
 
@@ -68,7 +68,7 @@ namespace FLD
     }
 
     /// prepare the class for this element
-    void Setup(DRT::Element* ele)
+    void Setup(CORE::Elements::Element* ele)
     {
       // clean everything
       rotangle_ = 0.0;

@@ -453,7 +453,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     // loop all available elements
     for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
     {
-      DRT::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
+      CORE::Elements::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
       DRT::Node** nodes = actele->Nodes();
 
       // get gid, location in the patch

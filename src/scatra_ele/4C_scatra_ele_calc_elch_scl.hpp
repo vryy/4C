@@ -132,7 +132,7 @@ namespace DRT
       //! @name material and related and related functions
       /*========================================================================*/
 
-      void get_material_params(const DRT::Element* ele, std::vector<double>& densn,
+      void get_material_params(const CORE::Elements::Element* ele, std::vector<double>& densn,
           std::vector<double>& densnp, std::vector<double>& densam, double& visc,
           const int iquad = -1) override;
 

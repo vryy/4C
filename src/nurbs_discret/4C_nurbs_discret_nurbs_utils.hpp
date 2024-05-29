@@ -35,8 +35,9 @@ namespace DRT
     \date 12/10
     */
     template <class WG>
-    bool GetMyNurbsKnotsAndWeights(const DRT::Discretization& dis, const DRT::Element* ele,
-        std::vector<CORE::LINALG::SerialDenseVector>& myknots, WG& weights)
+    bool GetMyNurbsKnotsAndWeights(const DRT::Discretization& dis,
+        const CORE::Elements::Element* ele, std::vector<CORE::LINALG::SerialDenseVector>& myknots,
+        WG& weights)
     {
       // try to cast dis to a nurbs discretisation
       const DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -105,7 +106,7 @@ namespace DRT
     \date 12/10
     */
     template <class WG>
-    bool GetKnotVectorAndWeightsForNurbsBoundary(const DRT::Element* boundaryele,
+    bool GetKnotVectorAndWeightsForNurbsBoundary(const CORE::Elements::Element* boundaryele,
         const int localsurfaceid, const int parenteleid, const DRT::Discretization& discretization,
         std::vector<CORE::LINALG::SerialDenseVector>& mypknots,
         std::vector<CORE::LINALG::SerialDenseVector>& myknots, WG& weights, double& normalfac)
@@ -157,8 +158,8 @@ namespace DRT
     \date 01/14
     */
     template <class WG>
-    bool GetKnotVectorAndWeightsForNurbsBoundaryAndParent(DRT::Element* parentele,
-        DRT::Element* boundaryele, const int localsurfaceid,
+    bool GetKnotVectorAndWeightsForNurbsBoundaryAndParent(CORE::Elements::Element* parentele,
+        CORE::Elements::Element* boundaryele, const int localsurfaceid,
         const DRT::Discretization& discretization,
         std::vector<CORE::LINALG::SerialDenseVector>& mypknots,
         std::vector<CORE::LINALG::SerialDenseVector>& myknots, WG& pweights, WG& weights,

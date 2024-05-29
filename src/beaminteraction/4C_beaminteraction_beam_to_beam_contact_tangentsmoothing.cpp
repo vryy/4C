@@ -10,16 +10,17 @@
 
 #include "4C_beaminteraction_beam_to_beam_contact_tangentsmoothing.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_lib_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BEAMINTERACTION::B3CNeighbor::B3CNeighbor(const DRT::Element* left_neighbor,
-    const DRT::Element* right_neighbor, int connecting_node_left, int connecting_node_right)
+BEAMINTERACTION::B3CNeighbor::B3CNeighbor(const CORE::Elements::Element* left_neighbor,
+    const CORE::Elements::Element* right_neighbor, int connecting_node_left,
+    int connecting_node_right)
     : left_neighbor_(left_neighbor),
       right_neighbor_(right_neighbor),
       connecting_node_left_(connecting_node_left),
@@ -31,10 +32,10 @@ BEAMINTERACTION::B3CNeighbor::B3CNeighbor(const DRT::Element* left_neighbor,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> BEAMINTERACTION::B3TANGENTSMOOTHING::DetermineNeigbors(
-    const DRT::Element* element1)
+    const CORE::Elements::Element* element1)
 {
-  const DRT::Element* left_neighbor = nullptr;
-  const DRT::Element* right_neighbor = nullptr;
+  const CORE::Elements::Element* left_neighbor = nullptr;
+  const CORE::Elements::Element* right_neighbor = nullptr;
   int connecting_node_left = 0;
   int connecting_node_right = 0;
 

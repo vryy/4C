@@ -350,7 +350,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   for (int nele = 0; nele < discret_->NumMyColElements(); ++nele)
   {
     // get the element
-    DRT::Element* ele = discret_->lColElement(nele);
+    CORE::Elements::Element* ele = discret_->lColElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;
@@ -382,7 +382,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
     if (((*generations_)[j] != -1) and ((*generations_)[j] != -2))
     {
       int GID = discret_->ElementColMap()->GID(j);  // global element ID
-      const DRT::ElementType& ele_type = discret_->gElement(GID)->ElementType();
+      const CORE::Elements::ElementType& ele_type = discret_->gElement(GID)->ElementType();
       if (ele_type == DRT::ELEMENTS::RedAirwayType::Instance())
       {
         // dynamic cast to airway element, since Elements base class does not have the functions
@@ -503,7 +503,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
 
         // adjust acinus volume 0 in the elements parameters
         // additional check whether element is RedAcinusType
-        const DRT::ElementType& ele_type = discret_->gElement(GID)->ElementType();
+        const CORE::Elements::ElementType& ele_type = discret_->gElement(GID)->ElementType();
         if (ele_type == DRT::ELEMENTS::RedAcinusType::Instance())
         {
           // dynamic cast to aciunus element, since Elements base class does not have the functions

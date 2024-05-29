@@ -40,9 +40,13 @@ namespace CORE::COMM
 namespace DRT
 {
   class Discretization;
-  class Element;
   class Node;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::GEO
 {
@@ -228,7 +232,7 @@ namespace XFEM
     /// special check for mesh based interface tips
     bool special_check_interface_tips_space_time(
         bool& changed_side,  /// did the node change the side ?
-        DRT::Element* side, const int coup_sid,
+        CORE::Elements::Element* side, const int coup_sid,
         const CORE::LINALG::Matrix<3, 1>& n_coord  /// node coodinates
     );
 
@@ -236,7 +240,7 @@ namespace XFEM
     template <CORE::FE::CellType side_distype,
         CORE::FE::CellType space_time_distype>
     bool within_space_time_side(bool& within_space_time_side,  /// within the space time side
-        DRT::Element* side, const int coup_sid,
+        CORE::Elements::Element* side, const int coup_sid,
         const CORE::LINALG::Matrix<3, 1>& n_coord  /// node coodinates
     );
 

@@ -96,7 +96,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
 
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::CreateGeometryPair(
-    const DRT::Element* element1, const DRT::Element* element2,
+    const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   // Set up the geometry pair

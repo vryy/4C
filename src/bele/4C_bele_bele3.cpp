@@ -36,7 +36,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Bele3Type::Create(const std::vector<char>&
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Bele3Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   // Search for "BELE3". If found, search for "_"
@@ -65,15 +65,16 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create(
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Bele3Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Bele3(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Bele3(id, owner));
   return ele;
 }
 
 
 void DRT::ELEMENTS::Bele3Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
@@ -125,7 +126,8 @@ void DRT::ELEMENTS::Bele3Type::setup_element_definition(
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3LineType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Bele3LineType::Create(
+    const int id, const int owner)
 {
   // return Teuchos::rcp( new Bele3Line( id, owner ) );
   return Teuchos::null;
@@ -134,7 +136,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3LineType::Create(const int id, co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Bele3::Bele3(int id, int owner) : DRT::Element(id, owner), numdofpernode_(-1)
+DRT::ELEMENTS::Bele3::Bele3(int id, int owner)
+    : CORE::Elements::Element(id, owner), numdofpernode_(-1)
 {
   return;
 }
@@ -142,14 +145,14 @@ DRT::ELEMENTS::Bele3::Bele3(int id, int owner) : DRT::Element(id, owner), numdof
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3::Bele3(const DRT::ELEMENTS::Bele3& old)
-    : DRT::Element(old), numdofpernode_(old.numdofpernode_)
+    : CORE::Elements::Element(old), numdofpernode_(old.numdofpernode_)
 {
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Bele3::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Bele3::Clone() const
 {
   DRT::ELEMENTS::Bele3* newelement = new DRT::ELEMENTS::Bele3(*this);
   return newelement;
@@ -229,7 +232,7 @@ void DRT::ELEMENTS::Bele3::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Bele3::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Bele3::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<Bele3Line, Bele3>(CORE::COMM::buildLines, *this);
 }
@@ -238,7 +241,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Bele3::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of Surfaces (length 1) (public)               gammi 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Bele3::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Bele3::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

@@ -27,10 +27,10 @@ namespace CORE::LINALG
   class SerialDenseMatrix;
 }  // namespace CORE::LINALG
 
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
-}  // namespace DRT
+}
 
 namespace BEAMINTERACTION
 {
@@ -61,13 +61,14 @@ namespace BEAMINTERACTION
     virtual ~BeamPotentialPair() = default;
     //! Initialization
     void Init(const Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> params_ptr,
-        DRT::Element const* element1, DRT::Element const* element2);
+        CORE::Elements::Element const* element1, CORE::Elements::Element const* element2);
 
     //! Setup
     virtual void Setup();
 
     //! return appropriate derived (templated) class (acts as a simple factory)
-    static Teuchos::RCP<BeamPotentialPair> Create(std::vector<DRT::Element const*> const& ele_ptrs,
+    static Teuchos::RCP<BeamPotentialPair> Create(
+        std::vector<CORE::Elements::Element const*> const& ele_ptrs,
         BEAMINTERACTION::BeamPotentialParams const& beam_potential_params);
 
     //@}
@@ -104,12 +105,12 @@ namespace BEAMINTERACTION
     /*!
     \brief Get first element
     */
-    inline DRT::Element const* Element1() const { return element1_; };
+    inline CORE::Elements::Element const* Element1() const { return element1_; };
 
     /*!
     \brief Get second element
     */
-    inline DRT::Element const* Element2() const { return element2_; };
+    inline CORE::Elements::Element const* Element2() const { return element2_; };
 
     /*!
     \brief Get coordinates of all interacting points on element1 and element2
@@ -172,12 +173,12 @@ namespace BEAMINTERACTION
     /*!
     \brief Set first element
     */
-    inline void set_element1(DRT::Element const* element1) { element1_ = element1; };
+    inline void set_element1(CORE::Elements::Element const* element1) { element1_ = element1; };
 
     /*!
     \brief Set second element
     */
-    inline void set_element2(DRT::Element const* element2) { element2_ = element2; };
+    inline void set_element2(CORE::Elements::Element const* element2) { element2_ = element2; };
 
     //@}
 
@@ -195,10 +196,10 @@ namespace BEAMINTERACTION
     Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> beam_potential_params_;
 
     //! first element of interacting pair
-    DRT::Element const* element1_;
+    CORE::Elements::Element const* element1_;
 
     //! second element of interacting pair
-    DRT::Element const* element2_;
+    CORE::Elements::Element const* element2_;
     //@}
   };
 }  // namespace BEAMINTERACTION

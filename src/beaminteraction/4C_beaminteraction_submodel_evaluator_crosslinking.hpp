@@ -41,9 +41,14 @@ namespace MAT
 }
 namespace DRT
 {
-  class Element;
   class Node;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace CROSSLINKING
 {
   class CrosslinkerNode;
@@ -304,7 +309,7 @@ namespace BEAMINTERACTION
               undecidedbonds);
 
       /// find potential binding events in one bin
-      void find_potential_binding_events_in_bin_and_neighborhood(DRT::Element* bin,
+      void find_potential_binding_events_in_bin_and_neighborhood(CORE::Elements::Element* bin,
           std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>& mybonds,
           std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>>&
               undecidedbonds,
@@ -313,11 +318,13 @@ namespace BEAMINTERACTION
 
       /// check if sphere should prohibit binding if double bond would be to close
       bool check_if_sphere_prohibits_binding(
-          std::set<DRT::Element*> const& neighboring_col_spheres, DRT::Node* node_i) const;
+          std::set<CORE::Elements::Element*> const& neighboring_col_spheres,
+          DRT::Node* node_i) const;
 
       /// search for binding events on each proc separately (i.e. pretending myrank is alone)
       /// communication to ensure correct binding over all procs is done afterwards
-      void prepare_binding(DRT::Node* node_i, std::set<DRT::Element*> const& neighboring_beams,
+      void prepare_binding(DRT::Node* node_i,
+          std::set<CORE::Elements::Element*> const& neighboring_beams,
           std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>& mybonds,
           std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>>&
               undecidedbonds,
@@ -326,7 +333,7 @@ namespace BEAMINTERACTION
 
       /// check criteria if binding event is feasible
       bool check_bind_event_criteria(CROSSLINKING::CrosslinkerNode const* const crosslinker_i,
-          DRT::Element const* const potbeampartner,
+          CORE::Elements::Element const* const potbeampartner,
           BEAMINTERACTION::DATA::CrosslinkerData* cldata_i,
           BEAMINTERACTION::DATA::BeamData const* beamdata_i, int locnbspot,
           std::map<int, std::vector<std::map<int, std::set<int>>>>& intendedbeambonds,

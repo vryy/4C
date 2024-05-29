@@ -31,27 +31,30 @@ CORE::COMM::ParObject* DRT::ELEMENTS::LubricationType::Create(const std::vector<
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::LubricationType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "LUBRICATION")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Lubrication(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::Lubrication(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::LubricationType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Lubrication(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::Lubrication(id, owner));
   return ele;
 }
 
 
 void DRT::ELEMENTS::LubricationType::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
   dimns = numdf;
@@ -102,7 +105,7 @@ DRT::ELEMENTS::LubricationBoundaryType& DRT::ELEMENTS::LubricationBoundaryType::
   return instance_;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationBoundaryType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::LubricationBoundaryType::Create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new LubricationBoundary( id, owner ) );
@@ -114,7 +117,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationBoundaryType::Create(
  |  ctor (public)                                           wirtz 10/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Lubrication::Lubrication(int id, int owner)
-    : DRT::Element(id, owner), distype_(CORE::FE::CellType::dis_none)
+    : CORE::Elements::Element(id, owner), distype_(CORE::FE::CellType::dis_none)
 {
   return;
 }
@@ -123,7 +126,7 @@ DRT::ELEMENTS::Lubrication::Lubrication(int id, int owner)
  |  copy-ctor (public)                                      wirtz 10/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Lubrication::Lubrication(const DRT::ELEMENTS::Lubrication& old)
-    : DRT::Element(old), distype_(old.distype_)
+    : CORE::Elements::Element(old), distype_(old.distype_)
 {
   return;
 }
@@ -132,7 +135,7 @@ DRT::ELEMENTS::Lubrication::Lubrication(const DRT::ELEMENTS::Lubrication& old)
  |  Deep copy this instance of Lubrication and return pointer to it        |
  |                                                 (public) wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Lubrication::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Lubrication::Clone() const
 {
   DRT::ELEMENTS::Lubrication* newelement = new DRT::ELEMENTS::Lubrication(*this);
   return newelement;
@@ -236,7 +239,7 @@ void DRT::ELEMENTS::Lubrication::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                 wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Lubrication::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Lubrication::Lines()
 {
   return CORE::COMM::GetElementLines<LubricationBoundary, Lubrication>(*this);
 }
@@ -245,7 +248,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Lubrication::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                         wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Lubrication::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Lubrication::Surfaces()
 {
   return CORE::COMM::GetElementSurfaces<LubricationBoundary, Lubrication>(*this);
 }
@@ -279,7 +282,7 @@ bool DRT::ELEMENTS::Lubrication::ReadElement(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::LubricationBoundary::LubricationBoundary(int id, int owner, int nnode,
     const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Lubrication* parent, const int lsurface)
-    : DRT::FaceElement(id, owner)
+    : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -292,7 +295,7 @@ DRT::ELEMENTS::LubricationBoundary::LubricationBoundary(int id, int owner, int n
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::LubricationBoundary::LubricationBoundary(
     const DRT::ELEMENTS::LubricationBoundary& old)
-    : DRT::FaceElement(old)
+    : CORE::Elements::FaceElement(old)
 {
   return;
 }
@@ -300,7 +303,7 @@ DRT::ELEMENTS::LubricationBoundary::LubricationBoundary(
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it   (public) wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::LubricationBoundary::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::LubricationBoundary::Clone() const
 {
   DRT::ELEMENTS::LubricationBoundary* newelement = new DRT::ELEMENTS::LubricationBoundary(*this);
   return newelement;
@@ -367,7 +370,7 @@ int DRT::ELEMENTS::LubricationBoundary::NumSurface() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                            wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::LubricationBoundary::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::LubricationBoundary::Lines()
 {
   FOUR_C_THROW("Lines of LubricationBoundary not implemented");
 }
@@ -375,7 +378,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::LubricationBoundary::Line
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                            wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::LubricationBoundary::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::LubricationBoundary::Surfaces()
 {
   FOUR_C_THROW("Surfaces of LubricationBoundary not implemented");
 }

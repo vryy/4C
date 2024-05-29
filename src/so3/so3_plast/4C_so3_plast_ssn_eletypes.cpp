@@ -39,12 +39,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8PlastType::Create(const std::vector<
  | create the new element type (public)                     seitz 07/13 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PlastType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>(id, owner));
 
     return ele;
@@ -57,9 +57,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PlastType::Create(
  | create the new element type (public)                     seitz 07/13 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PlastType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8PlastType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>(id, owner));
   return ele;
 
@@ -138,12 +139,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex18PlastType::Create(const std::vector
 | create the new element type (public)                     seitz 07/13 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex18PlastType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex18PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>(id, owner));
     return ele;
   }
@@ -155,9 +156,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex18PlastType::Create(
 | create the new element type (public)                     seitz 07/13 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex18PlastType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex18PlastType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>(id, owner));
   return ele;
 }  // Create()
@@ -236,12 +238,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex27PlastType::Create(const std::vector
 | create the new element type (public)                     seitz 07/13 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27PlastType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex27PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex27>(id, owner));
     return ele;
   }
@@ -253,9 +255,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27PlastType::Create(
 | create the new element type (public)                     seitz 07/13 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27PlastType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex27PlastType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex27>(id, owner));
   return ele;
 }  // Create()
@@ -329,12 +332,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoTet4PlastType::Create(const std::vector<
 | create the new element type (public)                     seitz 07/13 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PlastType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet4PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>(id, owner));
     return ele;
   }
@@ -346,9 +349,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PlastType::Create(
 | create the new element type (public)                     seitz 07/13 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PlastType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet4PlastType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>(id, owner));
   return ele;
 }  // Create()
@@ -424,12 +428,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoNurbs27PlastType::Create(const std::vect
 | create the new element type (public)                     seitz 07/13 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoNurbs27PlastType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoNurbs27PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::nurbs27>(id, owner));
     return ele;
   }
@@ -441,9 +445,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoNurbs27PlastType::Create(
 | create the new element type (public)                     seitz 07/13 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoNurbs27PlastType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoNurbs27PlastType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::nurbs27>(id, owner));
   return ele;
 }  // Create()

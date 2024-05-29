@@ -839,7 +839,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
   CORE::FE::AssembleStrategy strategy(
       0, 0, state_->sysmat_, Teuchos::null, state_->residual_col_, Teuchos::null, Teuchos::null);
 
-  DRT::Element::LocationArray la(1);
+  CORE::Elements::Element::LocationArray la(1);
 
   //------------------------------------------------------------
   // call standard loop over elements
@@ -852,7 +852,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
   // this is 4C-unusual but more efficient in all XFEM applications
   for (int i = 0; i < numrowele; ++i)
   {
-    DRT::Element* actele = discret_->lRowElement(i);
+    CORE::Elements::Element* actele = discret_->lRowElement(i);
     // Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
 
     DRT::ELEMENTS::Fluid* ele = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
@@ -1083,7 +1083,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
                 // get the other nds-set which is connected to the current one via this
                 // boundary-cell
-                DRT::Element::LocationArray la_other(1);
+                CORE::Elements::Element::LocationArray la_other(1);
 
                 if (bc->second.empty()) FOUR_C_THROW("no boundary cells stored!");
 
@@ -1323,7 +1323,7 @@ void FLD::XFluid::assemble_mat_and_rhs_face_terms(
     // this is 4C-unusual but more efficient in all XFEM applications
     for (int i = 0; i < numrowintfaces; ++i)
     {
-      DRT::Element* actface = xdiscret->lRowFace(i);
+      CORE::Elements::Element* actface = xdiscret->lRowFace(i);
 
       DRT::ELEMENTS::FluidIntFace* face_ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace*>(actface);
       if (face_ele == nullptr) FOUR_C_THROW("expect FluidIntFace element");
@@ -1355,7 +1355,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
   CORE::FE::AssembleStrategy strategy(
       0, 0, Teuchos::null, Teuchos::null, w_col, Teuchos::null, Teuchos::null);
 
-  DRT::Element::LocationArray la(1);
+  CORE::Elements::Element::LocationArray la(1);
 
 
   //------------------------------------------------------------
@@ -1367,7 +1367,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
   // this is 4C-unusual but more efficient in all XFEM applications
   for (int i = 0; i < numrowele; ++i)
   {
-    DRT::Element* actele = discret.lRowElement(i);
+    CORE::Elements::Element* actele = discret.lRowElement(i);
     Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
 
     DRT::ELEMENTS::Fluid* ele = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
@@ -1955,7 +1955,7 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<CORE::LINALG::SerialDenseVect
 
 
     // pointer to current element
-    DRT::Element* actele = discret_->lRowElement(i);
+    CORE::Elements::Element* actele = discret_->lRowElement(i);
 
     Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
 
@@ -1963,7 +1963,7 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<CORE::LINALG::SerialDenseVect
 
     CORE::GEO::CUT::ElementHandle* e = state_->Wizard()()->GetElement(actele);
 
-    DRT::Element::LocationArray la(1);
+    CORE::Elements::Element::LocationArray la(1);
 
     DRT::ELEMENTS::FluidEleInterface* impl =
         DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem");
@@ -4578,8 +4578,8 @@ void FLD::XFluid::SetInitialFlowField(
     // arbitrarily take first node on this proc
     DRT::Node* lnode = discret_->lRowNode(0);
     // get list of adjacent elements of the first node
-    DRT::Element** elelist = lnode->Elements();
-    DRT::Element* ele = elelist[0];  // (arbitrary!) first element
+    CORE::Elements::Element** elelist = lnode->Elements();
+    CORE::Elements::Element* ele = elelist[0];  // (arbitrary!) first element
     // get material from first (arbitrary!) element adjacent to this node
     const Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 #ifdef FOUR_C_ENABLE_ASSERTIONS

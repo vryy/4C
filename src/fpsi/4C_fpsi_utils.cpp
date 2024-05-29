@@ -219,10 +219,10 @@ void FPSI::Utils::setup_local_interface_facing_element_map(DRT::Discretization& 
 
   if (!condition_exists) return;
 
-  std::map<int, Teuchos::RCP<DRT::Element>>& slavegeom = slavecond->Geometry();
-  std::map<int, Teuchos::RCP<DRT::Element>>& mastergeom = mastercond->Geometry();
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slavegeom = slavecond->Geometry();
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>& mastergeom = mastercond->Geometry();
 
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
   std::multimap<int, double> slaveinterfaceelementidentificationmap;
 
   ///////////////////////////////////////////////////////////////////////////////////
@@ -363,8 +363,8 @@ void FPSI::Utils::setup_local_interface_facing_element_map(DRT::Discretization& 
 
         }  // for every master node
 
-        Teuchos::RCP<DRT::FaceElement> bele =
-            Teuchos::rcp_dynamic_cast<DRT::FaceElement>(curr->second);
+        Teuchos::RCP<CORE::Elements::FaceElement> bele =
+            Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(curr->second);
         parenteleid = bele->parent_element()->Id();
         if (parenteleid == -1) FOUR_C_THROW("Couldn't get master parent element Id() ...");
         parenteleowner = bele->parent_element()->Owner();
@@ -379,9 +379,9 @@ void FPSI::Utils::setup_local_interface_facing_element_map(DRT::Discretization& 
       // match current master element
       // compare position to every element on interface slave side, every processor compares
       // masterloc of current master element of processor[proc]
-      Teuchos::RCP<DRT::Element> matchcurr = Teuchos::null;
+      Teuchos::RCP<CORE::Elements::Element> matchcurr = Teuchos::null;
 
-      for (std::map<int, Teuchos::RCP<DRT::Element>>::iterator scurr = slavegeom.begin();
+      for (std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator scurr = slavegeom.begin();
            scurr != slavegeom.end(); ++scurr)
       {
         std::pair<std::multimap<int, double>::iterator, std::multimap<int, double>::iterator> range;
@@ -474,9 +474,9 @@ void FPSI::Utils::redistribute_interface(Teuchos::RCP<DRT::Discretization> maste
   int printid = -1;
 
   std::map<int, int>::iterator mapcurr;
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator slaveelecurr;
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator masterelecurr;
-  DRT::Element* masterele = nullptr;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator slaveelecurr;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator masterelecurr;
+  CORE::Elements::Element* masterele = nullptr;
 
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Epetra_Comm& comm = problem->GetDis(masterdis->Name())->Comm();

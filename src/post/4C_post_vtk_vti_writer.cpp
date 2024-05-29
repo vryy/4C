@@ -175,7 +175,7 @@ void PostVtiWriter::write_dof_result_step(std::ofstream& file,
   std::vector<int> nodedofs;
   for (int e = 0; e < dis->NumMyColElements(); ++e)
   {
-    const DRT::Element* ele = dis->lColElement(e);
+    const CORE::Elements::Element* ele = dis->lColElement(e);
 
     for (int n = 0; n < ele->num_node(); ++n)
     {
@@ -263,7 +263,7 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
 
   for (int e = 0; e < dis->NumMyColElements(); ++e)
   {
-    const DRT::Element* ele = dis->lColElement(e);
+    const CORE::Elements::Element* ele = dis->lColElement(e);
 
     for (int n = 0; n < ele->num_node(); ++n)
     {
@@ -346,7 +346,7 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
 
   for (int e = 0; e < dis->NumMyColElements(); ++e)
   {
-    const DRT::Element* ele = dis->lColElement(e);
+    const CORE::Elements::Element* ele = dis->lColElement(e);
     const int egid = ele->Id();
     const int inpos = ncomponents * (eidmapping_.find(egid)->second);
     for (int d = 0; d < numdf; ++d)
@@ -456,7 +456,7 @@ void PostVtiWriter::writer_prep_timestep()
   eidmapping_.clear();
   for (int e = 0; e < dis->NumMyColElements(); ++e)
   {
-    const DRT::Element* ele = dis->lColElement(e);
+    const CORE::Elements::Element* ele = dis->lColElement(e);
     double mincoord[] = {std::numeric_limits<double>::max(), std::numeric_limits<double>::max(),
         std::numeric_limits<double>::max()};
     for (int n = 0; n < ele->num_node(); ++n)

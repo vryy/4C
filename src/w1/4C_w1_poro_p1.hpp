@@ -70,7 +70,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -97,16 +97,16 @@ namespace DRT
       void Unpack(const std::vector<char>& data) override;
 
       //! Get vector of Teuchos::RCPs to the lines of this element
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       //! Get vector of Teuchos::RCPs to the surfaces of this element
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       //! @name Access methods
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
@@ -120,7 +120,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override;
+      CORE::Elements::ElementType& ElementType() const override;
 
       //!@}
 
@@ -140,7 +140,7 @@ namespace DRT
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
-          DRT::Element::LocationArray& la,      //!< location array for de-assembly
+          CORE::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           CORE::LINALG::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.
           CORE::LINALG::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.
@@ -188,7 +188,7 @@ namespace DRT
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
-          DRT::Element::LocationArray& la,      //!< location array for de-assembly
+          CORE::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           CORE::LINALG::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.
           CORE::LINALG::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.

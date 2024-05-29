@@ -17,11 +17,11 @@ Pack, Unpack, NumDofPerNode etc.
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_utils_gausspoints.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_discretization_fem_general_utils_polynomial.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 #include <Teuchos_RCP.hpp>
@@ -39,7 +39,7 @@ namespace DRT
   {
     class ElemagIntFace;
 
-    class ElemagType : public DRT::ElementType
+    class ElemagType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "ElemagType"; }
@@ -48,13 +48,13 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -77,7 +77,7 @@ namespace DRT
     /*!
     \brief A C++ wrapper for the electromagnetic element
     */
-    class Elemag : public DRT::Element
+    class Elemag : public CORE::Elements::Element
     {
      public:
       //@}
@@ -105,7 +105,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
 
 
@@ -141,24 +141,24 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Get Teuchos::RCP to the internal face adjacent to this element as master element and
       the parent_slave element
       */
-      Teuchos::RCP<DRT::Element> CreateFaceElement(
-          DRT::Element* parent_slave,  //!< parent slave fluid3 element
-          int nnode,                   //!< number of surface nodes
-          const int* nodeids,          //!< node ids of surface element
-          DRT::Node** nodes,           //!< nodes of surface element
-          const int lsurface_master,   //!< local surface number w.r.t master parent element
-          const int lsurface_slave,    //!< local surface number w.r.t slave parent element
+      Teuchos::RCP<CORE::Elements::Element> CreateFaceElement(
+          CORE::Elements::Element* parent_slave,  //!< parent slave fluid3 element
+          int nnode,                              //!< number of surface nodes
+          const int* nodeids,                     //!< node ids of surface element
+          DRT::Node** nodes,                      //!< nodes of surface element
+          const int lsurface_master,  //!< local surface number w.r.t master parent element
+          const int lsurface_slave,   //!< local surface number w.r.t slave parent element
           const std::vector<int>& localtrafomap  //! local trafo map
           ) override;
 
@@ -264,7 +264,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return ElemagType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override { return ElemagType::Instance(); }
 
       //@}
 
@@ -409,21 +409,22 @@ namespace DRT
     \note This is a pure Neumann boundary condition element. It's only
           purpose is to evaluate surface Neumann boundary conditions that might be
           adjacent to a parent Elemag element. It therefore does not implement
-          the DRT::Element::Evaluate method and does not have its own ElementRegister class.
+          the CORE::Elements::Element::Evaluate method and does not have its own ElementRegister
+    class.
 
     */
 
-    class ElemagBoundaryType : public DRT::ElementType
+    class ElemagBoundaryType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "ElemagBoundaryType"; }
 
       static ElemagBoundaryType& Instance();
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -441,7 +442,7 @@ namespace DRT
 
     /// class ElemagBoundary
 
-    class ElemagBoundary : public DRT::FaceElement
+    class ElemagBoundary : public CORE::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -476,7 +477,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
@@ -497,13 +498,13 @@ namespace DRT
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
 
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -540,7 +541,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
@@ -560,7 +561,10 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return ElemagBoundaryType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return ElemagBoundaryType::Instance();
+      }
 
       //@}
 
@@ -685,17 +689,17 @@ namespace DRT
     /*!
     \brief An element representing an internal face element between two Elemag elements
     */
-    class ElemagIntFaceType : public DRT::ElementType
+    class ElemagIntFaceType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "ElemagIntFaceType"; }
 
       static ElemagIntFaceType& Instance();
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -714,7 +718,7 @@ namespace DRT
 
     // class ElemagIntFace
 
-    class ElemagIntFace : public DRT::FaceElement
+    class ElemagIntFace : public CORE::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -755,7 +759,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
@@ -775,7 +779,7 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -783,7 +787,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -818,7 +822,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
@@ -833,7 +837,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -885,7 +889,10 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return ElemagIntFaceType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return ElemagIntFaceType::Instance();
+      }
 
       //@}
 
@@ -945,7 +952,7 @@ namespace DRT
       */
       DRT::ELEMENTS::Elemag* ParentMasterElement() const
       {
-        DRT::Element* parent = this->DRT::FaceElement::ParentMasterElement();
+        CORE::Elements::Element* parent = this->CORE::Elements::FaceElement::ParentMasterElement();
         // make sure the static cast below is really valid
         FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Elemag*>(parent) != nullptr,
             "Master element is no Elemag element");
@@ -957,7 +964,7 @@ namespace DRT
       */
       DRT::ELEMENTS::Elemag* ParentSlaveElement() const
       {
-        DRT::Element* parent = this->DRT::FaceElement::ParentSlaveElement();
+        CORE::Elements::Element* parent = this->CORE::Elements::FaceElement::ParentSlaveElement();
         // make sure the static cast below is really valid
         FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Elemag*>(parent) != nullptr,
             "Slave element is no Elemag element");

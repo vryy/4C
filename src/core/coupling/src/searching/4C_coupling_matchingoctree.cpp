@@ -853,7 +853,7 @@ CORE::COUPLING::ElementMatchingOctree::ElementMatchingOctree()
 void CORE::COUPLING::ElementMatchingOctree::calc_point_coordinate(
     const DRT::Discretization* dis, const int id, double* coord)
 {
-  DRT::Element* actele = dis->gElement(id);
+  CORE::Elements::Element* actele = dis->gElement(id);
 
   const int numnode = actele->num_node();
   const int dim = 3;
@@ -869,7 +869,7 @@ void CORE::COUPLING::ElementMatchingOctree::calc_point_coordinate(
 void CORE::COUPLING::ElementMatchingOctree::calc_point_coordinate(
     CORE::COMM::ParObject* entity, double* coord)
 {
-  auto* actele = dynamic_cast<DRT::Element*>(entity);
+  auto* actele = dynamic_cast<CORE::Elements::Element*>(entity);
   if (actele == nullptr) FOUR_C_THROW("dynamic_cast failed");
 
   DRT::Node** nodes = actele->Nodes();
@@ -906,7 +906,7 @@ void CORE::COUPLING::ElementMatchingOctree::pack_entity(
     CORE::COMM::PackBuffer& data, const DRT::Discretization* dis, const int id)
 {
   // get the slavenode
-  DRT::Element* actele = dis->gElement(id);
+  CORE::Elements::Element* actele = dis->gElement(id);
   DRT::Node** nodes = actele->Nodes();
   // Add node to list of nodes which will be sent to the next proc
   CORE::COMM::ParObject::AddtoPack(data, actele->num_node());
@@ -942,7 +942,7 @@ int CORE::COUPLING::ElementMatchingOctree::check_valid_entity_type(
     Teuchos::RCP<CORE::COMM::ParObject> o)
 {
   // cast ParObject to element
-  auto* actele = dynamic_cast<DRT::Element*>(o.get());
+  auto* actele = dynamic_cast<CORE::Elements::Element*>(o.get());
   if (actele == nullptr) FOUR_C_THROW("unpack of invalid data");
 
   // set nodal pointers for this element
@@ -1013,7 +1013,7 @@ CORE::COUPLING::OctreeElementElement::OctreeElementElement()
 void CORE::COUPLING::OctreeElementElement::calc_point_coordinate(
     const DRT::Discretization* dis, const int id, double* coord)
 {
-  DRT::Element* actele = dis->gElement(id);
+  CORE::Elements::Element* actele = dis->gElement(id);
 
   const int numnode = actele->num_node();
   const int dim = 3;

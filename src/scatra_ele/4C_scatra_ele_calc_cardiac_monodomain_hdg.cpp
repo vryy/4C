@@ -9,6 +9,7 @@
 
 #include "4C_scatra_ele_calc_cardiac_monodomain_hdg.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_discretization_fem_general_utils_polynomial.hpp"
@@ -17,7 +18,6 @@
 #include "4C_fiber_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_myocard.hpp"
@@ -81,7 +81,7 @@ DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Instance(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare_materials_all(
-    DRT::Element* ele,                                       //!< the element we are dealing with
+    CORE::Elements::Element* ele,                            //!< the element we are dealing with
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor)
@@ -89,7 +89,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare
   const Teuchos::RCP<MAT::Myocard>& actmat =
       Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
   DRT::ELEMENTS::ScaTraHDG* hdgele =
-      dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
+      dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<CORE::Elements::Element*>(ele));
 
   if (actmat->diffusion_at_ele_center())
   {
@@ -149,7 +149,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare_materials(
-    DRT::Element* ele,                                       //!< the element we are dealing with
+    CORE::Elements::Element* ele,                            //!< the element we are dealing with
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor)
@@ -167,7 +167,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare_materials_tet(
-    DRT::Element* ele,                                       //!< the element we are dealing with
+    CORE::Elements::Element* ele,                            //!< the element we are dealing with
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor)
@@ -175,7 +175,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare
   const Teuchos::RCP<MAT::Myocard>& actmat =
       Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
   DRT::ELEMENTS::ScaTraHDG* hdgele =
-      dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
+      dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<CORE::Elements::Element*>(ele));
 
   if (actmat->diffusion_at_ele_center())
   {
@@ -412,7 +412,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat_myo
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::time_update_material(
-    const DRT::Element* ele  //!< the element we are dealing with
+    const CORE::Elements::Element* ele  //!< the element we are dealing with
 )
 {
   std::vector<Teuchos::RCP<MAT::Myocard>> updatemat;
@@ -461,7 +461,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::time_up
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
-    probdim>::get_material_internal_state(const DRT::Element*
+    probdim>::get_material_internal_state(const CORE::Elements::Element*
                                               ele,  //!< the element we are dealing with
     Teuchos::ParameterList& params, DRT::Discretization& discretization)
 {
@@ -503,7 +503,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
-    probdim>::set_material_internal_state(const DRT::Element*
+    probdim>::set_material_internal_state(const CORE::Elements::Element*
                                               ele,  //!< the element we are dealing with
     Teuchos::ParameterList& params, DRT::Discretization& discretization)
 {
@@ -541,7 +541,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::project_material_field(
-    const DRT::Element* ele  //!< the element we are dealing with
+    const CORE::Elements::Element* ele  //!< the element we are dealing with
 )
 {
   if (distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
@@ -556,14 +556,14 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::project_
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::project_material_field_all(
-    const DRT::Element* ele  //!< the element we are dealing with
+    const CORE::Elements::Element* ele  //!< the element we are dealing with
 )
 {
   const Teuchos::RCP<MAT::Myocard>& actmat =
       Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
 
   DRT::ELEMENTS::ScaTraHDG* hdgele =
-      dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
+      dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<CORE::Elements::Element*>(ele));
 
   int deg = 0;
   if (hdgele->Degree() == 1)
@@ -652,14 +652,14 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::project_
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::project_material_field_tet(
-    const DRT::Element* ele  //!< the element we are dealing with
+    const CORE::Elements::Element* ele  //!< the element we are dealing with
 )
 {
   const Teuchos::RCP<MAT::Myocard>& actmat =
       Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
 
   DRT::ELEMENTS::ScaTraHDG* hdgele =
-      dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
+      dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<CORE::Elements::Element*>(ele));
 
   // polynomial space to get the value of the shape function at the material gauss points
   CORE::FE::PolynomialSpaceParams params(distype, hdgele->DegreeOld(), this->usescompletepoly_);

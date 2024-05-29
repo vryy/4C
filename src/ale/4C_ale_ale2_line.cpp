@@ -24,7 +24,7 @@ DRT::ELEMENTS::Ale2LineType& DRT::ELEMENTS::Ale2LineType::Instance() { return in
 /*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale2Line::Ale2Line(int id, int owner, int nnode, const int* nodeids,
     DRT::Node** nodes, DRT::ELEMENTS::Ale2* parent, const int lline)
-    : DRT::FaceElement(id, owner)
+    : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -34,14 +34,15 @@ DRT::ELEMENTS::Ale2Line::Ale2Line(int id, int owner, int nnode, const int* nodei
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale2Line::Ale2Line(const DRT::ELEMENTS::Ale2Line& old) : DRT::FaceElement(old)
+DRT::ELEMENTS::Ale2Line::Ale2Line(const DRT::ELEMENTS::Ale2Line& old)
+    : CORE::Elements::FaceElement(old)
 {
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Ale2Line::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Ale2Line::Clone() const
 {
   DRT::ELEMENTS::Ale2Line* newelement = new DRT::ELEMENTS::Ale2Line(*this);
   return newelement;

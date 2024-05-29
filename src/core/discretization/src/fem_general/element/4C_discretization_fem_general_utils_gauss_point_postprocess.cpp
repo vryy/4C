@@ -8,10 +8,10 @@
 
 #include "4C_discretization_fem_general_utils_gauss_point_postprocess.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_gauss_point_extrapolation.hpp"
 #include "4C_discretization_fem_general_utils_gausspoints.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -33,7 +33,7 @@ namespace
   }
 }  // namespace
 
-void CORE::FE::ExtrapolateGaussPointQuantityToNodes(DRT::Element& ele,
+void CORE::FE::ExtrapolateGaussPointQuantityToNodes(CORE::Elements::Element& ele,
     const CORE::LINALG::SerialDenseMatrix& data, const DRT::Discretization& dis,
     Epetra_MultiVector& nodal_data)
 {
@@ -129,7 +129,7 @@ void CORE::FE::ExtrapolateGaussPointQuantityToNodes(DRT::Element& ele,
   }
 }
 
-void CORE::FE::EvaluateGaussPointQuantityAtElementCenter(DRT::Element& ele,
+void CORE::FE::EvaluateGaussPointQuantityAtElementCenter(CORE::Elements::Element& ele,
     const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& element_data)
 {
   AssembleAveragedElementValues(element_data, data, ele);

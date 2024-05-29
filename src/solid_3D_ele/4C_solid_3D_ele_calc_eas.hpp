@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_gausspoints.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_solid_3D_ele_calc_interface.hpp"
 #include "4C_solid_3D_ele_interface_serializable.hpp"
 #include "4C_solid_3D_ele_utils.hpp"
@@ -114,40 +114,42 @@ namespace DRT
 
       void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
-      void material_post_setup(const DRT::Element& ele, MAT::So3Material& solid_material);
+      void material_post_setup(
+          const CORE::Elements::Element& ele, MAT::So3Material& solid_material);
 
-      void evaluate_nonlinear_force_stiffness_mass(const DRT::Element& ele,
+      void evaluate_nonlinear_force_stiffness_mass(const CORE::Elements::Element& ele,
           MAT::So3Material& solid_material, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           CORE::LINALG::SerialDenseVector* force_vector,
           CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
           CORE::LINALG::SerialDenseMatrix* mass_matrix);
 
-      void Recover(DRT::Element& ele, const DRT::Discretization& discretization,
+      void Recover(CORE::Elements::Element& ele, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params);
 
-      void CalculateStress(const DRT::Element& ele, MAT::So3Material& solid_material,
+      void CalculateStress(const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
           const StressIO& stressIO, const StrainIO& strainIO,
           const DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params);
 
-      double calculate_internal_energy(const DRT::Element& ele, MAT::So3Material& solid_material,
+      double calculate_internal_energy(const CORE::Elements::Element& ele,
+          MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+          const std::vector<int>& lm, Teuchos::ParameterList& params);
+
+      void Update(const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
           const DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params);
 
-      void Update(const DRT::Element& ele, MAT::So3Material& solid_material,
-          const DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params);
-
-      void initialize_gauss_point_data_output(const DRT::Element& ele,
+      void initialize_gauss_point_data_output(const CORE::Elements::Element& ele,
           const MAT::So3Material& solid_material,
           STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
-      void evaluate_gauss_point_data_output(const DRT::Element& ele,
+      void evaluate_gauss_point_data_output(const CORE::Elements::Element& ele,
           const MAT::So3Material& solid_material,
           STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
-      void reset_to_last_converged(const DRT::Element& ele, MAT::So3Material& solid_material);
+      void reset_to_last_converged(
+          const CORE::Elements::Element& ele, MAT::So3Material& solid_material);
 
      private:
       /// EAS matrices and vectors to be stored between iterations

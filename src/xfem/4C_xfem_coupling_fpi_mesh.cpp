@@ -261,9 +261,9 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp(double& kappa_m,  //< fl
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
     double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    DRT::Element* ele,   //< Element
-    DRT::Element* bele,  //< Boundary Element
-    double* funct,       //< local shape function for Gauss Point (from fluid element)
+    CORE::Elements::Element* ele,   //< Element
+    CORE::Elements::Element* bele,  //< Boundary Element
+    double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
@@ -398,9 +398,9 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp_contact(
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
     double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    DRT::Element* ele,   //< Element
-    DRT::Element* bele,  //< Boundary Element
-    double* funct,       //< local shape function for Gauss Point (from fluid element)
+    CORE::Elements::Element* ele,   //< Element
+    CORE::Elements::Element* bele,  //< Boundary Element
+    double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
@@ -766,7 +766,7 @@ void XFEM::MeshCouplingFPI::set_condition_specific_parameters()
     double hmax = 0.0;
     for (int ele = 0; ele < bg_dis_->NumMyRowElements(); ++ele)
     {
-      DRT::Element* fluid_ele = bg_dis_->lRowElement(ele);
+      CORE::Elements::Element* fluid_ele = bg_dis_->lRowElement(ele);
       if (fluid_ele->Shape() == CORE::FE::CellType::hex8)
       {
         CORE::LINALG::Matrix<3, 8> xyze(true);
@@ -888,12 +888,13 @@ void XFEM::MeshCouplingFPI::LiftDrag(const int step, const double time) const
 // Caluculate the normalized trace of permeability matrix
 //        for J,porosity pair on this FaceElement               ager 12/17
 // ------------------------------------------------------------------------
-double XFEM::MeshCouplingFPI::calctr_permeability(DRT::Element* ele, double& porosity, double& J)
+double XFEM::MeshCouplingFPI::calctr_permeability(
+    CORE::Elements::Element* ele, double& porosity, double& J)
 {
   // Calculate normalized trace of permeability matrix
-  DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
+  CORE::Elements::FaceElement* fele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
   if (!fele) FOUR_C_THROW("Cast to Faceele failed!");
-  DRT::Element* coupl_ele = fele->parent_element();
+  CORE::Elements::Element* coupl_ele = fele->parent_element();
   if (coupl_ele == nullptr) FOUR_C_THROW("No coupl_ele!");
   Teuchos::RCP<MAT::FluidPoro> poromat;
   // access second material in structure element
@@ -913,12 +914,12 @@ double XFEM::MeshCouplingFPI::calctr_permeability(DRT::Element* ele, double& por
 // Caluculate the Porosity for this FaceElement Gausspoint   ager 12/16
 // --------------------------------------------------------------------
 double XFEM::MeshCouplingFPI::CalcPorosity(
-    DRT::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& J)
+    CORE::Elements::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& J)
 {
-  DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
+  CORE::Elements::FaceElement* fele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
   if (!fele) FOUR_C_THROW("Cast to Faceele failed!");
 
-  DRT::Element* coupl_ele = fele->parent_element();
+  CORE::Elements::Element* coupl_ele = fele->parent_element();
   if (coupl_ele == nullptr) FOUR_C_THROW("No coupl_ele!");
 
   double pres = 0.0;
@@ -949,12 +950,12 @@ double XFEM::MeshCouplingFPI::CalcPorosity(
 // Compute Jacobian and extract PoroFluidPressure this FaceElement Gausspoint   ager 12/17
 // ------------------------------------------------------------------------------------------
 double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
-    DRT::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& pres)
+    CORE::Elements::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& pres)
 {
-  DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
+  CORE::Elements::FaceElement* fele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
   if (!fele) FOUR_C_THROW("Cast to Faceele failed!");
 
-  DRT::Element* coupl_ele = fele->parent_element();
+  CORE::Elements::Element* coupl_ele = fele->parent_element();
 
   if (fele->Shape() == CORE::FE::CellType::quad4)
   {

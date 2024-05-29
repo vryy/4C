@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 
 #include <Epetra_MultiVector.h>
 
@@ -36,8 +36,9 @@ namespace SCATRA::SCATRAUTILS
   //! Calculate the reconstructed nodal gradient at a node by means of mean value averaging
   template <const int dim, CORE::FE::CellType DISTYPE>
   CORE::LINALG::Matrix<dim, 1> DoMeanValueAveragingOfElementGradientNode(
-      Teuchos::RCP<DRT::Discretization> discret, std::vector<const DRT::Element*> elements,
-      Teuchos::RCP<Epetra_Vector> phinp_node, const int nodegid, const int scatra_dofid);
+      Teuchos::RCP<DRT::Discretization> discret,
+      std::vector<const CORE::Elements::Element*> elements, Teuchos::RCP<Epetra_Vector> phinp_node,
+      const int nodegid, const int scatra_dofid);
 
 }  // namespace SCATRA::SCATRAUTILS
 FOUR_C_NAMESPACE_CLOSE

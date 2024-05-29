@@ -140,7 +140,8 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(DRT::ELEMENTS::Flu
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_global_vectors(
-    const DRT::Element& ele, DRT::Discretization& discretization, const std::vector<int>& lm)
+    const CORE::Elements::Element& ele, DRT::Discretization& discretization,
+    const std::vector<int>& lm)
 {
   // initialize the vectors
   trace_val_.resize(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_);
@@ -170,7 +171,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_global_vectors(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_ale_vectors(
-    const DRT::Element& ele, DRT::Discretization& discretization)
+    const CORE::Elements::Element& ele, DRT::Discretization& discretization)
 {
   // initialize ale vectors
   ale_dis_.resize(nsd_ * nen_);
@@ -740,7 +741,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to_nod
   matrix_state = discretization.GetState(0, "velnp");
 
   // we have always two dofsets
-  Element::LocationArray la(2);
+  CORE::Elements::Element::LocationArray la(2);
   ele->LocationVector(discretization, la, false);
   localDofs = la[0].lm_;
   solvalues.resize(localDofs.size());

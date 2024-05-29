@@ -14,7 +14,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
@@ -24,10 +24,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace DRT
 {
   class Discretization;
-  class Element;
 
   namespace ELEMENTS
   {
@@ -50,8 +54,8 @@ namespace DRT
         This class does not provide a definition for this function; it
         must be defined in PoroFluidMultiPhaseEleCalc.
        */
-      virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      virtual int Evaluate(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
           std::vector<CORE::LINALG::SerialDenseVector*>& elevec) = 0;
     };

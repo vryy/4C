@@ -149,7 +149,7 @@ void MORTAR::BaseBinaryTreeNode::CalculateSlabsDop()
   for (int i = 0; i < (int)elelist().size(); ++i)
   {
     int gid = elelist()[i];
-    DRT::Element* element = discret().gElement(gid);
+    CORE::Elements::Element* element = discret().gElement(gid);
     if (!element) FOUR_C_THROW("ERROR: Cannot find element with gid %\n", gid);
     MORTAR::Element* mrtrelement = dynamic_cast<MORTAR::Element*>(element);
     DRT::Node** nodes = mrtrelement->Points();

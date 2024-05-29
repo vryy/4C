@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method_parameters.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -38,7 +38,7 @@ void DRT::Discretization::compute_null_space_if_necessary(
   if (NumMyRowElements())
   {
     // We assume that all elements are of equal type
-    DRT::Element* dwele = lRowElement(0);
+    CORE::Elements::Element* dwele = lRowElement(0);
     dwele->ElementType().nodal_block_information(dwele, numdf, dimns, nv, np);
   }
 

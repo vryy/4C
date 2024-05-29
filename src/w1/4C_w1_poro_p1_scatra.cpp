@@ -41,7 +41,7 @@ DRT::ELEMENTS::Wall1PoroP1Scatra<distype>::Wall1PoroP1Scatra(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::Wall1PoroP1Scatra<distype>::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Wall1PoroP1Scatra<distype>::Clone() const
 {
   DRT::ELEMENTS::Wall1PoroP1Scatra<distype>* newelement =
       new DRT::ELEMENTS::Wall1PoroP1Scatra<distype>(*this);
@@ -144,7 +144,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1PoroP1Scatra<distype>::Print(std::ostream& os) const
 {
   os << "Wall1_PoroP1Scatra ";
-  Element::Print(os);
+  CORE::Elements::Element::Print(os);
   std::cout << std::endl;
   return;
 }
@@ -186,7 +186,7 @@ int DRT::ELEMENTS::Wall1PoroP1Scatra<distype>::UniqueParObjectId() const
  | get the element type (public)                           schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::ElementType& DRT::ELEMENTS::Wall1PoroP1Scatra<distype>::ElementType() const
+CORE::Elements::ElementType& DRT::ELEMENTS::Wall1PoroP1Scatra<distype>::ElementType() const
 {
   switch (distype)
   {

@@ -34,10 +34,10 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::PoroSetup(
 
 template <CORE::FE::CellType celltype>
 void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_force_stiffness(
-    const DRT::Element& ele, MAT::StructPoro& porostructmat, MAT::FluidPoroMultiPhase& porofluidmat,
-    const INPAR::STR::KinemType& kinematictype, const DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Teuchos::ParameterList& params,
-    CORE::LINALG::SerialDenseVector* force_vector,
+    const CORE::Elements::Element& ele, MAT::StructPoro& porostructmat,
+    MAT::FluidPoroMultiPhase& porofluidmat, const INPAR::STR::KinemType& kinematictype,
+    const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
     CORE::LINALG::SerialDenseMatrix* stiffness_matrix)
 {
   // Create views to SerialDenseMatrices
@@ -154,10 +154,10 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_
 
 template <CORE::FE::CellType celltype>
 void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroelast(
-    const DRT::Element& ele, MAT::StructPoro& porostructmat, MAT::FluidPoroMultiPhase& porofluidmat,
-    const INPAR::STR::KinemType& kinematictype, const DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Teuchos::ParameterList& params,
-    CORE::LINALG::SerialDenseMatrix& stiffness_matrix)
+    const CORE::Elements::Element& ele, MAT::StructPoro& porostructmat,
+    MAT::FluidPoroMultiPhase& porofluidmat, const INPAR::STR::KinemType& kinematictype,
+    const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& stiffness_matrix)
 {
   // get primary variables of multiphase porous medium flow
   std::vector<double> fluidmultiphase_ephi(la[1].Size());
@@ -233,9 +233,9 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroelast(
 }
 
 template <CORE::FE::CellType celltype>
-void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::CouplingStress(const DRT::Element& ele,
-    const DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params)
+void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::CouplingStress(
+    const CORE::Elements::Element& ele, const DRT::Discretization& discretization,
+    const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
   auto iocouplingstress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
       params, "iocouplstress", INPAR::STR::stress_none);

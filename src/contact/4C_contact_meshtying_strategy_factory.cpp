@@ -522,7 +522,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
     for (int j = 0; j < (int)currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
-      std::map<int, Teuchos::RCP<DRT::Element>>& currele = currentgroup[j]->Geometry();
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& currele = currentgroup[j]->Geometry();
 
       // elements in a boundary condition have a unique id
       // but ids are not unique among 2 distinct conditions
@@ -537,10 +537,10 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
       comm().SumAll(&lsize, &gsize, 1);
 
 
-      std::map<int, Teuchos::RCP<DRT::Element>>::iterator fool;
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator fool;
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
-        Teuchos::RCP<DRT::Element> ele = fool->second;
+        Teuchos::RCP<CORE::Elements::Element> ele = fool->second;
         Teuchos::RCP<MORTAR::Element> mtele = Teuchos::rcp(new MORTAR::Element(ele->Id() + ggsize,
             ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), isslave[j], nurbs));
         //------------------------------------------------------------------

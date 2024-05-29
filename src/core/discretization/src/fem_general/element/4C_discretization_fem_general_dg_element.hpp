@@ -6,14 +6,14 @@
  */
 /*----------------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_DG_ELEMENT_HPP
-#define FOUR_C_LIB_DG_ELEMENT_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_DG_ELEMENT_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_DG_ELEMENT_HPP
 
 #include "4C_config.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace CORE::Elements
 {
   class DgElement
   {
@@ -26,7 +26,7 @@ namespace DRT
 
     virtual int num_dof_per_element_auxiliary() const = 0;
   };
-}  // namespace DRT
+}  // namespace CORE::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

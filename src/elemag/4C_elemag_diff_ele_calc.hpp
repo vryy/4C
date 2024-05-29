@@ -87,7 +87,7 @@ namespace DRT
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// Used to print the trace values as debugging utility.
-      void PrintTrace(DRT::Element* ele);
+      void PrintTrace(CORE::Elements::Element* ele);
 
 
      private:
@@ -258,14 +258,15 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec, double dt, bool errormaps, bool updateonly);
 
       /// Reads from global vectors.
-      void read_global_vectors(
-          DRT::Element* ele, DRT::Discretization& discretization, const std::vector<int>& lm);
+      void read_global_vectors(CORE::Elements::Element* ele, DRT::Discretization& discretization,
+          const std::vector<int>& lm);
 
       /// Writes internal fields from elements to global vectors.
-      void fill_restart_vectors(DRT::Element* ele, DRT::Discretization& discretization);
+      void fill_restart_vectors(CORE::Elements::Element* ele, DRT::Discretization& discretization);
 
       /// Reads internal field from global vectors to element vectors.
-      void element_init_from_restart(DRT::Element* ele, DRT::Discretization& discretization);
+      void element_init_from_restart(
+          CORE::Elements::Element* ele, DRT::Discretization& discretization);
 
       /// Calculate error maps with local postprocessing.
       double estimate_error(DRT::ELEMENTS::ElemagDiff& ele, CORE::LINALG::SerialDenseVector& p);

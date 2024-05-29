@@ -500,7 +500,7 @@ void XFEM::ConditionManager::update_level_set_field()
   for (int leleid = 0; leleid < bg_dis_->NumMyRowElements(); ++leleid)
   {
     const int gid = elerowmap->GID(leleid);
-    DRT::Element* ele = bg_dis_->gElement(gid);
+    CORE::Elements::Element* ele = bg_dis_->gElement(gid);
     const int numnode = ele->num_node();
     const int* nodeids = ele->NodeIds();
 
@@ -879,20 +879,20 @@ bool XFEM::ConditionManager::has_averaging_strategy(INPAR::XFEM::AveragingStrate
   return false;
 }
 
-void XFEM::ConditionManager::get_volume_cell_material(DRT::Element* actele,
+void XFEM::ConditionManager::get_volume_cell_material(CORE::Elements::Element* actele,
     Teuchos::RCP<CORE::MAT::Material>& mat, const CORE::GEO::CUT::VolumeCell* vc)
 {
   XFEM::UTILS::get_volume_cell_material(actele, mat, vc->Position());
 }
 
-void XFEM::ConditionManager::get_interface_master_material(DRT::Element* actele,
+void XFEM::ConditionManager::get_interface_master_material(CORE::Elements::Element* actele,
     Teuchos::RCP<CORE::MAT::Material>& mat, const CORE::GEO::CUT::VolumeCell* vc)
 {
   XFEM::UTILS::get_volume_cell_material(actele, mat, vc->Position());
 }
 
 void XFEM::ConditionManager::get_interface_slave_material(
-    DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat, int coup_sid)
+    CORE::Elements::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat, int coup_sid)
 {
   if (IsMeshCoupling(coup_sid))
   {
@@ -971,9 +971,9 @@ std::vector<std::pair<int, int>> XFEM::ConditionManager::get_bc_clone_informatio
   return BCCloneInformationvector;
 }
 
-DRT::Element* XFEM::ConditionManager::GetCouplingElement(
+CORE::Elements::Element* XFEM::ConditionManager::GetCouplingElement(
     const int coup_sid,  ///< the overall global coupling side id
-    DRT::Element* ele)
+    CORE::Elements::Element* ele)
 {
   if (IsMeshCoupling(coup_sid))
   {
@@ -1020,13 +1020,13 @@ void XFEM::ConditionManager::get_coupling_ele_location_vector(
 // atm the position this is hardcoded in the coupling objects
 // (all assume CORE::GEO::CUT::Point::outside, exept TwoPhaseFlow Master outside, Slave inside)
 void XFEM::ConditionManager::GetAverageWeights(
-    const int coup_sid,   ///< the overall global coupling side id
-    DRT::Element* xfele,  ///< xfluid ele
-    double& kappa_m,      ///< Weight parameter (parameter +/master side)
-    double& kappa_s,      ///< Weight parameter (parameter -/slave  side)
+    const int coup_sid,              ///< the overall global coupling side id
+    CORE::Elements::Element* xfele,  ///< xfluid ele
+    double& kappa_m,                 ///< Weight parameter (parameter +/master side)
+    double& kappa_s,                 ///< Weight parameter (parameter -/slave  side)
     bool& non_xfluid_coupling)
 {
-  DRT::Element* coup_ele = GetCouplingElement(coup_sid, xfele);
+  CORE::Elements::Element* coup_ele = GetCouplingElement(coup_sid, xfele);
   const int coup_idx = GetCouplingIndex(coup_sid, xfele->Id());
 
   GetCouplingByIdx(coup_idx)->GetAverageWeights(
@@ -1039,18 +1039,18 @@ void XFEM::ConditionManager::GetAverageWeights(
  * compute viscous part of Nitsche's penalty term scaling for Nitsche's method
  *--------------------------------------------------------------------------------*/
 void XFEM::ConditionManager::get_visc_penalty_stabfac(
-    const int coup_sid,     ///< the overall global coupling side id
-    DRT::Element* xfele,    ///< xfluid ele
-    const double& kappa_m,  ///< Weight parameter (parameter +/master side)
-    const double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
-    const double& inv_h_k,  ///< the inverse characteristic element length h_k
+    const int coup_sid,              ///< the overall global coupling side id
+    CORE::Elements::Element* xfele,  ///< xfluid ele
+    const double& kappa_m,           ///< Weight parameter (parameter +/master side)
+    const double& kappa_s,           ///< Weight parameter (parameter -/slave  side)
+    const double& inv_h_k,           ///< the inverse characteristic element length h_k
     const DRT::ELEMENTS::FluidEleParameterXFEM*
         params,                     ///< parameterlist which specifies interface configuration
     double& NIT_visc_stab_fac,      ///< viscous part of Nitsche's penalty term
     double& NIT_visc_stab_fac_tang  ///< viscous part of Nitsche's penalty term in tang direction
 )
 {
-  DRT::Element* coup_ele = GetCouplingElement(coup_sid, xfele);
+  CORE::Elements::Element* coup_ele = GetCouplingElement(coup_sid, xfele);
   const int coup_idx = GetCouplingIndex(coup_sid, xfele->Id());
 
   GetCouplingByIdx(coup_idx)->get_visc_penalty_stabfac(xfele, coup_ele, kappa_m, kappa_s, inv_h_k,

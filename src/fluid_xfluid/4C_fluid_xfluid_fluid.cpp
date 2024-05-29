@@ -530,7 +530,7 @@ void FLD::XFluidFluid::add_eos_pres_stab_to_emb_layer()
 
   for (int i = 0; i < numrowintfaces; ++i)
   {
-    DRT::Element* actface = xdiscret->lRowFace(i);
+    CORE::Elements::Element* actface = xdiscret->lRowFace(i);
     DRT::ELEMENTS::FluidIntFace* ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace*>(actface);
     if (ele == nullptr) FOUR_C_THROW("expect FluidIntFace element");
     edgestab_->evaluate_edge_stab_boundary_gp(faceparams, xdiscret,
@@ -828,13 +828,13 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
     CORE::LINALG::SerialDenseVector ele_dom_norms_emb(num_dom_norms);
 
     // pointer to current element
-    DRT::Element* actele = mc_xff_->GetCondDis()->lRowElement(i);
+    CORE::Elements::Element* actele = mc_xff_->GetCondDis()->lRowElement(i);
 
     Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
 
     DRT::ELEMENTS::Fluid* ele = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
 
-    DRT::Element::LocationArray la(1);
+    CORE::Elements::Element::LocationArray la(1);
 
     // get element location vector, dirichlet flags and ownerships
     actele->LocationVector(*mc_xff_->GetCondDis(), la, false);

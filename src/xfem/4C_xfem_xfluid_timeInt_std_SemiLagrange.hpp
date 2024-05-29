@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
 }
@@ -76,18 +76,18 @@ namespace XFEM
 
     //! run a Newton loop in order to compute the exact Lagrangian origin for a node which changed
     //! interface side
-    void newton_loop(DRT::Element*& ele,  ///< pointer to element
-        TimeIntData* data,                ///< current data
-        CORE::LINALG::Matrix<3, 1>& xi,   ///< local coordinates of point
-        CORE::LINALG::Matrix<3, 1>& vel,  ///< velocity at current point
-        bool& elefound                    ///< is element found ?
+    void newton_loop(CORE::Elements::Element*& ele,  ///< pointer to element
+        TimeIntData* data,                           ///< current data
+        CORE::LINALG::Matrix<3, 1>& xi,              ///< local coordinates of point
+        CORE::LINALG::Matrix<3, 1>& vel,             ///< velocity at current point
+        bool& elefound                               ///< is element found ?
     );
 
     //! perform one Newton iteration in order to compute the exact Lagrangian origin for a node
     //! which changed its interface side
-    void newton_iter(DRT::Element*& ele,  ///< pointer to element to be updated
-        TimeIntData* data,                ///< current data to be updated
-        CORE::LINALG::Matrix<3, 1>& xi,   ///< local coordinates w.r.t ele to be updated
+    void newton_iter(CORE::Elements::Element*& ele,  ///< pointer to element to be updated
+        TimeIntData* data,                           ///< current data to be updated
+        CORE::LINALG::Matrix<3, 1>& xi,              ///< local coordinates w.r.t ele to be updated
         CORE::LINALG::Matrix<3, 1>&
             residuum,  ///< residual for semilagrangean backtracking to be updated
         CORE::LINALG::Matrix<3, 1>&
@@ -100,9 +100,9 @@ namespace XFEM
 
     //! Decide how or if to continue when the startpoint approximation changed the side
     bool continue_for_changing_side(TimeIntData* data,  ///< current data to be updated
-        DRT::Element* ele,          ///< pointer to element the current point lies in
-        std::vector<int>& nds_curr  ///< nds-vector of current volumecell the current startpoint
-                                    ///< approximation lies in
+        CORE::Elements::Element* ele,  ///< pointer to element the current point lies in
+        std::vector<int>& nds_curr     ///< nds-vector of current volumecell the current startpoint
+                                       ///< approximation lies in
     );
 
     //! determine velocity and pressure for nodes where the "normal" semi-lagrange startfinder
@@ -124,18 +124,18 @@ namespace XFEM
     /*========================================================================*/
 
     //! call the back tracking which computes the final values
-    void call_back_tracking(DRT::Element*& ele,  ///< pointer to element
-        TimeIntData* data,                       ///< data
-        CORE::LINALG::Matrix<3, 1>& xi,          ///< local coordinates
-        const char* backTrackingType             ///< type of back_tracking
+    void call_back_tracking(CORE::Elements::Element*& ele,  ///< pointer to element
+        TimeIntData* data,                                  ///< data
+        CORE::LINALG::Matrix<3, 1>& xi,                     ///< local coordinates
+        const char* backTrackingType                        ///< type of back_tracking
     );
 
     //! track back the Lagrangian origin to get final values
     template <const int numnode, CORE::FE::CellType DISTYPE>
-    void back_tracking(DRT::Element*& fittingele,  ///< pointer to element
-        TimeIntData* data,                         ///< data
-        CORE::LINALG::Matrix<3, 1>& xi,            ///< local coordinates
-        const char* backTrackingType               ///< type of backTrackingwVectors
+    void back_tracking(CORE::Elements::Element*& fittingele,  ///< pointer to element
+        TimeIntData* data,                                    ///< data
+        CORE::LINALG::Matrix<3, 1>& xi,                       ///< local coordinates
+        const char* backTrackingType                          ///< type of backTrackingwVectors
     );
 
     /*========================================================================*/
@@ -143,8 +143,8 @@ namespace XFEM
     /*========================================================================*/
 
     //! determine point's dofset in element ele w.r.t old or new interface position
-    void get_nodal_dof_set(DRT::Element* ele,  ///< pointer to element
-        CORE::LINALG::Matrix<3, 1>& x,         ///< global coordinates of point
+    void get_nodal_dof_set(CORE::Elements::Element* ele,  ///< pointer to element
+        CORE::LINALG::Matrix<3, 1>& x,                    ///< global coordinates of point
         std::vector<int>& nds,  ///< determine the points dofset w.r.t old/new interface position
         CORE::GEO::CUT::VolumeCell*& vc,  ///< valid fluid volumecell the point x lies in
         bool step_np                      ///< computation w.r.t old or new interface position?
@@ -155,7 +155,8 @@ namespace XFEM
         const std::vector<Teuchos::RCP<Epetra_Vector>>&
             colVectors,   ///< all vectors for that we reconstruct the their gradients
         DRT::Node* node,  ///< node at which we reconstruct the gradients
-        std::vector<DRT::Element*>& eles,  ///< elements around node used for the reconstruction
+        std::vector<CORE::Elements::Element*>&
+            eles,  ///< elements around node used for the reconstruction
         std::vector<std::vector<int>>& ele_nds,  ///< corresonding elements nodal dofset information
         XFEM::XFEMDofSet& dofset,                ///< XFEM dofset
         std::vector<CORE::LINALG::Matrix<3, 3>>&

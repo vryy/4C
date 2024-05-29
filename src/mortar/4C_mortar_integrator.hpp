@@ -25,7 +25,7 @@ namespace CORE::LINALG
   class SparseMatrix;
 }  // namespace CORE::LINALG
 
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
 }

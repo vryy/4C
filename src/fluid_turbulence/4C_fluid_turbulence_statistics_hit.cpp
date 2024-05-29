@@ -1883,7 +1883,7 @@ namespace FLD
     for (int el = 0; el < discret_->NumMyRowElements(); ++el)
     {
       CORE::LINALG::SerialDenseVector interpolVec;
-      DRT::Element* ele = discret_->lRowElement(el);
+      CORE::Elements::Element* ele = discret_->lRowElement(el);
 
       interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 

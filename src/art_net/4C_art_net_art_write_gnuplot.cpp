@@ -110,9 +110,9 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
 
       // loop over all nodes
       std::vector<int>* sorted_nodes = new std::vector<int>;
-      DRT::Element** Elements = ndi->Elements();
+      CORE::Elements::Element** Elements = ndi->Elements();
 
-      DRT::Element* Elem_i;
+      CORE::Elements::Element* Elem_i;
       if (ndi->NumElement() != 1)
         FOUR_C_THROW("artery %d must have one element connected to the inlet node!", Artery_Number);
 
@@ -282,7 +282,7 @@ void ART::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<DRT::Discretization> discre
 
     //    DRT::Node * nd = discret->lColNode((*nodes)[i]);
     DRT::Node* nd = discret->gNode((*nodes)[i]);
-    DRT::Element** ele = nd->Elements();
+    CORE::Elements::Element** ele = nd->Elements();
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;

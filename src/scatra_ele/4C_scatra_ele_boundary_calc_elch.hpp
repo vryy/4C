@@ -48,21 +48,22 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action
-      int evaluate_action(DRT::FaceElement* ele,            //!< boundary element
-          Teuchos::ParameterList& params,                   //!< parameter list
-          DRT::Discretization& discretization,              //!< discretization
-          SCATRA::BoundaryAction action,                    //!< action
-          DRT::Element::LocationArray& la,                  //!< location array
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-          CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
+      int evaluate_action(CORE::Elements::FaceElement* ele,  //!< boundary element
+          Teuchos::ParameterList& params,                    //!< parameter list
+          DRT::Discretization& discretization,               //!< discretization
+          SCATRA::BoundaryAction action,                     //!< action
+          CORE::Elements::Element::LocationArray& la,        //!< location array
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,   //!< element matrix 1
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,   //!< element matrix 2
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,   //!< element right-hand side vector 1
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,   //!< element right-hand side vector 2
+          CORE::LINALG::SerialDenseVector& elevec3_epetra    //!< element right-hand side vector 3
           ) override;
 
       //! evaluate an electrode kinetics boundary condition
-      virtual void evaluate_elch_boundary_kinetics(const DRT::Element* ele,  ///< current element
-          CORE::LINALG::SerialDenseMatrix& emat,                             ///< element matrix
+      virtual void evaluate_elch_boundary_kinetics(
+          const CORE::Elements::Element* ele,     ///< current element
+          CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix
           CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
@@ -81,21 +82,21 @@ namespace DRT
       );
 
       //! process an electrode kinetics boundary condition
-      void calc_elch_boundary_kinetics(DRT::FaceElement* ele,  ///< current element
-          Teuchos::ParameterList& params,                      ///< parameter list
-          DRT::Discretization& discretization,                 ///< discretization
-          DRT::Element::LocationArray& la,                     ///< location array
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,     ///< element matrix
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,     ///< element right-hand side vector
+      void calc_elch_boundary_kinetics(CORE::Elements::FaceElement* ele,  ///< current element
+          Teuchos::ParameterList& params,                                 ///< parameter list
+          DRT::Discretization& discretization,                            ///< discretization
+          CORE::Elements::Element::LocationArray& la,                     ///< location array
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,                ///< element matrix
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,  ///< element right-hand side vector
           const double
               scalar  ///< scaling factor for element matrix and right-hand side contributions
       );
 
       //! evaluate electrode kinetics status information
-      void evaluate_electrode_status(const DRT::Element* ele,  ///< current element
-          CORE::LINALG::SerialDenseVector& scalars,            ///< scalars to be integrated
-          Teuchos::ParameterList& params,                      ///< parameter list
-          Teuchos::RCP<CORE::Conditions::Condition> cond,      ///< condition
+      void evaluate_electrode_status(const CORE::Elements::Element* ele,  ///< current element
+          CORE::LINALG::SerialDenseVector& scalars,        ///< scalars to be integrated
+          Teuchos::ParameterList& params,                  ///< parameter list
+          Teuchos::RCP<CORE::Conditions::Condition> cond,  ///< condition
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
@@ -110,16 +111,18 @@ namespace DRT
       );
 
       //! evaluate linearization of nernst equation
-      void calc_nernst_linearization(DRT::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      void calc_nernst_linearization(CORE::Elements::FaceElement* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra);
 
       //! calculate cell voltage
-      void calc_cell_voltage(const DRT::Element* ele,  //!< the element we are dealing with
+      void calc_cell_voltage(
+          const CORE::Elements::Element* ele,          //!< the element we are dealing with
           Teuchos::ParameterList& params,              //!< parameter list
           DRT::Discretization& discretization,         //!< discretization
-          DRT::Element::LocationArray& la,             //!< location array
+          CORE::Elements::Element::LocationArray& la,  //!< location array
           CORE::LINALG::SerialDenseVector&
               scalars  //!< result vector for scalar integrals to be computed
       );

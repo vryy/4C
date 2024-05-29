@@ -34,7 +34,7 @@ Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::Edge::Create(
 Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::Edge::Create(
     unsigned shardskey, const std::vector<Node*>& nodes)
 {
-  return Edge::Create(DRT::ShardsKeyToDisType(shardskey), nodes);
+  return Edge::Create(CORE::Elements::ShardsKeyToDisType(shardskey), nodes);
 }
 
 bool CORE::GEO::CUT::Edge::find_cut_points_level_set(

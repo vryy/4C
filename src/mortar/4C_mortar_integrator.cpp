@@ -10,8 +10,8 @@ of two MORTAR::Elements in 1D and 2D
 
 #include "4C_mortar_integrator.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_sparsematrix.hpp"

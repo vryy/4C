@@ -14,10 +14,10 @@ MATLAB, PGFPlot or other tools.
 #include "4C_contact_aug_plot.hpp"
 
 #include "4C_contact_aug_strategy.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_io_every_iteration_writer.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -214,12 +214,12 @@ Teuchos::RCP<Epetra_Map> CONTACT::AUG::Plot::Direction::find_connected_dofs(
   {
     const DRT::Node* cnode = connected_nodes[i++];
 
-    const DRT::Element* const* adj_eles = cnode->Elements();
+    const CORE::Elements::Element* const* adj_eles = cnode->Elements();
     int num_adj_eles = cnode->NumElement();
 
     for (int e = 0; e < num_adj_eles; ++e)
     {
-      const DRT::Element* ele = adj_eles[e];
+      const CORE::Elements::Element* ele = adj_eles[e];
       const auto echeck = done_element_ids.insert(ele->Id());
       if (echeck.second == false) continue;
 

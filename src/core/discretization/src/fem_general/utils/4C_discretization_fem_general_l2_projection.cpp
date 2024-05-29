@@ -37,7 +37,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::evaluate_and_solve_nodal_l2_projectio
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
-  DRT::Element::LocationArray la(dis.NumDofSets());
+  CORE::Elements::Element::LocationArray la(dis.NumDofSets());
 
   // define element matrices and vectors
   CORE::LINALG::SerialDenseMatrix elematrix1;

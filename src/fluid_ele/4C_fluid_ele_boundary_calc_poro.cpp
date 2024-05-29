@@ -12,13 +12,13 @@
 #include "4C_fluid_ele_boundary_calc_poro.hpp"
 
 #include "4C_coupling_volmortar_shape.hpp"
+#include "4C_discretization_fem_general_element_integration_select.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_boundary_integration.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_parameter_poro.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_element_integration_select.hpp"
 #include "4C_mat_fluidporo.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_structporo.hpp"
@@ -336,7 +336,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
       ele, Base::xyze_n_);
 
   // get element location vector and ownerships
-  ele->DRT::Element::LocationVector(discretization, lm, lmowner, lmstride);
+  ele->CORE::Elements::Element::LocationVector(discretization, lm, lmowner, lmstride);
 
   // get material parameters and constants needed to calculate matrix terms
   const Teuchos::ParameterList& fpsidynparams = GLOBAL::Problem::Instance()->FPSIDynamicParams();
@@ -361,7 +361,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
       if (it == InterfaceFacingElementMap->end())
         FOUR_C_THROW("Couldn't find ele %d in InterfaceFacingElementMap", ele->Id());
 
-      DRT::Element* porofluidelement = porofluiddis->gElement(it->second);
+      CORE::Elements::Element* porofluidelement = porofluiddis->gElement(it->second);
 
       generalmaterial = porofluidelement->Material();
       porofluidmaterial = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(generalmaterial);
@@ -385,7 +385,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     if (it == InterfaceFacingElementMap->end())
       FOUR_C_THROW("Couldn't find ele %d in InterfaceFacingElementMap", ele->Id());
 
-    DRT::Element* fluidelement = fluiddis->gElement(it->second);
+    CORE::Elements::Element* fluidelement = fluiddis->gElement(it->second);
 
     fluidmaterial = fluidelement->Material();
     newtonianfluidmaterial = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(fluidmaterial);
@@ -500,7 +500,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   // access structure discretization
   structdis = GLOBAL::Problem::Instance()->GetDis("structure");
 
-  DRT::Element* structele = nullptr;
+  CORE::Elements::Element* structele = nullptr;
   // get corresponding structure element (it has the same global ID as the porofluid element)
   if (discretization.Name() == "structure" or discretization.Name() == "porofluid")
   {
@@ -1813,7 +1813,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
-  ele->DRT::Element::LocationVector(discretization, lm, lmowner, lmstride);
+  ele->CORE::Elements::Element::LocationVector(discretization, lm, lmowner, lmstride);
 
   // number of parentnodes
   static const int nenparent = CORE::FE::num_nodes<pdistype>;
@@ -2522,7 +2522,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
-  ele->DRT::Element::LocationVector(discretization, lm, lmowner, lmstride);
+  ele->CORE::Elements::Element::LocationVector(discretization, lm, lmowner, lmstride);
 
   // number of parentnodes
   static const int nenparent = CORE::FE::num_nodes<pdistype>;
@@ -3277,7 +3277,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
   std::vector<int> plm;
   std::vector<int> plmowner;
   std::vector<int> plmstride;
-  pele->DRT::Element::LocationVector(discretization, plm, plmowner, plmstride);
+  pele->CORE::Elements::Element::LocationVector(discretization, plm, plmowner, plmstride);
 
   std::vector<double> parentdispnp;
   CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
@@ -3670,7 +3670,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
   std::vector<int> plm;
   std::vector<int> plmowner;
   std::vector<int> plmstride;
-  pele->DRT::Element::LocationVector(discretization, plm, plmowner, plmstride);
+  pele->CORE::Elements::Element::LocationVector(discretization, plm, plmowner, plmstride);
 
   std::vector<double> parentdispnp;
   CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
@@ -4259,7 +4259,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   std::vector<int> plm;
   std::vector<int> plmowner;
   std::vector<int> plmstride;
-  pele->DRT::Element::LocationVector(discretization, plm, plmowner, plmstride);
+  pele->CORE::Elements::Element::LocationVector(discretization, plm, plmowner, plmstride);
 
   std::vector<double> parentdispnp;
   CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
@@ -4544,7 +4544,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
-  ele->DRT::Element::LocationVector(discretization, lm, lmowner, lmstride);
+  ele->CORE::Elements::Element::LocationVector(discretization, lm, lmowner, lmstride);
 
   // get integration rule
   const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(

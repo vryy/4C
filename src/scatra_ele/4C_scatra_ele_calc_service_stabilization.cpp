@@ -902,7 +902,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_strong_residual(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
-    const DRT::Element* ele,                         //!< the element we are dealing with
+    const CORE::Elements::Element* ele,              //!< the element we are dealing with
     CORE::LINALG::Matrix<nsd_, 1>& sgvelint,         //!< subgrid velocity at integration point
     const double densam,                             //!< density at t_(n+am)
     const double densnp,                             //!< density at t_(n+1)

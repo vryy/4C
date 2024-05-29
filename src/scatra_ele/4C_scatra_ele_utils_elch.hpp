@@ -12,9 +12,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_inpar_elch.hpp"
-#include "4C_lib_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -49,7 +49,7 @@ namespace DRT
 
       //! evaluation of electrochemistry kinetics at integration point on domain or boundary element
       void evaluate_elch_kinetics_at_integration_point(
-          const DRT::Element* ele,                ///< current element
+          const CORE::Elements::Element* ele,     ///< current element
           CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix
           CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
@@ -75,7 +75,7 @@ namespace DRT
       //! evaluate electrode kinetics status information at integration point on domain or boundary
       //! element
       void evaluate_electrode_status_at_integration_point(
-          const DRT::Element* ele,                                ///< current element
+          const CORE::Elements::Element* ele,                     ///< current element
           CORE::LINALG::SerialDenseVector& scalars,               ///< scalars to be computed
           const Teuchos::ParameterList& params,                   ///< parameter list
           const Teuchos::RCP<CORE::Conditions::Condition>& cond,  ///< condition

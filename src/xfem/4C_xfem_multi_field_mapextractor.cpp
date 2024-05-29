@@ -1192,7 +1192,7 @@ void XFEM::MultiFieldMapExtractor::IDof(const DRT::Node* inode, std::vector<int>
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::MultiFieldMapExtractor::IDof(std::vector<int>& dof, DRT::Node* inode,
-    unsigned nodaldofset_id, const DRT::Element* element) const
+    unsigned nodaldofset_id, const CORE::Elements::Element* element) const
 {
   i_discret().Dof(dof, inode, 0, nodaldofset_id, element);
 }

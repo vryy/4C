@@ -723,7 +723,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::find_and_store_neigh
   for (unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i)
   {
     int const elegid = ele_type_map_extractor_ptr()->SphereMap()->GID(rand_row_sphere[rowele_i]);
-    DRT::Element* currsphere = DiscretPtr()->gElement(elegid);
+    CORE::Elements::Element* currsphere = DiscretPtr()->gElement(elegid);
 
     // (unique) set of neighboring bins for all col bins assigned to current element
     std::set<int> neighboring_binIds;
@@ -744,7 +744,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::find_and_store_neigh
     std::vector<int> glob_neighboring_binIds(neighboring_binIds.begin(), neighboring_binIds.end());
 
     // set of beam elements that reside in neighboring bins
-    std::set<DRT::Element*> neighboring_elements;
+    std::set<CORE::Elements::Element*> neighboring_elements;
     std::vector<BINSTRATEGY::UTILS::BinContentType> bc(1, BINSTRATEGY::UTILS::Beam);
     BinStrategyPtr()->GetBinContent(neighboring_elements, bc, glob_neighboring_binIds);
 
@@ -752,7 +752,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::find_and_store_neigh
     // NOTE: This is crucial for reproducibility to ensure that computation does
     // not depend on pointer addresses (see also comment of class Less)
     // -------------------------------------------------------------------------
-    std::vector<DRT::Element const*> beamvec(
+    std::vector<CORE::Elements::Element const*> beamvec(
         neighboring_elements.begin(), neighboring_elements.end());
     std::sort(beamvec.begin(), beamvec.end(), BEAMINTERACTION::UTILS::Less());
 
@@ -764,7 +764,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::find_and_store_neigh
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of_new_link(
-    DRT::Element const* currele, std::vector<DRT::Element const*> const& neighbors,
+    CORE::Elements::Element const* currele,
+    std::vector<CORE::Elements::Element const*> const& neighbors,
     std::unordered_set<int>& tobebonded,
     std::map<int, std::vector<std::pair<int, int>>>& newlinks) const
 {

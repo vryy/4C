@@ -34,7 +34,7 @@ DRT::Discretization::Discretization(const std::string& name, Teuchos::RCP<Epetra
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::add_element(Teuchos::RCP<DRT::Element> ele)
+void DRT::Discretization::add_element(Teuchos::RCP<CORE::Elements::Element> ele)
 {
   element_[ele->Id()] = ele;
   reset();
@@ -111,7 +111,7 @@ bool DRT::Discretization::DeleteElements()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool DRT::Discretization::DeleteElement(Teuchos::RCP<DRT::Element> ele)
+bool DRT::Discretization::DeleteElement(Teuchos::RCP<CORE::Elements::Element> ele)
 {
   auto it_ele = element_.find(ele->Id());
   if (it_ele == element_.end()) return false;
@@ -292,10 +292,10 @@ bool DRT::Discretization::HaveGlobalElement(const int gid) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Discretization::gElement(const int gid) const
+CORE::Elements::Element* DRT::Discretization::gElement(const int gid) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator curr = element_.find(gid);
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator curr = element_.find(gid);
   if (curr == element_.end())
     FOUR_C_THROW("Element with gobal id gid=%d not stored on this proc", gid);
   else
@@ -356,7 +356,7 @@ void DRT::Discretization::Print(std::ostream& os) const
       if (ncurr->second->Owner() == Comm().MyPID()) nummynodes++;
 
     int nummyele = 0;
-    std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator ecurr;
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator ecurr;
     for (ecurr = element_.begin(); ecurr != element_.end(); ++ecurr)
       if (ecurr->second->Owner() == Comm().MyPID()) nummyele++;
 
@@ -390,7 +390,7 @@ void DRT::Discretization::Print(std::ostream& os) const
         // print elements
         {
           os << "-------------------------- Proc " << proc << " :\n";
-          std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator curr;
+          std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator curr;
           for (curr = element_.begin(); curr != element_.end(); ++curr)
           {
             os << *(curr->second);
@@ -762,7 +762,7 @@ void DRT::Discretization::UnPackMyElements(Teuchos::RCP<std::vector<char>> e)
     std::vector<char> data;
     CORE::COMM::ParObject::ExtractfromPack(index, *e, data);
     CORE::COMM::ParObject* o = CORE::COMM::Factory(data);
-    auto* ele = dynamic_cast<Element*>(o);
+    auto* ele = dynamic_cast<CORE::Elements::Element*>(o);
     if (ele == nullptr)
     {
       FOUR_C_THROW("Failed to build an element from the element data");

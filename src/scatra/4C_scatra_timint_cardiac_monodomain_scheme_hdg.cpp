@@ -74,12 +74,12 @@ void SCATRA::TimIntCardiacMonodomainHDG::element_material_time_update()
 
   CORE::LINALG::SerialDenseMatrix dummyMat;
   CORE::LINALG::SerialDenseVector dummyVec;
-  DRT::Element::LocationArray la(discret_->NumDofSets());
+  CORE::Elements::Element::LocationArray la(discret_->NumDofSets());
 
 
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
   {
-    DRT::Element *ele = discret_->lColElement(iele);
+    CORE::Elements::Element *ele = discret_->lColElement(iele);
     ele->LocationVector(*discret_, la, false);
 
     ele->Evaluate(eleparams, *discret_, la, dummyMat, dummyMat, dummyVec, dummyVec, dummyVec);
@@ -170,7 +170,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::pack_material()
   // loop over elements
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
   {
-    DRT::Element *ele = discret_->lColElement(iele);
+    CORE::Elements::Element *ele = discret_->lColElement(iele);
     const auto *hdgele = dynamic_cast<const DRT::ELEMENTS::ScaTraHDG *>(ele);
     hdgele->pack_material(buffer);
   }
@@ -207,11 +207,11 @@ void SCATRA::TimIntCardiacMonodomainHDG::project_material()
 
   CORE::LINALG::SerialDenseMatrix dummyMat;
   CORE::LINALG::SerialDenseVector dummyVec;
-  DRT::Element::LocationArray dummy(1);
+  CORE::Elements::Element::LocationArray dummy(1);
 
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
   {
-    DRT::Element *ele = discret_->lColElement(iele);
+    CORE::Elements::Element *ele = discret_->lColElement(iele);
 
     // call routine on elements to project material field
     ele->Evaluate(eleparams, *discret_, dummy, dummyMat, dummyMat, dummyVec, dummyVec, dummyVec);

@@ -34,11 +34,14 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------*/
 namespace DRT
 {
-  class Condition;
   class Discretization;
   class Node;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CONTACT
 {
@@ -141,8 +144,8 @@ namespace ADAPTER
         Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
         std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
-        std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements);
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements);
 
     /*!
     \brief Add Mortar Nodes
@@ -152,8 +155,8 @@ namespace ADAPTER
         Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
         Teuchos::ParameterList& input, std::map<int, DRT::Node*>& mastergnodes,
         std::map<int, DRT::Node*>& slavegnodes,
-        std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements,
         Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof);
 
     /*!
@@ -162,8 +165,8 @@ namespace ADAPTER
     */
     virtual void add_mortar_elements(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
-        std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements,
         Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof);
 
     /*!

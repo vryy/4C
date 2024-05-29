@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
  */
 template <typename scalar_type, typename line, typename volume>
 GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line,
-    volume>::GeometryPairLineToVolumeSegmentation(const DRT::Element* element1,
-    const DRT::Element* element2,
+    volume>::GeometryPairLineToVolumeSegmentation(const CORE::Elements::Element* element1,
+    const CORE::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
     : GeometryPairLineToVolume<scalar_type, line, volume>(element1, element2, evaluation_data)
 {

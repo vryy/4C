@@ -261,10 +261,11 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::initialize_gp()
  |  Initialize gauss points for ele-based integration        farah 02/15|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS>
-void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(DRT::Element& sele,
-    std::vector<int>& foundeles, CORE::LINALG::SparseMatrix& D, CORE::LINALG::SparseMatrix& M,
-    Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
-    int dofseta, int dofsetb, const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
+void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
+    CORE::Elements::Element& sele, std::vector<int>& foundeles, CORE::LINALG::SparseMatrix& D,
+    CORE::LINALG::SparseMatrix& M, Teuchos::RCP<const DRT::Discretization> Adis,
+    Teuchos::RCP<const DRT::Discretization> Bdis, int dofseta, int dofsetb,
+    const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
     const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap)
 {
   //**********************************************************************
@@ -300,7 +301,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
     for (int found = 0; found < (int)foundeles.size(); ++found)
     {
       // get master element
-      DRT::Element* Bele = Bdis->gElement(foundeles[found]);
+      CORE::Elements::Element* Bele = Bdis->gElement(foundeles[found]);
       CORE::FE::CellType shape = Bele->Shape();
 
       bool proj = false;
@@ -442,10 +443,10 @@ template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<CORE::FE::CellType::
  |  gp evaluation                                            farah 02/15|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool CORE::VOLMORTAR::VolMortarEleBasedGP(DRT::Element& sele, DRT::Element* mele,
-    std::vector<int>& foundeles, int& found, int& gpid, double& jac, double& wgt, double& gpdist,
-    double* Axi, double* AuxXi, double* globgp, DualQuad& dq, Shapefcn& shape,
-    CORE::LINALG::SparseMatrix& D, CORE::LINALG::SparseMatrix& M,
+bool CORE::VOLMORTAR::VolMortarEleBasedGP(CORE::Elements::Element& sele,
+    CORE::Elements::Element* mele, std::vector<int>& foundeles, int& found, int& gpid, double& jac,
+    double& wgt, double& gpdist, double* Axi, double* AuxXi, double* globgp, DualQuad& dq,
+    Shapefcn& shape, CORE::LINALG::SparseMatrix& D, CORE::LINALG::SparseMatrix& M,
     Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
     int dofseta, int dofsetb, const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
     const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap)
@@ -861,8 +862,9 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::initialize_gp(
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(DRT::Element& sele,
-    DRT::Element& mele, Teuchos::RCP<MORTAR::IntCell> cell, CORE::LINALG::SparseMatrix& dmatrix,
+void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
+    CORE::Elements::Element& sele, CORE::Elements::Element& mele,
+    Teuchos::RCP<MORTAR::IntCell> cell, CORE::LINALG::SparseMatrix& dmatrix,
     CORE::LINALG::SparseMatrix& mmatrix, Teuchos::RCP<const DRT::Discretization> slavedis,
     Teuchos::RCP<const DRT::Discretization> masterdis, int sdofset, int mdofset)
 {
@@ -1022,12 +1024,13 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(DRT::Element& Aele,
-    DRT::Element& Bele, Teuchos::RCP<CORE::VOLMORTAR::Cell> cell,
-    CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
-    CORE::LINALG::SparseMatrix& dmatrix_B, CORE::LINALG::SparseMatrix& mmatrix_B,
-    Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
-    int sdofset_A, int mdofset_A, int sdofset_B, int mdofset_B)
+void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
+    CORE::Elements::Element& Aele, CORE::Elements::Element& Bele,
+    Teuchos::RCP<CORE::VOLMORTAR::Cell> cell, CORE::LINALG::SparseMatrix& dmatrix_A,
+    CORE::LINALG::SparseMatrix& mmatrix_A, CORE::LINALG::SparseMatrix& dmatrix_B,
+    CORE::LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const DRT::Discretization> Adis,
+    Teuchos::RCP<const DRT::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
+    int mdofset_B)
 {
   if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
@@ -1161,13 +1164,13 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void CORE::VOLMORTAR::VolMortarIntegrator<distypeS,
-    distypeM>::integrate_cells3_d_direct_diveregence(DRT::Element& Aele, DRT::Element& Bele,
-    CORE::GEO::CUT::VolumeCell& vc, Teuchos::RCP<CORE::FE::GaussPoints> intpoints,
-    bool switched_conf, CORE::LINALG::SparseMatrix& dmatrix_A,
-    CORE::LINALG::SparseMatrix& mmatrix_A, CORE::LINALG::SparseMatrix& dmatrix_B,
-    CORE::LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const DRT::Discretization> Adis,
-    Teuchos::RCP<const DRT::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
-    int mdofset_B)
+    distypeM>::integrate_cells3_d_direct_diveregence(CORE::Elements::Element& Aele,
+    CORE::Elements::Element& Bele, CORE::GEO::CUT::VolumeCell& vc,
+    Teuchos::RCP<CORE::FE::GaussPoints> intpoints, bool switched_conf,
+    CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
+    CORE::LINALG::SparseMatrix& dmatrix_B, CORE::LINALG::SparseMatrix& mmatrix_B,
+    Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
+    int sdofset_A, int mdofset_A, int sdofset_B, int mdofset_B)
 {
   if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
@@ -1310,9 +1313,10 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_based3_d_a_dis(
-    DRT::Element& Aele, std::vector<int>& foundeles, CORE::LINALG::SparseMatrix& dmatrix_A,
-    CORE::LINALG::SparseMatrix& mmatrix_A, Teuchos::RCP<const DRT::Discretization> Adis,
-    Teuchos::RCP<const DRT::Discretization> Bdis, int dofsetA, int dofsetB)
+    CORE::Elements::Element& Aele, std::vector<int>& foundeles,
+    CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
+    Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
+    int dofsetA, int dofsetB)
 {
   if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
@@ -1351,7 +1355,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
     for (int found = 0; found < (int)foundeles.size(); ++found)
     {
       // get master element
-      DRT::Element* Bele = Bdis->gElement(foundeles[found]);
+      CORE::Elements::Element* Bele = Bdis->gElement(foundeles[found]);
       double Bxi[3] = {0.0, 0.0, 0.0};
 
       bool converged = true;
@@ -1435,9 +1439,10 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_based3_d_b_dis(
-    DRT::Element& Bele, std::vector<int>& foundeles, CORE::LINALG::SparseMatrix& dmatrix_B,
-    CORE::LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const DRT::Discretization> Adis,
-    Teuchos::RCP<const DRT::Discretization> Bdis, int dofsetA, int dofsetB)
+    CORE::Elements::Element& Bele, std::vector<int>& foundeles,
+    CORE::LINALG::SparseMatrix& dmatrix_B, CORE::LINALG::SparseMatrix& mmatrix_B,
+    Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
+    int dofsetA, int dofsetB)
 {
   if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
@@ -1476,7 +1481,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
     for (int found = 0; found < (int)foundeles.size(); ++found)
     {
       // get master element
-      DRT::Element* Aele = Adis->gElement(foundeles[found]);
+      CORE::Elements::Element* Aele = Adis->gElement(foundeles[found]);
       double Axi[3] = {0.0, 0.0, 0.0};
 
       bool converged = true;
@@ -1561,11 +1566,11 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(int domain,
-    DRT::Element& Aele, DRT::Element& Bele, CORE::LINALG::SparseMatrix& dmatrix_A,
-    CORE::LINALG::SparseMatrix& mmatrix_A, CORE::LINALG::SparseMatrix& dmatrix_B,
-    CORE::LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const DRT::Discretization> Adis,
-    Teuchos::RCP<const DRT::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
-    int mdofset_B)
+    CORE::Elements::Element& Aele, CORE::Elements::Element& Bele,
+    CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
+    CORE::LINALG::SparseMatrix& dmatrix_B, CORE::LINALG::SparseMatrix& mmatrix_B,
+    Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
+    int sdofset_A, int mdofset_A, int sdofset_B, int mdofset_B)
 {
   if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
@@ -1707,7 +1712,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(in
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::check_mapping2_d(
-    DRT::Element& sele, DRT::Element& mele, double* sxi, double* mxi)
+    CORE::Elements::Element& sele, CORE::Elements::Element& mele, double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)
   const double tol = 1e-10;
@@ -1771,7 +1776,7 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::check_mapping2_d(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::check_mapping3_d(
-    DRT::Element& sele, DRT::Element& mele, double* sxi, double* mxi)
+    CORE::Elements::Element& sele, CORE::Elements::Element& mele, double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)
   double tol = 1e-5;
@@ -2055,7 +2060,7 @@ void CORE::VOLMORTAR::ConsInterpolator::Interpolate(DRT::Node* node,
     bool proj = false;
 
     // get master element
-    DRT::Element* ele = elediscret->gElement(foundeles[found]);
+    CORE::Elements::Element* ele = elediscret->gElement(foundeles[found]);
 
     switch (ele->Shape())
     {
@@ -2162,7 +2167,7 @@ void CORE::VOLMORTAR::ConsInterpolator::Interpolate(DRT::Node* node,
  |  node evaluation                                          farah 02/15|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool CORE::VOLMORTAR::ConsInterpolatorEval(DRT::Node* node, DRT::Element* ele,
+bool CORE::VOLMORTAR::ConsInterpolatorEval(DRT::Node* node, CORE::Elements::Element* ele,
     CORE::LINALG::SparseMatrix& pmatrix, Teuchos::RCP<const DRT::Discretization> nodediscret,
     Teuchos::RCP<const DRT::Discretization> elediscret, std::vector<int>& foundeles, int& found,
     int& eleid, double& dist, double* AuxXi, double* nodepos, std::pair<int, int>& dofset,

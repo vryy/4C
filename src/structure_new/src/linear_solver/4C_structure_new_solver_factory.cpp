@@ -137,7 +137,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_structure_lin_sol
       // right now we only allow euler-bernoulli beam elements
       for (int i = 0; i < actdis.NumMyRowElements(); i++)
       {
-        DRT::Element* element = actdis.lRowElement(i);
+        CORE::Elements::Element* element = actdis.lRowElement(i);
 
         if (BEAMINTERACTION::UTILS::IsBeamElement(*element) &&
             (element->ElementType() != DRT::ELEMENTS::Beam3ebType::Instance()))

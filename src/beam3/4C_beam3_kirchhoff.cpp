@@ -49,12 +49,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Beam3kType::Create(const std::vector<char>
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3kType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Beam3kType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "BEAM3K")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3k(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3k(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -62,7 +62,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3kType::Create(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3kType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Beam3kType::Create(
+    const int id, const int owner)
 
 {
   return Teuchos::rcp(new Beam3k(id, owner));
@@ -71,7 +72,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3kType::Create(const int id, const
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3kType::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   FOUR_C_THROW("method 'nodal_block_information' not implemented for element type beam3k!");
 }
@@ -279,7 +280,7 @@ DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old)
  |  Deep copy this instance of Beam3k and return pointer to it (public) |
  |                                                                    meier 05/12 |
  *--------------------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Beam3k::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Beam3k::Clone() const
 {
   DRT::ELEMENTS::Beam3k* newelement = new DRT::ELEMENTS::Beam3k(*this);
   return newelement;
@@ -443,7 +444,7 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          meier 05/12|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Beam3k::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Beam3k::Lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

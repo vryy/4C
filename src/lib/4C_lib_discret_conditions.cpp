@@ -128,8 +128,8 @@ void DRT::Discretization::boundary_conditions_geometry()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::Discretization::assign_global_i_ds(const Epetra_Comm& comm,
-    const std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>& elementmap,
-    std::map<int, Teuchos::RCP<DRT::Element>>& finalgeometry)
+    const std::map<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>>& elementmap,
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& finalgeometry)
 {
   // pack elements on all processors
 
@@ -253,22 +253,22 @@ bool DRT::Discretization::build_linesin_condition(
   }
 
   // map of lines in our cloud: (node_ids) -> line
-  std::map<std::vector<int>, Teuchos::RCP<DRT::Element>> linemap;
+  std::map<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>> linemap;
   // loop these nodes and build all lines attached to them
   for (const auto& [node_id, actnode] : colnodes)
   {
     // loop all elements attached to actnode
-    DRT::Element** elements = actnode->Elements();
+    CORE::Elements::Element** elements = actnode->Elements();
     for (int i = 0; i < actnode->NumElement(); ++i)
     {
       // loop all lines of all elements attached to actnode
       const int numlines = elements[i]->NumLine();
       if (!numlines) continue;
-      std::vector<Teuchos::RCP<DRT::Element>> lines = elements[i]->Lines();
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> lines = elements[i]->Lines();
       if (lines.size() == 0) FOUR_C_THROW("Element returned no lines");
       for (int j = 0; j < numlines; ++j)
       {
-        Teuchos::RCP<DRT::Element> actline = lines[j];
+        Teuchos::RCP<CORE::Elements::Element> actline = lines[j];
         // find lines that are attached to actnode
         const int nnodeperline = actline->num_node();
         DRT::Node** nodesperline = actline->Nodes();
@@ -298,7 +298,7 @@ bool DRT::Discretization::build_linesin_condition(
 
               if (linemap.find(nodes) == linemap.end())
               {
-                Teuchos::RCP<DRT::Element> line = Teuchos::rcp(actline->Clone());
+                Teuchos::RCP<CORE::Elements::Element> line = Teuchos::rcp(actline->Clone());
                 // Set owning process of line to node with smallest gid.
                 line->SetOwner(elements[i]->Owner());
                 linemap[nodes] = line;
@@ -313,7 +313,7 @@ bool DRT::Discretization::build_linesin_condition(
 
 
   // Lines be added to the condition: (line_id) -> (line).
-  auto finallines = Teuchos::rcp(new std::map<int, Teuchos::RCP<DRT::Element>>());
+  auto finallines = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::Elements::Element>>());
 
   assign_global_i_ds(Comm(), linemap, *finallines);
 
@@ -378,7 +378,7 @@ bool DRT::Discretization::build_surfacesin_condition(
   }
 
   // map of surfaces in this cloud: (node_ids) -> (surface)
-  std::map<std::vector<int>, Teuchos::RCP<DRT::Element>> surfmap;
+  std::map<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>> surfmap;
 
   // loop these column nodes and build all surfs attached to them.
   // we have to loop over column nodes because it can happen that
@@ -392,7 +392,7 @@ bool DRT::Discretization::build_surfacesin_condition(
   // look at row nodes but the considered face has no row node.
   for (const auto& [node_id, actnode] : mycolnodes)
   {
-    DRT::Element** elements = actnode->Elements();
+    CORE::Elements::Element** elements = actnode->Elements();
 
     // loop all elements attached to actnode
     for (int i = 0; i < actnode->NumElement(); ++i)
@@ -404,13 +404,13 @@ bool DRT::Discretization::build_surfacesin_condition(
       // loop all surfaces of all elements attached to actnode
       const int numsurfs = elements[i]->NumSurface();
       if (!numsurfs) continue;
-      std::vector<Teuchos::RCP<DRT::Element>> surfs = elements[i]->Surfaces();
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> surfs = elements[i]->Surfaces();
       if (surfs.size() == 0) FOUR_C_THROW("Element does not return any surfaces");
 
       // loop all surfaces of all elements attached to actnode
       for (int j = 0; j < numsurfs; ++j)
       {
-        Teuchos::RCP<DRT::Element> actsurf = surfs[j];
+        Teuchos::RCP<CORE::Elements::Element> actsurf = surfs[j];
         // find surfs attached to actnode
         const int nnodepersurf = actsurf->num_node();
         DRT::Node** nodespersurf = actsurf->Nodes();
@@ -447,7 +447,7 @@ bool DRT::Discretization::build_surfacesin_condition(
               if ((cond->Type() == CORE::Conditions::StructFluidSurfCoupling) or
                   (cond->Type() == CORE::Conditions::RedAirwayTissue))
               {
-                // fill map with 'surfmap' std::vector<int> -> Teuchos::RCP<DRT::Element>
+                // fill map with 'surfmap' std::vector<int> -> Teuchos::RCP<CORE::Elements::Element>
                 {
                   // indicator for volume element underlying the surface element
                   int identical = 0;
@@ -457,13 +457,13 @@ bool DRT::Discretization::build_surfacesin_condition(
                   const int numnode = (int)nodes.size();
 
                   // set of adjacent elements
-                  std::set<DRT::Element*> adjacentvoleles;
+                  std::set<CORE::Elements::Element*> adjacentvoleles;
 
                   // get all volume elements connected to the nodes of this surface element
                   for (int n = 0; n < numnode; ++n)
                   {
                     DRT::Node* actsurfnode = actsurfnodes[n];
-                    DRT::Element** eles = actsurfnode->Elements();
+                    CORE::Elements::Element** eles = actsurfnode->Elements();
                     int numeles = actsurfnode->NumElement();
                     for (int e = 0; e < numeles; ++e)
                     {
@@ -478,7 +478,7 @@ bool DRT::Discretization::build_surfacesin_condition(
                   // via comparison of node ids
                   for (const auto& adjacent_ele : adjacentvoleles)
                   {
-                    std::vector<Teuchos::RCP<DRT::Element>> adjacentvolelesurfs =
+                    std::vector<Teuchos::RCP<CORE::Elements::Element>> adjacentvolelesurfs =
                         adjacent_ele->Surfaces();
                     const int adjacentvolelenumsurfs = adjacent_ele->NumSurface();
                     for (int n = 0; n < adjacentvolelenumsurfs; ++n)
@@ -512,7 +512,7 @@ bool DRT::Discretization::build_surfacesin_condition(
                     // now we can add the surface
                     if (surfmap.find(nodes) == surfmap.end())
                     {
-                      Teuchos::RCP<DRT::Element> surf = Teuchos::rcp(actsurf->Clone());
+                      Teuchos::RCP<CORE::Elements::Element> surf = Teuchos::rcp(actsurf->Clone());
                       // Set owning processor of surface owner of underlying volume element.
                       surf->SetOwner(voleleowner);
                       surfmap[nodes] = surf;
@@ -528,7 +528,7 @@ bool DRT::Discretization::build_surfacesin_condition(
                 // now we can add the surface
                 if (surfmap.find(nodes) == surfmap.end())
                 {
-                  Teuchos::RCP<DRT::Element> surf = Teuchos::rcp(actsurf->Clone());
+                  Teuchos::RCP<CORE::Elements::Element> surf = Teuchos::rcp(actsurf->Clone());
                   // Set owning processor of surface owner of underlying volume element.
                   surf->SetOwner(elements[i]->Owner());
                   surfmap[nodes] = surf;
@@ -542,8 +542,8 @@ bool DRT::Discretization::build_surfacesin_condition(
   }                // loop over all conditioned row nodes
 
   // surfaces be added to the condition: (surf_id) -> (surface).
-  Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> final_geometry =
-      Teuchos::rcp(new std::map<int, Teuchos::RCP<DRT::Element>>());
+  Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::Elements::Element>>> final_geometry =
+      Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::Elements::Element>>());
 
   assign_global_i_ds(Comm(), surfmap, *final_geometry);
   cond->add_geometry(final_geometry);
@@ -576,7 +576,7 @@ bool DRT::Discretization::build_volumesin_condition(
       std::not_fn(CORE::Conditions::MyGID(colmap)));
 
   // this is the map we want to construct
-  auto geom = Teuchos::rcp(new std::map<int, Teuchos::RCP<DRT::Element>>());
+  auto geom = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::Elements::Element>>());
 
   for (const auto& [ele_id, actele] : element_)
   {

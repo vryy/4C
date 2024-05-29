@@ -13,8 +13,8 @@
 
 
 #include "4C_beam3_reissner.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_geometry_pair_element.hpp"
-#include "4C_lib_element.hpp"
 
 #include <memory>
 
@@ -265,13 +265,14 @@ namespace
   /**
    * Setup the beam geometry for the tests.
    */
-  std::pair<std::shared_ptr<DRT::Element>,
+  std::pair<std::shared_ptr<CORE::Elements::Element>,
       GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_hermite, double>>
   XtestSetupBeam()
   {
     // Set up the beam element.
     const int dummy_node_ids[2] = {0, 1};
-    std::shared_ptr<DRT::Element> element = std::make_shared<DRT::ELEMENTS::Beam3r>(0, 0);
+    std::shared_ptr<CORE::Elements::Element> element =
+        std::make_shared<DRT::ELEMENTS::Beam3r>(0, 0);
     element->SetNodeIds(2, dummy_node_ids);
 
     // Set up the beam.

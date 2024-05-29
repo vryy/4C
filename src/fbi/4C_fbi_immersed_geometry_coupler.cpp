@@ -11,13 +11,13 @@ The current implementation does not scale at all!
 
 #include "4C_binstrategy.hpp"
 #include "4C_binstrategy_utils.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_geometry_searchtree.hpp"
 #include "4C_discretization_geometry_searchtree_service.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_lib_discret_faces.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
@@ -100,7 +100,7 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::Search(
          closefluideles != closeeles.end(); closefluideles++)
     {
       const DRT::Node* const beamnode = discretizations[0]->gNode(beamnodeiterator->first);
-      const DRT::Element* const* beamelements = beamnode->Elements();
+      const CORE::Elements::Element* const* beamelements = beamnode->Elements();
 
       // loop over the set of beam elements adjacent to the current beam node (this leads to
       // duplicate pairs)
@@ -207,7 +207,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
   for (beamelementiterator = pairids->begin(); beamelementiterator != pairids->end();
        beamelementiterator++)
   {
-    DRT::Element* beamele = discretizations[0]->gElement(beamelementiterator->first);
+    CORE::Elements::Element* beamele = discretizations[0]->gElement(beamelementiterator->first);
     if (!beamele) FOUR_C_THROW("There is no element with gid %i", beamelementiterator->first);
     owner = beamele->Owner();
     for (std::vector<int>::const_iterator fluideleIter = beamelementiterator->second.begin();
@@ -244,7 +244,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
   for (int i = 0; i < elecolmap->NumMyElements(); ++i)
   {
     int gid = elecolmap->GID(i);
-    DRT::Element* ele = discretizations[1]->gElement(gid);
+    CORE::Elements::Element* ele = discretizations[1]->gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
     element_recvdata.push_back(gid);
   }
@@ -261,7 +261,8 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
     {
       for (unsigned int ele = 0; ele < element_senddata[proc].size(); ele++)
       {
-        DRT::Element* element = discretizations[1]->gElement(element_senddata[proc][ele]);
+        CORE::Elements::Element* element =
+            discretizations[1]->gElement(element_senddata[proc][ele]);
         if (!element) FOUR_C_THROW("Cannot find node with gid %", element_senddata[proc][ele]);
         for (int node = 0; node < element->num_node(); node++)
         {

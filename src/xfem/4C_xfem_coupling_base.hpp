@@ -202,7 +202,7 @@ namespace XFEM
     }
 
     //! get the coupling element (equal to the side for xfluid-sided, mesh-based coupling)
-    virtual DRT::Element* GetCouplingElement(
+    virtual CORE::Elements::Element* GetCouplingElement(
         const int eid  ///< global side element id w.r.t coupling discretization (background element
                        ///< eid for levelset couplings)
     )
@@ -245,7 +245,7 @@ namespace XFEM
 
     /// set material pointer for coupling slave side
     virtual void get_interface_slave_material(
-        DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat)
+        CORE::Elements::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat)
     {
       mat = Teuchos::null;
     }
@@ -266,8 +266,8 @@ namespace XFEM
         double& full_stab,                        //< full NIT Penalty scaling
         const CORE::LINALG::Matrix<3, 1>& x,      //< Position x
         const CORE::Conditions::Condition* cond,  //< Condition
-        DRT::Element* ele,                        //< Element
-        DRT::Element* bele,                       //< Boundary Element
+        CORE::Elements::Element* ele,             //< Element
+        CORE::Elements::Element* bele,            //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
@@ -393,27 +393,28 @@ namespace XFEM
         const int gmsh_step_diff, const bool gmsh_debug_out_screen){};
 
     /// get viscosity of the master fluid
-    void GetViscosityMaster(DRT::Element* xfele,  ///< xfluid ele
-        double& visc_m);                          ///< viscosity mastersided
+    void GetViscosityMaster(CORE::Elements::Element* xfele,  ///< xfluid ele
+        double& visc_m);                                     ///< viscosity mastersided
 
     /// get scaling of the master side for penalty (viscosity, E-modulus for solids)
-    virtual void get_penalty_scaling_slave(DRT::Element* coup_ele,  ///< xfluid ele
-        double& penscaling_s)                                       ///< penalty scaling slavesided
+    virtual void get_penalty_scaling_slave(CORE::Elements::Element* coup_ele,  ///< xfluid ele
+        double& penscaling_s)  ///< penalty scaling slavesided
     {
       FOUR_C_THROW("get_penalty_scaling_slave not implemented for this coupling object!");
     }
 
     /// get weighting paramters
-    void GetAverageWeights(DRT::Element* xfele,  ///< xfluid ele
-        DRT::Element* coup_ele,                  ///< coup_ele ele
-        double& kappa_m,                         ///< Weight parameter (parameter +/master side)
-        double& kappa_s,                         ///< Weight parameter (parameter -/slave  side)
+    void GetAverageWeights(CORE::Elements::Element* xfele,  ///< xfluid ele
+        CORE::Elements::Element* coup_ele,                  ///< coup_ele ele
+        double& kappa_m,  ///< Weight parameter (parameter +/master side)
+        double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
         bool& non_xfluid_coupling);
 
     /// get coupling specific weighting paramters (should be overload, whenever required)
-    virtual void get_coupling_specific_average_weights(DRT::Element* xfele,  ///< xfluid ele
-        DRT::Element* coup_ele,                                              ///< coup_ele ele
-        double& kappa_m)  ///< Weight parameter (parameter +/master side)
+    virtual void get_coupling_specific_average_weights(
+        CORE::Elements::Element* xfele,     ///< xfluid ele
+        CORE::Elements::Element* coup_ele,  ///< coup_ele ele
+        double& kappa_m)                    ///< Weight parameter (parameter +/master side)
     {
       FOUR_C_THROW(
           "XFEM::CouplingBase: get_coupling_specific_average_weights not implemented for this "
@@ -422,8 +423,8 @@ namespace XFEM
     }
 
     /// compute viscous part of Nitsche's penalty term scaling for Nitsche's method
-    void get_visc_penalty_stabfac(DRT::Element* xfele,  ///< xfluid ele
-        DRT::Element* coup_ele,                         ///< coup_ele ele
+    void get_visc_penalty_stabfac(CORE::Elements::Element* xfele,  ///< xfluid ele
+        CORE::Elements::Element* coup_ele,                         ///< coup_ele ele
         const double& kappa_m,      ///< Weight parameter (parameter +/master side)
         const double& kappa_s,      ///< Weight parameter (parameter -/slave  side)
         const double& inv_h_k,      ///< the inverse characteristic element length h_k
@@ -439,8 +440,8 @@ namespace XFEM
     );
 
     /// compute viscous part of Nitsche's penalty term scaling for Nitsche's method
-    void get_visc_penalty_stabfac(DRT::Element* xfele,  ///< xfluid ele
-        DRT::Element* coup_ele,                         ///< coup_ele ele
+    void get_visc_penalty_stabfac(CORE::Elements::Element* xfele,  ///< xfluid ele
+        CORE::Elements::Element* coup_ele,                         ///< coup_ele ele
         const double& kappa_m,  ///< Weight parameter (parameter +/master side)
         const double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
         const double& inv_h_k,  ///< the inverse characteristic element length h_k
@@ -487,8 +488,8 @@ namespace XFEM
         double& full_stab,                        //< full NIT Penalty scaling
         const CORE::LINALG::Matrix<3, 1>& x,      //< Position x in global coordinates
         const CORE::Conditions::Condition* cond,  //< Condition
-        DRT::Element* ele,                        //< Element
-        DRT::Element* bele,                       //< Boundary Element
+        CORE::Elements::Element* ele,             //< Element
+        CORE::Elements::Element* bele,            //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element

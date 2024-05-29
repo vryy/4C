@@ -20,10 +20,11 @@ approach
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
 }
+
 namespace BEAMINTERACTION
 {
   class BeamContactPair;
@@ -56,7 +57,7 @@ namespace FBI
      * \return Beam contact pair
      */
     static Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreatePair(
-        std::vector<DRT::Element const*> const& ele_ptrs,
+        std::vector<CORE::Elements::Element const*> const& ele_ptrs,
         const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr);
   };
 }  // namespace FBI

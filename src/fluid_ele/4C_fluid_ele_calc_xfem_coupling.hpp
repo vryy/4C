@@ -72,7 +72,7 @@ namespace DRT
 
         //! create a pure coupling slave element representation
         static Teuchos::RCP<SlaveElementInterface<distype>> create_slave_element_representation(
-            DRT::Element* slave_ele,  ///< coupling slave element
+            CORE::Elements::Element* slave_ele,  ///< coupling slave element
             CORE::LINALG::SerialDenseMatrix&
                 slave_xyz  ///< global node coordinates of coupling slave element
         );
@@ -280,7 +280,7 @@ namespace DRT
 
         //! create a coupling interface for Nitsche's method for xfluid weak dirichlet problems
         static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_wdbc(
-            DRT::Element* bele,  ///< boundary element
+            CORE::Elements::Element* bele,  ///< boundary element
             CORE::LINALG::SerialDenseMatrix::Base&
                 bele_xyz,  ///< global node coordinates of boundary element
             CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
@@ -291,7 +291,7 @@ namespace DRT
 
         //! create a coupling interface for Nitsche's method for xfluid-sided coupling strategy
         static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_sided(
-            DRT::Element* bele,  ///< boundary element
+            CORE::Elements::Element* bele,  ///< boundary element
             CORE::LINALG::SerialDenseMatrix::Base&
                 bele_xyz,  ///< global node coordinates of boundary element
             CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
@@ -307,7 +307,7 @@ namespace DRT
         //! create a coupling interface for Nitsche's method for two-sided coupling strategy
         //! (weighted or fully embedded-sided)
         static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_two_sided(
-            DRT::Element* vele,  ///< volumetric element to couple with
+            CORE::Elements::Element* vele,  ///< volumetric element to couple with
             CORE::LINALG::SerialDenseMatrix::Base&
                 vele_xyz,  ///< global node coordinates of volumetric element
             CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
@@ -427,7 +427,7 @@ namespace DRT
         //! create a coupling interface for mixed/hybrid LM approach for xfluid weak dirichlet
         //! problems
         static Teuchos::RCP<HybridLMInterface<distype>> create_hybrid_lm_coupling_x_fluid_wdbc(
-            DRT::Element* bele,  ///< boundary element
+            CORE::Elements::Element* bele,  ///< boundary element
             CORE::LINALG::SerialDenseMatrix&
                 bele_xyz,                 ///< global node coordinates of boundary element
             bool is_viscAdjointSymmetric  ///< flag that indicates equal signs of Nitsche's standard
@@ -437,7 +437,7 @@ namespace DRT
         //! create a coupling interface for mixed/hybrid LM approach for xfluid-sided coupling
         //! strategy
         static Teuchos::RCP<HybridLMInterface<distype>> create_hybrid_lm_coupling_x_fluid_sided(
-            DRT::Element* bele,  ///< boundary element
+            CORE::Elements::Element* bele,  ///< boundary element
             CORE::LINALG::SerialDenseMatrix&
                 bele_xyz,  ///< global node coordinates of boundary element
             CORE::LINALG::SerialDenseMatrix& C_usum,  ///< C_usum coupling matrix
@@ -452,7 +452,7 @@ namespace DRT
         //! create a coupling interface for mixed/hybrid LM approach for two-sided coupling strategy
         //! (weighted or fully embedded-sided)
         static Teuchos::RCP<HybridLMInterface<distype>> create_hybrid_lm_coupling_two_sided(
-            DRT::Element* vele,  ///< volumetric element to couple with
+            CORE::Elements::Element* vele,  ///< volumetric element to couple with
             CORE::LINALG::SerialDenseMatrix&
                 vele_xyz,  ///< global node coordinates of volumetric element
             CORE::LINALG::SerialDenseMatrix& C_usum,  ///< C_usum coupling matrix
@@ -460,7 +460,7 @@ namespace DRT
             CORE::LINALG::SerialDenseMatrix& rhC_us,  ///< C_us coupling rhs
             CORE::LINALG::SerialDenseMatrix& G_s_us,  ///< \f$G_{u^s \sigma}\f$ coupling matrix
             CORE::LINALG::SerialDenseMatrix& G_us_s,  ///< \f$G_{\sigma u^s}\f$ coupling matrix
-            DRT::Element* bele,                       ///< boundary element
+            CORE::Elements::Element* bele,            ///< boundary element
             CORE::LINALG::SerialDenseMatrix&
                 bele_xyz,                 ///< global node coordinates of slave element
             bool is_viscAdjointSymmetric  ///< flag, that indicates equal signs of Nitsche's

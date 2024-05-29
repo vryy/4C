@@ -99,7 +99,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace DRT::ELEMENTS
 {
-  class Beam3ebType : public DRT::ElementType
+  class Beam3ebType : public CORE::Elements::ElementType
   {
    public:
     std::string Name() const override { return "Beam3ebType"; }
@@ -108,15 +108,15 @@ namespace DRT::ELEMENTS
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-    Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-        const int id, const int owner) override;
+    Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+        const std::string eledistype, const int id, const int owner) override;
 
-    Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
     int Initialize(DRT::Discretization& dis) override;
 
     void nodal_block_information(
-        DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+        CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
     CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -169,7 +169,7 @@ namespace DRT::ELEMENTS
     where the type of the derived class is unknown and a copy-ctor is needed
   .
     */
-    DRT::Element* Clone() const override;
+    CORE::Elements::Element* Clone() const override;
 
     //! \brief Get shape type of element
     CORE::FE::CellType Shape() const override;
@@ -198,7 +198,7 @@ namespace DRT::ELEMENTS
     */
     void Unpack(const std::vector<char>& data) override;
 
-    DRT::ElementType& ElementType() const override { return Beam3ebType::Instance(); }
+    CORE::Elements::ElementType& ElementType() const override { return Beam3ebType::Instance(); }
 
     //@}
 
@@ -283,7 +283,7 @@ namespace DRT::ELEMENTS
     double GetKineticEnergy() const override { return ekin_; };
 
     //! \brief Get vector of Teuchos::RCPs to the lines of this element
-    std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+    std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
     //! \brief Get number of degrees of freedom of a single node
     int NumDofPerNode(const DRT::Node& node) const override
@@ -606,7 +606,7 @@ namespace DRT::ELEMENTS
   };
 
   // << operator
-  std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
+  std::ostream& operator<<(std::ostream& os, const CORE::Elements::Element& ele);
 
 }  // namespace DRT::ELEMENTS
 

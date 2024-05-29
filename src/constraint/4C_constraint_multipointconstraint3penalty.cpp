@@ -288,7 +288,7 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
 
       if (myrank == 0)
       {
-        Teuchos::RCP<DRT::Element> constraintele =
+        Teuchos::RCP<CORE::Elements::Element> constraintele =
             CORE::COMM::Factory(element_name, "Polynomial", nodeiter + startID, myrank);
         // set the same global node ids to the ale element
         constraintele->SetNodeIds(ngid_ele.size(), ngid_ele.data());
@@ -360,7 +360,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(Teuchos::RCP<DRT::Di
   for (int i = 0; i < numcolele; ++i)
   {
     // some useful data for computation
-    DRT::Element* actele = disc->lColElement(i);
+    CORE::Elements::Element* actele = disc->lColElement(i);
     int eid = actele->Id();
     int condID = eletocond_id_.find(eid)->second;
     CORE::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
@@ -447,7 +447,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<DRT::Discret
   for (int i = 0; i < numcolele; ++i)
   {
     // some useful data for computation
-    DRT::Element* actele = disc->lColElement(i);
+    CORE::Elements::Element* actele = disc->lColElement(i);
     int eid = actele->Id();
     int condID = eletocond_id_.find(eid)->second;
     CORE::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];

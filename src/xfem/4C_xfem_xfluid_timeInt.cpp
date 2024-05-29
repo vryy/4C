@@ -22,6 +22,7 @@
 #include "4C_cut_sidehandle.hpp"
 #include "4C_cut_volumecell.hpp"
 #include "4C_discretization_condition_selector.hpp"
+#include "4C_discretization_fem_general_element_integration_select.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_factory.hpp"
@@ -31,7 +32,6 @@
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element_integration_select.hpp"
 #include "4C_xfem_condition_manager.hpp"
 #include "4C_xfem_dofset.hpp"
 
@@ -868,12 +868,12 @@ bool XFEM::XFluidTimeInt::non_intersected_elements(
 {
   const int numele = n->NumElement();
 
-  DRT::Element** elements = n->Elements();
+  CORE::Elements::Element** elements = n->Elements();
 
   // loop surrounding elements
   for (int i = 0; i < numele; i++)
   {
-    DRT::Element* e = elements[i];
+    CORE::Elements::Element* e = elements[i];
 
     // we have to check elements and its sub-elements in case of quadratic elements
     CORE::GEO::CUT::ElementHandle* ehandle = wizard->GetElement(e);
@@ -938,7 +938,7 @@ void XFEM::XFluidTimeInt::find_surrounding_ghost_dofsets(
 
     // get the element, ask the first vc
     int peid = (*vcs.begin())->parent_element()->GetParentId();
-    DRT::Element* ele = dis_->gElement(peid);
+    CORE::Elements::Element* ele = dis_->gElement(peid);
     DRT::Node** nodes = ele->Nodes();
 
     const std::vector<int>& nds = (*vcs.begin())->NodalDofSet();
@@ -1755,7 +1755,7 @@ bool XFEM::XFluidTimeInt::special_check_interface_tips(
 
     if (condition_manager_->IsMeshCoupling(coup_sid))
     {
-      DRT::Element* side = condition_manager_->get_side(coup_sid);
+      CORE::Elements::Element* side = condition_manager_->get_side(coup_sid);
 
       successful_check =
           special_check_interface_tips_space_time(changed_side, side, coup_sid, n_coord_old);
@@ -1803,7 +1803,7 @@ bool XFEM::XFluidTimeInt::special_check_interface_tips_levelset(
 
 bool XFEM::XFluidTimeInt::special_check_interface_tips_space_time(
     bool& changed_side,  /// did the node change the side ?
-    DRT::Element* side, const int coup_sid,
+    CORE::Elements::Element* side, const int coup_sid,
     const CORE::LINALG::Matrix<3, 1>& n_coord  /// node coodinates
 )
 {
@@ -1860,7 +1860,7 @@ template <CORE::FE::CellType side_distype,
     CORE::FE::CellType space_time_distype>
 bool XFEM::XFluidTimeInt::within_space_time_side(
     bool& within_space_time_side,  /// within the space time side
-    DRT::Element* side, const int coup_sid,
+    CORE::Elements::Element* side, const int coup_sid,
     const CORE::LINALG::Matrix<3, 1>& n_coord  /// node coodinates
 )
 {

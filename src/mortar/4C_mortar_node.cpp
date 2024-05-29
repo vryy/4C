@@ -435,7 +435,7 @@ void MORTAR::Node::BuildAveragedNormal()
   for (int j = 0; j < 3; ++j) MoData().n()[j] = 0.0;
 
   int nseg = NumElement();
-  DRT::Element** adjeles = Elements();
+  CORE::Elements::Element** adjeles = Elements();
 
   // we need to store some stuff here
   //**********************************************************************
@@ -521,7 +521,7 @@ bool MORTAR::Node::CheckMeshDistortion(double& relocation, const double& limit)
   for (int i = 0; i < NumElement(); ++i)
   {
     // get the current element
-    DRT::Element* ele = Elements()[i];
+    CORE::Elements::Element* ele = Elements()[i];
     if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
     auto* mrtrele = dynamic_cast<MORTAR::Element*>(ele);
 

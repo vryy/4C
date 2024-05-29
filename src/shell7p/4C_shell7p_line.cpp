@@ -13,14 +13,15 @@ DRT::ELEMENTS::Shell7pLineType DRT::ELEMENTS::Shell7pLineType::instance_;
 
 DRT::ELEMENTS::Shell7pLineType& DRT::ELEMENTS::Shell7pLineType::Instance() { return instance_; }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell7pLineType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Shell7pLineType::Create(
+    const int id, const int owner)
 {
   return Teuchos::null;
 }
 
 DRT::ELEMENTS::Shell7pLine::Shell7pLine(int id, int owner, int nnode, const int* nodeids,
-    DRT::Node** nodes, DRT::Element* parent, const int lline)
-    : DRT::FaceElement(id, owner)
+    DRT::Node** nodes, CORE::Elements::Element* parent, const int lline)
+    : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -40,11 +41,11 @@ DRT::ELEMENTS::Shell7pLine::Shell7pLine(int id, int owner, int nnode, const int*
 }
 
 DRT::ELEMENTS::Shell7pLine::Shell7pLine(const DRT::ELEMENTS::Shell7pLine& old)
-    : DRT::FaceElement(old), gaussrule_(old.gaussrule_)
+    : CORE::Elements::FaceElement(old), gaussrule_(old.gaussrule_)
 {
 }
 
-DRT::Element* DRT::ELEMENTS::Shell7pLine::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Shell7pLine::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::Shell7pLine(*this);
   return newelement;

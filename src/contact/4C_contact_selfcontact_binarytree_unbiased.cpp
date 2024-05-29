@@ -76,7 +76,7 @@ void CONTACT::UnbiasedSelfBinaryTree::calculate_proc_specific_dual_graph(
     std::vector<int> possadjids;
 
     // get current elements and its nodes
-    DRT::Element* element = discret().gElement(gid);
+    CORE::Elements::Element* element = discret().gElement(gid);
     if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
     DRT::Node** nodes = element->Nodes();
     if (!nodes) FOUR_C_THROW("Null pointer!");
@@ -110,14 +110,14 @@ void CONTACT::UnbiasedSelfBinaryTree::calculate_proc_specific_dual_graph(
 
       // adjacent elements of current node
       int numE = node->NumElement();
-      DRT::Element** adjElements = node->Elements();
+      CORE::Elements::Element** adjElements = node->Elements();
       if (!adjElements) FOUR_C_THROW("Null pointer!");
 
       // loop over all adjacent elements of current node
       for (int k = 0; k < numE; ++k)
       {
         // get k-th adjacent element
-        DRT::Element* adjElementk = adjElements[k];
+        CORE::Elements::Element* adjElementk = adjElements[k];
 
         // we only need to collect information if current adjacent element is owned by processor p
         if (adjElementk->Owner() != p) continue;
@@ -151,7 +151,7 @@ void CONTACT::UnbiasedSelfBinaryTree::define_search_elements()
   if (contact_pairs().find(eleID) != contact_pairs().end() && !contact_pairs().empty())
   {
     // get the current element to content of "isslave"
-    DRT::Element* element = discret().gElement(eleID);
+    CORE::Elements::Element* element = discret().gElement(eleID);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
     if (celement->IsSlave() != true)
       FOUR_C_THROW("Element: this should not happen!");
@@ -349,7 +349,7 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
   static CORE::LINALG::Matrix<1, 1> scalarprod(true);
 
   // get center and normal of leaf1-element
-  const DRT::Element* ele1 = discret().gElement(ele1gid);
+  const CORE::Elements::Element* ele1 = discret().gElement(ele1gid);
   const CORE::FE::CellType dtele1 = ele1->Shape();
   switch (dtele1)
   {
@@ -385,7 +385,7 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
       break;
   }
   // get center of master element
-  const DRT::Element* ele2 = discret().gElement(ele2gid);
+  const CORE::Elements::Element* ele2 = discret().gElement(ele2gid);
   const CORE::FE::CellType dtele2 = ele2->Shape();
   switch (dtele2)
   {
@@ -495,7 +495,7 @@ void CONTACT::UnbiasedSelfBinaryTree::search_contact()
   while (leafiter != leafiter_end)
   {
     const int gid = leafiter->first;
-    DRT::Element* element = discret().gElement(gid);
+    CORE::Elements::Element* element = discret().gElement(gid);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
 
     // set contact element to slave

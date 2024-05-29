@@ -438,15 +438,16 @@ void STR::MonitorDbc::get_area(double area[], const CORE::Conditions::Condition*
   CORE::LINALG::SerialDenseMatrix xyze_ref;
   CORE::LINALG::SerialDenseMatrix xyze_curr;
 
-  const std::map<int, Teuchos::RCP<DRT::Element>>& celes = rcond->Geometry();
+  const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& celes = rcond->Geometry();
   Teuchos::RCP<const Epetra_Vector> dispn = gstate_ptr_->GetDisNp();
   Epetra_Vector dispn_col(*discret.DofColMap(), true);
   CORE::LINALG::Export(*dispn, dispn_col);
 
   for (auto& cele_pair : celes)
   {
-    const DRT::Element* cele = cele_pair.second.get();
-    const DRT::FaceElement* fele = dynamic_cast<const DRT::FaceElement*>(cele);
+    const CORE::Elements::Element* cele = cele_pair.second.get();
+    const CORE::Elements::FaceElement* fele =
+        dynamic_cast<const CORE::Elements::FaceElement*>(cele);
     if (!fele) FOUR_C_THROW("No face element!");
 
     if (!fele->parent_element() or fele->parent_element()->Owner() != discret.Comm().MyPID())

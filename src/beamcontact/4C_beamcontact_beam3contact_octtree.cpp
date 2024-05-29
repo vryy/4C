@@ -181,7 +181,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(
 /*----------------------------------------------------------------------*
  |  calls the almighty Octtree (public)                    mueller 01/11|
  *----------------------------------------------------------------------*/
-std::vector<std::vector<DRT::Element*>> Beam3ContactOctTree::OctTreeSearch(
+std::vector<std::vector<CORE::Elements::Element*>> Beam3ContactOctTree::OctTreeSearch(
     std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, int step)
 {
 #ifdef OCTREEDEBUG
@@ -209,7 +209,7 @@ std::vector<std::vector<DRT::Element*>> Beam3ContactOctTree::OctTreeSearch(
   double t_04 = 0.0;
 #endif
   // intersection checks
-  std::vector<std::vector<DRT::Element*>> contactpairelements;
+  std::vector<std::vector<CORE::Elements::Element*>> contactpairelements;
   if (bboxesfound)
   {
     bounding_box_intersection(currentpositions, contactpairelements);
@@ -379,7 +379,7 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(
  |  Output of octants, bounding boxes and contact pairs (public)       mueller 01/12 |
  *----------------------------------------------------------------------------------.*/
 void Beam3ContactOctTree::OctreeOutput(
-    std::vector<std::vector<DRT::Element*>> contactpairelements, int step)
+    std::vector<std::vector<CORE::Elements::Element*>> contactpairelements, int step)
 {
   if (!discret_.Comm().MyPID() && step != -1)
   {
@@ -478,8 +478,8 @@ void Beam3ContactOctTree::initialize_octree_search()
     {
       for (int i = 0; i < searchdis_.ElementColMap()->NumMyElements(); i++)
       {
-        DRT::Element* element = searchdis_.lColElement(i);
-        const DRT::ElementType& eot = element->ElementType();
+        CORE::Elements::Element* element = searchdis_.lColElement(i);
+        const CORE::Elements::ElementType& eot = element->ElementType();
 
         (*diameter_)[i] = -1.0;  // TODO get diameter from call of abstract Beam3Base::Radius();
 
@@ -538,7 +538,7 @@ void Beam3ContactOctTree::create_bounding_boxes(
     if (searchdis_.ElementRowMap()->LID(elegid) > -1)
     {
       // get the element with local ID (LID) elecolid
-      DRT::Element* element = searchdis_.lColElement(elecolid);
+      CORE::Elements::Element* element = searchdis_.lColElement(elecolid);
 
       // store nodal positions into matrix coords
       CORE::LINALG::SerialDenseMatrix coord(3, 2, true);
@@ -870,7 +870,7 @@ void Beam3ContactOctTree::create_spbb(CORE::LINALG::SerialDenseMatrix& coord, co
   int elegid = searchdis_.ElementColMap()->GID(elecolid);
 
   // get the element with local ID (LID) elecolid
-  DRT::Element* element = searchdis_.lColElement(elecolid);
+  CORE::Elements::Element* element = searchdis_.lColElement(elecolid);
   double diameter = 0.0;
 
   if (BEAMINTERACTION::UTILS::IsBeamElement(*element))
@@ -1509,7 +1509,7 @@ bool Beam3ContactOctTree::spbb_is_in_this_octant(CORE::LINALG::Matrix<3, 1>& oct
  *----------------------------------------------------------------------------------*/
 void Beam3ContactOctTree::bounding_box_intersection(
     std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-    std::vector<std::vector<DRT::Element*>>& contactpairelements)
+    std::vector<std::vector<CORE::Elements::Element*>>& contactpairelements)
 {
 #ifdef MEASURETIME
   double t_search = Teuchos::Time::wallTime();
@@ -1538,8 +1538,8 @@ void Beam3ContactOctTree::bounding_box_intersection(
         if (bboxIDs[0] > -1 && bboxIDs[1] > -1)
         {
           considerpair = true;
-          DRT::Element* element1 = searchdis_.gElement(bboxIDs[0]);
-          DRT::Element* element2 = searchdis_.gElement(bboxIDs[1]);
+          CORE::Elements::Element* element1 = searchdis_.gElement(bboxIDs[0]);
+          CORE::Elements::Element* element2 = searchdis_.gElement(bboxIDs[1]);
 
           // Here we have introduced an criteria in order to sort neighboring contact element pairs
           // out. This method is based on the assumption, that two elements sharing the same node
@@ -1588,8 +1588,8 @@ void Beam3ContactOctTree::bounding_box_intersection(
     // ((*it).second)[1]<<std::endl;
     int collid1 = searchdis_.ElementColMap()->LID(((*it).second)[0]);
     int collid2 = searchdis_.ElementColMap()->LID(((*it).second)[1]);
-    DRT::Element* tempele1 = searchdis_.lColElement(collid1);
-    DRT::Element* tempele2 = searchdis_.lColElement(collid2);
+    CORE::Elements::Element* tempele1 = searchdis_.lColElement(collid1);
+    CORE::Elements::Element* tempele2 = searchdis_.lColElement(collid2);
     // matrices to store nodal coordinates
     CORE::LINALG::SerialDenseMatrix ele1pos(3, tempele1->num_node());
     CORE::LINALG::SerialDenseMatrix ele2pos(3, tempele2->num_node());
@@ -1608,7 +1608,7 @@ void Beam3ContactOctTree::bounding_box_intersection(
       for (int n = 0; n < 3; n++) ele2pos(n, m) = temppos(n);
     }
     // add to pair vector
-    std::vector<DRT::Element*> temp_vec(2);
+    std::vector<CORE::Elements::Element*> temp_vec(2);
     temp_vec[0] = tempele1;
     temp_vec[1] = tempele2;
     contactpairelements.push_back(temp_vec);
@@ -1900,7 +1900,7 @@ void Beam3ContactOctTree::communicate_multi_vector(Epetra_MultiVector& InVec,
 /*-----------------------------------------------------------------------*
  | Calc. max and min values of node coordinates              meier 05/14 |
  *-----------------------------------------------------------------------*/
-void Beam3ContactOctTree::calc_corner_pos(DRT::Element* element,
+void Beam3ContactOctTree::calc_corner_pos(CORE::Elements::Element* element,
     std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
     CORE::LINALG::SerialDenseMatrix& coord)
 {

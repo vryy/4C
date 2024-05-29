@@ -98,7 +98,7 @@ void CONTACT::AUG::Interface::setup()
   for (int i = 0; i < selerowmap_->NumMyElements(); ++i)
   {
     int gid = selerowmap_->GID(i);
-    DRT::Element* ele = idiscret_->gElement(gid);
+    CORE::Elements::Element* ele = idiscret_->gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find slave element with gid %i", gid);
 
     MORTAR::Element* sele = static_cast<MORTAR::Element*>(ele);
@@ -112,7 +112,7 @@ void CONTACT::AUG::Interface::setup()
   for (int i = 0; i < melerowmap_->NumMyElements(); ++i)
   {
     int gid = melerowmap_->GID(i);
-    DRT::Element* ele = idiscret_->gElement(gid);
+    CORE::Elements::Element* ele = idiscret_->gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find master element with gid %i", gid);
 
     MORTAR::Element* mele = static_cast<MORTAR::Element*>(ele);
@@ -325,7 +325,7 @@ void CONTACT::AUG::Interface::RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInter
   {
     const int gid1 = myelementgids[i];
 
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
@@ -1539,7 +1539,7 @@ void CONTACT::AUG::Interface::build_active_slave_element_col_map(const Epetra_Ma
     const int cngid = active_col_node_gids[i];
     DRT::Node* anode = idiscret_->gNode(cngid);
 
-    DRT::Element** adj_eles = anode->Elements();
+    CORE::Elements::Element** adj_eles = anode->Elements();
     const unsigned num_adj_eles = anode->NumElement();
 
     for (unsigned e = 0; e < num_adj_eles; ++e)
@@ -1963,7 +1963,7 @@ double CONTACT::AUG::Interface::my_characteristic_element_length(
   double my_max_h_ele = -1.0;
   for (int i = 0; i < num_my_entries; ++i)
   {
-    const DRT::Element* ele = idiscret_->gElement(my_gids[i]);
+    const CORE::Elements::Element* ele = idiscret_->gElement(my_gids[i]);
     if (not ele) FOUR_C_THROW("Couldn't find the element! (ele-GID=%d)", my_gids[i]);
 
     const DRT::Node* const* nodes = ele->Nodes();
@@ -2078,7 +2078,7 @@ void CONTACT::AUG::Interface::split_into_far_and_close_sets(std::vector<int>& cl
     {
       // get element
       int gid = SlaveRowElements()->GID(i);
-      DRT::Element* ele = Discret().gElement(gid);
+      CORE::Elements::Element* ele = Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
 
       const bool close = et_selerow[i] > threshold;

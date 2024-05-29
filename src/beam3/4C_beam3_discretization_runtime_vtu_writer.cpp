@@ -15,11 +15,11 @@
 #include "4C_beam3_reissner.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_periodic_boundingbox.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_visualization_manager.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -93,7 +93,7 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
   for (unsigned int iele = 0; iele < static_cast<unsigned int>(discretization_->NumMyRowElements());
        ++iele)
   {
-    const DRT::Element* ele = discretization_->lRowElement(iele);
+    const CORE::Elements::Element* ele = discretization_->lRowElement(iele);
 
     // check for beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
@@ -133,7 +133,7 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
 
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
@@ -273,7 +273,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_displacement_field(
   // loop over myrank's beam elements and compute disp for each visualization point
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
@@ -368,7 +368,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendTriadField(
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
@@ -452,7 +452,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_owning_processor()
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -484,7 +484,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementGID()
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -505,7 +505,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementGID()
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::append_element_ghosting_information()
 {
-  const auto only_select_beam_elements = [](const DRT::Element* ele)
+  const auto only_select_beam_elements = [](const CORE::Elements::Element* ele)
   { return dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele); };
   IO::append_element_ghosting_information(
       *discretization_, *visualization_manager_, only_select_beam_elements);
@@ -526,7 +526,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_internal_energy()
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
 
@@ -563,7 +563,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_kinetic_energy()
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
 
@@ -601,7 +601,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_filament_id_and_type(
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
@@ -650,7 +650,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_circular_cross_sectio
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
@@ -706,7 +706,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_point_circular_cross_section_
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
@@ -809,7 +809,7 @@ void BeamDiscretizationRuntimeOutputWriter::
   // loop over my elements and collect the data
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
@@ -984,7 +984,7 @@ void BeamDiscretizationRuntimeOutputWriter::
   // loop over my elements and collect the data
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
@@ -1171,7 +1171,7 @@ void BeamDiscretizationRuntimeOutputWriter::
   // loop over my elements and collect the data
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
@@ -1343,7 +1343,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_paramater
   // all elements)
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // length of element is approximated linearly, as also the direction of a element is calculated
@@ -1465,7 +1465,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
   // loop over all my elements and build force sum of myrank's cut element
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
@@ -1542,7 +1542,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_elastic_energy()
   //  // loop over my elements and collect the data about triads/base vectors
   //  for (unsigned int iele=0; iele<num_row_elements; ++iele)
   //  {
-  //    const DRT::Element* ele = discretization_->lRowElement(iele);
+  //    const CORE::Elements::Element* ele = discretization_->lRowElement(iele);
   //
   //    // check for beam element
   //    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const
@@ -1576,7 +1576,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendRefLength()
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
@@ -1718,7 +1718,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_continuous_stress_strain_resu
   // loop over myrank's beam elements and compute strain resultants for each visualization point
   for (std::size_t ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const DRT::Element* ele =
+    const CORE::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to SR beam element

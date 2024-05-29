@@ -10,8 +10,8 @@
 #include "4C_fbi_calc_utils.hpp"
 
 #include "4C_beam3_base.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -24,10 +24,10 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 
 void FBI::UTILS::GetFBIElementCenterlineDOFIndices(DRT::Discretization const& discret,
-    const DRT::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
+    const CORE::Elements::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
     unsigned int& num_dof)
 {
-  // Todo implement method in DRT::Element or find alternative way of doing this
+  // Todo implement method in CORE::Elements::Element or find alternative way of doing this
   // find out the elements' number of Dofs (=dimension of element vector/matrices)
   std::vector<int> lmrow;
   std::vector<int> dummy1, dummy2;
@@ -70,7 +70,7 @@ void FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
   std::vector<std::vector<unsigned int>> ele_centerlinedofindices(2);
 
   // Get DOFs for beam element
-  DRT::Element* ele = discretization1.gElement(elegid[0]);
+  CORE::Elements::Element* ele = discretization1.gElement(elegid[0]);
   GetFBIElementCenterlineDOFIndices(
       discretization1, ele, ele_centerlinedofindices[0], numdof_ele[0]);
 

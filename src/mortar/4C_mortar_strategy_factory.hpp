@@ -21,9 +21,13 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Element;
   class Node;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace IO
 {
@@ -121,8 +125,8 @@ namespace MORTAR
        *  Stores knot vector, zerosized information and normal factor
        *
        *  \author Farah */
-      void prepare_nurbs_element(const DRT::Discretization& discret, Teuchos::RCP<DRT::Element> ele,
-          Teuchos::RCP<MORTAR::Element> cele) const;
+      void prepare_nurbs_element(const DRT::Discretization& discret,
+          Teuchos::RCP<CORE::Elements::Element> ele, Teuchos::RCP<MORTAR::Element> cele) const;
 
       /*! \brief Prepare mortar node for NURBS case
        *

@@ -17,8 +17,8 @@ Pack, Unpack, NumDofPerNode etc.
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -27,7 +27,7 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    class LubricationType : public DRT::ElementType
+    class LubricationType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "LubricationType"; }
@@ -36,13 +36,13 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -65,7 +65,7 @@ namespace DRT
     /*!
     \brief The Lubrication element
     */
-    class Lubrication : public DRT::Element
+    class Lubrication : public CORE::Elements::Element
     {
      public:
       //@}
@@ -93,7 +93,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
@@ -127,12 +127,12 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -168,7 +168,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can re-decide the
@@ -179,7 +179,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can re-decide along the way of a simulation.
@@ -198,7 +198,10 @@ namespace DRT
       /*!
       \brief Return ElementType
       */
-      DRT::ElementType& ElementType() const override { return LubricationType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return LubricationType::Instance();
+      }
 
       //@}
 
@@ -283,17 +286,17 @@ namespace DRT
     //=======================================================================
     //=======================================================================
 
-    class LubricationBoundaryType : public DRT::ElementType
+    class LubricationBoundaryType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "LubricationBoundaryType"; }
 
       static LubricationBoundaryType& Instance();
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -317,7 +320,7 @@ namespace DRT
           purpose is to evaluate certain boundary conditions that might be
           adjacent to a parent Lubrication element.
     */
-    class LubricationBoundary : public DRT::FaceElement
+    class LubricationBoundary : public CORE::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -351,7 +354,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
@@ -372,12 +375,12 @@ namespace DRT
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -414,7 +417,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can re-decide the
@@ -429,7 +432,7 @@ namespace DRT
       //! Return a pointer to the parent element of this boundary element
       virtual DRT::ELEMENTS::Lubrication* parent_element() const
       {
-        DRT::Element* parent = DRT::FaceElement::parent_element();
+        CORE::Elements::Element* parent = CORE::Elements::FaceElement::parent_element();
         // make sure the static cast below is really valid
         FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Lubrication*>(parent) != nullptr,
             "Master element is no Lubrication element");
@@ -439,7 +442,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can re-decide along the way of a simulation.
@@ -458,7 +461,10 @@ namespace DRT
       /*!
       \brief Return ElementType
       */
-      DRT::ElementType& ElementType() const override { return LubricationBoundaryType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return LubricationBoundaryType::Instance();
+      }
 
       //@}
 

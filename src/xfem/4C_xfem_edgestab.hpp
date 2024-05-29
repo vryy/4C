@@ -28,7 +28,6 @@ namespace DRT
 {
   class Discretization;
   class DiscretizationFaces;
-  class Element;
 
   namespace ELEMENTS
   {
@@ -36,6 +35,11 @@ namespace DRT
     class FluidIntFace;
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::FE
 {
@@ -131,7 +135,7 @@ namespace XFEM
    private:
     //! get the cut side for face's element identified using the sorted node ids
     CORE::GEO::CUT::SideHandle* get_face(
-        DRT::Element* faceele, Teuchos::RCP<CORE::GEO::CutWizard> wizard);
+        CORE::Elements::Element* faceele, Teuchos::RCP<CORE::GEO::CutWizard> wizard);
 
     // reset maps for output
     void reset();

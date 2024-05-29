@@ -15,7 +15,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_exporter.hpp"
-#include "4C_lib_elementtype.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
 #include <Epetra_MpiComm.h>
@@ -28,9 +28,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Element;
-  class Exporter;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::GEO
 {
@@ -87,7 +90,7 @@ namespace XFEM
 
     //! compute position of target node w.r.t. source element and interpolate when covered by it
     template <CORE::FE::CellType distype>
-    bool check_position_and_project(const DRT::Element* src_ele,
+    bool check_position_and_project(const CORE::Elements::Element* src_ele,
         const CORE::LINALG::Matrix<3, 1>& node_xyz, CORE::LINALG::Matrix<8, 1>& interpolatedvec);
 
     //! communicate nodes demanding reconstruction in a Round-Robin pattern

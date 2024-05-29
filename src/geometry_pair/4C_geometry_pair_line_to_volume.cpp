@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  */
 template <typename scalar_type, typename line, typename volume>
 GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::GeometryPairLineToVolume(
-    const DRT::Element* element1, const DRT::Element* element2,
+    const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data)
     : GeometryPair(element1, element2), line_to_3d_evaluation_data_(line_to_3d_evaluation_data)
 {

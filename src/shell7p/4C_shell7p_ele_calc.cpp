@@ -36,7 +36,7 @@ DRT::ELEMENTS::Shell7pEleCalc<distype>::Shell7pEleCalc()
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Shell7pEleCalc<distype>::Setup(DRT::Element& ele,
+void DRT::ELEMENTS::Shell7pEleCalc<distype>::Setup(CORE::Elements::Element& ele,
     MAT::So3Material& solid_material, INPUT::LineDefinition* linedef,
     const STR::ELEMENTS::ShellLockingTypes& locking_types,
     const STR::ELEMENTS::ShellData& shell_data)
@@ -70,7 +70,7 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::Unpack(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalc<distype>::material_post_setup(
-    DRT::Element& ele, MAT::So3Material& solid_material)
+    CORE::Elements::Element& ele, MAT::So3Material& solid_material)
 {
   // element/nodal wise defined data
   Teuchos::ParameterList params{};
@@ -81,14 +81,15 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::material_post_setup(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalc<distype>::reset_to_last_converged(
-    DRT::Element& ele, MAT::So3Material& solid_material)
+    CORE::Elements::Element& ele, MAT::So3Material& solid_material)
 {
   solid_material.reset_step();
 }
 
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::Shell7pEleCalc<distype>::calculate_internal_energy(DRT::Element& ele,
-    MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+double DRT::ELEMENTS::Shell7pEleCalc<distype>::calculate_internal_energy(
+    CORE::Elements::Element& ele, MAT::So3Material& solid_material,
+    const DRT::Discretization& discretization,
     const CORE::LINALG::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params)
 {
@@ -185,9 +186,9 @@ double DRT::ELEMENTS::Shell7pEleCalc<distype>::calculate_internal_energy(DRT::El
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Shell7pEleCalc<distype>::calculate_stresses_strains(DRT::Element& ele,
-    MAT::So3Material& solid_material, const ShellStressIO& stressIO, const ShellStrainIO& strainIO,
-    const DRT::Discretization& discretization,
+void DRT::ELEMENTS::Shell7pEleCalc<distype>::calculate_stresses_strains(
+    CORE::Elements::Element& ele, MAT::So3Material& solid_material, const ShellStressIO& stressIO,
+    const ShellStrainIO& strainIO, const DRT::Discretization& discretization,
     const CORE::LINALG::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params)
 {
@@ -297,7 +298,8 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::calculate_stresses_strains(DRT::Ele
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffness_mass(
-    DRT::Element& ele, MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+    CORE::Elements::Element& ele, MAT::So3Material& solid_material,
+    const DRT::Discretization& discretization,
     const CORE::LINALG::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
     CORE::LINALG::SerialDenseMatrix* stiffness_matrix, CORE::LINALG::SerialDenseMatrix* mass_matrix)
@@ -475,14 +477,14 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffness_
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Shell7pEleCalc<distype>::Recover(DRT::Element& ele,
+void DRT::ELEMENTS::Shell7pEleCalc<distype>::Recover(CORE::Elements::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params, STR::ELEMENTS::ParamsInterface& str_interface)
 {
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Shell7pEleCalc<distype>::Update(DRT::Element& ele,
+void DRT::ELEMENTS::Shell7pEleCalc<distype>::Update(CORE::Elements::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const CORE::LINALG::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params)

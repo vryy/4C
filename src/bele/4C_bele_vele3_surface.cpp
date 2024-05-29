@@ -27,7 +27,7 @@ DRT::ELEMENTS::Vele3SurfaceType& DRT::ELEMENTS::Vele3SurfaceType::Instance() { r
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Vele3Surface::Vele3Surface(int id, int owner, int nnode, const int* nodeids,
     DRT::Node** nodes, DRT::ELEMENTS::Vele3* parent, const int lsurface)
-    : DRT::FaceElement(id, owner)
+    : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -41,7 +41,7 @@ DRT::ELEMENTS::Vele3Surface::Vele3Surface(int id, int owner, int nnode, const in
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Vele3Surface::Vele3Surface(const DRT::ELEMENTS::Vele3Surface& old)
-    : DRT::FaceElement(old)
+    : CORE::Elements::FaceElement(old)
 {
   return;
 }
@@ -49,7 +49,7 @@ DRT::ELEMENTS::Vele3Surface::Vele3Surface(const DRT::ELEMENTS::Vele3Surface& old
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Vele3Surface::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Vele3Surface::Clone() const
 {
   DRT::ELEMENTS::Vele3Surface* newelement = new DRT::ELEMENTS::Vele3Surface(*this);
   return newelement;
@@ -107,7 +107,7 @@ void DRT::ELEMENTS::Vele3Surface::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3Surface::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Vele3Surface::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<Vele3Line, Vele3Surface>(CORE::COMM::buildLines, *this);
 }
@@ -116,7 +116,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3Surface::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of Surfaces (length 1) (public)               gammi 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Vele3Surface::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Vele3Surface::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

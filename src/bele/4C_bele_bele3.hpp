@@ -15,9 +15,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
@@ -34,7 +34,7 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    class Bele3Type : public DRT::ElementType
+    class Bele3Type : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Bele3Type"; }
@@ -43,13 +43,13 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -73,7 +73,7 @@ namespace DRT
      * if necessary.
      *
      */
-    class Bele3 : public DRT::Element
+    class Bele3 : public CORE::Elements::Element
     {
       // friend class to fill number of dofs per node exclusively during creation
       friend class Bele3Type;
@@ -97,7 +97,7 @@ namespace DRT
       */
       explicit Bele3(const Bele3& old);
 
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
       CORE::FE::CellType Shape() const override;
       int NumLine() const override
       {
@@ -113,8 +113,8 @@ namespace DRT
       }
       int NumSurface() const override { return 1; }
       int NumVolume() const override { return -1; }
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
       int UniqueParObjectId() const override { return Bele3Type::Instance().UniqueParObjectId(); }
       void Pack(CORE::COMM::PackBuffer& data) const override;
       void Unpack(const std::vector<char>& data) override;
@@ -127,7 +127,7 @@ namespace DRT
       int NumDofPerNode(const DRT::Node&) const override { return numdofpernode_; }
       int num_dof_per_element() const override { return 0; }
       void Print(std::ostream& os) const override;
-      DRT::ElementType& ElementType() const override { return Bele3Type::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override { return Bele3Type::Instance(); }
 
       //@}
 
@@ -238,7 +238,7 @@ namespace DRT
       );
 
       //! vector with line elements
-      //  std::vector<Teuchos::RCP<DRT::Element> >                      lines_;
+      //  std::vector<Teuchos::RCP<CORE::Elements::Element> >                      lines_;
 
       //! flag for fixed or moving boundary
       //  const bool                                      is_moving_;
@@ -258,17 +258,17 @@ namespace DRT
     //=======================================================================
     //=======================================================================
 
-    class Bele3LineType : public DRT::ElementType
+    class Bele3LineType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Bele3LineType"; }
 
       static Bele3LineType& Instance();
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -289,7 +289,7 @@ namespace DRT
     \brief An element representing a line of a bele3 element
 
     */
-    class Bele3Line : public DRT::FaceElement
+    class Bele3Line : public CORE::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -316,7 +316,7 @@ namespace DRT
       */
       Bele3Line(const Bele3Line& old);
 
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
       CORE::FE::CellType Shape() const override;
       int UniqueParObjectId() const override
       {
@@ -333,7 +333,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       For this 3D boundary element, we have 3 displacements, if needed
       */
@@ -343,7 +343,10 @@ namespace DRT
 
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return Bele3LineType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return Bele3LineType::Instance();
+      }
 
       //@}
 

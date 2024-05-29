@@ -25,8 +25,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::LINALG
 {
@@ -156,7 +160,7 @@ namespace CORE::GEO
        \param currentpositions     current nodal positions in discretization
        \return vector of children ids
        */
-      std::vector<int> classify_element(const DRT::Element* element,
+      std::vector<int> classify_element(const CORE::Elements::Element* element,
           const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) const;
 
       /*!
@@ -165,8 +169,8 @@ namespace CORE::GEO
        \param xyze_element         coordinates of element
        \return vector of children ids
        */
-      std::vector<int> classify_element(
-          const DRT::Element* element, const CORE::LINALG::SerialDenseMatrix& xyze_element) const;
+      std::vector<int> classify_element(const CORE::Elements::Element* element,
+          const CORE::LINALG::SerialDenseMatrix& xyze_element) const;
 
       /*!
        \brief return child(ren) of this tree node in which the ele has to be inserted
@@ -174,7 +178,7 @@ namespace CORE::GEO
        \param xyze_element         coordinates of element
        \return vector of children ids
        */
-      std::vector<int> classify_element(const Teuchos::RCP<DRT::Element> element,
+      std::vector<int> classify_element(const Teuchos::RCP<CORE::Elements::Element> element,
           const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) const;
 
       /*!
@@ -388,7 +392,7 @@ namespace CORE::GEO
      \param treetype             quadtree
      */
     void initialize_tree_slide_ale(const CORE::LINALG::Matrix<3, 2>& nodeBox,
-        std::map<int, Teuchos::RCP<DRT::Element>>& elements, const TreeType treetype);
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& elements, const TreeType treetype);
 
     void insertElement(const int eid);
 

@@ -9,13 +9,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_ELEMENTTYPE_HPP
-#define FOUR_C_LIB_ELEMENTTYPE_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_ELEMENTTYPE_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_ELEMENTTYPE_HPP
 
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 #include <Epetra_Vector.h>
@@ -32,22 +32,24 @@ namespace CORE::LINALG
 
 namespace DRT
 {
-  class Element;
   class Discretization;
+}
+/// Subclass of ParObjectType that adds element type specific methods
+/*!
+  Element types need to be initialized. Furthermore, there is a pre_evaluate
+  method and the ability to read elements from dat files. And finally the
+  element specific setup of null spaces for multi grid preconditioning is
+  here, too.
 
-  /// Subclass of ParObjectType that adds element type specific methods
-  /*!
-    Element types need to be initialized. Furthermore, there is a pre_evaluate
-    method and the ability to read elements from dat files. And finally the
-    element specific setup of null spaces for multi grid preconditioning is
-    here, too.
+  \note There are boundary elements that do not need all of this
+  functionality.
 
-    \note There are boundary elements that do not need all of this
-    functionality.
+  \author u.kue
+  \date 06/10
+ */
 
-    \author u.kue
-    \date 06/10
-   */
+namespace CORE::Elements
+{
   class ElementType : public CORE::COMM::ParObjectType
   {
    protected:
@@ -69,7 +71,7 @@ namespace DRT
     }
 
     /// create an empty element
-    virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner) = 0;
+    virtual Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) = 0;
 
     /// initialize the element type
     virtual int Initialize(DRT::Discretization& dis);
@@ -97,14 +99,14 @@ namespace DRT
     @param[out] np Number of degrees of freedom for local constraints (e.g. fluid pressure)
     */
     virtual void nodal_block_information(
-        DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) = 0;
+        CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) = 0;
 
     /// do the null space computation
     virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) = 0;
   };
 
-}  // namespace DRT
+}  // namespace CORE::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -1309,7 +1309,7 @@ namespace FLD
       for (int el = 0; el < discret_->NumMyRowElements(); ++el)
       {
         CORE::LINALG::SerialDenseVector interpolVec;
-        DRT::Element* ele = discret_->lRowElement(el);
+        CORE::Elements::Element* ele = discret_->lRowElement(el);
 
         interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
@@ -1752,7 +1752,7 @@ namespace FLD
       for (int el = 0; el < discret_->NumMyRowElements(); ++el)
       {
         CORE::LINALG::SerialDenseVector interpolVec;
-        DRT::Element* ele = discret_->lRowElement(el);
+        CORE::Elements::Element* ele = discret_->lRowElement(el);
 
         interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
@@ -1928,11 +1928,11 @@ namespace FLD
       initParams.set<int>("action", FLD::project_hdg_force_on_dof_vec_for_hit);
 
       // loop over all elements on the processor
-      DRT::Element::LocationArray la(2);
+      CORE::Elements::Element::LocationArray la(2);
       for (int el = 0; el < discret_->NumMyRowElements(); ++el)
       {
         // 1st evaluate
-        DRT::Element* ele = discret_->lRowElement(el);
+        CORE::Elements::Element* ele = discret_->lRowElement(el);
 
         std::vector<int> dummy;
         CORE::LINALG::SerialDenseMatrix dummyMat;

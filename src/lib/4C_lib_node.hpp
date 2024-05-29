@@ -23,10 +23,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace DRT
 {
   // forward declarations
-  class Element;
   class Discretization;
 
   class NodeType : public CORE::COMM::ParObjectType
@@ -147,7 +151,7 @@ namespace DRT
     /*!
     \brief Return ptr to vector of element ptrs
     */
-    inline DRT::Element** Elements()
+    inline CORE::Elements::Element** Elements()
     {
       if (NumElement())
         return element_.data();
@@ -158,10 +162,10 @@ namespace DRT
     /*!
     \brief Return const ptr to vector of const element ptrs
     */
-    inline const DRT::Element* const* Elements() const
+    inline const CORE::Elements::Element* const* Elements() const
     {
       if (NumElement())
-        return (const DRT::Element* const*)(element_.data());
+        return (const CORE::Elements::Element* const*)(element_.data());
       else
         return nullptr;
     }
@@ -309,7 +313,7 @@ namespace DRT
 
     Resizes the element ptr vector and adds ptr at the end of vector
     */
-    inline void add_element_ptr(DRT::Element* eleptr)
+    inline void add_element_ptr(CORE::Elements::Element* eleptr)
     {
       const int size = element_.size();
       element_.resize(size + 1);
@@ -326,7 +330,7 @@ namespace DRT
     //! nodal coords
     std::vector<double> x_;
     //! pointers to adjacent elements
-    std::vector<Element*> element_;
+    std::vector<CORE::Elements::Element*> element_;
     //! some conditions e.g. BCs
     std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>> condition_;
 

@@ -18,8 +18,8 @@ correct implementation is still missing.
 #include "4C_config.hpp"
 
 #include "4C_discretization_condition.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -67,7 +67,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra) = 0;
 
       /// Internal implementation class for ElemagBoundary elements
-      static ElemagBoundaryImplInterface* Impl(const DRT::Element* ele);
+      static ElemagBoundaryImplInterface* Impl(const CORE::Elements::Element* ele);
 
     };  // class ElemagBoundaryImplInterface
 

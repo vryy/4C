@@ -181,9 +181,9 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
       GLOBAL::Problem::Instance()->spatial_approximation_type()));
 
   // declare struct objects in interface
-  std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>> structelements;
-  std::map<int, Teuchos::RCP<DRT::Element>> structmelements;
-  std::map<int, Teuchos::RCP<DRT::Element>> structdelements;
+  std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>> structelements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> structmelements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> structdelements;
   std::map<int, DRT::Node*> dummy1;                 // dummy map
   std::map<int, std::map<int, DRT::Node*>> dummy2;  // dummy map
   std::map<int, DRT::Node*> structmnodes;           // partial map of sticking structure nodes
@@ -203,8 +203,8 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
 
   std::vector<int> slideeleidvector;
 
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator eit;
-  std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>>::iterator meit;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator eit;
+  std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>>::iterator meit;
 
   for (eit = structmelements.begin(); eit != structmelements.end(); eit++)
   {
@@ -233,8 +233,8 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
   structdis->Comm().MaxAll(&max_id, &maxid_, 1);
 
   // declare fluid objects in interface
-  std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>> fluidelements;
-  std::map<int, Teuchos::RCP<DRT::Element>> fluidmelements;
+  std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>> fluidelements;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> fluidmelements;
   std::map<int, std::map<int, DRT::Node*>> fluidnodes;  // complete map of fluid nodes
   std::map<int, DRT::Node*> fluidmnodes;                // partial map of sticking fluid nodes
 
@@ -440,10 +440,10 @@ std::vector<double> FSI::UTILS::SlideAleUtils::centerdisp(
   double lengthcirc = 0.0;
 
   // calculating the center displacement by evaluating structure interface elements
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator elemiter;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator elemiter;
   for (elemiter = istructdispeles_.begin(); elemiter != istructdispeles_.end(); ++elemiter)
   {
-    Teuchos::RCP<DRT::Element> iele = elemiter->second;
+    Teuchos::RCP<CORE::Elements::Element> iele = elemiter->second;
     std::vector<int> lm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
@@ -488,8 +488,8 @@ std::map<int, CORE::LINALG::Matrix<3, 1>> FSI::UTILS::SlideAleUtils::current_str
     std::map<int, double>& maxcoord)
 {
   std::map<int, CORE::LINALG::Matrix<3, 1>> currentpositions;
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator eleiter;
-  std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>>::const_iterator meleiter;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator eleiter;
+  std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>>::const_iterator meleiter;
 
   // map with fully reduced struct element distribution
   for (meleiter = structreduelements_.begin(); meleiter != structreduelements_.end(); meleiter++)
@@ -497,7 +497,7 @@ std::map<int, CORE::LINALG::Matrix<3, 1>> FSI::UTILS::SlideAleUtils::current_str
     maxcoord[meleiter->first] = 0.0;
     for (eleiter = meleiter->second.begin(); eleiter != meleiter->second.end(); eleiter++)
     {
-      Teuchos::RCP<DRT::Element> tmpele = eleiter->second;
+      Teuchos::RCP<CORE::Elements::Element> tmpele = eleiter->second;
 
       const int* n = tmpele->NodeIds();
 
@@ -702,9 +702,9 @@ void FSI::UTILS::SlideAleUtils::redundant_elements(
 
   DRT::Discretization& interfacedis = coupsf.Interface()->Discret();
 
-  std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>>::iterator mapit;
+  std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>>::iterator mapit;
   // build redundant version istructslideles_;
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator eit;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator eit;
   int dim = GLOBAL::Problem::Instance()->NDim();
 
   for (int i = 0; i <= maxid_; ++i)
@@ -730,7 +730,8 @@ void FSI::UTILS::SlideAleUtils::redundant_elements(
     for (int eleind = 0; eleind < redmstruslideleids.NumMyElements(); eleind++)
     {
       {
-        DRT::Element* tmpele = interfacedis.gElement(redmstruslideleids.GID(eleind) + soffset);
+        CORE::Elements::Element* tmpele =
+            interfacedis.gElement(redmstruslideleids.GID(eleind) + soffset);
         if (dim == 3)
         {
           structreduelements_[i][tmpele->Id()] =
@@ -750,7 +751,7 @@ void FSI::UTILS::SlideAleUtils::redundant_elements(
     {
       for (eit = ifluidslideles_[i].begin(); eit != ifluidslideles_[i].end(); eit++)
       {
-        DRT::Element* tmpele = interfacedis.gElement(eit->first + foffset);
+        CORE::Elements::Element* tmpele = interfacedis.gElement(eit->first + foffset);
         if (dim == 3)
         {
           ifluidslidstructeles_[i][tmpele->Id()] =
@@ -790,7 +791,7 @@ void FSI::UTILS::SlideAleUtils::rotation(DRT::Discretization& mtrdis,  ///< flui
   mtrdis.set_state("displacementnp", idispnpcol);
   mtrdis.set_state("displacementincr", idispstepcol);
 
-  std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>>::iterator melit;
+  std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>>::iterator melit;
   for (int i = 0; i <= maxid_; ++i)
   {
     // prepare variables for length (2D) or area (3D) of the interface
@@ -801,7 +802,7 @@ void FSI::UTILS::SlideAleUtils::rotation(DRT::Discretization& mtrdis,  ///< flui
     double maxcoord = 0.0;
     if (ifluidslidstructeles_.find(i) != ifluidslidstructeles_.end()) maxcoord = rotrat[i];
 
-    std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator elemiter;
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator elemiter;
     for (elemiter = ifluidslidstructeles_[i].begin(); elemiter != ifluidslidstructeles_[i].end();
          elemiter++)
     {
@@ -813,7 +814,7 @@ void FSI::UTILS::SlideAleUtils::rotation(DRT::Discretization& mtrdis,  ///< flui
       CORE::LINALG::SerialDenseVector elevector3;
       Teuchos::ParameterList params;
 
-      Teuchos::RCP<DRT::Element> iele = elemiter->second;
+      Teuchos::RCP<CORE::Elements::Element> iele = elemiter->second;
       std::vector<int> lm;
       std::vector<int> lmowner;
       std::vector<int> lmstride;
@@ -856,7 +857,7 @@ void FSI::UTILS::SlideAleUtils::rotation(DRT::Discretization& mtrdis,  ///< flui
       CORE::LINALG::SerialDenseVector elevector3;
       Teuchos::ParameterList params;
 
-      Teuchos::RCP<DRT::Element> iele = elemiter->second;
+      Teuchos::RCP<CORE::Elements::Element> iele = elemiter->second;
       std::vector<int> lm;
       std::vector<int> lmowner;
       std::vector<int> lmstride;

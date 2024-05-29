@@ -34,13 +34,13 @@ namespace DRT
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
 
       */
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
       /*!
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
       */
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override = 0;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override = 0;
 
       /*!
       \brief Setup the definition line for this element
@@ -81,7 +81,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override
+      CORE::Elements::Element* Clone() const override
       {
         FOUR_C_THROW("not implemented in base class");
         return nullptr;

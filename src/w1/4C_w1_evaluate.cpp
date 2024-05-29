@@ -8,14 +8,14 @@
 */
 /*---------------------------------------------------------------------------*/
 
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elements_jacobian.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_utils_elements.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
@@ -49,7 +49,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
   ensure_material_post_setup(params);
 
   set_params_interface_ptr(params);
-  ELEMENTS::ActionType act = ELEMENTS::none;
+  CORE::Elements::ActionType act = CORE::Elements::none;
 
   if (IsParamsInterface())
   {
@@ -62,31 +62,31 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
     if (action == "calc_none")
       FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_linstiff")
-      act = ELEMENTS::struct_calc_linstiff;
+      act = CORE::Elements::struct_calc_linstiff;
     else if (action == "calc_struct_nlnstiff")
-      act = ELEMENTS::struct_calc_nlnstiff;
+      act = CORE::Elements::struct_calc_nlnstiff;
     else if (action == "calc_struct_internalforce")
-      act = ELEMENTS::struct_calc_internalforce;
+      act = CORE::Elements::struct_calc_internalforce;
     else if (action == "calc_struct_linstiffmass")
-      act = ELEMENTS::struct_calc_linstiffmass;
+      act = CORE::Elements::struct_calc_linstiffmass;
     else if (action == "calc_struct_nlnstiffmass")
-      act = ELEMENTS::struct_calc_nlnstiffmass;
+      act = CORE::Elements::struct_calc_nlnstiffmass;
     else if (action == "calc_struct_nlnstifflmass")
-      act = ELEMENTS::struct_calc_nlnstifflmass;
+      act = CORE::Elements::struct_calc_nlnstifflmass;
     else if (action == "calc_struct_stress")
-      act = ELEMENTS::struct_calc_stress;
+      act = CORE::Elements::struct_calc_stress;
     else if (action == "calc_struct_eleload")
-      act = ELEMENTS::struct_calc_eleload;
+      act = CORE::Elements::struct_calc_eleload;
     else if (action == "calc_struct_fsiload")
-      act = ELEMENTS::struct_calc_fsiload;
+      act = CORE::Elements::struct_calc_fsiload;
     else if (action == "calc_struct_update_istep")
-      act = ELEMENTS::struct_calc_update_istep;
+      act = CORE::Elements::struct_calc_update_istep;
     else if (action == "calc_struct_reset_istep")
-      act = ELEMENTS::struct_calc_reset_istep;
+      act = CORE::Elements::struct_calc_reset_istep;
     else if (action == "calc_struct_energy")
-      act = ELEMENTS::struct_calc_energy;
+      act = CORE::Elements::struct_calc_energy;
     else if (action == "calc_struct_mass_volume")
-      act = ELEMENTS::struct_calc_mass_volume;
+      act = CORE::Elements::struct_calc_mass_volume;
     else
       FOUR_C_THROW("Unknown type of action %s for Wall1", action.c_str());
   }
@@ -101,13 +101,13 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
   {
     switch (act)
     {
-      case ELEMENTS::struct_calc_linstiff:
-      case ELEMENTS::struct_calc_nlnstiffmass:
-      case ELEMENTS::struct_calc_nlnstifflmass:
-      case ELEMENTS::struct_calc_nlnstiff:
-      case ELEMENTS::struct_calc_internalforce:
-      case ELEMENTS::struct_calc_stress:
-      case ELEMENTS::struct_calc_mass_volume:
+      case CORE::Elements::struct_calc_linstiff:
+      case CORE::Elements::struct_calc_nlnstiffmass:
+      case CORE::Elements::struct_calc_nlnstifflmass:
+      case CORE::Elements::struct_calc_nlnstiff:
+      case CORE::Elements::struct_calc_internalforce:
+      case CORE::Elements::struct_calc_stress:
+      case CORE::Elements::struct_calc_mass_volume:
       {
         DRT::NURBS::NurbsDiscretization* nurbsdis =
             dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
@@ -128,7 +128,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
   switch (act)
   {
     //==================================================================================
-    case ELEMENTS::struct_calc_linstiff:
+    case CORE::Elements::struct_calc_linstiff:
     {
       // need current displacement and residual forces
       std::vector<double> mydisp(lm.size());
@@ -153,8 +153,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     //==================================================================================
-    case ELEMENTS::struct_calc_nlnstiffmass:
-    case ELEMENTS::struct_calc_nlnstifflmass:
+    case CORE::Elements::struct_calc_nlnstiffmass:
+    case CORE::Elements::struct_calc_nlnstifflmass:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -186,12 +186,12 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
             nullptr, nullptr, actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       }
 
-      if (act == ELEMENTS::struct_calc_nlnstifflmass) w1_lumpmass(&elemat2);
+      if (act == CORE::Elements::struct_calc_nlnstifflmass) w1_lumpmass(&elemat2);
       break;
     }
     //==================================================================================
     // nullptr-pointer for mass matrix in case of calculating only stiff matrix
-    case ELEMENTS::struct_calc_nlnstiff:
+    case CORE::Elements::struct_calc_nlnstiff:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -225,7 +225,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     //==================================================================================
-    case ELEMENTS::struct_calc_internalforce:
+    case CORE::Elements::struct_calc_internalforce:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -263,7 +263,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     //==================================================================================
-    case ELEMENTS::struct_calc_recover:
+    case CORE::Elements::struct_calc_recover:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -282,7 +282,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     //==================================================================================
-    case ELEMENTS::struct_calc_update_istep:
+    case CORE::Elements::struct_calc_update_istep:
     {
       // do something with internal EAS, etc parameters
       if (iseas_)
@@ -298,7 +298,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     //==================================================================================
-    case ELEMENTS::struct_calc_reset_istep:
+    case CORE::Elements::struct_calc_reset_istep:
     {
       // do something with internal EAS, etc parameters
       if (iseas_)
@@ -313,7 +313,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     //==================================================================================
-    case ELEMENTS::struct_calc_stress:
+    case CORE::Elements::struct_calc_stress:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
@@ -387,7 +387,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     //==================================================================================
-    case ELEMENTS::struct_calc_energy:
+    case CORE::Elements::struct_calc_energy:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -400,7 +400,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     //==================================================================================
-    case ELEMENTS::struct_calc_mass_volume:
+    case CORE::Elements::struct_calc_mass_volume:
     {
       // check length of elevec1
       if (elevec1.length() < 6) FOUR_C_THROW("The given result vector is too short.");
@@ -579,7 +579,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     //==================================================================================
-    case ELEMENTS::analyse_jacobian_determinant:
+    case CORE::Elements::analyse_jacobian_determinant:
     {
       // get displacements and extract values of this element
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -598,7 +598,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       }
 
       const double min_detj =
-          DRT::UTILS::GetMinimalJacDeterminantAtNodes<CORE::FE::CellType::quad4>(xcurr);
+          CORE::Elements::GetMinimalJacDeterminantAtNodes<CORE::FE::CellType::quad4>(xcurr);
 
       if (min_detj < 0.0)
         error_handling(min_detj, params, __LINE__, STR::ELEMENTS::ele_error_determinant_analysis);
@@ -606,23 +606,23 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     //==================================================================================
-    case ELEMENTS::struct_calc_eleload:
+    case CORE::Elements::struct_calc_eleload:
     {
       FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
     }
     //==================================================================================
-    case ELEMENTS::struct_calc_predict:
+    case CORE::Elements::struct_calc_predict:
       break;
     //==================================================================================
-    case ELEMENTS::struct_create_backup:
+    case CORE::Elements::struct_create_backup:
     {
       if (iseas_) FOUR_C_THROW("EAS for the wall element is not yet considered!");
 
       break;
     }
     //==================================================================================
-    case ELEMENTS::struct_recover_from_backup:
+    case CORE::Elements::struct_recover_from_backup:
     {
       if (iseas_) FOUR_C_THROW("EAS for the wall element is not yet considered!");
 

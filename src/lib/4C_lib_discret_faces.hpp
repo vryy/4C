@@ -260,7 +260,7 @@ namespace DRT
 
     \return Adress of internal face element if element is owned by calling proc
     */
-    virtual inline DRT::Element* lRowFace(int lid) const
+    virtual inline CORE::Elements::Element* lRowFace(int lid) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (!Filled()) FOUR_C_THROW("DRT::DiscretizationFaces::lRowIntFace: Filled() != true");
@@ -277,7 +277,7 @@ namespace DRT
 
     \return Address of internal face element if element is stored by calling proc
     */
-    virtual inline DRT::Element* lColFace(int lid) const
+    virtual inline CORE::Elements::Element* lColFace(int lid) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (!Filled()) FOUR_C_THROW("DRT::DiscretizationFaces::lColIntFace: Filled() != true");
@@ -335,11 +335,12 @@ namespace DRT
 
     Teuchos::RCP<Epetra_Map> facerowmap_;  ///< unique distribution of element ownerships
     Teuchos::RCP<Epetra_Map> facecolmap_;  ///< distribution of elements including ghost elements
-    std::vector<DRT::Element*>
+    std::vector<CORE::Elements::Element*>
         facerowptr_;  ///< vector of pointers to row elements for faster access
-    std::vector<DRT::Element*>
+    std::vector<CORE::Elements::Element*>
         facecolptr_;  ///< vector of pointers to column elements for faster access
-    std::map<int, Teuchos::RCP<DRT::FaceElement>> faces_;  ///< map of internal faces elements
+    std::map<int, Teuchos::RCP<CORE::Elements::FaceElement>>
+        faces_;  ///< map of internal faces elements
 
 
   };  // class DiscretizationXFEM

@@ -279,7 +279,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::evaluate_particle_wall_pairs()
         container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i));
 
     // get pointer to column wall element
-    DRT::Element* ele = potentialneighbors.second;
+    CORE::Elements::Element* ele = potentialneighbors.second;
 
     // determine nodal positions of column wall element
     std::map<int, CORE::LINALG::Matrix<3, 1>> colelenodalpos;

@@ -315,7 +315,7 @@ void STR::TimInt::Setup()
   havemicromat_ = false;
   for (int i = 0; i < discret_->NumMyColElements(); i++)
   {
-    DRT::Element* actele = discret_->lColElement(i);
+    CORE::Elements::Element* actele = discret_->lColElement(i);
     Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
     if (mat != Teuchos::null && mat->MaterialType() == CORE::Materials::m_struct_multiscale)
     {
@@ -2796,7 +2796,7 @@ void STR::TimInt::OutputMicro()
 {
   for (int i = 0; i < discret_->NumMyRowElements(); i++)
   {
-    DRT::Element* actele = discret_->lRowElement(i);
+    CORE::Elements::Element* actele = discret_->lRowElement(i);
     Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
     if (mat->MaterialType() == CORE::Materials::m_struct_multiscale)
     {
@@ -2812,7 +2812,7 @@ void STR::TimInt::PrepareOutputMicro()
 {
   for (int i = 0; i < discret_->NumMyRowElements(); i++)
   {
-    DRT::Element* actele = discret_->lRowElement(i);
+    CORE::Elements::Element* actele = discret_->lRowElement(i);
 
     Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
     if (mat->MaterialType() == CORE::Materials::m_struct_multiscale)

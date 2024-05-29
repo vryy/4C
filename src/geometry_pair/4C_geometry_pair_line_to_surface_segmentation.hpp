@@ -45,8 +45,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToSurfaceSegmentation(const DRT::Element* element1,
-        const DRT::Element* element2,
+    GeometryPairLineToSurfaceSegmentation(const CORE::Elements::Element* element1,
+        const CORE::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
             line_to_surface_evaluation_data);
 

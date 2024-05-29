@@ -249,7 +249,7 @@ namespace DRT::ELEMENTS
   template <CORE::FE::CellType celltype>
   inline void CollectAndAssembleGaussPointDataOutput(
       const CORE::FE::GaussIntegration& stiffness_matrix_integration,
-      const MAT::So3Material& solid_material, const DRT::Element& ele,
+      const MAT::So3Material& solid_material, const CORE::Elements::Element& ele,
       STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager)
   {
     // Collection and assembly of gauss point data

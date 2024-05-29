@@ -149,10 +149,10 @@ namespace FSI
     std::map<int, CORE::LINALG::Matrix<9, 2>> calc_background_dops(
         Teuchos::RCP<DRT::Discretization> searchdis);
 
-    CORE::LINALG::Matrix<9, 2> calc_dop(DRT::Element& ele);
+    CORE::LINALG::Matrix<9, 2> calc_dop(CORE::Elements::Element& ele);
 
     std::vector<int> search(
-        DRT::Element& ele, std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs);
+        CORE::Elements::Element& ele, std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs);
 
     //! Spatial dimension of the problem
     int dim_;

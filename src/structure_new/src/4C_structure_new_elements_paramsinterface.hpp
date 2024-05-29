@@ -16,10 +16,10 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_browniandyn.hpp"             // enums
-#include "4C_inpar_structure.hpp"               // enums
-#include "4C_lib_elements_paramsinterface.hpp"  // base class
-#include "4C_solver_nonlin_nox_enum_lists.hpp"  // enums
+#include "4C_discretization_fem_general_elements_paramsinterface.hpp"  // base class
+#include "4C_inpar_browniandyn.hpp"                                    // enums
+#include "4C_inpar_structure.hpp"                                      // enums
+#include "4C_solver_nonlin_nox_enum_lists.hpp"                         // enums
 #include "4C_structure_new_enum_lists.hpp"
 
 #include <Epetra_MultiVector.h>
@@ -87,7 +87,7 @@ namespace STR
 
     /*! \brief Parameter interface for the structural elements and the STR::Integrator data exchange
      *
-     *  This class is a special case of the DRT::ELEMENTS::ParamsInterface class and gives you all
+     *  This class is a special case of the CORE::Elements::ParamsInterface class and gives you all
      * the basic function definitions which you can use to get access to the STR::Integrator and
      * many more objects. Please consider to derive a special interface class, if you need special
      * parameters inside of your element. Keep the Evaluate call untouched and cast the interface
@@ -98,7 +98,7 @@ namespace STR
      *
      *  \date 03/2016
      *  \author hiermeier */
-    class ParamsInterface : public DRT::ELEMENTS::ParamsInterface
+    class ParamsInterface : public CORE::Elements::ParamsInterface
     {
      public:
       //! return the damping type

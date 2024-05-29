@@ -49,9 +49,10 @@ namespace DRT
           const int numscal, const std::string& disname, bool create = true);
 
       //! evaluate the element
-      int evaluate_action(DRT::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::Elements::Element::LocationArray& la,
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -66,19 +67,21 @@ namespace DRT
       /*========================================================================*/
 
       //! evaluate material
-      void prepare_materials(DRT::Element* ele,  //!< the element we are dealing with
+      void prepare_materials(CORE::Elements::Element* ele,  //!< the element we are dealing with
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor) override;
 
       //! evaluate material
-      virtual void prepare_materials_all(DRT::Element* ele,  //!< the element we are dealing with
+      virtual void prepare_materials_all(
+          CORE::Elements::Element* ele,  //!< the element we are dealing with
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor);
 
       //! evaluate material
-      virtual void prepare_materials_tet(DRT::Element* ele,  //!< the element we are dealing with
+      virtual void prepare_materials_tet(
+          CORE::Elements::Element* ele,  //!< the element we are dealing with
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor);
@@ -100,26 +103,27 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& ivecnp, CORE::LINALG::SerialDenseMatrix& ivecnpderiv);
 
       //! update time dependent material
-      void time_update_material(const DRT::Element* ele  //!< the element we are dealing with
+      void time_update_material(
+          const CORE::Elements::Element* ele  //!< the element we are dealing with
           ) override;
 
       //! get material internal state for output
-      void get_material_internal_state(const DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization) override;
+      void get_material_internal_state(const CORE::Elements::Element* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization) override;
 
       //! set material internal state after restart
-      void set_material_internal_state(const DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization) override;
+      void set_material_internal_state(const CORE::Elements::Element* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization) override;
 
       //! project material field
-      int project_material_field(const DRT::Element* ele) override;
+      int project_material_field(const CORE::Elements::Element* ele) override;
 
       //! project material field
-      int project_material_field_all(const DRT::Element* ele);
+      int project_material_field_all(const CORE::Elements::Element* ele);
 
       //! project material field for Tet elements, because quadrature not working for higher order
       //! polynomials with Intrepid
-      int project_material_field_tet(const DRT::Element* ele);
+      int project_material_field_tet(const CORE::Elements::Element* ele);
 
       /// polynomial space for element interior for various Gauss Points for the evaluation of the
       /// material

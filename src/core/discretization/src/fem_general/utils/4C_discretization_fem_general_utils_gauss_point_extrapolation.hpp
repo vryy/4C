@@ -12,7 +12,7 @@ shape functions
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -70,7 +70,8 @@ namespace CORE::FE
    */
   template <CORE::FE::CellType distype, class GaussIntegration>
   CORE::LINALG::SerialDenseMatrix EvaluateGaussPointsToNURBSKnotsExtrapolationMatrix(
-      const DRT::Discretization& dis, const DRT::Element& ele, const GaussIntegration& intpoints);
+      const DRT::Discretization& dis, const CORE::Elements::Element& ele,
+      const GaussIntegration& intpoints);
 
   /*!
    * @brief Extrapolates Gauss point data to the nodes and assembles it into a global data vector
@@ -86,7 +87,7 @@ namespace CORE::FE
    * @param integration (in) : Container that holds the integration points
    */
   template <CORE::FE::CellType distype, class GaussIntegration>
-  void ExtrapolateGPQuantityToNodesAndAssemble(const DRT::Element& ele,
+  void ExtrapolateGPQuantityToNodesAndAssemble(const CORE::Elements::Element& ele,
       const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
       bool nodal_average, const GaussIntegration& integration);
 
@@ -109,7 +110,7 @@ namespace CORE::FE
    */
   template <CORE::FE::CellType distype, class GaussIntegration>
   void ExtrapolateGPQuantityToNURBSKnotsAndAssemble(const DRT::Discretization& dis,
-      const DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+      const CORE::Elements::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
       Epetra_MultiVector& global_data, bool nodal_average, const GaussIntegration& integration);
 }  // namespace CORE::FE
 

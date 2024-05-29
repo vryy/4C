@@ -88,8 +88,8 @@ namespace ADAPTER
         Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
         std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
-        std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements) override;
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements) override;
 
     /*!
     \brief Add Mortar Elments
@@ -97,8 +97,8 @@ namespace ADAPTER
     */
     void add_mortar_elements(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
-        std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements,
         Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof) override;
 
     /*!

@@ -14,8 +14,8 @@
 #include "4C_config.hpp"
 
 #include "4C_beaminteraction_beam_to_beam_contact_defines.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
@@ -30,17 +30,20 @@ namespace BEAMINTERACTION
   class B3CNeighbor
   {
    public:
-    B3CNeighbor(const DRT::Element* left_neighbor, const DRT::Element* right_neighbor,
-        int connecting_node_left, int connecting_node_right);
+    B3CNeighbor(const CORE::Elements::Element* left_neighbor,
+        const CORE::Elements::Element* right_neighbor, int connecting_node_left,
+        int connecting_node_right);
 
-    const DRT::Element* GetLeftNeighbor() { return left_neighbor_; };
-    const DRT::Element* GetRightNeighbor() { return right_neighbor_; };
+    const CORE::Elements::Element* GetLeftNeighbor() { return left_neighbor_; };
+    const CORE::Elements::Element* GetRightNeighbor() { return right_neighbor_; };
     int GetLeftConNode() { return connecting_node_left_; };
     int GetRightConNode() { return connecting_node_right_; };
 
    private:
-    const DRT::Element* left_neighbor_;   // pointer to the Element on the left side (eta=-1)
-    const DRT::Element* right_neighbor_;  // pointer to the Element on the right side (eta=1)
+    const CORE::Elements::Element*
+        left_neighbor_;  // pointer to the Element on the left side (eta=-1)
+    const CORE::Elements::Element*
+        right_neighbor_;         // pointer to the Element on the right side (eta=1)
     int connecting_node_left_;   // local node-ID of the connecting node of the left neighbor
     int connecting_node_right_;  // local node-ID of the connecting node of the right neighbor
   };                             // class B3CNeighbor
@@ -48,7 +51,7 @@ namespace BEAMINTERACTION
   namespace B3TANGENTSMOOTHING
   {
     //! \brief Determine the neighbour elements of an element
-    Teuchos::RCP<B3CNeighbor> DetermineNeigbors(const DRT::Element* element1);
+    Teuchos::RCP<B3CNeighbor> DetermineNeigbors(const CORE::Elements::Element* element1);
 
     //! \brief Get boundary node
     int GetBoundaryNode(const int nnode);
@@ -64,7 +67,7 @@ namespace BEAMINTERACTION
     template <int numnodes>
     CORE::LINALG::Matrix<3 * numnodes, 1> CalculateNodalTangents(
         std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-        CORE::LINALG::Matrix<3 * numnodes, 1> ele1pos_linalg, DRT::Element* ele1,
+        CORE::LINALG::Matrix<3 * numnodes, 1> ele1pos_linalg, CORE::Elements::Element* ele1,
         Teuchos::RCP<B3CNeighbor> neighbors1)
     {
       CORE::LINALG::Matrix<3 * numnodes, 1> node_tangent1(

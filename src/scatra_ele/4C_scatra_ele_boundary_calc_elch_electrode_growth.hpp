@@ -45,25 +45,25 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action
-      int evaluate_action(DRT::FaceElement* ele,            //!< boundary element
-          Teuchos::ParameterList& params,                   //!< parameter list
-          DRT::Discretization& discretization,              //!< discretization
-          SCATRA::BoundaryAction action,                    //!< action
-          DRT::Element::LocationArray& la,                  //!< location array
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-          CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
+      int evaluate_action(CORE::Elements::FaceElement* ele,  //!< boundary element
+          Teuchos::ParameterList& params,                    //!< parameter list
+          DRT::Discretization& discretization,               //!< discretization
+          SCATRA::BoundaryAction action,                     //!< action
+          CORE::Elements::Element::LocationArray& la,        //!< location array
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,   //!< element matrix 1
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,   //!< element matrix 2
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,   //!< element right-hand side vector 1
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,   //!< element right-hand side vector 2
+          CORE::LINALG::SerialDenseVector& elevec3_epetra    //!< element right-hand side vector 3
           ) override;
 
       //! evaluate minimum and maximum interfacial overpotential associated with scatra-scatra
       //! interface layer growth
       void evaluate_min_max_overpotential(
-          const DRT::FaceElement* ele,          //!< current boundary element
-          Teuchos::ParameterList& params,       //!< parameter list
-          DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la       //!< location array
+          const CORE::Elements::FaceElement* ele,     //!< current boundary element
+          Teuchos::ParameterList& params,             //!< parameter list
+          DRT::Discretization& discretization,        //!< discretization
+          CORE::Elements::Element::LocationArray& la  //!< location array
       );
 
       /*!
@@ -77,19 +77,19 @@ namespace DRT
        * @param[out] emastermatrix   element matrix for master side
        * @param[out] eslaveresidual  element residual for slave side
        */
-      void evaluate_s2_i_coupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& eslavematrix,
+      void evaluate_s2_i_coupling(const CORE::Elements::FaceElement* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& eslavematrix,
           CORE::LINALG::SerialDenseMatrix& emastermatrix,
           CORE::LINALG::SerialDenseVector& eslaveresidual) override;
 
       //! evaluate global growth-growth matrix block for scatra-scatra interface coupling involving
       //! interface layer growth
       void evaluate_s2_i_coupling_growth_growth(
-          const DRT::FaceElement* ele,                     ///< current boundary element
+          const CORE::Elements::FaceElement* ele,          ///< current boundary element
           Teuchos::ParameterList& params,                  ///< parameter list
           DRT::Discretization& discretization,             ///< discretization
-          DRT::Element::LocationArray& la,                 ///< location array
+          CORE::Elements::Element::LocationArray& la,      ///< location array
           CORE::LINALG::SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
           CORE::LINALG::SerialDenseVector& eslaveresidual  ///< element residual for slave side
       );
@@ -97,10 +97,10 @@ namespace DRT
       //! evaluate global growth-scatra matrix block for scatra-scatra interface coupling involving
       //! interface layer growth
       void evaluate_s2_i_coupling_growth_scatra(
-          const DRT::FaceElement* ele,                    ///< current boundary element
+          const CORE::Elements::FaceElement* ele,         ///< current boundary element
           Teuchos::ParameterList& params,                 ///< parameter list
           DRT::Discretization& discretization,            ///< discretization
-          DRT::Element::LocationArray& la,                ///< location array
+          CORE::Elements::Element::LocationArray& la,     ///< location array
           CORE::LINALG::SerialDenseMatrix& eslavematrix,  ///< element matrix for slave side
           CORE::LINALG::SerialDenseMatrix& emastermatrix  ///< element matrix for master side
       );
@@ -108,16 +108,16 @@ namespace DRT
       //! evaluate global scatra-growth matrix block for scatra-scatra interface coupling involving
       //! interface layer growth
       void evaluate_s2_i_coupling_scatra_growth(
-          const DRT::FaceElement* ele,                   ///< current boundary element
+          const CORE::Elements::FaceElement* ele,        ///< current boundary element
           Teuchos::ParameterList& params,                ///< parameter list
           DRT::Discretization& discretization,           ///< discretization
-          DRT::Element::LocationArray& la,               ///< location array
+          CORE::Elements::Element::LocationArray& la,    ///< location array
           CORE::LINALG::SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
       );
 
       //! extract nodal state variables associated with boundary element
       void extract_node_values(const DRT::Discretization& discretization,  //!< discretization
-          DRT::Element::LocationArray& la                                  //!< location array
+          CORE::Elements::Element::LocationArray& la                       //!< location array
           ) override;
 
       /*!

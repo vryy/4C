@@ -27,8 +27,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::LINALG
 {
@@ -136,7 +140,7 @@ namespace CONSTRAINTS
     void initialize_cur_surf_normal();
 
     //! calculate nodal area - old!
-    void get_area(const std::map<int, Teuchos::RCP<DRT::Element>>& geom);
+    void get_area(const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom);
 
     //! get current normal
     void get_cur_normals(const Teuchos::RCP<const Epetra_Vector>& disp, Teuchos::ParameterList p);

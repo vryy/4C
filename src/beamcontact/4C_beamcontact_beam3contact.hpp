@@ -60,8 +60,8 @@ namespace CONTACT
     \param ele2pos (in): nodal coordinates of second element
     */
     Beam3contact(const DRT::Discretization& pdiscret, const DRT::Discretization& cdiscret,
-        const std::map<int, int>& dofoffsetmap, DRT::Element* element1, DRT::Element* element2,
-        Teuchos::ParameterList& beamcontactparams);
+        const std::map<int, int>& dofoffsetmap, CORE::Elements::Element* element1,
+        CORE::Elements::Element* element2, Teuchos::ParameterList& beamcontactparams);
 
 
     //@}
@@ -86,12 +86,12 @@ namespace CONTACT
     /*!
     \brief Get first element
     */
-    inline const DRT::Element* Element1() override { return element1_; };
+    inline const CORE::Elements::Element* Element1() override { return element1_; };
 
     /*!
     \brief Get first element
     */
-    inline const DRT::Element* Element2() override { return element2_; };
+    inline const CORE::Elements::Element* Element2() override { return element2_; };
 
     /*!
     \brief Get number of standard large angle/small angle/endpoint contact points on this element
@@ -544,10 +544,10 @@ namespace CONTACT
     const std::map<int, int>& dofoffsetmap_;
 
     //! first element of contact pair
-    DRT::Element* element1_;
+    CORE::Elements::Element* element1_;
 
     //! second element of contact pair
-    DRT::Element* element2_;
+    CORE::Elements::Element* element2_;
 
     //! beam contact parameter list
     Teuchos::ParameterList& bcparams_;
@@ -697,7 +697,7 @@ namespace CONTACT
     /*!
     \brief Subdivide elements into segments for CPP
     */
-    double create_segments(DRT::Element* ele,
+    double create_segments(CORE::Elements::Element* ele,
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& endpoints_final, int& numsegment, int i);
 
     /*!
@@ -890,7 +890,7 @@ namespace CONTACT
     element
     */
     void get_shape_functions(CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N,
-        const TYPE& eta, int deriv, DRT::Element* ele);
+        const TYPE& eta, int deriv, CORE::Elements::Element* ele);
 
     /*!
     \brief Assemble the shape functions into corresponding matrices
@@ -913,12 +913,12 @@ namespace CONTACT
     /*!
     \brief compute coordinate at given curve point
     */
-    CORE::LINALG::Matrix<3, 1, TYPE> r(const TYPE& eta, DRT::Element* ele);
+    CORE::LINALG::Matrix<3, 1, TYPE> r(const TYPE& eta, CORE::Elements::Element* ele);
 
     /*!
     \brief compute derivative at given curve point
     */
-    CORE::LINALG::Matrix<3, 1, TYPE> r_xi(const TYPE& eta, DRT::Element* ele);
+    CORE::LINALG::Matrix<3, 1, TYPE> r_xi(const TYPE& eta, CORE::Elements::Element* ele);
 
     /*!
     \brief Compute coordinates and their derivatives from the discretization
@@ -1013,13 +1013,13 @@ namespace CONTACT
     /*!
       \brief Get jacobi factor of beam element
     */
-    double get_jacobi(DRT::Element* element1);
+    double get_jacobi(CORE::Elements::Element* element1);
 
     /** \brief get Jacobi factor of beam element at xi \in [-1;1]
      *
      *  \author grill
      *  \date 06/16 */
-    inline double get_jacobi_at_xi(DRT::Element* element1, const double& xi)
+    inline double get_jacobi_at_xi(CORE::Elements::Element* element1, const double& xi)
     {
       const DRT::ELEMENTS::Beam3Base* ele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element1);
 

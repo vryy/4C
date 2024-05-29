@@ -8,9 +8,9 @@
 
 #include "4C_so3_utils.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fiber_node.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_utils_densematrix_svd.hpp"
 #include "4C_so3_prestress.hpp"
 
@@ -19,7 +19,8 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::UTILS::CalcR(const DRT::Element* ele, const std::vector<double>& disp,
+void DRT::ELEMENTS::UTILS::CalcR(const CORE::Elements::Element* ele,
+    const std::vector<double>& disp,
     CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>>& R)
 {
   // number of nodes per element
@@ -248,7 +249,7 @@ void DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
 }
 
 template void DRT::ELEMENTS::UTILS::CalcR<CORE::FE::CellType::tet10>(
-    const DRT::Element*, const std::vector<double>&, CORE::LINALG::Matrix<3, 3>&);
+    const CORE::Elements::Element*, const std::vector<double>&, CORE::LINALG::Matrix<3, 3>&);
 
 template void
 DRT::ELEMENTS::UTILS::get_temperature_for_structural_material<CORE::FE::CellType::tet4>(

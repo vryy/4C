@@ -146,7 +146,7 @@ namespace CORE::Dofsets
     }
 
     /// get number of element dofs for this element
-    int num_dof_per_element(const DRT::Element& element) const override
+    int num_dof_per_element(const CORE::Elements::Element& element) const override
     {
       if (numdofperelementelewise_ == Teuchos::null)
         return numdofperelement_;
@@ -155,7 +155,7 @@ namespace CORE::Dofsets
     }
 
     /// get number of element dofs for this element
-    int num_dof_per_face(const DRT::Element& element, int face) const override
+    int num_dof_per_face(const CORE::Elements::Element& element, int face) const override
     {
       if (numdofperfacefacewise_ == Teuchos::null)
         return numdofperface_;

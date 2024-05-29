@@ -29,9 +29,9 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const SCATRA::Action& action, DRT::Element::LocationArray& la,
+    const SCATRA::Action& action, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -733,9 +733,9 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(DRT::Element
  | evaluate service routine                                  fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -784,9 +784,9 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(DRT::Element
  | calculate filtered fields for turbulent Prandtl number   fang 02/15 |
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(DRT::Element* ele,
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element::LocationArray& la)
 {
   // extract scalar values from global vector
   Teuchos::RCP<const Epetra_Vector> scalar = discretization.GetState("scalar");
@@ -872,12 +872,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(DRT::Elemen
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_derivative(
-    DRT::Element* ele,                      //!< current element
-    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
-    CORE::LINALG::SerialDenseVector& erhs,  //!< element residual
-    Teuchos::ParameterList& params,         //!< parameter list
-    DRT::Discretization& discretization,    //!< discretization
-    DRT::Element::LocationArray& la         //!< location array
+    CORE::Elements::Element* ele,               //!< current element
+    CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix
+    CORE::LINALG::SerialDenseVector& erhs,      //!< element residual
+    Teuchos::ParameterList& params,             //!< parameter list
+    DRT::Discretization& discretization,        //!< discretization
+    CORE::Elements::Element::LocationArray& la  //!< location array
 )
 {
   // extract relevant quantities from discretization and parameter list
@@ -1040,7 +1040,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::correct_rhs_from_calc_rhs_l
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::integrate_shape_functions(
-    const DRT::Element* ele, CORE::LINALG::SerialDenseVector& elevec1,
+    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseVector& elevec1,
     const CORE::LINALG::IntSerialDenseVector& dofids)
 {
   // integration points and weights
@@ -1078,7 +1078,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::integrate_shape_functions(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
-    CORE::LINALG::Matrix<3, nen_>& flux, const DRT::Element* ele,
+    CORE::LINALG::Matrix<3, nen_>& flux, const CORE::Elements::Element* ele,
     const INPAR::SCATRA::FluxType fluxtype, const int k)
 {
   /*
@@ -1185,7 +1185,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
  *----------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_domain_integral(
-    const DRT::Element* ele,                 //!< the element we are dealing with
+    const CORE::Elements::Element* ele,      //!< the element we are dealing with
     CORE::LINALG::SerialDenseVector& scalar  //!< result vector for scalar integral to be computed
 )
 {
@@ -1215,8 +1215,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_domain_integral(
 |  calculate scalar(s) and domain integral                     vg 09/08|
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalars(const DRT::Element* ele,
-    CORE::LINALG::SerialDenseVector& scalars, const bool inverting, const bool calc_grad_phi)
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalars(
+    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
+    const bool inverting, const bool calc_grad_phi)
 {
   // integration points and weights
   const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -1307,7 +1308,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalar_time_deriv
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_momentum_and_volume(
-    const DRT::Element* ele, CORE::LINALG::SerialDenseVector& momandvol,
+    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseVector& momandvol,
     const double interface_thickness)
 {
   // integration points and weights
@@ -1372,7 +1373,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_momentum_and_volu
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_diff_matrix(
-    const DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat)
+    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseMatrix& emat)
 {
   /*----------------------------------------------------------------------*/
   // integration loop for one element
@@ -1406,7 +1407,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_diff_matrix(
  | finite difference check on element level (for debugging only) (protected)   fang 10/14 |
  *----------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(DRT::Element* ele,
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(CORE::Elements::Element* ele,
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
     CORE::LINALG::SerialDenseVector& subgrdiff)
 {
@@ -1580,7 +1581,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(DRT::Element* ele,
   *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_analyt_solution(
-    const DRT::Element* ele, Teuchos::ParameterList& params,
+    const CORE::Elements::Element* ele, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& errors)
 {
   if (Teuchos::getIntegralValue<SCATRA::Action>(params, "action") != SCATRA::Action::calc_error)
@@ -1764,7 +1765,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_analy
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_and_rhs(
-    DRT::Element* ele,                      ///< the element whose matrix is calculated
+    CORE::Elements::Element* ele,           ///< the element whose matrix is calculated
     CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
     CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
 )
@@ -1924,8 +1925,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_and_rh
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_det_f_at_int_point(
-    const DRT::Element* const& ele, const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints,
-    const int iquad)
+    const CORE::Elements::Element* const& ele,
+    const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad)
 {
   // get determinant of derivative of spatial coordinate w.r.t. parameter coordinates
   const double det_dxds = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);

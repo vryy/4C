@@ -47,8 +47,13 @@ namespace DRT
     class StructuralSurface;
   }
   class Discretization;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace CORE::GEO
 {
   namespace CUT
@@ -244,16 +249,17 @@ namespace XFEM
     /// Get the fluid states at specific selexi
     void get_states(const int fluidele_id, const std::vector<int>& fluid_nds,
         const DRT::ELEMENTS::StructuralSurface* sele, const CORE::LINALG::Matrix<2, 1>& selexsi,
-        const CORE::LINALG::Matrix<3, 1>& x, DRT::Element*& fluidele,
+        const CORE::LINALG::Matrix<3, 1>& x, CORE::Elements::Element*& fluidele,
         CORE::LINALG::SerialDenseMatrix& ele_xyze, std::vector<double>& velpres,
         std::vector<double>& disp, std::vector<double>& ivel, double& pres_m,
         CORE::LINALG::Matrix<3, 1>& vel_m, CORE::LINALG::Matrix<3, 1>& vel_s,
         CORE::LINALG::Matrix<3, 3>& vderxy_m, CORE::LINALG::Matrix<3, 1>& velpf_s);
 
     /// Get the Nitsche penalty parameter
-    void get_penalty_param(DRT::Element* fluidele, CORE::GEO::CUT::VolumeCell* volumecell,
-        CORE::LINALG::SerialDenseMatrix& ele_xyze, const CORE::LINALG::Matrix<3, 1>& elenormal,
-        double& penalty_fac, const CORE::LINALG::Matrix<3, 1>& vel_m);
+    void get_penalty_param(CORE::Elements::Element* fluidele,
+        CORE::GEO::CUT::VolumeCell* volumecell, CORE::LINALG::SerialDenseMatrix& ele_xyze,
+        const CORE::LINALG::Matrix<3, 1>& elenormal, double& penalty_fac,
+        const CORE::LINALG::Matrix<3, 1>& vel_m);
 
     /// Get the Nitsche penalty parameter
     void get_penalty_param(DRT::ELEMENTS::StructuralSurface* sele, double& penalty_fac);

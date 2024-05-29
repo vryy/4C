@@ -12,8 +12,8 @@
 #include "4C_fbi_fluid_assembly_strategy.hpp"
 
 #include "4C_beam3_base.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -36,8 +36,8 @@ void FBI::UTILS::FBIAssemblyStrategy::Assemble(const DRT::Discretization& discre
   // the entries of elevecX  belong to the Dofs of the element with GID elegidX
   // the rows    of elematXY belong to the Dofs of the element with GID elegidX
   // the columns of elematXY belong to the Dofs of the element with GID elegidY
-  const DRT::Element* ele1 = discretization1.gElement(elegid[0]);
-  const DRT::Element* ele2 = discretization2.gElement(elegid[1]);
+  const CORE::Elements::Element* ele1 = discretization1.gElement(elegid[0]);
+  const CORE::Elements::Element* ele2 = discretization2.gElement(elegid[1]);
 
   // get element location vector and ownerships
   std::vector<int> lmrow1;

@@ -78,11 +78,11 @@ void CONTACT::NitscheStrategyTsi::SetParentState(
       {
         int gid = idiscret.ElementColMap()->GID(j);
 
-        DRT::Element* e = idiscret.gElement(gid);
+        CORE::Elements::Element* e = idiscret.gElement(gid);
         if (e == nullptr) FOUR_C_THROW("basic element not found");
 
         auto* ele = dynamic_cast<MORTAR::Element*>(idiscret.gElement(gid));
-        DRT::Element* ele_parentT = disT->gElement(ele->ParentElementId());
+        CORE::Elements::Element* ele_parentT = disT->gElement(ele->ParentElementId());
 
         std::vector<int> lm, lmowner, lmstride;
         ele_parentT->LocationVector(*disT, lm, lmowner, lmstride);

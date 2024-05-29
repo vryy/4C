@@ -10,10 +10,10 @@
  *---------------------------------------------------------------------------*/
 #include "4C_particle_interaction_sph_momentum.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_io_visualization_manager.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_particle_engine_container.hpp"
 #include "4C_particle_engine_interface.hpp"
 #include "4C_particle_interaction_material_handler.hpp"
@@ -672,7 +672,7 @@ void PARTICLEINTERACTION::SPHMomentum::momentum_equation_particle_wall_contribut
         container_i->CondGetPtrToState(PARTICLEENGINE::ModifiedAcceleration, particle_i);
 
     // get pointer to column wall element
-    DRT::Element* ele = particlewallpair.ele_;
+    CORE::Elements::Element* ele = particlewallpair.ele_;
 
     // number of nodes of wall element
     const int numnodes = ele->num_node();

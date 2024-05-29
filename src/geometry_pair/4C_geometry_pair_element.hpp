@@ -18,8 +18,8 @@ and other data are evaluated
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_nurbs_discret.hpp"
 #include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -374,8 +374,8 @@ namespace GEOMETRYPAIR
   template <typename element_type, typename enable = void>
   struct SetShapeFunctionData
   {
-    static void Set(
-        ShapeFunctionData<element_type>& shape_function_data, const DRT::Element* element)
+    static void Set(ShapeFunctionData<element_type>& shape_function_data,
+        const CORE::Elements::Element* element)
     {
       // Per default this is empty, for all shape functions which don't need additional data
     }
@@ -391,7 +391,8 @@ namespace GEOMETRYPAIR
   template <>
   struct SetShapeFunctionData<t_nurbs9>
   {
-    static void Set(ShapeFunctionData<t_nurbs9>& shape_function_data, const DRT::Element* element)
+    static void Set(
+        ShapeFunctionData<t_nurbs9>& shape_function_data, const CORE::Elements::Element* element)
     {
       const auto* discretization = GLOBAL::Problem::Instance()->GetDis("structure").get();
       if (dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(discretization) == nullptr)
@@ -400,7 +401,7 @@ namespace GEOMETRYPAIR
             "discretization "
             "pointer");
 
-      auto face_element = dynamic_cast<const DRT::FaceElement*>(element);
+      auto face_element = dynamic_cast<const CORE::Elements::FaceElement*>(element);
       if (face_element == nullptr)
         FOUR_C_THROW(
             "GEOMETRYPAIR::SetShapeFunctionData<t_nurbs9, scalar_type>::Get needs a face element "
@@ -423,7 +424,8 @@ namespace GEOMETRYPAIR
   template <>
   struct SetShapeFunctionData<t_nurbs27>
   {
-    static void Set(ShapeFunctionData<t_nurbs27>& shape_function_data, const DRT::Element* element)
+    static void Set(
+        ShapeFunctionData<t_nurbs27>& shape_function_data, const CORE::Elements::Element* element)
     {
       const auto* discretization = GLOBAL::Problem::Instance()->GetDis("structure").get();
       if (dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(discretization) == nullptr)
@@ -467,7 +469,7 @@ namespace GEOMETRYPAIR
   struct InitializeElementData
   {
     static GEOMETRYPAIR::ElementData<element_type, scalar_type> Initialize(
-        const DRT::Element* element)
+        const CORE::Elements::Element* element)
     {
       GEOMETRYPAIR::ElementData<element_type, scalar_type> element_data;
       SetShapeFunctionData<element_type>::Set(element_data.shape_function_data_, element);

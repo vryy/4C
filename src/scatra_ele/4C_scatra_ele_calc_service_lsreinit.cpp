@@ -24,10 +24,10 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_action(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const SCATRA::Action& action, DRT::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_action(
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, const SCATRA::Action& action,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -109,7 +109,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_action(DRT:
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
 int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SetupCalc(
-    DRT::Element* ele, DRT::Discretization& discretization)
+    CORE::Elements::Element* ele, DRT::Discretization& discretization)
 {
   // reset all managers to their default values (I feel better this way)
   diff_manager()->Reset();

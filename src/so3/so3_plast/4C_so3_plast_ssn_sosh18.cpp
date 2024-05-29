@@ -43,12 +43,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoSh18PlastType::Create(const std::vector<
 | create the new element type (public)                     seitz 11/14 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh18PlastType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoSh18PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh18Plast(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::SoSh18Plast(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -58,9 +59,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh18PlastType::Create(
 | create the new element type (public)                     seitz 11/14 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh18PlastType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoSh18PlastType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh18Plast(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::SoSh18Plast(id, owner));
   return ele;
 }
 
@@ -125,7 +128,7 @@ DRT::ELEMENTS::SoSh18Plast::SoSh18Plast(const DRT::ELEMENTS::SoSh18Plast& old)
  | deep copy this instance of Solid3 and return pointer to              |
  | it (public)                                              seitz 11/14 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::SoSh18Plast::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::SoSh18Plast::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::SoSh18Plast(*this);
   return newelement;

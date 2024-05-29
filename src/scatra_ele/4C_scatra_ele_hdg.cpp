@@ -61,7 +61,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::ScaTraHDGType::Create(const std::vector<ch
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ScaTraHDGType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ScaTraHDGType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TRANSPHDG")
@@ -75,7 +75,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ScaTraHDGType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ScaTraHDGType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ScaTraHDGType::Create(
+    const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::ScaTraHDG(id, owner));
 }
@@ -85,7 +86,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ScaTraHDGType::Create(const int id, co
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraHDGType::nodal_block_information(
-    Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 1;  // Only one scalar (so far) is the unknown that is solved for
   dimns = numdf;
@@ -181,7 +182,7 @@ DRT::ELEMENTS::ScaTraHDG::ScaTraHDG(const DRT::ELEMENTS::ScaTraHDG& old)
  |  Deep copy this instance of ScaTra and return pointer to it (public) |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::ScaTraHDG::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::ScaTraHDG::Clone() const
 {
   DRT::ELEMENTS::ScaTraHDG* newelement = new DRT::ELEMENTS::ScaTraHDG(*this);
   return newelement;
@@ -368,7 +369,7 @@ bool DRT::ELEMENTS::ScaTraHDG::ReadElement(
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)             hoermann 09/15|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDG::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDG::Lines()
 {
   return CORE::COMM::GetElementLines<ScaTraHDGBoundary, ScaTraHDG>(*this);
 }
@@ -377,7 +378,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDG::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                       hoermann 09/15|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDG::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDG::Surfaces()
 {
   return CORE::COMM::GetElementSurfaces<ScaTraHDGBoundary>(*this);
 }
@@ -386,14 +387,14 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDG::Surfaces()
 /*----------------------------------------------------------------------*
  |  get face element (public)                             hoermann 09/15|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ScaTraHDG::CreateFaceElement(
-    DRT::Element* parent_slave,            //!< parent slave fluid3 element
-    int nnode,                             //!< number of surface nodes
-    const int* nodeids,                    //!< node ids of surface element
-    DRT::Node** nodes,                     //!< nodes of surface element
-    const int lsurface_master,             //!< local surface number w.r.t master parent element
-    const int lsurface_slave,              //!< local surface number w.r.t slave parent element
-    const std::vector<int>& localtrafomap  //! local trafo map
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ScaTraHDG::CreateFaceElement(
+    CORE::Elements::Element* parent_slave,  //!< parent slave fluid3 element
+    int nnode,                              //!< number of surface nodes
+    const int* nodeids,                     //!< node ids of surface element
+    DRT::Node** nodes,                      //!< nodes of surface element
+    const int lsurface_master,              //!< local surface number w.r.t master parent element
+    const int lsurface_slave,               //!< local surface number w.r.t slave parent element
+    const std::vector<int>& localtrafomap   //! local trafo map
 )
 {
   // dynamic cast for slave parent element
@@ -519,7 +520,7 @@ void DRT::ELEMENTS::ScaTraHDG::Print(std::ostream& os) const
 
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ScaTraHDGBoundaryType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ScaTraHDGBoundaryType::Create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -531,8 +532,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ScaTraHDGBoundaryType::Create(
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraHDGBoundary::ScaTraHDGBoundary(int id, int owner, int nnode,
-    const int* nodeids, DRT::Node** nodes, DRT::Element* parent, const int lsurface)
-    : DRT::FaceElement(id, owner)
+    const int* nodeids, DRT::Node** nodes, CORE::Elements::Element* parent, const int lsurface)
+    : CORE::Elements::FaceElement(id, owner)
 {
   set_parent_master_element(parent, lsurface);
   SetNodeIds(nnode, nodeids);
@@ -545,7 +546,7 @@ DRT::ELEMENTS::ScaTraHDGBoundary::ScaTraHDGBoundary(int id, int owner, int nnode
  |  copy-ctor (public)                                   hoermann 09/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraHDGBoundary::ScaTraHDGBoundary(const DRT::ELEMENTS::ScaTraHDGBoundary& old)
-    : DRT::FaceElement(old)
+    : CORE::Elements::FaceElement(old)
 {
   return;
 }
@@ -555,7 +556,7 @@ DRT::ELEMENTS::ScaTraHDGBoundary::ScaTraHDGBoundary(const DRT::ELEMENTS::ScaTraH
  |  Deep copy this instance return pointer to it               (public) |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::ScaTraHDGBoundary::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::ScaTraHDGBoundary::Clone() const
 {
   DRT::ELEMENTS::ScaTraHDGBoundary* newelement = new DRT::ELEMENTS::ScaTraHDGBoundary(*this);
   return newelement;
@@ -634,7 +635,7 @@ void DRT::ELEMENTS::ScaTraHDGBoundary::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                         hoermann 09/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGBoundary::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDGBoundary::Lines()
 {
   FOUR_C_THROW("Lines of ScaTraHDGBoundary not implemented");
 }
@@ -643,7 +644,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGBoundary::Lines(
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                         hoermann 09/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGBoundary::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDGBoundary::Surfaces()
 {
   FOUR_C_THROW("Surfaces of ScaTraHDGBoundary not implemented");
 }
@@ -676,7 +677,7 @@ int DRT::ELEMENTS::ScaTraHDGBoundary::evaluate_neumann(Teuchos::ParameterList& p
 
   // build location array from location vector
   //(this a little ugly. one could fix this by introducing a evaluate_neumann() method
-  // with LocationArray as input in the DRT::Element ...)
+  // with LocationArray as input in the CORE::Elements::Element ...)
   LocationArray la(1);
   la[0].lm_ = lm;
 
@@ -710,7 +711,7 @@ void DRT::ELEMENTS::ScaTraHDGBoundary::LocationVector(const Discretization& dis,
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ScaTraHDGIntFaceType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ScaTraHDGIntFaceType::Create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -734,7 +735,7 @@ DRT::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(int id,  ///< element id
                        ///< face w.r.t the master parent element's face's coordinate system and the
                        ///< slave element's face's coordinate system
     )
-    : DRT::FaceElement(id, owner), degree_(0), degree_old_(0)
+    : CORE::Elements::FaceElement(id, owner), degree_(0), degree_old_(0)
 {
   set_parent_master_element(parent_master, lsurface_master);
   set_parent_slave_element(parent_slave, lsurface_slave);
@@ -761,7 +762,7 @@ DRT::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(int id,  ///< element id
  |  copy-ctor (public)                                    hoermann 09/15|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(const DRT::ELEMENTS::ScaTraHDGIntFace& old)
-    : DRT::FaceElement(old), degree_(old.degree_), degree_old_(old.degree_old_)
+    : CORE::Elements::FaceElement(old), degree_(old.degree_), degree_old_(old.degree_old_)
 {
   return;
 }
@@ -770,7 +771,7 @@ DRT::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(const DRT::ELEMENTS::ScaTraHDG
  |  Deep copy this instance return pointer to it               (public) |
  |                                                        hoermann 09/15|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::ScaTraHDGIntFace::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::ScaTraHDGIntFace::Clone() const
 {
   DRT::ELEMENTS::ScaTraHDGIntFace* newelement = new DRT::ELEMENTS::ScaTraHDGIntFace(*this);
   return newelement;
@@ -1020,7 +1021,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                         hoermann 09/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGIntFace::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDGIntFace::Lines()
 {
   FOUR_C_THROW("Lines of ScaTraHDGIntFace not implemented");
 }
@@ -1028,7 +1029,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGIntFace::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                         hoermann 09/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGIntFace::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDGIntFace::Surfaces()
 {
   FOUR_C_THROW("Surfaces of ScaTraHDGIntFace not implemented");
 }

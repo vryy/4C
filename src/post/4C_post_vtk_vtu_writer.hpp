@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_post_vtk_writer.hpp"
 
 #include <map>
@@ -95,16 +95,17 @@ class PostVtuWriter : public PostVtkWriter
   void write_geo() override;
 
   //! write the geometry of Nurbs Element
-  virtual void write_geo_nurbs_ele(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
-      int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+  virtual void write_geo_nurbs_ele(const CORE::Elements::Element* ele,
+      std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
+      std::vector<double>& coordinates) const;
 
   /*! Generalization of the former non-template method for all implemented NURBS
    *  discretization types
    *
    *  \author hiermeier (originally Seitz) \date 10/17 */
   template <CORE::FE::CellType nurbs_type>
-  void write_geo_nurbs_ele(const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
-      std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+  void write_geo_nurbs_ele(const CORE::Elements::Element* ele, std::vector<uint8_t>& celltypes,
+      int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
 
   CORE::FE::CellType map_nurbs_dis_type_to_lagrange_dis_type(
       const CORE::FE::CellType nurbs_dis_type) const;
@@ -115,7 +116,7 @@ class PostVtuWriter : public PostVtkWriter
       std::vector<double>& coordinates);
 
   //! Write a single result step for one Nurbs Element
-  virtual void wirte_dof_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
+  virtual void wirte_dof_result_step_nurbs_ele(const CORE::Elements::Element* ele, int ncomponents,
       const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
       const int from, const bool fillzeros) const;
 
@@ -124,17 +125,17 @@ class PostVtuWriter : public PostVtkWriter
    *
    *  \author hiermeier (originally Seitz) \date 10/17 */
   template <CORE::FE::CellType nurbs_type>
-  void wirte_dof_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents, const int numdf,
-      std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
-      const bool fillzeros) const;
+  void wirte_dof_result_step_nurbs_ele(const CORE::Elements::Element* ele, int ncomponents,
+      const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
+      const int from, const bool fillzeros) const;
 
   virtual void write_dof_result_step_beam_ele(const DRT::ELEMENTS::Beam3Base* beamele,
       const int& ncomponents, const int& numdf, std::vector<double>& solution,
       Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros);
 
   //! Write a single result step for one Nurbs Element
-  virtual void write_nodal_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
-      const int numdf, std::vector<double>& solution,
+  virtual void write_nodal_result_step_nurbs_ele(const CORE::Elements::Element* ele,
+      int ncomponents, const int numdf, std::vector<double>& solution,
       Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
 
   /*! Generalization of the former non-template method for all implemented NURBS
@@ -142,8 +143,9 @@ class PostVtuWriter : public PostVtkWriter
    *
    *  \author hiermeier (originally Seitz) \date 10/17 */
   template <CORE::FE::CellType nurbs_type>
-  void write_nodal_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents, const int numdf,
-      std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
+  void write_nodal_result_step_nurbs_ele(const CORE::Elements::Element* ele, int ncomponents,
+      const int numdf, std::vector<double>& solution,
+      Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
 
   ///! width of the proc identifier number in the processor specific file names
   const int proc_file_padding_;

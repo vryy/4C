@@ -10,12 +10,12 @@
 
 /*----------------------------------------------------------------------------*/
 #include "4C_ale_ale3.hpp"
+#include "4C_discretization_fem_general_element_integration_select.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_boundary_integration.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_geometry_position_array.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element_integration_select.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN

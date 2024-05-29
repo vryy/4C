@@ -30,7 +30,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::StructuralSurfaceType::Create(const std::v
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::StructuralSurfaceType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::StructuralSurfaceType::Create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new StructuralSurface( id, owner ) );
@@ -41,8 +41,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::StructuralSurfaceType::Create(
  |  ctor (public)                                              gee 04/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner, int nnode,
-    const int* nodeids, DRT::Node** nodes, DRT::Element* parent, const int lsurface)
-    : DRT::FaceElement(id, owner),
+    const int* nodeids, DRT::Node** nodes, CORE::Elements::Element* parent, const int lsurface)
+    : CORE::Elements::FaceElement(id, owner),
       distype_(CORE::FE::CellType::dis_none),
       numdofpernode_(-1),
       gaussrule_(CORE::FE::GaussRule2D::undefined)
@@ -70,7 +70,7 @@ DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner, int nnode
  |  ctor (private) - used by StructuralSurfaceType              ager 12/16|
  *-----------------------------------------------------------------------*/
 DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner)
-    : DRT::FaceElement(id, owner),
+    : CORE::Elements::FaceElement(id, owner),
       distype_(CORE::FE::CellType::dis_none),
       numdofpernode_(-1),
       gaussrule_(CORE::FE::GaussRule2D::undefined)
@@ -82,7 +82,7 @@ DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner)
  |  copy-ctor (public)                                         gee 04/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::StructuralSurface::StructuralSurface(const DRT::ELEMENTS::StructuralSurface& old)
-    : DRT::FaceElement(old),
+    : CORE::Elements::FaceElement(old),
       distype_(old.distype_),
       numdofpernode_(old.numdofpernode_),
       gaussrule_(old.gaussrule_)
@@ -94,7 +94,7 @@ DRT::ELEMENTS::StructuralSurface::StructuralSurface(const DRT::ELEMENTS::Structu
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 04/08|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::StructuralSurface::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::StructuralSurface::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::StructuralSurface(*this);
   return newelement;
@@ -118,8 +118,8 @@ void DRT::ELEMENTS::StructuralSurface::Pack(CORE::COMM::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
-  // add base class DRT::FaceElement
-  DRT::FaceElement::Pack(data);
+  // add base class CORE::Elements::FaceElement
+  CORE::Elements::FaceElement::Pack(data);
   // add distype_
   AddtoPack(data, (int)distype_);
   // add numdofpernode_
@@ -139,10 +139,10 @@ void DRT::ELEMENTS::StructuralSurface::Unpack(const std::vector<char>& data)
 
   CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  // extract base class DRT::FaceElement
+  // extract base class CORE::Elements::FaceElement
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::FaceElement::Unpack(basedata);
+  CORE::Elements::FaceElement::Unpack(basedata);
 
   // distype_
   distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
@@ -168,7 +168,7 @@ void DRT::ELEMENTS::StructuralSurface::Print(std::ostream& os) const
   return;
 }
 
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::StructuralSurface::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::StructuralSurface::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<DRT::ELEMENTS::StructuralLine,
       DRT::ELEMENTS::StructuralSurface>(CORE::COMM::buildLines, *this);

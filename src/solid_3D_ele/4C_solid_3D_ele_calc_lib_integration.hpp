@@ -11,8 +11,8 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_cell_type.hpp"
+#include "4C_discretization_fem_general_element_integration_select.hpp"
 #include "4C_discretization_fem_general_utils_gausspoints.hpp"
-#include "4C_lib_element_integration_select.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 

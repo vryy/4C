@@ -66,7 +66,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix::Base& elemat1,
           CORE::LINALG::SerialDenseVector::Base& elevec1) = 0;
 
-      virtual void estimate_nitsche_trace_max_eigenvalue(DRT::FaceElement* ele1,
+      virtual void estimate_nitsche_trace_max_eigenvalue(CORE::Elements::FaceElement* ele1,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat1,
           CORE::LINALG::SerialDenseMatrix::Base& elemat2) = 0;
@@ -77,7 +77,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector::Base& elevec1) = 0;
 
       /// Internal implementation class for FluidBoundaryParent elements
-      static FluidBoundaryParentInterface* Impl(DRT::FaceElement* ele);
+      static FluidBoundaryParentInterface* Impl(CORE::Elements::FaceElement* ele);
     };
 
 
@@ -121,7 +121,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix::Base& elemat,
           CORE::LINALG::SerialDenseVector::Base& elevec) override;
 
-      void estimate_nitsche_trace_max_eigenvalue(DRT::FaceElement* surfele,
+      void estimate_nitsche_trace_max_eigenvalue(CORE::Elements::FaceElement* surfele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat1,
           CORE::LINALG::SerialDenseMatrix::Base& elemat2) override;
@@ -158,7 +158,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector::Base& elevec);
 
       template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-      void estimate_nitsche_trace_max_eigenvalue(DRT::FaceElement* ele,
+      void estimate_nitsche_trace_max_eigenvalue(CORE::Elements::FaceElement* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra1,
           CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra2);

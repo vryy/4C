@@ -25,7 +25,7 @@ DRT::ELEMENTS::Wall1LineType& DRT::ELEMENTS::Wall1LineType::Instance() { return 
   *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1Line::Wall1Line(int id, int owner, int nnode, const int* nodeids,
     DRT::Node** nodes, DRT::ELEMENTS::Wall1* parent, const int lline)
-    : DRT::FaceElement(id, owner)
+    : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -36,7 +36,8 @@ DRT::ELEMENTS::Wall1Line::Wall1Line(int id, int owner, int nnode, const int* nod
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mgit 03/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1Line::Wall1Line(const DRT::ELEMENTS::Wall1Line& old) : DRT::FaceElement(old)
+DRT::ELEMENTS::Wall1Line::Wall1Line(const DRT::ELEMENTS::Wall1Line& old)
+    : CORE::Elements::FaceElement(old)
 {
   return;
 }
@@ -45,7 +46,7 @@ DRT::ELEMENTS::Wall1Line::Wall1Line(const DRT::ELEMENTS::Wall1Line& old) : DRT::
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Wall1Line::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Wall1Line::Clone() const
 {
   DRT::ELEMENTS::Wall1Line* newelement = new DRT::ELEMENTS::Wall1Line(*this);
   return newelement;

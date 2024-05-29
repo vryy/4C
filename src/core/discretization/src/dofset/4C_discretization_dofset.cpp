@@ -360,7 +360,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
       const int mypid = dis.Comm().MyPID();
       for (int i = 0; i < numcolelements; ++i)
       {
-        Teuchos::RCP<DRT::FaceElement>* faces = dis.lColElement(i)->Faces();
+        Teuchos::RCP<CORE::Elements::FaceElement>* faces = dis.lColElement(i)->Faces();
         // If no faces are found, continue...
         if (faces == nullptr) continue;
         for (int face = 0; face < dis.lColElement(i)->NumFace(); ++face)
@@ -376,7 +376,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
 
       for (int i = 0; i < numcolelements; ++i)
       {
-        Teuchos::RCP<DRT::FaceElement>* faces = dis.lColElement(i)->Faces();
+        Teuchos::RCP<CORE::Elements::FaceElement>* faces = dis.lColElement(i)->Faces();
         if (faces == nullptr) continue;
         for (int face = 0; face < dis.lColElement(i)->NumFace(); ++face)
           if (faces[face]->Owner() == mypid)
@@ -417,7 +417,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
     int numrowelements = dis.NumMyRowElements();
     for (int i = 0; i < numrowelements; ++i)
     {
-      DRT::Element* actele = dis.lRowElement(i);
+      CORE::Elements::Element* actele = dis.lRowElement(i);
       // const int gid = actele->Id();
       int numdf = num_dof_per_element(*actele);
       numdfrowelements[i] = numdf;
@@ -428,7 +428,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
 
     for (int i = 0; i < numrowelements; ++i)
     {
-      DRT::Element* actelement = dis.lRowElement(i);
+      CORE::Elements::Element* actelement = dis.lRowElement(i);
       const int gid = actelement->Id();
       int numdf = numdfrowelements[i];
       int dof = count + (gid - minelementgid) * maxelementnumdf;

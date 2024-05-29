@@ -10,11 +10,11 @@
 
 #include "4C_scatra_ele_calc_poro.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_scatra.hpp"
 #include "4C_mat_structporo.hpp"
@@ -65,7 +65,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
 // *----------------------------------------------------------------------*/
 // template <CORE::FE::CellType distype>
 // int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Evaluate(
-//  DRT::Element*              ele,
+//  CORE::Elements::Element*              ele,
 //  Teuchos::ParameterList&    params,
 //  DRT::Discretization&       discretization,
 //  const std::vector<int>&    lm,
@@ -135,9 +135,9 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
  | evaluate action                                          vuong 07/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::evaluate_action(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::evaluate_action(CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const SCATRA::Action& action, DRT::Element::LocationArray& la,
+    const SCATRA::Action& action, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -178,7 +178,8 @@ int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::evaluate_action(DRT::Element* ele
  | read element coordinates                                 vuong 10/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::read_element_coordinates(const DRT::Element* ele)
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::read_element_coordinates(
+    const CORE::Elements::Element* ele)
 {
   // call base class
   my::read_element_coordinates(ele);
@@ -193,9 +194,9 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::read_element_coordinates(const D
  | extract element based or nodal values                     ehrl 12/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_values(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_values(
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
 {
   extract_element_and_node_values_poro(ele, params, discretization, la);
 
@@ -209,8 +210,8 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_values(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_values_poro(
-    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
 {
   // get number of dofset associated with velocity related dofs
   const int ndsvel = my::scatrapara_->NdsVel();
@@ -270,12 +271,12 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_values_
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::get_material_params(
-    const DRT::Element* ele,      //!< the element we are dealing with
-    std::vector<double>& densn,   //!< density at t_(n)
-    std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-    std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-    double& visc,                 //!< fluid viscosity
-    const int iquad               //!< id of current gauss point
+    const CORE::Elements::Element* ele,  //!< the element we are dealing with
+    std::vector<double>& densn,          //!< density at t_(n)
+    std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
+    std::vector<double>& densam,         //!< density at t_(n+alpha_M)
+    double& visc,                        //!< fluid viscosity
+    const int iquad                      //!< id of current gauss point
 )
 {
   // calculate gauss point porosity from fluid and solid and (potentially) scatra solution
@@ -380,7 +381,7 @@ inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::set_densities(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_porosity(
-    const DRT::Element* ele  //!< the element we are dealing with
+    const CORE::Elements::Element* ele  //!< the element we are dealing with
 )
 {
   double porosity = 0.0;
@@ -459,8 +460,9 @@ double DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_pore_pressure()
 | (overwrites method in ScaTraEleCalc)                                 |
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::calculate_scalars(const DRT::Element* ele,
-    CORE::LINALG::SerialDenseVector& scalars, bool inverting, bool calc_grad_phi)
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::calculate_scalars(
+    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseVector& scalars, bool inverting,
+    bool calc_grad_phi)
 {
   // integration points and weights
   const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(

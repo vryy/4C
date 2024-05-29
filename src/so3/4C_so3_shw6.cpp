@@ -30,27 +30,28 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoShw6Type::Create(const std::vector<char>
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoShw6Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoShw6Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoShw6(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoShw6(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoShw6Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoShw6Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoShw6(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoShw6(id, owner));
   return ele;
 }
 
 
 void DRT::ELEMENTS::SoShw6Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
@@ -116,7 +117,7 @@ DRT::ELEMENTS::SoShw6::SoShw6(const DRT::ELEMENTS::SoShw6& old) : DRT::ELEMENTS:
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::SoShw6::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::SoShw6::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::SoShw6(*this);
   return newelement;

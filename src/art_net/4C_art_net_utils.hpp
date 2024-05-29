@@ -26,11 +26,15 @@ namespace ADAPTER
 namespace DRT
 {
   class Discretization;
-  class Element;
 }  // namespace DRT
 namespace CORE::LINALG
 {
   class Solver;
+}
+
+namespace CORE::Elements
+{
+  class Element;
 }
 
 namespace ART
@@ -48,14 +52,14 @@ namespace ART
    protected:
     /// determine element type string and whether element is copied or not
     bool determine_ele_type(
-        DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+        CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
     //! provide cloned element with element specific data (material etc.)
-    void set_element_data(
-        Teuchos::RCP<DRT::Element> newele,  //! current cloned element on target discretization
-        DRT::Element* oldele,               //! current element on source discretization
-        const int matid,                    //! material of cloned element
-        const bool isnurbs                  //! nurbs flag
+    void set_element_data(Teuchos::RCP<CORE::Elements::Element>
+                              newele,     //! current cloned element on target discretization
+        CORE::Elements::Element* oldele,  //! current element on source discretization
+        const int matid,                  //! material of cloned element
+        const bool isnurbs                //! nurbs flag
     );
 
     void check_material_type(const int matid);

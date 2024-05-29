@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_post_vtk_vtu_writer.hpp"
 
 #include <map>
@@ -92,15 +92,16 @@ class PostVtuWriterNode : public PostVtuWriter
   void write_geo() override;
 
   //! write the geometry of Nurbs Element
-  virtual void write_geo_nurbs_ele(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
-      int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates);
+  virtual void write_geo_nurbs_ele(const CORE::Elements::Element* ele,
+      std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
+      std::vector<double>& coordinates);
 
   //! write the geometry of beam element (special treatment due to Hermite interpolation)
   void write_geo_beam_ele(const DRT::ELEMENTS::Beam3Base* beamele, std::vector<uint8_t>& celltypes,
       int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) override;
 
   //! Write a single result step for one Nurbs Element
-  virtual void wirte_dof_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
+  virtual void wirte_dof_result_step_nurbs_ele(const CORE::Elements::Element* ele, int ncomponents,
       const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
       const int from, const bool fillzeros);
 
@@ -109,8 +110,9 @@ class PostVtuWriterNode : public PostVtuWriter
       Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros) override;
 
   //! Write a single result step for one Nurbs Element
-  virtual void write_nodal_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
-      const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData);
+  virtual void write_nodal_result_step_nurbs_ele(const CORE::Elements::Element* ele,
+      int ncomponents, const int numdf, std::vector<double>& solution,
+      Teuchos::RCP<Epetra_MultiVector> ghostedData);
 };
 
 FOUR_C_NAMESPACE_CLOSE

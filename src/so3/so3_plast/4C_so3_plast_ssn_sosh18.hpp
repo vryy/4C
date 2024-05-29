@@ -36,10 +36,10 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       int Initialize(DRT::Discretization& dis) override;
 
@@ -76,8 +76,14 @@ namespace DRT
       CORE::FE::CellType Shape() const override { return CORE::FE::CellType::hex18; };
       int NumSurface() const override { return SoSh18::NumSurface(); }
       int NumLine() const override { return SoSh18::NumLine(); }
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override { return SoSh18::Lines(); }
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override { return SoSh18::Surfaces(); }
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override
+      {
+        return SoSh18::Lines();
+      }
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override
+      {
+        return SoSh18::Surfaces();
+      }
       int NumDofPerNode(const DRT::Node& node) const override
       {
         return SoSh18::NumDofPerNode(node);
@@ -100,7 +106,7 @@ namespace DRT
       //!
       //! The Clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
 
       //! Return unique ParObject id
@@ -144,7 +150,7 @@ namespace DRT
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
-          DRT::Element::LocationArray& la,      //!< location array for de-assembly
+          CORE::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           CORE::LINALG::SerialDenseMatrix&
               elemat1_epetra,  //!< (stiffness-)matrix to be filled by element.
           CORE::LINALG::SerialDenseMatrix&

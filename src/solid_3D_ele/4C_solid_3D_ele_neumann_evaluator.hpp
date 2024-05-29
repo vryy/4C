@@ -9,7 +9,7 @@
 #define FOUR_C_SOLID_3D_ELE_NEUMANN_EVALUATOR_HPP
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
 #include <vector>
@@ -53,8 +53,9 @@ namespace DRT::ELEMENTS
    * condition
    * @param total_time (in) : The total time for time dependent Neumann conditions
    */
-  void EvaluateNeumannByElement(DRT::Element& element, const DRT::Discretization& discretization,
-      CORE::Conditions::Condition& condition, const std::vector<int>& dof_index_array,
+  void EvaluateNeumannByElement(CORE::Elements::Element& element,
+      const DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+      const std::vector<int>& dof_index_array,
       CORE::LINALG::SerialDenseVector& element_force_vector, double total_time);
 
   /*!
@@ -87,7 +88,7 @@ namespace DRT::ELEMENTS
    * @param total_time (in) : The total time for time dependent Neumann conditions
    */
   template <CORE::FE::CellType celltype>
-  void evaluate_neumann(DRT::Element& element, const DRT::Discretization& discretization,
+  void evaluate_neumann(CORE::Elements::Element& element, const DRT::Discretization& discretization,
       CORE::Conditions::Condition& condition, const std::vector<int>& dof_index_array,
       CORE::LINALG::SerialDenseVector& element_force_vector, double total_time);
 

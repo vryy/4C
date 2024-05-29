@@ -43,12 +43,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::NStet5Type::Create(const std::vector<char>
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::NStet5Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -57,9 +57,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create(
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::NStet5Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id, owner));
   return ele;
 }
 
@@ -67,7 +68,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create(const int id, const
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
 void DRT::ELEMENTS::NStet5Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
@@ -91,7 +92,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
 
   for (int i = 0; i < dis.NumMyRowElements(); ++i)
   {
-    DRT::Element* ele = dis.lRowElement(i);
+    CORE::Elements::Element* ele = dis.lRowElement(i);
     auto* nstet = dynamic_cast<DRT::ELEMENTS::NStet5*>(ele);
     if (!nstet) continue;
     const double* x = nstet->MidX();
@@ -206,7 +207,7 @@ void DRT::ELEMENTS::NStet5Type::setup_element_definition(
  |  ctor (public)                                              gee 03/12|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::NStet5::NStet5(int id, int owner)
-    : DRT::Element(id, owner),
+    : CORE::Elements::Element(id, owner),
       material_(0),
       V_(-1.0),
       pstype_(INPAR::STR::PreStress::none),
@@ -248,7 +249,7 @@ DRT::ELEMENTS::NStet5::NStet5(int id, int owner)
  |  copy-ctor (public)                                         gee 03/128|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::NStet5::NStet5(const DRT::ELEMENTS::NStet5& old)
-    : DRT::Element(old),
+    : CORE::Elements::Element(old),
       material_(old.material_),
       V_(old.V_),
       pstype_(old.pstype_),
@@ -393,18 +394,18 @@ void DRT::ELEMENTS::NStet5::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
 |  get vector of surfaces (public)                             gee 03/12|
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NStet5::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::NStet5::Surfaces()
 {
-  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, CORE::Elements::Element>(
       CORE::COMM::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gee 03/12|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NStet5::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::NStet5::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, CORE::Elements::Element>(
       CORE::COMM::buildLines, *this);
 }
 

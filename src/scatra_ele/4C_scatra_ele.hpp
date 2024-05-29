@@ -15,9 +15,9 @@ Pack, Unpack, NumDofPerNode etc.
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_inpar_scatra.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -35,7 +35,7 @@ namespace DRT
     class TransportBoundary;
 
 
-    class TransportType : public DRT::ElementType
+    class TransportType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "TransportType"; }
@@ -44,13 +44,13 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -76,7 +76,7 @@ namespace DRT
     /*!
     \brief The Transport element
     */
-    class Transport : public DRT::Element
+    class Transport : public CORE::Elements::Element
     {
      public:
       friend class TransportType;
@@ -105,7 +105,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /// Set element material
       /*!
@@ -122,7 +122,7 @@ namespace DRT
        */
       void SetMaterial(int index, Teuchos::RCP<CORE::MAT::Material> mat) override;
 
-      virtual void SetMaterial(int matnum, DRT::Element* oldele);
+      virtual void SetMaterial(int matnum, CORE::Elements::Element* oldele);
 
       /*!
       \brief Get shape type of element
@@ -156,12 +156,12 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -197,7 +197,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can re-decide the
@@ -212,7 +212,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can re-decide along the way of a simulation.
@@ -231,7 +231,10 @@ namespace DRT
       /*!
       \brief Return ElementType
       */
-      DRT::ElementType& ElementType() const override { return TransportType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return TransportType::Instance();
+      }
 
       //! set implementation type
       void SetImplType(const INPAR::SCATRA::ImplType impltype);
@@ -381,17 +384,17 @@ namespace DRT
     //=======================================================================
     //=======================================================================
 
-    class TransportBoundaryType : public DRT::ElementType
+    class TransportBoundaryType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "TransportBoundaryType"; }
 
       static TransportBoundaryType& Instance();
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -415,7 +418,7 @@ namespace DRT
           purpose is to evaluate certain boundary conditions that might be
           adjacent to a parent Transport element.
     */
-    class TransportBoundary : public DRT::FaceElement
+    class TransportBoundary : public CORE::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -449,7 +452,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
@@ -470,12 +473,12 @@ namespace DRT
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -512,7 +515,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can re-decide the
@@ -527,7 +530,7 @@ namespace DRT
       //! Return a pointer to the parent element of this boundary element
       virtual DRT::ELEMENTS::Transport* parent_element() const
       {
-        DRT::Element* parent = DRT::FaceElement::parent_element();
+        CORE::Elements::Element* parent = CORE::Elements::FaceElement::parent_element();
         // make sure the static cast below is really valid
         FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Transport*>(parent) != nullptr,
             "Master element is no fluid element");
@@ -539,7 +542,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can re-decide along the way of a simulation.
@@ -558,7 +561,10 @@ namespace DRT
       /*!
       \brief Return ElementType
       */
-      DRT::ElementType& ElementType() const override { return TransportBoundaryType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return TransportBoundaryType::Instance();
+      }
 
       //@}
 

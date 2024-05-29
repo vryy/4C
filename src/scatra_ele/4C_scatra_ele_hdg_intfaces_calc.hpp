@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
@@ -88,7 +88,7 @@ namespace DRT
 
       //! Internal implementation class for ScaTraHDGIntFace elements (the first object is created
       //! in DRT::ELEMENTS::ScaTraHDGIntFace::Evaluate)
-      static ScaTraHDGIntFaceImplInterface* Impl(const DRT::Element* ele);
+      static ScaTraHDGIntFaceImplInterface* Impl(const CORE::Elements::Element* ele);
     };
 
     //! Internal ScaTraHDGIntFace element implementation

@@ -24,9 +24,13 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------*/
 namespace DRT
 {
-  class Element;
   class Discretization;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::VOLMORTAR
 {
@@ -62,13 +66,13 @@ namespace CORE::VOLMORTAR
 
       //! assign material of discretization B
       virtual void AssignMaterial2To1(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
-          DRT::Element* ele1, const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
-          Teuchos::RCP<DRT::Discretization> dis2);
+          CORE::Elements::Element* ele1, const std::vector<int>& ids_2,
+          Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2);
 
       //! assign material of discretization B
       virtual void AssignMaterial1To2(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
-          DRT::Element* ele2, const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
-          Teuchos::RCP<DRT::Discretization> dis2);
+          CORE::Elements::Element* ele2, const std::vector<int>& ids_1,
+          Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2);
     };
   }  // namespace UTILS
 }  // namespace CORE::VOLMORTAR

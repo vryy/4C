@@ -42,27 +42,29 @@ CORE::COMM::ParObject* DRT::ELEMENTS::TransportType::Create(const std::vector<ch
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::TransportType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TRANSP" or eletype == "CONDIF2" or eletype == "CONDIF3")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Transport(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::Transport(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::TransportType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Transport(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Transport(id, owner));
   return ele;
 }
 
 
 void DRT::ELEMENTS::TransportType::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
   dimns = numdf;
@@ -260,7 +262,7 @@ DRT::ELEMENTS::TransportBoundaryType& DRT::ELEMENTS::TransportBoundaryType::Inst
   return instance_;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportBoundaryType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::TransportBoundaryType::Create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new TransportBoundary( id, owner ) );
@@ -272,7 +274,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportBoundaryType::Create(
  |  ctor (public)                                             gjb 05/08 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Transport::Transport(int id, int owner)
-    : DRT::Element(id, owner),
+    : CORE::Elements::Element(id, owner),
       distype_(CORE::FE::CellType::dis_none),
       name_(),
       vis_map_(),
@@ -285,7 +287,7 @@ DRT::ELEMENTS::Transport::Transport(int id, int owner)
  |  copy-ctor (public)                                        gjb 05/08 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Transport::Transport(const DRT::ELEMENTS::Transport& old)
-    : DRT::Element(old),
+    : CORE::Elements::Element(old),
       distype_(old.distype_),
       name_(old.name_),
       vis_map_(old.vis_map_),
@@ -298,7 +300,7 @@ DRT::ELEMENTS::Transport::Transport(const DRT::ELEMENTS::Transport& old)
  |  Deep copy this instance of Transport and return pointer to it (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Transport::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Transport::Clone() const
 {
   DRT::ELEMENTS::Transport* newelement = new DRT::ELEMENTS::Transport(*this);
   return newelement;
@@ -311,7 +313,7 @@ DRT::Element* DRT::ELEMENTS::Transport::Clone() const
 void DRT::ELEMENTS::Transport::SetMaterial(const int index, Teuchos::RCP<CORE::MAT::Material> mat)
 {
   // the standard part:
-  DRT::Element::SetMaterial(index, mat);
+  CORE::Elements::Element::SetMaterial(index, mat);
 
   if (mat->MaterialType() == CORE::Materials::m_scatra or
       mat->MaterialType() == CORE::Materials::m_scatra_aniso or
@@ -552,7 +554,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(const int index, Teuchos::RCP<CORE::M
 /*----------------------------------------------------------------------*
  |  create material class (public)                            gjb 07/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Transport::SetMaterial(int matnum, DRT::Element* oldele)
+void DRT::ELEMENTS::Transport::SetMaterial(int matnum, CORE::Elements::Element* oldele)
 {
   SetMaterial(0, MAT::Factory(matnum));
 
@@ -679,7 +681,7 @@ void DRT::ELEMENTS::Transport::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                  g.bau 03/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Transport::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Transport::Lines()
 {
   return CORE::COMM::GetElementLines<TransportBoundary, Transport>(*this);
 }
@@ -688,7 +690,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Transport::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          g.bau 03/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Transport::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Transport::Surfaces()
 {
   return CORE::COMM::GetElementSurfaces<TransportBoundary, Transport>(*this);
 }
@@ -753,7 +755,7 @@ int DRT::ELEMENTS::Transport::initialize()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::TransportBoundary::TransportBoundary(int id, int owner, int nnode,
     const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Transport* parent, const int lsurface)
-    : DRT::FaceElement(id, owner)
+    : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -765,7 +767,7 @@ DRT::ELEMENTS::TransportBoundary::TransportBoundary(int id, int owner, int nnode
  |  copy-ctor (public)                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::TransportBoundary::TransportBoundary(const DRT::ELEMENTS::TransportBoundary& old)
-    : DRT::FaceElement(old)
+    : CORE::Elements::FaceElement(old)
 {
   return;
 }
@@ -773,7 +775,7 @@ DRT::ELEMENTS::TransportBoundary::TransportBoundary(const DRT::ELEMENTS::Transpo
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it     (public) gjb 01/09 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::TransportBoundary::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::TransportBoundary::Clone() const
 {
   DRT::ELEMENTS::TransportBoundary* newelement = new DRT::ELEMENTS::TransportBoundary(*this);
   return newelement;
@@ -840,7 +842,7 @@ int DRT::ELEMENTS::TransportBoundary::NumSurface() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              gjb 01/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::TransportBoundary::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::TransportBoundary::Lines()
 {
   FOUR_C_THROW("Lines of TransportBoundary not implemented");
 }
@@ -848,7 +850,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::TransportBoundary::Lines(
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              gjb 01/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::TransportBoundary::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::TransportBoundary::Surfaces()
 {
   FOUR_C_THROW("Surfaces of TransportBoundary not implemented");
 }

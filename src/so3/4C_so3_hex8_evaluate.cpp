@@ -8,6 +8,7 @@
 
 *----------------------------------------------------------------------*/
 
+#include "4C_discretization_fem_general_elements_jacobian.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_fem_general_utils_gauss_point_extrapolation.hpp"
@@ -17,7 +18,6 @@
 #include "4C_fluid_ele_parameter_timint.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_utils_elements.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -79,7 +79,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
   CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  ELEMENTS::ActionType act = ELEMENTS::none;
+  CORE::Elements::ActionType act = CORE::Elements::none;
 
   if (IsParamsInterface())
   {
@@ -89,7 +89,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
   {
     // get the required action
     std::string action = params.get<std::string>("action", "none");
-    act = ELEMENTS::String2ActionType(action);
+    act = CORE::Elements::String2ActionType(action);
   }
 
 
@@ -98,8 +98,8 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
   {
     //==================================================================================
     // nonlinear stiffness and internal force vector
-    case ELEMENTS::struct_calc_nlnstiff:
-    case ELEMENTS::struct_calc_linstiff:
+    case CORE::Elements::struct_calc_nlnstiff:
+    case CORE::Elements::struct_calc_linstiff:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -129,7 +129,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     }
     //==================================================================================
     // internal force vector only
-    case ELEMENTS::struct_calc_internalforce:
+    case CORE::Elements::struct_calc_internalforce:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -159,10 +159,10 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     }
     //==================================================================================
     // nonlinear stiffness, internal force vector, and consistent mass matrix
-    case ELEMENTS::struct_calc_nlnstiffmass:
-    case ELEMENTS::struct_calc_nlnstifflmass:
-    case ELEMENTS::struct_calc_linstiffmass:
-    case ELEMENTS::struct_calc_internalinertiaforce:
+    case CORE::Elements::struct_calc_nlnstiffmass:
+    case CORE::Elements::struct_calc_nlnstifflmass:
+    case CORE::Elements::struct_calc_linstiffmass:
+    case CORE::Elements::struct_calc_internalinertiaforce:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -185,12 +185,13 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       CORE::FE::ExtractMyValues(*res, myres, lm);
 
       // This matrix is used in the evaluation functions to store the mass matrix. If the action
-      // type is ELEMENTS::struct_calc_internalinertiaforce we do not want to actually populate the
-      // elemat2 variable, since the inertia terms will be directly added to the right hand side.
-      // Therefore, a view is only set in cases where the evaluated mass matrix should also be
-      // exported in elemat2.
+      // type is CORE::Elements::struct_calc_internalinertiaforce we do not want to actually
+      // populate the elemat2 variable, since the inertia terms will be directly added to the right
+      // hand side. Therefore, a view is only set in cases where the evaluated mass matrix should
+      // also be exported in elemat2.
       CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> mass_matrix_evaluate;
-      if (act != ELEMENTS::struct_calc_internalinertiaforce) mass_matrix_evaluate.SetView(elemat2);
+      if (act != CORE::Elements::struct_calc_internalinertiaforce)
+        mass_matrix_evaluate.SetView(elemat2);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
       if (structale_)
@@ -200,7 +201,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
         CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
-      if (act == ELEMENTS::struct_calc_internalinertiaforce)
+      if (act == CORE::Elements::struct_calc_internalinertiaforce)
       {
         nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, nullptr, &mass_matrix_evaluate,
             &elevec1, &elevec2, nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
@@ -212,7 +213,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
             &elevec1, &elevec2, &elevec3, nullptr, nullptr, nullptr, params,
             INPAR::STR::stress_none, INPAR::STR::strain_none, INPAR::STR::strain_none);
       }
-      if (act == ELEMENTS::struct_calc_nlnstifflmass) soh8_lumpmass(&elemat2);
+      if (act == CORE::Elements::struct_calc_nlnstifflmass) soh8_lumpmass(&elemat2);
 
       INPAR::STR::MassLin mass_lin = INPAR::STR::MassLin::ml_none;
       auto modelevaluator_data =
@@ -235,7 +236,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     //==================================================================================
-    case struct_calc_mass_volume:
+    case CORE::Elements::struct_calc_mass_volume:
     {
       // declaration of variables
       double volume_ref = 0.0;
@@ -398,7 +399,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
-    case ELEMENTS::analyse_jacobian_determinant:
+    case CORE::Elements::analyse_jacobian_determinant:
     {
       // get displacements and extract values of this element
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -426,7 +427,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
 
     //==================================================================================
     // recover elementwise stored quantities (e.g. EAS)
-    case ELEMENTS::struct_calc_recover:
+    case CORE::Elements::struct_calc_recover:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -448,7 +449,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     }
     //==================================================================================
     // evaluate stresses and strains at gauss points
-    case ELEMENTS::struct_calc_stress:
+    case CORE::Elements::struct_calc_stress:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
@@ -529,7 +530,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       }
     }
     break;
-    case ELEMENTS::struct_init_gauss_point_data_output:
+    case CORE::Elements::struct_init_gauss_point_data_output:
     {
       FOUR_C_ASSERT(IsParamsInterface(),
           "This action type should only be called from the new time integration framework!");
@@ -549,7 +550,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       str_params_interface().gauss_point_data_output_manager_ptr()->MergeQuantities(quantities_map);
     }
     break;
-    case ELEMENTS::struct_gauss_point_data_output:
+    case CORE::Elements::struct_gauss_point_data_output:
     {
       FOUR_C_ASSERT(IsParamsInterface(),
           "This action type should only be called from the new time integration framework!");
@@ -623,15 +624,15 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     //==================================================================================
-    case ELEMENTS::struct_calc_eleload:
+    case CORE::Elements::struct_calc_eleload:
       FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
     //==================================================================================
-    case ELEMENTS::struct_calc_fsiload:
+    case CORE::Elements::struct_calc_fsiload:
       FOUR_C_THROW("Case not yet implemented");
       break;
     //==================================================================================
-    case ELEMENTS::struct_calc_update_istep:
+    case CORE::Elements::struct_calc_update_istep:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
@@ -641,7 +642,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     //==================================================================================
-    case ELEMENTS::struct_calc_reset_istep:
+    case CORE::Elements::struct_calc_reset_istep:
     {
       // restore EAS parameters
       if (eastype_ != soh8_easnone)
@@ -657,7 +658,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     //==================================================================================
-    case ELEMENTS::struct_calc_store_istep:
+    case CORE::Elements::struct_calc_store_istep:
     {
       int timestep = params.get<int>("timestep", -1);
 
@@ -671,7 +672,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     //==================================================================================
-    case ELEMENTS::struct_calc_recover_istep:
+    case CORE::Elements::struct_calc_recover_istep:
     {
       int timestep = params.get<int>("timestep", -1);
 
@@ -685,7 +686,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     //==================================================================================
-    case ELEMENTS::struct_calc_energy:
+    case CORE::Elements::struct_calc_energy:
     {
       // initialization of internal energy
       double intenergy = 0.0;
@@ -921,13 +922,13 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     //==================================================================================
-    case ELEMENTS::multi_calc_dens:
+    case CORE::Elements::multi_calc_dens:
     {
       soh8_homog(params);
     }
     break;
       //==================================================================================
-    case ELEMENTS::struct_interpolate_velocity_to_point:
+    case CORE::Elements::struct_interpolate_velocity_to_point:
     {
       // get displacements and extract values of this element (set in prepare_fluid_op())
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
@@ -1048,7 +1049,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     // have to be stored in every macroscopic Gauss point
     // allocation and initializiation of these data arrays can only be
     // done in the elements that know the number of EAS parameters
-    case ELEMENTS::multi_init_eas:
+    case CORE::Elements::multi_init_eas:
     {
       soh8_eas_init_multi(params);
     }
@@ -1058,20 +1059,20 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     // have to be stored in every macroscopic Gauss point
     // before any microscale simulation, EAS internal data has to be
     // set accordingly
-    case ELEMENTS::multi_set_eas:
+    case CORE::Elements::multi_set_eas:
     {
       soh8_set_eas_multi(params);
     }
     break;
     //==================================================================================
     // read restart of microscale
-    case ELEMENTS::multi_readrestart:
+    case CORE::Elements::multi_readrestart:
     {
       soh8_read_restart_multi();
     }
     break;
     //==================================================================================
-    case ELEMENTS::struct_update_prestress:
+    case CORE::Elements::struct_update_prestress:
     {
       time_ = params.get<double>("total time");
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -1120,7 +1121,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     // evaluate stresses and strains at gauss points and store gpstresses in map <EleId, gpstresses
     // >
-    case ELEMENTS::struct_calc_global_gpstresses_map:
+    case CORE::Elements::struct_calc_global_gpstresses_map:
     {
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID() == Owner())
@@ -1236,14 +1237,14 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     //==================================================================================
-    case ELEMENTS::struct_calc_predict:
+    case CORE::Elements::struct_calc_predict:
     {
       // do nothing here
       break;
     }
     //==================================================================================
     // create a backup state for all internally stored variables (e.g. EAS)
-    case ELEMENTS::struct_create_backup:
+    case CORE::Elements::struct_create_backup:
     {
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (res.is_null()) FOUR_C_THROW("Cannot get state vector \"residual displacement\"");
@@ -1259,7 +1260,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     /* recover internally stored state variables from a previously created backup
      * state (e.g. EAS) */
-    case ELEMENTS::struct_recover_from_backup:
+    case CORE::Elements::struct_recover_from_backup:
     {
       soh8_recover_from_eas_backup_state();
 
@@ -1267,7 +1268,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     }
     default:
       FOUR_C_THROW(
-          "Unknown type of action for So_hex8: %s", ELEMENTS::ActionType2String(act).c_str());
+          "Unknown type of action for So_hex8: %s", CORE::Elements::ActionType2String(act).c_str());
       break;
   }
   return 0;
@@ -1488,7 +1489,7 @@ double DRT::ELEMENTS::SoHex8::soh8_get_min_det_jac_at_corners(
 {
   CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> xcurr_t(false);
   xcurr_t.UpdateT(xcurr);
-  return DRT::UTILS::GetMinimalJacDeterminantAtNodes<CORE::FE::CellType::hex8>(xcurr_t);
+  return CORE::Elements::GetMinimalJacDeterminantAtNodes<CORE::FE::CellType::hex8>(xcurr_t);
 }
 
 /*----------------------------------------------------------------------------*

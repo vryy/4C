@@ -135,7 +135,7 @@ namespace SCATRA
       /** \brief prepare the cut algorithm
        *
        *  \author hiermeier \date 11/16 */
-      void prepare_cut(const DRT::Element* ele, const DRT::Discretization& scatradis,
+      void prepare_cut(const CORE::Elements::Element* ele, const DRT::Discretization& scatradis,
           const Epetra_Vector& phicol, CORE::LINALG::SerialDenseMatrix& xyze,
           std::vector<double>& phi_nodes, std::vector<int>& node_ids) const;
 

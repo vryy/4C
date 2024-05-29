@@ -16,7 +16,7 @@
 #include "4C_beamcontact_beam3contactinterface.hpp"
 #include "4C_beaminteraction_beam_to_beam_contact_defines.hpp"
 #include "4C_beaminteraction_beam_to_beam_contact_tangentsmoothing.hpp"
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_utils_fad.hpp"
@@ -55,8 +55,8 @@ namespace CONTACT
     \param ele2pos (in): nodal coordinates of second element
     */
     Beam3contactnew(const DRT::Discretization& pdiscret, const DRT::Discretization& cdiscret,
-        const std::map<int, int>& dofoffsetmap, DRT::Element* element1, DRT::Element* element2,
-        Teuchos::ParameterList& beamcontactparams);
+        const std::map<int, int>& dofoffsetmap, CORE::Elements::Element* element1,
+        CORE::Elements::Element* element2, Teuchos::ParameterList& beamcontactparams);
 
 
     //@}
@@ -80,12 +80,12 @@ namespace CONTACT
     /*!
     \brief Get first element
     */
-    inline const DRT::Element* Element1() override { return element1_; };
+    inline const CORE::Elements::Element* Element1() override { return element1_; };
 
     /*!
     \brief Get first element
     */
-    inline const DRT::Element* Element2() override { return element2_; };
+    inline const CORE::Elements::Element* Element2() override { return element2_; };
 
     /*!
     \brief Get number of contact points on this element pair
@@ -330,10 +330,10 @@ namespace CONTACT
     const std::map<int, int>& dofoffsetmap_;
 
     //! first element of contact pair
-    DRT::Element* element1_;
+    CORE::Elements::Element* element1_;
 
     //! second element of contact pair
-    DRT::Element* element2_;
+    CORE::Elements::Element* element2_;
 
     //! beam contact parameter list
     Teuchos::ParameterList& bcparams_;
@@ -736,7 +736,7 @@ namespace CONTACT
     /*!
       \brief Get jacobi factor of beam element
     */
-    double get_jacobi(DRT::Element* element1);
+    double get_jacobi(CORE::Elements::Element* element1);
 
 
     /*!

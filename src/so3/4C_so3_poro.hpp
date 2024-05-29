@@ -12,9 +12,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_gausspoints.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -106,7 +106,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -136,13 +136,13 @@ namespace DRT
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       //! @name Access methods
 
@@ -151,7 +151,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override;
+      CORE::Elements::ElementType& ElementType() const override;
 
       //!@}
 
@@ -178,7 +178,7 @@ namespace DRT
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
-          DRT::Element::LocationArray& la,      //!< location array for de-assembly
+          CORE::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           CORE::LINALG::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.
           CORE::LINALG::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.
@@ -191,8 +191,8 @@ namespace DRT
       virtual void pre_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
-          DRT::Element::LocationArray& la       //!< location array for de-assembly
+          DRT::Discretization& discretization,        //!< pointer to discretization for de-assembly
+          CORE::Elements::Element::LocationArray& la  //!< location array for de-assembly
       );
 
 
@@ -307,7 +307,7 @@ namespace DRT
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
-          DRT::Element::LocationArray& la,      //!< location array for de-assembly
+          CORE::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           CORE::LINALG::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.
           CORE::LINALG::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.

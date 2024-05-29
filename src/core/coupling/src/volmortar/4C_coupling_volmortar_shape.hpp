@@ -20,11 +20,11 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_volmortar.hpp"
+#include "4C_discretization_fem_general_element_integration_select.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
-#include "4C_lib_element_integration_select.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_mortar_element.hpp"
 
@@ -48,20 +48,20 @@ namespace CORE::VOLMORTAR
     );
 
     template <CORE::FE::CellType distype>
-    bool LocalToGlobal(const DRT::Element& ele,  ///< element which is considered
-        const double* xi,                        ///< para. coordinates
+    bool LocalToGlobal(const CORE::Elements::Element& ele,  ///< element which is considered
+        const double* xi,                                   ///< para. coordinates
         double* globcoord);
 
     template <CORE::FE::CellType distype>
-    double Jacobian(const double* xi,  ///< para. coordinates
-        const DRT::Element& ele);      ///< element which is considered
+    double Jacobian(const double* xi,         ///< para. coordinates
+        const CORE::Elements::Element& ele);  ///< element which is considered
 
     template <CORE::FE::CellType distype, class V, class W, class U, class T>
     double nurbs_Jacobian(W& deriv,  ///< to be filled with shape function deriv
         const U* xi,                 ///< xi coordinates
         T& weights,                  ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const DRT::Element& ele                               ///< element which is considered
+        const CORE::Elements::Element& ele                    ///< element which is considered
     );
 
     template <class V>
@@ -120,7 +120,7 @@ namespace CORE::VOLMORTAR
 
     template <CORE::FE::CellType distype, class V, class T>
     void volmortar_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
-        const DRT::Element& ele,                    ///< element which is considered
+        const CORE::Elements::Element& ele,         ///< element which is considered
         const T* xi,                                ///< para. coordinates
         DualQuad quadtype                           ///< type of quadratic element modification
     );
@@ -132,12 +132,12 @@ namespace CORE::VOLMORTAR
         const U* xi,  ///< xi coordinates
         T& weights,   ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const DRT::Element& ele                               ///< element which is considered
+        const CORE::Elements::Element& ele                    ///< element which is considered
     );
 
     template <CORE::FE::CellType distype, class V, class T>
     void volmortar_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
-        const DRT::Element& ele,                    ///< element which is considered
+        const CORE::Elements::Element& ele,         ///< element which is considered
         const T* xi,                                ///< para. coordinates
         DualQuad quadtype                           ///< type of quadratic element modification
     );
@@ -149,12 +149,12 @@ namespace CORE::VOLMORTAR
         const U* xi,  ///< xi coordinates
         T& weights,   ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const DRT::Element& ele                               ///< element which is considered
+        const CORE::Elements::Element& ele                    ///< element which is considered
     );
 
     template <CORE::FE::CellType distype, class V, class T>
     void volmortar_dualshape_function_3D(V& funct,  ///< to be filled with shape function values
-        const DRT::Element& ele,                    ///< element which is considered
+        const CORE::Elements::Element& ele,         ///< element which is considered
         const T* xi,                                ///< para. coordinates
         DualQuad quadtype                           ///< type of quadratic element modification
     );
@@ -166,7 +166,7 @@ namespace CORE::VOLMORTAR
         const U* xi,  ///< xi coordinates
         T& weights,   ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const DRT::Element& ele                               ///< element which is considered
+        const CORE::Elements::Element& ele                    ///< element which is considered
     );
 
     // general evaluation routine for std shape functions
@@ -177,9 +177,9 @@ namespace CORE::VOLMORTAR
 
     // general evaluation routine for dual shape functions
     template <CORE::FE::CellType distype, class V, class T>
-    void dual_shape_function(V& f,  ///< to be filled with shape function values
-        const T& xi,                ///< para. coordinates
-        const DRT::Element& ele,    ///< element which is considered
+    void dual_shape_function(V& f,           ///< to be filled with shape function values
+        const T& xi,                         ///< para. coordinates
+        const CORE::Elements::Element& ele,  ///< element which is considered
         DualQuad dualquad = dualquad_no_mod);
 
     template <CORE::FE::CellType distype, class V, class W, class U, class T>
@@ -196,7 +196,7 @@ namespace CORE::VOLMORTAR
         const U* xi,                         ///< xi coordinates
         T& weights,                          ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const DRT::Element& ele                               ///< element which is considered
+        const CORE::Elements::Element& ele                    ///< element which is considered
     );
     //=====================================================================================
     //=====================================================================================
@@ -359,7 +359,7 @@ namespace CORE::VOLMORTAR
      |  Evaluate Jacobian determinant                            farah 01/14|
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
-    double Jacobian(const double* xi, const DRT::Element& ele)
+    double Jacobian(const double* xi, const CORE::Elements::Element& ele)
     {
       //! nn_: number of master element nodes
       static constexpr int nn = CORE::FE::num_nodes<distype>;
@@ -498,7 +498,7 @@ namespace CORE::VOLMORTAR
         const U* xi,                 ///< xi coordinates
         T& weights,                  ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const DRT::Element& ele                               ///< element which is considered
+        const CORE::Elements::Element& ele                    ///< element which is considered
     )
     {
       //! nn_: number of master element nodes
@@ -1081,7 +1081,7 @@ namespace CORE::VOLMORTAR
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype, class V, class T>
     void volmortar_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
-        const DRT::Element& ele,                    ///< element which is considered
+        const CORE::Elements::Element& ele,         ///< element which is considered
         const T* xi,                                ///< para. coordinates
         DualQuad quadtype                           ///< type of quadratic element modification
     )
@@ -1170,7 +1170,7 @@ namespace CORE::VOLMORTAR
         const U* xi,  ///< xi coordinates
         T& weights,   ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const DRT::Element& ele                               ///< element which is considered
+        const CORE::Elements::Element& ele                    ///< element which is considered
     )
     {
       switch (distype)
@@ -1249,7 +1249,7 @@ namespace CORE::VOLMORTAR
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype, class V, class T>
     void volmortar_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
-        const DRT::Element& ele,                    ///< element which is considered
+        const CORE::Elements::Element& ele,         ///< element which is considered
         const T* xi,                                ///< para. coordinates
         DualQuad quadtype                           ///< type of quadratic element modification
     )
@@ -1340,7 +1340,7 @@ namespace CORE::VOLMORTAR
         const U* xi,  ///< xi coordinates
         T& weights,   ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const DRT::Element& ele                               ///< element which is considered
+        const CORE::Elements::Element& ele                    ///< element which is considered
     )
     {
       switch (distype)
@@ -1421,7 +1421,7 @@ namespace CORE::VOLMORTAR
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype, class V, class T>
     void volmortar_dualshape_function_3D(V& funct,  ///< to be filled with shape function values
-        const DRT::Element& ele,                    ///< element which is considered
+        const CORE::Elements::Element& ele,         ///< element which is considered
         const T* xi,                                ///< para. coordinates
         DualQuad quadtype                           ///< type of quadratic element modification
     )
@@ -1515,7 +1515,7 @@ namespace CORE::VOLMORTAR
         const U* xi,  ///< xi coordinates
         T& weights,   ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const DRT::Element& ele                               ///< element which is considered
+        const CORE::Elements::Element& ele                    ///< element which is considered
     )
     {
       switch (distype)
@@ -1808,7 +1808,7 @@ namespace CORE::VOLMORTAR
      |  Get global coords for given local coords (ref pos)       farah 01/14|
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype>
-    bool LocalToGlobal(const DRT::Element& ele, const double* xi, double* globcoord)
+    bool LocalToGlobal(const CORE::Elements::Element& ele, const double* xi, double* globcoord)
     {
       // check input
       if (!xi) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
@@ -1922,7 +1922,8 @@ namespace CORE::VOLMORTAR
      |  evaluate dual shapes                                     farah 09/14|
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype, class V, class T>
-    void dual_shape_function(V& f, const T& xi, const DRT::Element& ele, DualQuad dualquad)
+    void dual_shape_function(
+        V& f, const T& xi, const CORE::Elements::Element& ele, DualQuad dualquad)
     {
       switch (CORE::FE::dim<distype>)
       {
@@ -1957,7 +1958,7 @@ namespace CORE::VOLMORTAR
         const U* xi,                         ///< xi coordinates
         T& weights,                          ///< control point weights
         std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
-        const DRT::Element& ele                               ///< element which is considered
+        const CORE::Elements::Element& ele                    ///< element which is considered
     )
     {
       switch (CORE::FE::dim<distype>)

@@ -43,7 +43,7 @@ DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Instance(
  *--------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::sysmat(
-    DRT::Element* ele,                          ///< current element
+    CORE::Elements::Element* ele,               ///< current element
     CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix
     CORE::LINALG::SerialDenseVector& erhs,      ///< element right-hand side vector
     CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid diffusivity scaling vector
@@ -275,11 +275,11 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_soret(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::EvaluateActionOD(
-    DRT::Element* ele,                                //!< current element
+    CORE::Elements::Element* ele,                     //!< current element
     Teuchos::ParameterList& params,                   //!< parameter list
     DRT::Discretization& discretization,              //!< discretization
     const SCATRA::Action& action,                     //!< action parameter
-    DRT::Element::LocationArray& la,                  //!< location array
+    CORE::Elements::Element::LocationArray& la,       //!< location array
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
     CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
@@ -317,7 +317,7 @@ int DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::EvaluateActionOD(
  *------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::sysmat_od_thermo_scatra(
-    DRT::Element* ele,                     //!< current element
+    CORE::Elements::Element* ele,          //!< current element
     CORE::LINALG::SerialDenseMatrix& emat  //!< element matrix
 )
 {
@@ -530,10 +530,10 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_soret_od(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::extract_element_and_node_values(
-    DRT::Element* ele,                    //!< current element
-    Teuchos::ParameterList& params,       //!< parameter list
-    DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la       //!< location array
+    CORE::Elements::Element* ele,               //!< current element
+    Teuchos::ParameterList& params,             //!< parameter list
+    DRT::Discretization& discretization,        //!< discretization
+    CORE::Elements::Element::LocationArray& la  //!< location array
 )
 {
   // call base class routine to extract thermo-related quantities
@@ -547,9 +547,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::extract_element_and_node
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::get_material_params(const DRT::Element* ele,
-    std::vector<double>& densn, std::vector<double>& densnp, std::vector<double>& densam,
-    double& visc, const int iquad)
+void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::get_material_params(
+    const CORE::Elements::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
+    std::vector<double>& densam, double& visc, const int iquad)
 {
   // get parameters of primary, thermal material
   Teuchos::RCP<const CORE::MAT::Material> material = ele->Material();

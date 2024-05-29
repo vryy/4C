@@ -49,12 +49,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(const std:
 /*----------------------------------------------------------------------*
  |  create an element from a dat file specifier             vuong 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "POROFLUIDMULTIPHASE")
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::PoroFluidMultiPhase(id, owner));
     return ele;
   }
@@ -64,10 +64,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(
 /*----------------------------------------------------------------------*
  |  create an empty element                                vuong 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::PoroFluidMultiPhase(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::PoroFluidMultiPhase(id, owner));
   return ele;
 }
 
@@ -75,7 +76,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(
  |  nodal block information to create a null space description    vuong 08/16 |
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::PoroFluidMultiPhaseType::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
   dimns = numdf;
@@ -154,7 +155,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryType::Instance()
 /*----------------------------------------------------------------------*
  |  create an empty element                                vuong 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryType::Create(
     const int id, const int owner)
 {
   // boundary elements are not created as stand-alone elements by the element type,
@@ -195,7 +196,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseType::Initialize(DRT::Discretization& dis)
  |  create an empty element                                vuong 08/16 |
  *------------------------------------------------------ ----------------*/
 DRT::ELEMENTS::PoroFluidMultiPhase::PoroFluidMultiPhase(int id, int owner)
-    : DRT::Element(id, owner), distype_(CORE::FE::CellType::dis_none), numdofpernode_(-1)
+    : CORE::Elements::Element(id, owner), distype_(CORE::FE::CellType::dis_none), numdofpernode_(-1)
 {
   return;
 }
@@ -205,7 +206,7 @@ DRT::ELEMENTS::PoroFluidMultiPhase::PoroFluidMultiPhase(int id, int owner)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::PoroFluidMultiPhase::PoroFluidMultiPhase(
     const DRT::ELEMENTS::PoroFluidMultiPhase& old)
-    : DRT::Element(old), distype_(old.distype_), numdofpernode_(old.numdofpernode_)
+    : CORE::Elements::Element(old), distype_(old.distype_), numdofpernode_(old.numdofpernode_)
 {
   return;
 }
@@ -214,7 +215,7 @@ DRT::ELEMENTS::PoroFluidMultiPhase::PoroFluidMultiPhase(
  |  Deep copy this instance of PoroFluidMultiPhase and return pointer to it  |
  |                                                 (public) vuong 08/16      |
  *---------------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::PoroFluidMultiPhase::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::PoroFluidMultiPhase::Clone() const
 {
   DRT::ELEMENTS::PoroFluidMultiPhase* newelement = new DRT::ELEMENTS::PoroFluidMultiPhase(*this);
   return newelement;
@@ -335,7 +336,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                 vuong 08/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhase::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::PoroFluidMultiPhase::Lines()
 {
   return CORE::COMM::GetElementLines<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(*this);
 }
@@ -344,7 +345,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhase::Line
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                         vuong 08/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhase::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::PoroFluidMultiPhase::Surfaces()
 {
   return CORE::COMM::GetElementSurfaces<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(*this);
 }
@@ -373,7 +374,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::SetMaterial(
     const int index, Teuchos::RCP<CORE::MAT::Material> mat)
 {
   // the standard part:
-  DRT::Element::SetMaterial(index, mat);
+  CORE::Elements::Element::SetMaterial(index, mat);
 
   // the special part:
   // now the element knows its material, and we can use it to determine numdofpernode
@@ -405,7 +406,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::SetMaterial(
 DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::PoroFluidMultiPhaseBoundary(int id, int owner,
     int nnode, const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::PoroFluidMultiPhase* parent,
     const int lsurface)
-    : DRT::FaceElement(id, owner)
+    : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -418,7 +419,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::PoroFluidMultiPhaseBoundary(int id, 
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::PoroFluidMultiPhaseBoundary(
     const DRT::ELEMENTS::PoroFluidMultiPhaseBoundary& old)
-    : DRT::FaceElement(old)
+    : CORE::Elements::FaceElement(old)
 {
   return;
 }
@@ -426,7 +427,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::PoroFluidMultiPhaseBoundary(
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it   (public) vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Clone() const
 {
   DRT::ELEMENTS::PoroFluidMultiPhaseBoundary* newelement =
       new DRT::ELEMENTS::PoroFluidMultiPhaseBoundary(*this);
@@ -499,7 +500,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::NumSurface() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                            vuong 08/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>>
+DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Lines()
 {
   FOUR_C_THROW("Lines of PoroFluidMultiPhaseBoundary not implemented");
 }
@@ -507,7 +509,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhaseBounda
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                            vuong 08/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>>
+DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Surfaces()
 {
   FOUR_C_THROW("Surfaces of PoroFluidMultiPhaseBoundary not implemented");
 }

@@ -19,10 +19,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
-}  // namespace DRT
+}
+
 namespace CORE::LINALG
 {
   class SerialDenseVector;
@@ -183,7 +184,7 @@ namespace POROMULTIPHASESCATRA
     //! return appropriate internal implementation class (acts as a simple factory to create single
     //! pairs)
     static Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
-    create_new_artery_coupling_pair(std::vector<DRT::Element const*> const& ele_ptrs);
+    create_new_artery_coupling_pair(std::vector<CORE::Elements::Element const*> const& ele_ptrs);
 
     //! set the artery diameter in material to be able to use it on 1D discretization
     virtual void set_artery_diam_in_material() = 0;

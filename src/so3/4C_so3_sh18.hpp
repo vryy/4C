@@ -10,9 +10,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
 #include "4C_so3_hex18.hpp"
@@ -40,10 +40,10 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       int Initialize(DRT::Discretization& dis) override;
 
@@ -96,7 +96,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
 
       /*!
@@ -140,7 +140,7 @@ namespace DRT
 
 
 
-      DRT::ElementType& ElementType() const override { return SoSh18Type::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override { return SoSh18Type::Instance(); }
 
       //@}
 

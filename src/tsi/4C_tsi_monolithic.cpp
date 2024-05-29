@@ -24,9 +24,9 @@
 #include "4C_contact_node.hpp"
 #include "4C_discretization_condition_locsys.hpp"
 #include "4C_discretization_fem_general_assemblestrategy.hpp"
+#include "4C_discretization_fem_general_elements_paramsminimal.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_elements_paramsminimal.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -207,10 +207,10 @@ void TSI::Monolithic::read_restart(int step)
 
   Teuchos::ParameterList p;
   //! pointer to the model evaluator data container
-  Teuchos::RCP<DRT::ELEMENTS::ParamsMinimal> EvalData =
-      Teuchos::rcp(new DRT::ELEMENTS::ParamsMinimal());
-  EvalData->SetActionType(DRT::ELEMENTS::struct_calc_reset_istep);
-  p.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", EvalData);
+  Teuchos::RCP<CORE::Elements::ParamsMinimal> EvalData =
+      Teuchos::rcp(new CORE::Elements::ParamsMinimal());
+  EvalData->SetActionType(CORE::Elements::struct_calc_reset_istep);
+  p.set<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface", EvalData);
   p.set<std::string>("action", "calc_struct_reset_istep");
   structure_field()->discretization()->Evaluate(p);
 
@@ -1893,11 +1893,11 @@ void TSI::Monolithic::apply_str_coupl_matrix(
   Teuchos::ParameterList sparams;
 
   //! pointer to the model evaluator data container
-  Teuchos::RCP<DRT::ELEMENTS::ParamsMinimal> EvalData =
-      Teuchos::rcp(new DRT::ELEMENTS::ParamsMinimal());
+  Teuchos::RCP<CORE::Elements::ParamsMinimal> EvalData =
+      Teuchos::rcp(new CORE::Elements::ParamsMinimal());
 
   // set parameters needed for element evalutation
-  EvalData->SetActionType(DRT::ELEMENTS::struct_calc_stifftemp);
+  EvalData->SetActionType(CORE::Elements::struct_calc_stifftemp);
   EvalData->SetTotalTime(Time());
   EvalData->SetDeltaTime(Dt());
 
@@ -1922,7 +1922,7 @@ void TSI::Monolithic::apply_str_coupl_matrix(
       Teuchos::null, Teuchos::null, Teuchos::null);
 
 
-  sparams.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", EvalData);
+  sparams.set<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface", EvalData);
   structure_field()->discretization()->Evaluate(sparams, structuralstrategy);
   structure_field()->discretization()->ClearState(true);
 

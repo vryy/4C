@@ -16,8 +16,8 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_dofset_base.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_lib_node.hpp"
 
 #include <Epetra_Map.h>
@@ -101,12 +101,12 @@ namespace CORE::Dofsets
     }
 
     /// Get number of dofs for given element
-    int NumDof(const DRT::Element* element) const override
+    int NumDof(const CORE::Elements::Element* element) const override
     {
       check_is_assigned();
       if (element->IsFaceElement()) return sourcedofset_->NumDof(element);
       if (not sourcedis_->HaveGlobalElement(element->Id())) return 0;
-      DRT::Element* sourceele = sourcedis_->gElement(element->Id());
+      CORE::Elements::Element* sourceele = sourcedis_->gElement(element->Id());
       return sourcedofset_->NumDof(sourceele);
     }
 
@@ -141,12 +141,12 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of all dofs of a element
-    std::vector<int> Dof(const DRT::Element* element) const override
+    std::vector<int> Dof(const CORE::Elements::Element* element) const override
     {
       check_is_assigned();
       if (element->IsFaceElement()) return sourcedofset_->Dof(element);
       if (not sourcedis_->HaveGlobalElement(element->Id())) return std::vector<int>();
-      DRT::Element* sourceele = sourcedis_->gElement(element->Id());
+      CORE::Elements::Element* sourceele = sourcedis_->gElement(element->Id());
       return sourcedofset_->Dof(sourceele);
     }
 
@@ -172,7 +172,7 @@ namespace CORE::Dofsets
     }
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    void Dof(const DRT::Element*
+    void Dof(const CORE::Elements::Element*
                  element,       ///< element which provides its expected number of DOFs per node
         const DRT::Node* node,  ///< node, for which you want the DOF positions
         std::vector<int>& lm    ///< already allocated vector to be filled with DOF positions
@@ -181,28 +181,28 @@ namespace CORE::Dofsets
       check_is_assigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
       DRT::Node* sourcenode = sourcedis_->gNode(node->Id());
-      DRT::Element* sourceele = sourcedis_->gElement(element->Id());
+      CORE::Elements::Element* sourceele = sourcedis_->gElement(element->Id());
       return sourcedofset_->Dof(sourceele, sourcenode, lm);
     }
 
     /// Get the gid of a dof for given element
-    int Dof(const DRT::Element* element, int dof) const override
+    int Dof(const CORE::Elements::Element* element, int dof) const override
     {
       check_is_assigned();
       if (element->IsFaceElement()) return sourcedofset_->Dof(element, dof);
       if (not sourcedis_->HaveGlobalElement(element->Id())) return -1;
-      DRT::Element* sourceele = sourcedis_->gElement(element->Id());
+      CORE::Elements::Element* sourceele = sourcedis_->gElement(element->Id());
       return sourcedofset_->Dof(sourceele, dof);
     }
 
 
     /// Get the gid of all dofs of a element
-    void Dof(const DRT::Element* element, std::vector<int>& lm) const override
+    void Dof(const CORE::Elements::Element* element, std::vector<int>& lm) const override
     {
       check_is_assigned();
       if (element->IsFaceElement()) return sourcedofset_->Dof(element, lm);
       if (not sourcedis_->HaveGlobalElement(element->Id())) return;
-      DRT::Element* sourceele = sourcedis_->gElement(element->Id());
+      CORE::Elements::Element* sourceele = sourcedis_->gElement(element->Id());
       return sourcedofset_->Dof(sourceele, lm);
     }
 

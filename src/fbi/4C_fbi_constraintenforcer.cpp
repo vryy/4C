@@ -15,6 +15,7 @@ interaction.
 #include "4C_beaminteraction_calc_utils.hpp"  // todo put this into bridge to keep everything beam specific in there
 #include "4C_beaminteraction_contact_pair.hpp"
 #include "4C_binstrategy.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_fbi_adapter_constraintbridge.hpp"
 #include "4C_fbi_adapter_constraintbridge_penalty.hpp"
 #include "4C_fbi_beam_to_fluid_meshtying_output_params.hpp"
@@ -27,7 +28,6 @@ interaction.
 #include "4C_inpar_fluid.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_discret_faces.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
@@ -208,7 +208,7 @@ void ADAPTER::FBIConstraintenforcer::create_pairs(
   }
 
 
-  std::vector<DRT::Element const*> ele_ptrs(2);
+  std::vector<CORE::Elements::Element const*> ele_ptrs(2);
   std::vector<double> beam_dofvec = std::vector<double>();
   std::vector<double> fluid_dofvec = std::vector<double>();
 
@@ -232,7 +232,7 @@ void ADAPTER::FBIConstraintenforcer::create_pairs(
     for (std::vector<int>::const_iterator fluideleIter = beamelementiterator->second.begin();
          fluideleIter != (beamelementiterator->second).end(); fluideleIter++)
     {
-      DRT::Element* fluidele = (fluid_->discretization())->gElement(*fluideleIter);
+      CORE::Elements::Element* fluidele = (fluid_->discretization())->gElement(*fluideleIter);
 
       // add fluid element to the element pair pointer
       ele_ptrs[1] = fluidele;
@@ -256,7 +256,7 @@ void ADAPTER::FBIConstraintenforcer::reset_all_pair_states()
   column_fluid_velocity_ = CORE::REBALANCE::GetColVersionOfRowVector(fluid_->discretization(),
       Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp());
 
-  std::vector<DRT::Element const*> ele_ptrs(2);
+  std::vector<CORE::Elements::Element const*> ele_ptrs(2);
   std::vector<double> beam_dofvec = std::vector<double>();
   std::vector<double> fluid_dofvec = std::vector<double>();
 
@@ -276,7 +276,7 @@ void ADAPTER::FBIConstraintenforcer::reset_all_pair_states()
 /*----------------------------------------------------------------------*/
 
 void ADAPTER::FBIConstraintenforcer::extract_current_element_dofs(
-    std::vector<DRT::Element const*> elements, std::vector<double>& beam_dofvec,
+    std::vector<CORE::Elements::Element const*> elements, std::vector<double>& beam_dofvec,
     std::vector<double>& fluid_dofvec) const
 {
   std::vector<double> vel_tmp;

@@ -530,7 +530,7 @@ void EHL::Base::setup_unprojectable_dbc()
     {
       for (int e = 0; e < cnode->NumElement(); ++e)
       {
-        DRT::Element* ele = cnode->Elements()[e];
+        CORE::Elements::Element* ele = cnode->Elements()[e];
         for (int nn = 0; nn < ele->num_node(); ++nn)
         {
           CONTACT::Node* cnn = dynamic_cast<CONTACT::Node*>(ele->Nodes()[nn]);

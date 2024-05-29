@@ -35,10 +35,10 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Ale2Type::Create(const std::vector<char>& 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Ale2Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele;
+  Teuchos::RCP<CORE::Elements::Element> ele;
 
   if (eletype == "ALE2")
   {
@@ -53,7 +53,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2Type::Create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Ale2Type::Create(const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::Ale2(id, owner));
 }
@@ -61,7 +61,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2Type::Create(const int id, const i
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 2;
   dimns = 3;
@@ -101,7 +101,8 @@ void DRT::ELEMENTS::Ale2Type::setup_element_definition(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2LineType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Ale2LineType::Create(
+    const int id, const int owner)
 {
   // return Teuchos::rcp( new Ale2Line( id, owner ) );
   return Teuchos::null;
@@ -109,15 +110,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2LineType::Create(const int id, con
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale2::Ale2(int id, int owner) : DRT::Element(id, owner) {}
+DRT::ELEMENTS::Ale2::Ale2(int id, int owner) : CORE::Elements::Element(id, owner) {}
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale2::Ale2(const DRT::ELEMENTS::Ale2& old) : DRT::Element(old) {}
+DRT::ELEMENTS::Ale2::Ale2(const DRT::ELEMENTS::Ale2& old) : CORE::Elements::Element(old) {}
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Ale2::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Ale2::Clone() const
 {
   DRT::ELEMENTS::Ale2* newelement = new DRT::ELEMENTS::Ale2(*this);
   return newelement;
@@ -188,14 +189,14 @@ void DRT::ELEMENTS::Ale2::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Ale2::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Ale2::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<Ale2Line, Ale2>(CORE::COMM::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Ale2::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Ale2::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

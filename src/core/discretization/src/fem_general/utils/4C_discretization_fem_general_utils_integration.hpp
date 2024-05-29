@@ -13,7 +13,7 @@
 
 #include "4C_discretization_fem_general_cell_type.hpp"
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <cstdlib>

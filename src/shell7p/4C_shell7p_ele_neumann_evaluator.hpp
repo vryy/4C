@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 
 #include <vector>
 
@@ -42,8 +42,9 @@ namespace DRT::ELEMENTS::SHELL
    * Neumann condition
    * @param total_time (in) : The total time for time dependent Neumann conditions
    */
-  void EvaluateNeumannByElement(DRT::Element& element, const DRT::Discretization& discretization,
-      CORE::Conditions::Condition& condition, const std::vector<int>& dof_index_array,
+  void EvaluateNeumannByElement(CORE::Elements::Element& element,
+      const DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+      const std::vector<int>& dof_index_array,
       CORE::LINALG::SerialDenseVector& element_force_vector,
       CORE::LINALG::SerialDenseMatrix* element_stiffness_matrix, double total_time);
 
@@ -65,7 +66,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param total_time (in) : The total time for time dependent Neumann conditions
    */
   template <CORE::FE::CellType distype>
-  void evaluate_neumann(DRT::Element& element, const DRT::Discretization& discretization,
+  void evaluate_neumann(CORE::Elements::Element& element, const DRT::Discretization& discretization,
       CORE::Conditions::Condition& condition, const std::vector<int>& dof_index_array,
       CORE::LINALG::SerialDenseVector& element_force_vector,
       CORE::LINALG::SerialDenseMatrix* element_stiffness_matrix, double total_time);

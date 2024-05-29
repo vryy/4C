@@ -51,8 +51,9 @@ void IMMERSED::ImmersedBase::create_volume_condition(const Teuchos::RCP<DRT::Dis
   // fill complete if necessary
   if (!dis->Filled()) dis->fill_complete(false, false, buildgeometry);
 
-  std::map<int, Teuchos::RCP<DRT::Element>>& geom = dis->GetCondition(condname)->Geometry();
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator it;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom =
+      dis->GetCondition(condname)->Geometry();
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator it;
   for (it = geom.begin(); it != geom.end(); it++)
   {
     int id = it->second->Id();
@@ -261,7 +262,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
     bool evaluateonlyboundary)
 {
   // pointer to element
-  DRT::Element* ele;
+  CORE::Elements::Element* ele;
 
   for (std::map<int, std::set<int>>::const_iterator closele = elementstoeval->begin();
        closele != elementstoeval->end(); closele++)
@@ -274,7 +275,9 @@ void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
       DRT::ELEMENTS::FluidImmersedBase* immersedelebase =
           dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
       if (immersedelebase == nullptr)
-        FOUR_C_THROW("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
+        FOUR_C_THROW(
+            "dynamic cast from CORE::Elements::Element* to DRT::ELEMENTS::FluidImmersedBase* "
+            "failed");
 
       // evaluate this element and fill vector with immersed dirichlets
       int row = strategy->FirstDofSet();
@@ -286,7 +289,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
           "currpositions_struct", currpositions_struct);
       params.set<int>("Physical Type", INPAR::FLUID::poro_p1);
 
-      DRT::Element::LocationArray la(1);
+      CORE::Elements::Element::LocationArray la(1);
       immersedelebase->LocationVector(*dis, la, false);
       strategy->ClearElementStorage(la[row].Size(), la[col].Size());
 
@@ -316,7 +319,7 @@ void IMMERSED::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterLis
     std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct, int action)
 {
   // pointer to element
-  DRT::Element* ele;
+  CORE::Elements::Element* ele;
 
   for (std::map<int, std::set<int>>::const_iterator closele = elementstoeval->begin();
        closele != elementstoeval->end(); closele++)
@@ -329,7 +332,9 @@ void IMMERSED::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterLis
       DRT::ELEMENTS::FluidImmersedBase* immersedelebase =
           dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
       if (immersedelebase == nullptr)
-        FOUR_C_THROW("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
+        FOUR_C_THROW(
+            "dynamic cast from CORE::Elements::Element* to DRT::ELEMENTS::FluidImmersedBase* "
+            "failed");
 
       // provide important objects to ParameterList
       params.set<int>("action", action);
@@ -348,7 +353,7 @@ void IMMERSED::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterLis
       CORE::LINALG::SerialDenseMatrix dummymat;
       CORE::LINALG::SerialDenseVector dummyvec;
 
-      DRT::Element::LocationArray la(1);
+      CORE::Elements::Element::LocationArray la(1);
       immersedelebase->LocationVector(*dis, la, false);
 
       immersedelebase->Evaluate(
@@ -368,8 +373,8 @@ void IMMERSED::ImmersedBase::evaluate_sca_tra_with_internal_communication(
     bool evaluateonlyboundary)
 {
   // pointer to element
-  DRT::Element* ele;
-  DRT::Element* iele;
+  CORE::Elements::Element* ele;
+  CORE::Elements::Element* iele;
 
   for (std::map<int, std::set<int>>::const_iterator closele = elementstoeval->begin();
        closele != elementstoeval->end(); closele++)
@@ -383,7 +388,9 @@ void IMMERSED::ImmersedBase::evaluate_sca_tra_with_internal_communication(
       DRT::ELEMENTS::FluidImmersedBase* immersedelebase =
           dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(iele);
       if (immersedelebase == nullptr)
-        FOUR_C_THROW("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
+        FOUR_C_THROW(
+            "dynamic cast from CORE::Elements::Element* to DRT::ELEMENTS::FluidImmersedBase* "
+            "failed");
 
       // evaluate this element and fill vector with immersed dirichlets
       int row = strategy->FirstDofSet();
@@ -394,7 +401,7 @@ void IMMERSED::ImmersedBase::evaluate_sca_tra_with_internal_communication(
           "currpositions_struct", currpositions_struct);
       params.set<int>("Physical Type", INPAR::FLUID::poro_p1);
 
-      DRT::Element::LocationArray la(dis->NumDofSets());
+      CORE::Elements::Element::LocationArray la(dis->NumDofSets());
       ele->LocationVector(*dis, la, false);
       strategy->ClearElementStorage(la[row].Size(), la[col].Size());
 
@@ -440,7 +447,7 @@ void IMMERSED::ImmersedBase::evaluate_interpolation_condition(
 
   params.set<int>("dummy_call", 0);
 
-  DRT::Element::LocationArray la(evaldis->NumDofSets());
+  CORE::Elements::Element::LocationArray la(evaldis->NumDofSets());
 
   std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>>::iterator fool;
 
@@ -455,12 +462,12 @@ void IMMERSED::ImmersedBase::evaluate_interpolation_condition(
       CORE::Conditions::Condition& cond = *(fool->second);
       if (condid == -1 || condid == cond.parameters().Get<int>("ConditionID"))
       {
-        std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond.Geometry();
         if (geom.empty())
           FOUR_C_THROW(
               "evaluation of condition with empty geometry on proc %d", evaldis->Comm().MyPID());
 
-        std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
+        std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
 
         // Evaluate Loadcurve if defined. Put current load factor in parameterlist
         const auto* curve = cond.parameters().GetIf<int>("curve");
@@ -574,10 +581,10 @@ void IMMERSED::ImmersedBase::evaluate_subset_elements(Teuchos::ParameterList& pa
     Teuchos::RCP<DRT::Discretization> dis, std::map<int, std::set<int>>& elementstoeval, int action)
 {
   // pointer to element
-  DRT::Element* ele;
+  CORE::Elements::Element* ele;
 
   // initialize location array
-  DRT::Element::LocationArray la(1);
+  CORE::Elements::Element::LocationArray la(1);
 
   for (std::map<int, std::set<int>>::const_iterator closele = elementstoeval.begin();
        closele != elementstoeval.end(); closele++)

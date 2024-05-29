@@ -36,7 +36,7 @@ using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -56,7 +56,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       "only geometricallly nonlinear formluation for plasticity!");
 
   // start with "none"
-  ELEMENTS::ActionType act = ELEMENTS::none;
+  CORE::Elements::ActionType act = CORE::Elements::none;
   if (IsParamsInterface())
   {
     act = params_interface().GetActionType();
@@ -65,7 +65,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
   {
     // get the required action
     std::string action = params.get<std::string>("action", "none");
-    act = ELEMENTS::String2ActionType(action);
+    act = CORE::Elements::String2ActionType(action);
   }
 
   // what should the element do
@@ -73,8 +73,8 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
   {
     //============================================================================
     // linear stiffness
-    case DRT::ELEMENTS::struct_calc_linstiff:
-    case DRT::ELEMENTS::struct_calc_linstiffmass:
+    case CORE::Elements::struct_calc_linstiff:
+    case CORE::Elements::struct_calc_linstiffmass:
     {
       FOUR_C_THROW("linear kinematics version out dated");
       break;
@@ -82,7 +82,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
     //============================================================================
     // nonlinear stiffness
-    case DRT::ELEMENTS::struct_calc_internalforce:
+    case CORE::Elements::struct_calc_internalforce:
     {
       // internal force vector
       CORE::LINALG::Matrix<numdofperelement_, 1> elevec1(elevec1_epetra.values(), true);
@@ -142,7 +142,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
     //============================================================================
     // nonlinear stiffness
-    case DRT::ELEMENTS::struct_calc_nlnstiff:
+    case CORE::Elements::struct_calc_nlnstiff:
     {
       // stiffness
       CORE::LINALG::Matrix<numdofperelement_, numdofperelement_> elemat1(
@@ -202,8 +202,8 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
     //============================================================================
     // (non)linear stiffness, mass matrix and internal force vector
-    case DRT::ELEMENTS::struct_calc_nlnstiffmass:
-    case DRT::ELEMENTS::struct_calc_nlnstifflmass:
+    case CORE::Elements::struct_calc_nlnstiffmass:
+    case CORE::Elements::struct_calc_nlnstifflmass:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -258,7 +258,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       nln_stiffmass(mydisp, myvel, mytempnp, &elemat1, &elemat2, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
 
-      if (act == DRT::ELEMENTS::struct_calc_nlnstifflmass)
+      if (act == CORE::Elements::struct_calc_nlnstifflmass)
         // lump mass matrix
         // we assume #elemat2 is a square matrix
         for (int c = 0; c < elemat2_epetra.numCols(); ++c)  // parse columns
@@ -274,7 +274,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       break;
     }  // calc_struct_nlnstiff(l)mass
 
-    case DRT::ELEMENTS::struct_calc_stress:
+    case CORE::Elements::struct_calc_stress:
     {
       // elemat1+2,elevec1-3 are not used anyway
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
@@ -369,7 +369,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
     //============================================================================
     // required for predictor TangDis --> can be helpful in compressible case!
-    case DRT::ELEMENTS::struct_calc_reset_istep:
+    case CORE::Elements::struct_calc_reset_istep:
     {
       for (int i = 0; i < numgpt_; i++)
       {
@@ -381,7 +381,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     }
 
     //============================================================================
-    case DRT::ELEMENTS::struct_calc_update_istep:
+    case CORE::Elements::struct_calc_update_istep:
     {
       // update plastic deformation
       // default: geometrically non-linear analysis with Total Lagrangean approach
@@ -390,8 +390,8 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     }  // calc_struct_update_istep
 
     //============================================================================
-    case DRT::ELEMENTS::struct_calc_stifftemp:  // here we want to build the K_dT block for
-                                                // monolithic TSI
+    case CORE::Elements::struct_calc_stifftemp:  // here we want to build the K_dT block for
+                                                 // monolithic TSI
     {
       // stiffness
       CORE::LINALG::Matrix<numdofperelement_, nen_> k_dT(elemat1_epetra.values(), true);
@@ -401,7 +401,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case DRT::ELEMENTS::struct_calc_energy:
+    case CORE::Elements::struct_calc_energy:
     {
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
@@ -438,7 +438,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case DRT::ELEMENTS::struct_calc_recover:
+    case CORE::Elements::struct_calc_recover:
     {
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (res == Teuchos::null)
@@ -473,7 +473,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case DRT::ELEMENTS::struct_calc_predict:
+    case CORE::Elements::struct_calc_predict:
     {
       switch (str_params_interface().GetPredictorType())
       {
@@ -495,7 +495,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case DRT::ELEMENTS::struct_init_gauss_point_data_output:
+    case CORE::Elements::struct_init_gauss_point_data_output:
     {
       FOUR_C_ASSERT(IsParamsInterface(),
           "This action type should only be called from the new time integration framework!");
@@ -512,7 +512,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case ELEMENTS::struct_gauss_point_data_output:
+    case CORE::Elements::struct_gauss_point_data_output:
     {
       FOUR_C_ASSERT(IsParamsInterface(),
           "This action type should only be called from the new time integration framework!");

@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  */
 template <typename scalar_type, typename line, typename volume>
 Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory(
-    const DRT::Element* element1, const DRT::Element* element2,
+    const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
     const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data)
 {
   // Cast the geometry evaluation data to the correct format.
@@ -63,23 +63,23 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeF
  * Explicit template initialization of factory function.
  */
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory<
-    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory<
-    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory<
-    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory<
-    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory<
-    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory<
-    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 
 
 /**
@@ -87,7 +87,7 @@ template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLine
  */
 template <typename scalar_type, typename line, typename surface>
 Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory(
-    const DRT::Element* element1, const DRT::Element* element2,
+    const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
     const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data)
 {
   // Cast the geometry evaluation data to the correct format.
@@ -122,7 +122,7 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurface
  */
 template <typename scalar_type, typename line, typename surface>
 Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD(
-    const DRT::Element* element1, const DRT::Element* element2,
+    const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
     const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data)
 {
   // Create the internal pair as double.
@@ -143,137 +143,146 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurface
  */
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair>
 GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<double, GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_tri3>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair>
 GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<double, GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_tri6>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
-    double, GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_quad4>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_quad4>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
-    double, GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_quad8>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_quad8>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
-    double, GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_quad9>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_quad9>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
-    double, GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_nurbs9>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_nurbs9>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_line2,
-    GEOMETRYPAIR::t_tri3>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_tri3>(const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_line2,
-    GEOMETRYPAIR::t_tri6>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_tri6>(const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_line2,
-    GEOMETRYPAIR::t_quad4>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_quad4>(const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_line2,
-    GEOMETRYPAIR::t_quad8>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_quad8>(const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_line2,
-    GEOMETRYPAIR::t_quad9>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_quad9>(const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_fixed_size_1st_order<GEOMETRYPAIR::t_line2,
         GEOMETRYPAIR::t_nurbs9>,
-    GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_nurbs9>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_nurbs9>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type, GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_tri3>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type, GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_tri6>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type, GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_quad4>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type, GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_quad8>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type, GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_quad9>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_fixed_size<GEOMETRYPAIR::t_line2,
         GEOMETRYPAIR::t_nurbs9>,
-    GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_nurbs9>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_line2, GEOMETRYPAIR::t_nurbs9>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
-    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
-    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
-    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
-    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
-    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<
-    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri3>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_tri3>(const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tri6>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_tri6>(const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad4>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_quad4>(const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad8>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_quad8>(const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_1st_order, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_quad9>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_quad9>(const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_fixed_size_1st_order<GEOMETRYPAIR::t_hermite,
         GEOMETRYPAIR::t_nurbs9>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    const CORE::Elements::Element*, const CORE::Elements::Element*,
+    const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair>
 GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<GEOMETRYPAIR::line_to_surface_patch_scalar_type,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair>
 GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<GEOMETRYPAIR::line_to_surface_patch_scalar_type,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair>
 GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<GEOMETRYPAIR::line_to_surface_patch_scalar_type,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<
     GEOMETRYPAIR::line_to_surface_patch_scalar_type_fixed_size<GEOMETRYPAIR::t_hermite,
         GEOMETRYPAIR::t_nurbs9>,
-    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>(
-    const DRT::Element*, const DRT::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs9>(const CORE::Elements::Element*,
+    const CORE::Elements::Element*, const Teuchos::RCP<GeometryEvaluationDataBase>&);
 
 FOUR_C_NAMESPACE_CLOSE

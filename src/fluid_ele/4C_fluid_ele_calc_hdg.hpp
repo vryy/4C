@@ -407,12 +407,13 @@ namespace DRT
       };
 
       /// reads from global vectors
-      void read_global_vectors(const DRT::Element& ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, const bool updateLocally);
+      void read_global_vectors(const CORE::Elements::Element& ele,
+          DRT::Discretization& discretization, const std::vector<int>& lm,
+          const bool updateLocally);
 
       // writes the updated solution vector to the secondary vector stored in the discretization
-      void update_secondary_solution(const DRT::Element& ele, DRT::Discretization& discretization,
-          const CORE::LINALG::SerialDenseVector& updateG,
+      void update_secondary_solution(const CORE::Elements::Element& ele,
+          DRT::Discretization& discretization, const CORE::LINALG::SerialDenseVector& updateG,
           const CORE::LINALG::SerialDenseVector& updateUp);
 
       void evaluate_velocity(const int startfunc, const INPAR::FLUID::InitialField initfield,

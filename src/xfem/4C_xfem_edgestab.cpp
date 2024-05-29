@@ -637,7 +637,7 @@ void XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(
  | node ids                                                schott 04/12 |
  *----------------------------------------------------------------------*/
 CORE::GEO::CUT::SideHandle* XFEM::XfemEdgeStab::get_face(
-    DRT::Element* faceele, Teuchos::RCP<CORE::GEO::CutWizard> wizard)
+    CORE::Elements::Element* faceele, Teuchos::RCP<CORE::GEO::CutWizard> wizard)
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: get_face");
 

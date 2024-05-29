@@ -271,7 +271,7 @@ void XFEM::CouplingBase::set_element_conditions()
   // loop all column cutting elements on this processor
   for (int lid = 0; lid < nummycolele; lid++)
   {
-    DRT::Element* cutele = cutter_dis_->lColElement(lid);
+    CORE::Elements::Element* cutele = cutter_dis_->lColElement(lid);
 
     // loop all possible XFEM-coupling conditions
     for (size_t cond = 0; cond < conditions_to_copy_.size(); cond++)
@@ -659,8 +659,8 @@ void XFEM::CouplingBase::evaluate_scalar_function(double& final_values, const do
 /*--------------------------------------------------------------------------*
  * get viscosity of the master fluid
  *--------------------------------------------------------------------------*/
-void XFEM::CouplingBase::GetViscosityMaster(DRT::Element* xfele,  ///< xfluid ele
-    double& visc_m)                                               ///< viscosity mastersided
+void XFEM::CouplingBase::GetViscosityMaster(CORE::Elements::Element* xfele,  ///< xfluid ele
+    double& visc_m)  ///< viscosity mastersided
 {
   // Get Materials of master
   Teuchos::RCP<CORE::MAT::Material> mat_m;
@@ -679,8 +679,8 @@ void XFEM::CouplingBase::GetViscosityMaster(DRT::Element* xfele,  ///< xfluid el
 /*--------------------------------------------------------------------------*
  * get weighting paramters
  *--------------------------------------------------------------------------*/
-void XFEM::CouplingBase::GetAverageWeights(DRT::Element* xfele,  ///< xfluid ele
-    DRT::Element* coup_ele,                                      ///< coup_ele ele
+void XFEM::CouplingBase::GetAverageWeights(CORE::Elements::Element* xfele,  ///< xfluid ele
+    CORE::Elements::Element* coup_ele,                                      ///< coup_ele ele
     double& kappa_m,  ///< Weight parameter (parameter +/master side)
     double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
     bool& non_xfluid_coupling)
@@ -699,8 +699,8 @@ void XFEM::CouplingBase::GetAverageWeights(DRT::Element* xfele,  ///< xfluid ele
 /*--------------------------------------------------------------------------------
  * compute viscous part of Nitsche's penalty term scaling for Nitsche's method
  *--------------------------------------------------------------------------------*/
-void XFEM::CouplingBase::get_visc_penalty_stabfac(DRT::Element* xfele,  ///< xfluid ele
-    DRT::Element* coup_ele,                                             ///< coup_ele ele
+void XFEM::CouplingBase::get_visc_penalty_stabfac(CORE::Elements::Element* xfele,  ///< xfluid ele
+    CORE::Elements::Element* coup_ele,                                             ///< coup_ele ele
     const double& kappa_m,  ///< Weight parameter (parameter +/master side)
     const double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
     const double& inv_h_k,  ///< the inverse characteristic element length h_k
@@ -718,8 +718,8 @@ void XFEM::CouplingBase::get_visc_penalty_stabfac(DRT::Element* xfele,  ///< xfl
 /*--------------------------------------------------------------------------------
  * compute viscous part of Nitsche's penalty term scaling for Nitsche's method
  *--------------------------------------------------------------------------------*/
-void XFEM::CouplingBase::get_visc_penalty_stabfac(DRT::Element* xfele,  ///< xfluid ele
-    DRT::Element* coup_ele,                                             ///< coup_ele ele
+void XFEM::CouplingBase::get_visc_penalty_stabfac(CORE::Elements::Element* xfele,  ///< xfluid ele
+    CORE::Elements::Element* coup_ele,                                             ///< coup_ele ele
     const double& kappa_m,           ///< Weight parameter (parameter +/master side)
     const double& kappa_s,           ///< Weight parameter (parameter -/slave  side)
     const double& inv_h_k,           ///< the inverse characteristic element length h_k

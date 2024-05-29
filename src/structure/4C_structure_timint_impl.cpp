@@ -561,7 +561,7 @@ void STR::TimIntImpl::PrepareLineSearch()
   // each proc searches through his elements
   for (int i = 0; i < discret_->NumMyRowElements(); i++)
   {
-    DRT::Element* actele = discret_->lRowElement(i);
+    CORE::Elements::Element* actele = discret_->lRowElement(i);
     DRT::ELEMENTS::SoHex8* ele_hex8 = dynamic_cast<DRT::ELEMENTS::SoHex8*>(actele);
     if ((ele_hex8 != nullptr && ele_hex8->HaveEAS() == true) ||
         (actele->ElementType() == DRT::ELEMENTS::SoHex8P1J1Type::Instance()) ||

@@ -5,8 +5,8 @@
 
 #include "4C_lib_discret_nullspace.hpp"
 
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_elementtype.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

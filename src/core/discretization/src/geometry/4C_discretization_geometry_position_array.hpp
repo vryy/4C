@@ -12,8 +12,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
@@ -32,7 +32,7 @@ namespace CORE::GEO
    * nodes
    */
   template <class M>
-  void fillInitialPositionArray(const DRT::Element* const ele, M& xyze)
+  void fillInitialPositionArray(const CORE::Elements::Element* const ele, M& xyze)
   {
     const int numnode = ele->num_node();
 
@@ -61,7 +61,7 @@ namespace CORE::GEO
    * nodes
    */
   template <CORE::FE::CellType distype, class M>
-  void fillInitialPositionArray(const DRT::Element* const ele, M& xyze)
+  void fillInitialPositionArray(const CORE::Elements::Element* const ele, M& xyze)
   {
     FOUR_C_ASSERT(distype == ele->Shape(), "mismatch in distype");
     const int numnode = CORE::FE::num_nodes<distype>;
@@ -92,7 +92,7 @@ namespace CORE::GEO
    * of the nodes
    */
   template <CORE::FE::CellType distype, int dim, class M>
-  void fillInitialPositionArray(const DRT::Element* const ele, M& xyze)
+  void fillInitialPositionArray(const CORE::Elements::Element* const ele, M& xyze)
   {
     FOUR_C_ASSERT(distype == ele->Shape(), "mismatch in distype");
     const int numnode = CORE::FE::num_nodes<distype>;
@@ -123,7 +123,8 @@ namespace CORE::GEO
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
    */
-  void InitialPositionArray(CORE::LINALG::SerialDenseMatrix& xyze, const DRT::Element* const ele);
+  void InitialPositionArray(
+      CORE::LINALG::SerialDenseMatrix& xyze, const CORE::Elements::Element* const ele);
 
 
   /*!
@@ -134,7 +135,7 @@ namespace CORE::GEO
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
    */
-  CORE::LINALG::SerialDenseMatrix InitialPositionArray(const DRT::Element* const
+  CORE::LINALG::SerialDenseMatrix InitialPositionArray(const CORE::Elements::Element* const
           ele  ///< pointer to element, whose nodes we evaluate for their position
   );
 
@@ -148,7 +149,7 @@ namespace CORE::GEO
    * nodes
    */
   CORE::LINALG::SerialDenseMatrix getCurrentNodalPositions(
-      const DRT::Element* const ele,  ///< element with nodal pointers
+      const CORE::Elements::Element* const ele,  ///< element with nodal pointers
       const std::map<int, CORE::LINALG::Matrix<3, 1>>&
           currentcutterpositions  ///< current positions of all cutter nodes
   );
@@ -163,7 +164,7 @@ namespace CORE::GEO
    * nodes
    */
   CORE::LINALG::SerialDenseMatrix getCurrentNodalPositions(
-      const Teuchos::RCP<const DRT::Element> ele,  ///< pointer on element
+      const Teuchos::RCP<const CORE::Elements::Element> ele,  ///< pointer on element
       const std::map<int, CORE::LINALG::Matrix<3, 1>>&
           currentpositions  ///< current positions of all cutter nodes
   );

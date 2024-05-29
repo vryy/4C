@@ -610,7 +610,7 @@ void CONTACT::SelfBinaryTree::init_leaf_nodes_and_map(std::vector<int>& elelist)
 /*----------------------------------------------------------------------*
  |  Get number of first order nodes of element (protected) schmidt 01/19|
  *----------------------------------------------------------------------*/
-int CONTACT::SelfBinaryTree::get_ele_specific_num_nodes(DRT::Element* element)
+int CONTACT::SelfBinaryTree::get_ele_specific_num_nodes(CORE::Elements::Element* element)
 {
   // find all first-order nodes of current element we exclude higher-order nodes (i.e. edge and
   // center nodes) in both 2D and 3D as they do not bring in any additional information about
@@ -680,7 +680,7 @@ void CONTACT::SelfBinaryTree::get_contracted_node(
  |  Calculate adjacent tree nodes & dual edges (protected) schmidt 01/19|
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
-    std::vector<int>& possadjids, const int gid, DRT::Element* adjElementk,
+    std::vector<int>& possadjids, const int gid, CORE::Elements::Element* adjElementk,
     Teuchos::RCP<SelfBinaryTreeNode>& node1,
     std::vector<Teuchos::RCP<SelfBinaryTreeNode>>& adjtreenodes,
     std::vector<Teuchos::RCP<SelfDualEdge>>& adjdualedges)
@@ -807,7 +807,7 @@ void CONTACT::SelfBinaryTree::calculate_dual_graph(
     std::vector<int> possadjids;
 
     // get current elements and its nodes
-    DRT::Element* element = discret().gElement(gid);
+    CORE::Elements::Element* element = discret().gElement(gid);
     if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
     DRT::Node** nodes = element->Nodes();
     if (!nodes) FOUR_C_THROW("Null pointer!");
@@ -838,13 +838,13 @@ void CONTACT::SelfBinaryTree::calculate_dual_graph(
 
       // adjacent elements of current node
       int numE = node->NumElement();
-      DRT::Element** adjElements = node->Elements();
+      CORE::Elements::Element** adjElements = node->Elements();
       if (!adjElements) FOUR_C_THROW("Null pointer!");
 
       // loop over all adjacent elements of current node
       for (int k = 0; k < numE; ++k)
       {
-        DRT::Element* adjElementk = adjElements[k];
+        CORE::Elements::Element* adjElementk = adjElements[k];
 
         calculate_adjacent_tree_nodes_and_dual_edges(
             possadjids, gid, adjElementk, node1, adjtreenodes, adjdualedges);
@@ -929,7 +929,7 @@ void CONTACT::SelfBinaryTree::set_enlarge()
   for (int i = 0; i < elements_->NumMyElements(); ++i)
   {
     int gid = elements_->GID(i);
-    DRT::Element* element = discret().gElement(gid);
+    CORE::Elements::Element* element = discret().gElement(gid);
     if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
     CONTACT::Element* celement = dynamic_cast<Element*>(element);
     double mincurrent = celement->MinEdgeSize();
@@ -1462,7 +1462,7 @@ void CONTACT::SelfBinaryTree::master_slave_sorting(int eleID, bool isslave)
   if (contactpairs_.find(eleID) != contactpairs_.end() && !contactpairs_.empty())
   {
     // set the current element to content of "isslave"
-    DRT::Element* element = discret().gElement(eleID);
+    CORE::Elements::Element* element = discret().gElement(eleID);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
     celement->SetSlave() = isslave;
 
@@ -1563,7 +1563,7 @@ void CONTACT::SelfBinaryTree::search_contact()
   while (leafiter != leafiter_end)
   {
     int gid = leafiter->first;
-    DRT::Element* element = discret().gElement(gid);
+    CORE::Elements::Element* element = discret().gElement(gid);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
 
     if (celement->IsSlave() == true)
@@ -1588,7 +1588,7 @@ void CONTACT::SelfBinaryTree::search_contact()
   while (leafiterNew != leafiter_end)
   {
     int gid = leafiterNew->first;
-    DRT::Element* element = discret().gElement(gid);
+    CORE::Elements::Element* element = discret().gElement(gid);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
 
     // reset nodes to master
@@ -1623,7 +1623,7 @@ void CONTACT::SelfBinaryTree::search_contact()
   // now do new slave and master sorting
   while (!contactpairs_.empty())
   {
-    DRT::Element* element = discret().gElement(contactpairs_.begin()->first);
+    CORE::Elements::Element* element = discret().gElement(contactpairs_.begin()->first);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
     master_slave_sorting(contactpairs_.begin()->first, celement->IsSlave());
   }
@@ -1634,7 +1634,7 @@ void CONTACT::SelfBinaryTree::search_contact()
   for (int i = 0; i < elements_->NumMyElements(); ++i)
   {
     int gid1 = elements_->GID(i);
-    DRT::Element* ele1 = discret().gElement(gid1);
+    CORE::Elements::Element* ele1 = discret().gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find element with gid %", gid1);
     MORTAR::Element* element1 = dynamic_cast<MORTAR::Element*>(ele1);
 
@@ -1645,7 +1645,7 @@ void CONTACT::SelfBinaryTree::search_contact()
     for (int j = 0; j < element1->MoData().NumSearchElements(); ++j)
     {
       int gid2 = element1->MoData().SearchElements()[j];
-      DRT::Element* ele2 = discret().gElement(gid2);
+      CORE::Elements::Element* ele2 = discret().gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find element with gid %", gid2);
       MORTAR::Element* element2 = dynamic_cast<MORTAR::Element*>(ele2);
 

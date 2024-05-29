@@ -1616,10 +1616,10 @@ void SCATRA::ScaTraTimIntImpl::recompute_mean_csgs_b()
     for (int nele = 0; nele < discret_->NumMyRowElements(); ++nele)
     {
       // get the element
-      DRT::Element* ele = discret_->lRowElement(nele);
+      CORE::Elements::Element* ele = discret_->lRowElement(nele);
 
       // get element location vector, dirichlet flags and ownerships
-      DRT::Element::LocationArray la(discret_->NumDofSets());
+      CORE::Elements::Element::LocationArray la(discret_->NumDofSets());
       ele->LocationVector(*discret_, la, false);
 
       // call the element evaluate method to integrate functions

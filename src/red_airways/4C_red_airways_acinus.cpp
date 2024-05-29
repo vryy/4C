@@ -31,21 +31,23 @@ CORE::COMM::ParObject* DRT::ELEMENTS::RedAcinusType::Create(const std::vector<ch
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAcinusType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RedAcinusType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "RED_ACINUS")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::RedAcinus(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::RedAcinus(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAcinusType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RedAcinusType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::RedAcinus(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::RedAcinus(id, owner));
   return ele;
 }
 
@@ -89,7 +91,7 @@ void DRT::ELEMENTS::RedAcinusType::setup_element_definition(
  |  ctor (public)                                           ismail 01/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAcinus::RedAcinus(int id, int owner) : DRT::Element(id, owner) {}
+DRT::ELEMENTS::RedAcinus::RedAcinus(int id, int owner) : CORE::Elements::Element(id, owner) {}
 
 
 /*----------------------------------------------------------------------*
@@ -97,7 +99,7 @@ DRT::ELEMENTS::RedAcinus::RedAcinus(int id, int owner) : DRT::Element(id, owner)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedAcinus::RedAcinus(const DRT::ELEMENTS::RedAcinus& old)
-    : DRT::Element(old),
+    : CORE::Elements::Element(old),
       elem_type_(old.elem_type_),
       resistance_(old.elem_type_),
       acinus_params_(old.acinus_params_)
@@ -110,7 +112,7 @@ DRT::ELEMENTS::RedAcinus::RedAcinus(const DRT::ELEMENTS::RedAcinus& old)
  |  to it                                                      (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::RedAcinus::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::RedAcinus::Clone() const
 {
   DRT::ELEMENTS::RedAcinus* newelement = new DRT::ELEMENTS::RedAcinus(*this);
   return newelement;
@@ -258,7 +260,7 @@ void DRT::ELEMENTS::RedAcinus::VisNames(std::map<std::string, int>& names)
 bool DRT::ELEMENTS::RedAcinus::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (DRT::Element::VisData(name, data)) return true;
+  if (CORE::Elements::Element::VisData(name, data)) return true;
 
   // cast to specific material, because general material does not have VisNames/VisData
   Teuchos::RCP<MAT::Maxwell0dAcinus> mxwll_0d_acin =
@@ -282,7 +284,7 @@ const DRT::REDAIRWAYS::AcinusParams& DRT::ELEMENTS::RedAcinus::GetAcinusParams()
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)              ismail  02/13|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::RedAcinus::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::RedAcinus::Lines()
 {
   FOUR_C_ASSERT(NumLine() == 1, "RED_AIRWAY element must have one and only one line");
 

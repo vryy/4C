@@ -47,8 +47,12 @@ namespace BINSTRATEGY
 namespace DRT
 {
   class Discretization;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -227,8 +231,8 @@ namespace PARTICLEWALL
      * \param ele[in]             column wall element
      * \param colelenodalpos[out] current nodal position
      */
-    void determine_col_wall_ele_nodal_pos(
-        DRT::Element* ele, std::map<int, CORE::LINALG::Matrix<3, 1>>& colelenodalpos) const final;
+    void determine_col_wall_ele_nodal_pos(CORE::Elements::Element* ele,
+        std::map<int, CORE::LINALG::Matrix<3, 1>>& colelenodalpos) const final;
 
    private:
     //! \name init and setup methods

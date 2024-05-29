@@ -235,7 +235,7 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
   for (int nele = 0; nele < discret_->NumMyColElements(); ++nele)
   {
     // get the element
-    DRT::Element* ele = discret_->lColElement(nele);
+    CORE::Elements::Element* ele = discret_->lColElement(nele);
 
     // provide vectors for filtered quantities
     Teuchos::RCP<std::vector<double>> vel_hat =
@@ -997,7 +997,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
   for (int nele = 0; nele < scatradiscret_->NumMyColElements(); ++nele)
   {
     // get the element
-    DRT::Element* ele = scatradiscret_->lColElement(nele);
+    CORE::Elements::Element* ele = scatradiscret_->lColElement(nele);
 
     // provide vectors for filtered quantities //declaration necessary even if not used
     Teuchos::RCP<std::vector<double>> vel_hat =
@@ -1042,7 +1042,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
     double volume_contribution = 0.0;
 
     // get element location vector, dirichlet flags and ownerships
-    DRT::Element::LocationArray la(scatradiscret_->NumDofSets());
+    CORE::Elements::Element::LocationArray la(scatradiscret_->NumDofSets());
     ele->LocationVector(*scatradiscret_, la, false);
 
     // call the element evaluate method to integrate functions

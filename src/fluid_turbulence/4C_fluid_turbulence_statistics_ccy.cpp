@@ -152,7 +152,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
     for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
     {
       // get element pointer
-      DRT::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
+      CORE::Elements::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
 
       // want to loop all control points of the element,
       // so get the number of points
@@ -615,7 +615,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
     // get element pointer
-    DRT::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
+    CORE::Elements::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
 
     // want to loop all control points of the element,
     // so get the number of points
@@ -701,7 +701,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
       }
 
       // get pointer to corresponding scatra element with identical global id
-      DRT::Element* const actscatraele = scatranurbsdis->gElement(gid);
+      CORE::Elements::Element* const actscatraele = scatranurbsdis->gElement(gid);
       if (actscatraele == nullptr)
         FOUR_C_THROW("could not access transport element with gid %d", gid);
 

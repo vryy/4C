@@ -29,27 +29,29 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Torsion3Type::Create(const std::vector<cha
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Torsion3Type::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Torsion3Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TORSION3")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Torsion3(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::Torsion3(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Torsion3Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Torsion3Type::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Torsion3(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Torsion3(id, owner));
   return ele;
 }
 
 
 void DRT::ELEMENTS::Torsion3Type::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
@@ -77,17 +79,22 @@ void DRT::ELEMENTS::Torsion3Type::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Torsion3::Torsion3(int id, int owner) : DRT::Element(id, owner) { return; }
+DRT::ELEMENTS::Torsion3::Torsion3(int id, int owner) : CORE::Elements::Element(id, owner)
+{
+  return;
+}
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       cyron 02/10|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Torsion3::Torsion3(const DRT::ELEMENTS::Torsion3& old) : DRT::Element(old) {}
+DRT::ELEMENTS::Torsion3::Torsion3(const DRT::ELEMENTS::Torsion3& old) : CORE::Elements::Element(old)
+{
+}
 
 /*----------------------------------------------------------------------*
  | Deep copy this instance of Torsion3 and return pointer to it (public)|
  |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Torsion3::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Torsion3::Clone() const
 {
   DRT::ELEMENTS::Torsion3* newelement = new DRT::ELEMENTS::Torsion3(*this);
   return newelement;
@@ -146,7 +153,7 @@ void DRT::ELEMENTS::Torsion3::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             cyron 02/10|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Torsion3::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Torsion3::Lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -157,14 +164,14 @@ void DRT::ELEMENTS::Torsion3::set_params_interface_ptr(const Teuchos::ParameterL
 {
   if (p.isParameter("interface"))
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface"));
+        p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface"));
   else
     interface_ptr_ = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Torsion3::ParamsInterfacePtr()
+Teuchos::RCP<CORE::Elements::ParamsInterface> DRT::ELEMENTS::Torsion3::ParamsInterfacePtr()
 {
   return interface_ptr_;
 }

@@ -218,7 +218,7 @@ namespace DRT
 
       */
       template <CORE::FE::CellType distype>
-      void fill_matrix_and_rhs_for_ls_dirichlet_boundary(Teuchos::RCP<DRT::Element> ele,
+      void fill_matrix_and_rhs_for_ls_dirichlet_boundary(Teuchos::RCP<CORE::Elements::Element> ele,
           const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
           const double time, CORE::LINALG::SerialDenseMatrix& elemass,
@@ -239,7 +239,7 @@ namespace DRT
 
       */
       template <CORE::FE::CellType distype>
-      void fill_matrix_and_rhs_for_ls_dirichlet_domain(Teuchos::RCP<DRT::Element> ele,
+      void fill_matrix_and_rhs_for_ls_dirichlet_domain(Teuchos::RCP<CORE::Elements::Element> ele,
           const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
           const double time, CORE::LINALG::SerialDenseMatrix& elemass,

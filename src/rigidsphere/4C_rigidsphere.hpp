@@ -15,10 +15,10 @@
 #include "4C_config.hpp"
 
 #include "4C_beaminteraction_calc_utils.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_largerotations.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_elementtype.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
@@ -45,7 +45,7 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    class RigidsphereType : public DRT::ElementType
+    class RigidsphereType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return ("RigidsphereType"); }
@@ -54,15 +54,15 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       int Initialize(DRT::Discretization& dis) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -79,7 +79,7 @@ namespace DRT
     \brief Spherical particle element for brownian dynamics
 
     */
-    class Rigidsphere : public DRT::Element
+    class Rigidsphere : public CORE::Elements::Element
     {
      public:
       //! @name Friends
@@ -113,7 +113,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
     .
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
      \brief Get shape type of element
@@ -148,7 +148,10 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      DRT::ElementType& ElementType() const override { return (RigidsphereType::Instance()); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return (RigidsphereType::Instance());
+      }
 
       //@}
 
@@ -160,7 +163,7 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
 
       /*!
@@ -299,7 +302,7 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr() override;
       //@}
 
       //! @name methods for biopolymer network simulations
@@ -489,7 +492,7 @@ namespace DRT
     };  // class Rigidsphere
 
     // << operator
-    std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
+    std::ostream& operator<<(std::ostream& os, const CORE::Elements::Element& ele);
 
   }  // namespace ELEMENTS
 }  // namespace DRT

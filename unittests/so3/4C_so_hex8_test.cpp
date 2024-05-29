@@ -8,9 +8,9 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_so3_hex8.hpp"
 
 #include <Epetra_SerialComm.h>

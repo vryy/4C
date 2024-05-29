@@ -9,9 +9,9 @@ reactive scalars
 
 #include "4C_scatra_ele_calc_chemo_reac.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_list_chemoreac.hpp"
 #include "4C_mat_list_chemotaxis.hpp"
@@ -60,12 +60,12 @@ DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::Instance(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::get_material_params(
-    const DRT::Element* ele,      //!< the element we are dealing with
-    std::vector<double>& densn,   //!< density at t_(n)
-    std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-    std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-    double& visc,                 //!< fluid viscosity
-    const int iquad               //!< id of current gauss point (default = -1)
+    const CORE::Elements::Element* ele,  //!< the element we are dealing with
+    std::vector<double>& densn,          //!< density at t_(n)
+    std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
+    std::vector<double>& densam,         //!< density at t_(n+alpha_M)
+    double& visc,                        //!< fluid viscosity
+    const int iquad                      //!< id of current gauss point (default = -1)
 )
 {
   // get the material

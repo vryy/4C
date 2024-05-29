@@ -295,7 +295,7 @@ namespace DRT::ELEMENTS
    * @return PreparationData<SolidFormulation>
    */
   template <typename SolidFormulation, CORE::FE::CellType celltype>
-  PreparationData<SolidFormulation> Prepare(const DRT::Element& ele,
+  PreparationData<SolidFormulation> Prepare(const CORE::Elements::Element& ele,
       const ElementNodes<celltype>& nodal_coordinates,
       SolidFormulationHistory<SolidFormulation>& history_data)
   {
@@ -324,7 +324,8 @@ namespace DRT::ELEMENTS
    * @p Evaluate() call with the Gauss point id as parameter.
    */
   template <typename SolidFormulation, CORE::FE::CellType celltype, typename Evaluator>
-  inline auto Evaluate(const DRT::Element& ele, const ElementNodes<celltype>& element_nodes,
+  inline auto Evaluate(const CORE::Elements::Element& ele,
+      const ElementNodes<celltype>& element_nodes,
       const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
       const JacobianMapping<celltype>& jacobian_mapping,
@@ -348,7 +349,8 @@ namespace DRT::ELEMENTS
    * element formulations with gauss point history.
    */
   template <typename SolidFormulation, CORE::FE::CellType celltype, typename Evaluator>
-  inline auto Evaluate(const DRT::Element& ele, const ElementNodes<celltype>& element_nodes,
+  inline auto Evaluate(const CORE::Elements::Element& ele,
+      const ElementNodes<celltype>& element_nodes,
       const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
       const JacobianMapping<celltype>& jacobian_mapping,
@@ -368,7 +370,7 @@ namespace DRT::ELEMENTS
    */
   template <typename SolidFormulation, CORE::FE::CellType celltype>
   inline CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
-  evaluate_d_deformation_gradient_d_displacements(const DRT::Element& ele,
+  evaluate_d_deformation_gradient_d_displacements(const CORE::Elements::Element& ele,
       const ElementNodes<celltype>& element_nodes,
       const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -401,7 +403,7 @@ namespace DRT::ELEMENTS
    */
   template <typename SolidFormulation, CORE::FE::CellType celltype>
   inline CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>> evaluate_d_deformation_gradient_d_xi(
-      const DRT::Element& ele, const ElementNodes<celltype>& element_nodes,
+      const CORE::Elements::Element& ele, const ElementNodes<celltype>& element_nodes,
       const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
       const JacobianMapping<celltype>& jacobian_mapping,
@@ -435,7 +437,7 @@ namespace DRT::ELEMENTS
   template <typename SolidFormulation, CORE::FE::CellType celltype>
   inline CORE::LINALG::Matrix<9,
       CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>
-  evaluate_d_deformation_gradient_d_displacements_d_xi(const DRT::Element& ele,
+  evaluate_d_deformation_gradient_d_displacements_d_xi(const CORE::Elements::Element& ele,
       const ElementNodes<celltype>& element_nodes,
       const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -514,7 +516,7 @@ namespace DRT::ELEMENTS
   }
 
   template <typename SolidFormulation, CORE::FE::CellType celltype>
-  static inline void UpdatePrestress(const DRT::Element& ele,
+  static inline void UpdatePrestress(const CORE::Elements::Element& ele,
       const ElementNodes<celltype>& element_nodes,
       const PreparationData<SolidFormulation>& preparation_data,
       SolidFormulationHistory<SolidFormulation>& history_data)
@@ -537,7 +539,7 @@ namespace DRT::ELEMENTS
   }
 
   template <typename SolidFormulation, CORE::FE::CellType celltype>
-  static inline void UpdatePrestress(const DRT::Element& ele,
+  static inline void UpdatePrestress(const CORE::Elements::Element& ele,
       const ElementNodes<celltype>& element_nodes,
       const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions,

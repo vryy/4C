@@ -87,7 +87,8 @@ void DRT::UTILS::DoInitialField(const DRT::Discretization& discret,
     // of this.
     auto* const myeles = node->Elements();
     auto* ele_with_max_dof = std::max_element(myeles, myeles + node->NumElement(),
-        [&](Element* a, Element* b) { return a->NumDofPerNode(*node) < b->NumDofPerNode(*node); });
+        [&](CORE::Elements::Element* a, CORE::Elements::Element* b)
+        { return a->NumDofPerNode(*node) < b->NumDofPerNode(*node); });
     const int numdof = (*ele_with_max_dof)->NumDofPerNode(*node);
 
     if ((total_numdof % numdof) != 0) FOUR_C_THROW("illegal dof set number");

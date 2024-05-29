@@ -79,9 +79,9 @@ DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::ScaTraEleCalcLsReinit(
  | Action type: Evaluate                                rasthofer 12/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Evaluate(DRT::Element* ele,
+int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Evaluate(CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -107,7 +107,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Evaluate(DRT::Elemen
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitialization(
-    const Epetra_Vector& phinp, const std::vector<int>& lm, DRT::Element* ele,
+    const Epetra_Vector& phinp, const std::vector<int>& lm, CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra)
@@ -130,7 +130,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitializati
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitialization_embedded(
-    const std::vector<int>& lm, DRT::Element* ele, Teuchos::ParameterList& params,
+    const std::vector<int>& lm, CORE::Elements::Element* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra)
 {
@@ -346,7 +346,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::elliptic_newton_sys
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitialization_std(
-    const Epetra_Vector& phinp, const std::vector<int>& lm, DRT::Element* ele,
+    const Epetra_Vector& phinp, const std::vector<int>& lm, CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra)

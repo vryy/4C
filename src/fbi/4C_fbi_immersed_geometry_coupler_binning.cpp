@@ -12,9 +12,9 @@ performed afterwards
 
 #include "4C_binstrategy.hpp"
 #include "4C_binstrategy_utils.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_lib_discret_faces.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
@@ -148,15 +148,15 @@ void FBI::FBIBinningGeometryCoupler::compute_current_positions(DRT::Discretizati
 
   for (int lid = 0; lid < bincolmap->NumMyElements(); ++lid)
   {
-    DRT::Element* currbin = binstrategy_->BinDiscret()->lColElement(lid);
+    CORE::Elements::Element* currbin = binstrategy_->BinDiscret()->lColElement(lid);
     colbinvec.push_back(currbin->Id());
   }
 
-  std::set<DRT::Element*> beam_element_list;
+  std::set<CORE::Elements::Element*> beam_element_list;
 
   binstrategy_->GetBinContent(beam_element_list, {BINSTRATEGY::UTILS::Beam}, colbinvec, false);
 
-  for (std::set<DRT::Element*>::iterator element = beam_element_list.begin();
+  for (std::set<CORE::Elements::Element*>::iterator element = beam_element_list.begin();
        element != beam_element_list.end(); element++)
   {
     DRT::Node** node_list = (*element)->Nodes();

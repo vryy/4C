@@ -60,7 +60,7 @@ namespace DRT
     \param element (in)     : the element (optionally)
     */
     void Dof(std::vector<int>& dof, const Node* node, unsigned nds, unsigned nodaldofset,
-        const Element* element = nullptr) const override
+        const CORE::Elements::Element* element = nullptr) const override
     {
       if (nds > 1) FOUR_C_THROW("xwall discretization can only handle one dofset at the moment");
 

@@ -51,7 +51,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::compute_porosity_and_linearization_od(
 
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -59,7 +59,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   this->set_params_interface_ptr(params);
-  ELEMENTS::ActionType act = ELEMENTS::none;
+  CORE::Elements::ActionType act = CORE::Elements::none;
 
   if (this->IsParamsInterface())
   {
@@ -72,9 +72,9 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params
     if (action == "none")
       FOUR_C_THROW("No action supplied");
     else if (action == "struct_poro_calc_fluidcoupling")
-      act = ELEMENTS::struct_poro_calc_fluidcoupling;
+      act = CORE::Elements::struct_poro_calc_fluidcoupling;
     else if (action == "calc_struct_energy")
-      act = ELEMENTS::struct_calc_energy;
+      act = CORE::Elements::struct_calc_energy;
   }
 
   // what should the element do
@@ -82,7 +82,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params
   {
     //==================================================================================
     // off diagonal terms in stiffness matrix for monolithic coupling
-    case ELEMENTS::struct_poro_calc_fluidcoupling:
+    case CORE::Elements::struct_poro_calc_fluidcoupling:
     {
       // in some cases we need to write/change some data before evaluating
       Base::pre_evaluate(params, discretization, la);
@@ -92,7 +92,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params
     }
     break;
     //==================================================================================
-    case ELEMENTS::struct_calc_energy:
+    case CORE::Elements::struct_calc_energy:
     {
       // in some cases we need to write/change some data before evaluating
       Base::pre_evaluate(params, discretization, la);
@@ -194,7 +194,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params
 
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::Wall1PoroP1<distype>::my_evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -202,7 +202,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::my_evaluate(Teuchos::ParameterList& par
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   this->set_params_interface_ptr(params);
-  ELEMENTS::ActionType act = ELEMENTS::none;
+  CORE::Elements::ActionType act = CORE::Elements::none;
 
   if (this->IsParamsInterface())
   {
@@ -215,13 +215,13 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::my_evaluate(Teuchos::ParameterList& par
     if (action == "none")
       FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_internalforce")
-      act = ELEMENTS::struct_calc_internalforce;
+      act = CORE::Elements::struct_calc_internalforce;
     else if (action == "calc_struct_nlnstiff")
-      act = ELEMENTS::struct_calc_nlnstiff;
+      act = CORE::Elements::struct_calc_nlnstiff;
     else if (action == "calc_struct_nlnstiffmass")
-      act = ELEMENTS::struct_calc_nlnstiffmass;
+      act = CORE::Elements::struct_calc_nlnstiffmass;
     else if (action == "struct_poro_calc_fluidcoupling")
-      act = ELEMENTS::struct_poro_calc_fluidcoupling;
+      act = CORE::Elements::struct_poro_calc_fluidcoupling;
   }
 
   // what should the element do
@@ -229,8 +229,8 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::my_evaluate(Teuchos::ParameterList& par
   {
     //==================================================================================
     // nonlinear stiffness, damping and internal force vector for poroelasticity
-    case ELEMENTS::struct_calc_nlnstiff:
-    case ELEMENTS::struct_calc_nlnstiffmass:
+    case CORE::Elements::struct_calc_nlnstiff:
+    case CORE::Elements::struct_calc_nlnstiffmass:
     {
       if (la.Size() > 1)
       {
@@ -287,7 +287,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::my_evaluate(Teuchos::ParameterList& par
 
     //==================================================================================
     // coupling terms in force-vector and stiffness matrix for poroelasticity
-    case ELEMENTS::struct_poro_calc_fluidcoupling:
+    case CORE::Elements::struct_poro_calc_fluidcoupling:
     {
       // stiffness
       CORE::LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_> elemat1(
@@ -335,7 +335,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::my_evaluate(Teuchos::ParameterList& par
 
     //==================================================================================
     // nonlinear stiffness and internal force vector for poroelasticity
-    case ELEMENTS::struct_calc_internalforce:
+    case CORE::Elements::struct_calc_internalforce:
     {
       // internal force vector
       CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.values(), true);

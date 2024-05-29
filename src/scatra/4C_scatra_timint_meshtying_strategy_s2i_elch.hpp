@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_scatra_timint_elch.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
 
@@ -136,8 +136,8 @@ namespace SCATRA
         MORTAR::IntCell& cell,                                    //!< mortar integration cell
         MORTAR::Element& slaveelement,                            //!< slave-side mortar element
         MORTAR::Element& masterelement,                           //!< master-side mortar element
-        DRT::Element::LocationArray& la_slave,                    //!< slave-side location array
-        DRT::Element::LocationArray& la_master,                   //!< master-side location array
+        CORE::Elements::Element::LocationArray& la_slave,         //!< slave-side location array
+        CORE::Elements::Element::LocationArray& la_master,        //!< master-side location array
         const Teuchos::ParameterList& params,                     //!< parameter list
         CORE::LINALG::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
@@ -197,19 +197,19 @@ namespace SCATRA
 
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types
-    void Evaluate(const DRT::Discretization& idiscret,  //!< interface discretization
-        MORTAR::IntCell& cell,                          //!< mortar integration cell
-        MORTAR::Element& slaveelement,                  //!< slave-side mortar element
-        MORTAR::Element& masterelement,                 //!< master-side mortar element
-        DRT::Element::LocationArray& la_slave,          //!< slave-side location array
-        DRT::Element::LocationArray& la_master,         //!< master-side location array
-        const Teuchos::ParameterList& params,           //!< parameter list
-        CORE::LINALG::SerialDenseMatrix& cellmatrix1,   //!< cell matrix 1
-        CORE::LINALG::SerialDenseMatrix& cellmatrix2,   //!< cell matrix 2
-        CORE::LINALG::SerialDenseMatrix& cellmatrix3,   //!< cell matrix 3
-        CORE::LINALG::SerialDenseMatrix& cellmatrix4,   //!< cell matrix 4
-        CORE::LINALG::SerialDenseVector& cellvector1,   //!< cell vector 1
-        CORE::LINALG::SerialDenseVector& cellvector2    //!< cell vector 2
+    void Evaluate(const DRT::Discretization& idiscret,      //!< interface discretization
+        MORTAR::IntCell& cell,                              //!< mortar integration cell
+        MORTAR::Element& slaveelement,                      //!< slave-side mortar element
+        MORTAR::Element& masterelement,                     //!< master-side mortar element
+        CORE::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
+        CORE::Elements::Element::LocationArray& la_master,  //!< master-side location array
+        const Teuchos::ParameterList& params,               //!< parameter list
+        CORE::LINALG::SerialDenseMatrix& cellmatrix1,       //!< cell matrix 1
+        CORE::LINALG::SerialDenseMatrix& cellmatrix2,       //!< cell matrix 2
+        CORE::LINALG::SerialDenseMatrix& cellmatrix3,       //!< cell matrix 3
+        CORE::LINALG::SerialDenseMatrix& cellmatrix4,       //!< cell matrix 4
+        CORE::LINALG::SerialDenseVector& cellvector1,       //!< cell vector 1
+        CORE::LINALG::SerialDenseVector& cellvector2        //!< cell vector 2
         ) override;
 
    private:
@@ -234,8 +234,8 @@ namespace SCATRA
         MORTAR::IntCell& cell,                                       //!< mortar integration cell
         MORTAR::Element& slaveelement,                               //!< slave-side mortar element
         MORTAR::Element& masterelement,                              //!< master-side mortar element
-        DRT::Element::LocationArray& la_slave,                       //!< slave-side location array
-        DRT::Element::LocationArray& la_master,                      //!< master-side location array
+        CORE::Elements::Element::LocationArray& la_slave,            //!< slave-side location array
+        CORE::Elements::Element::LocationArray& la_master,           //!< master-side location array
         const Teuchos::ParameterList& params,                        //!< parameter list
         CORE::LINALG::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
@@ -245,8 +245,8 @@ namespace SCATRA
 
     //! extract nodal state variables associated with mortar integration cell
     void extract_node_values(const DRT::Discretization& idiscret,  //!< interface discretization
-        DRT::Element::LocationArray& la_slave,                     //!< slave-side location array
-        DRT::Element::LocationArray& la_master                     //!< master-side location array
+        CORE::Elements::Element::LocationArray& la_slave,          //!< slave-side location array
+        CORE::Elements::Element::LocationArray& la_master          //!< master-side location array
         ) override;
 
     //! evaluate factor F/RT
@@ -273,19 +273,19 @@ namespace SCATRA
 
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types
-    void Evaluate(const DRT::Discretization& idiscret,  //!< interface discretization
-        MORTAR::IntCell& cell,                          //!< mortar integration cell
-        MORTAR::Element& slaveelement,                  //!< slave-side mortar element
-        MORTAR::Element& masterelement,                 //!< master-side mortar element
-        DRT::Element::LocationArray& la_slave,          //!< slave-side location array
-        DRT::Element::LocationArray& la_master,         //!< master-side location array
-        const Teuchos::ParameterList& params,           //!< parameter list
-        CORE::LINALG::SerialDenseMatrix& cellmatrix1,   //!< cell matrix 1
-        CORE::LINALG::SerialDenseMatrix& cellmatrix2,   //!< cell matrix 2
-        CORE::LINALG::SerialDenseMatrix& cellmatrix3,   //!< cell matrix 3
-        CORE::LINALG::SerialDenseMatrix& cellmatrix4,   //!< cell matrix 4
-        CORE::LINALG::SerialDenseVector& cellvector1,   //!< cell vector 1
-        CORE::LINALG::SerialDenseVector& cellvector2    //!< cell vector 2
+    void Evaluate(const DRT::Discretization& idiscret,      //!< interface discretization
+        MORTAR::IntCell& cell,                              //!< mortar integration cell
+        MORTAR::Element& slaveelement,                      //!< slave-side mortar element
+        MORTAR::Element& masterelement,                     //!< master-side mortar element
+        CORE::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
+        CORE::Elements::Element::LocationArray& la_master,  //!< master-side location array
+        const Teuchos::ParameterList& params,               //!< parameter list
+        CORE::LINALG::SerialDenseMatrix& cellmatrix1,       //!< cell matrix 1
+        CORE::LINALG::SerialDenseMatrix& cellmatrix2,       //!< cell matrix 2
+        CORE::LINALG::SerialDenseMatrix& cellmatrix3,       //!< cell matrix 3
+        CORE::LINALG::SerialDenseMatrix& cellmatrix4,       //!< cell matrix 4
+        CORE::LINALG::SerialDenseVector& cellvector1,       //!< cell vector 1
+        CORE::LINALG::SerialDenseVector& cellvector2        //!< cell vector 2
         ) override;
 
    private:
@@ -309,8 +309,8 @@ namespace SCATRA
         MORTAR::IntCell& cell,                                    //!< mortar integration cell
         MORTAR::Element& slaveelement,                            //!< slave-side mortar element
         MORTAR::Element& masterelement,                           //!< master-side mortar element
-        DRT::Element::LocationArray& la_slave,                    //!< slave-side location array
-        DRT::Element::LocationArray& la_master,                   //!< master-side location array
+        CORE::Elements::Element::LocationArray& la_slave,         //!< slave-side location array
+        CORE::Elements::Element::LocationArray& la_master,        //!< master-side location array
         const Teuchos::ParameterList& params,                     //!< parameter list
         CORE::LINALG::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
@@ -322,8 +322,8 @@ namespace SCATRA
         MORTAR::IntCell& cell,                                       //!< mortar integration cell
         MORTAR::Element& slaveelement,                               //!< slave-side mortar element
         MORTAR::Element& masterelement,                              //!< master-side mortar element
-        DRT::Element::LocationArray& la_slave,                       //!< slave-side location array
-        DRT::Element::LocationArray& la_master,                      //!< master-side location array
+        CORE::Elements::Element::LocationArray& la_slave,            //!< slave-side location array
+        CORE::Elements::Element::LocationArray& la_master,           //!< master-side location array
         const Teuchos::ParameterList& params,                        //!< parameter list
         CORE::LINALG::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
@@ -333,8 +333,8 @@ namespace SCATRA
 
     //! extract nodal state variables associated with mortar integration cell
     void extract_node_values(const DRT::Discretization& idiscret,  //!< interface discretization
-        DRT::Element::LocationArray& la_slave,                     //!< slave-side location array
-        DRT::Element::LocationArray& la_master                     //!< master-side location array
+        CORE::Elements::Element::LocationArray& la_slave,          //!< slave-side location array
+        CORE::Elements::Element::LocationArray& la_master          //!< master-side location array
         ) override;
 
     //! nodal, slave-side electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}

@@ -11,7 +11,7 @@
 #include "4C_io_elementreader.hpp"
 
 #include "4C_comm_utils_factory.hpp"
-#include "4C_lib_elementdefinition.hpp"
+#include "4C_io_elementdefinition.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_print.hpp"
 
@@ -223,7 +223,8 @@ void IO::ElementReader::get_and_distribute_elements(const int nblock, const int 
           if (elementtypes_.size() == 0 or elementtypes_.count(eletype) > 0)
           {
             // let the factory create a matching empty element
-            Teuchos::RCP<DRT::Element> ele = CORE::COMM::Factory(eletype, distype, elenumber, 0);
+            Teuchos::RCP<CORE::Elements::Element> ele =
+                CORE::COMM::Factory(eletype, distype, elenumber, 0);
             if (ele.is_null()) FOUR_C_THROW("element creation failed");
 
             // For the time being we support old and new input facilities. To

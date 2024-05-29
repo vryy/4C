@@ -23,10 +23,11 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declarations.
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
 }
+
 namespace CORE::LINALG
 {
   class SerialDenseVector;
@@ -97,7 +98,8 @@ namespace BEAMINTERACTION
      * @param element2 Pointer to the second element
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
-    void CreateGeometryPair(const DRT::Element* element1, const DRT::Element* element2,
+    void CreateGeometryPair(const CORE::Elements::Element* element1,
+        const CORE::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;
 

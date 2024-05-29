@@ -100,7 +100,7 @@ namespace STR
       //!@{
 
       //! get the desired action type [derived]
-      [[nodiscard]] inline enum DRT::ELEMENTS::ActionType GetActionType() const override
+      [[nodiscard]] inline enum CORE::Elements::ActionType GetActionType() const override
       {
         check_init_setup();
         return ele_action_;
@@ -442,7 +442,7 @@ namespace STR
        *
        * @param[in] actiontype Action type
        */
-      inline void SetActionType(const enum DRT::ELEMENTS::ActionType& actiontype)
+      inline void SetActionType(const enum CORE::Elements::ActionType& actiontype)
       {
         ele_action_ = actiontype;
       }
@@ -828,7 +828,7 @@ namespace STR
       //!@{
 
       //! Current action type
-      enum DRT::ELEMENTS::ActionType ele_action_;
+      enum CORE::Elements::ActionType ele_action_;
 
       //! Current predictor type
       enum INPAR::STR::PredEnum predict_type_;

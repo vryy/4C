@@ -11,9 +11,9 @@
 
 #include "4C_xfem_utils.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_lib_discret_faces.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_material_factory.hpp"
@@ -50,7 +50,7 @@ void XFEM::UTILS::extract_node_vectors(Teuchos::RCP<DRT::Discretization> dis,
 // -------------------------------------------------------------------
 // set master and slave parameters (winter 01/2015)
 // -------------------------------------------------------------------
-void XFEM::UTILS::get_volume_cell_material(DRT::Element* actele,
+void XFEM::UTILS::get_volume_cell_material(CORE::Elements::Element* actele,
     Teuchos::RCP<CORE::MAT::Material>& mat, CORE::GEO::CUT::Point::PointPosition position)
 {
   int position_id = 0;
@@ -144,11 +144,12 @@ void XFEM::UTILS::SafetyCheckMaterials(
 
 //! Extract a quantity for an element
 void XFEM::UTILS::ExtractQuantityAtElement(CORE::LINALG::SerialDenseMatrix::Base& element_vector,
-    const DRT::Element* element, const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
+    const CORE::Elements::Element* element,
+    const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
     Teuchos::RCP<DRT::Discretization>& dis, const int nds_vector, const int nsd)
 {
   // get the other nds-set which is connected to the current one via this boundary-cell
-  DRT::Element::LocationArray la(dis->NumDofSets());
+  CORE::Elements::Element::LocationArray la(dis->NumDofSets());
   element->LocationVector(*dis, la, false);
 
   const size_t numnode = element->num_node();

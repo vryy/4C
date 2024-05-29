@@ -1530,7 +1530,7 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
     for (int j = 0; j < interface_[i]->MasterColElements()->NumMyElements(); ++j)
     {
       int gid1 = interface_[i]->MasterColElements()->GID(j);
-      DRT::Element* ele1 = interface_[i]->Discret().gElement(gid1);
+      CORE::Elements::Element* ele1 = interface_[i]->Discret().gElement(gid1);
       if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
       Element* selement = dynamic_cast<Element*>(ele1);
 

@@ -429,7 +429,8 @@ void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int inte
 void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
     const DRT::Discretization& str_discret,
     const std::vector<std::vector<CORE::Conditions::Condition*>>& ccond_grps,
-    std::set<const DRT::Node*>& dbc_slave_nodes, std::set<const DRT::Element*>& dbc_slave_eles)
+    std::set<const DRT::Node*>& dbc_slave_nodes,
+    std::set<const CORE::Elements::Element*>& dbc_slave_eles)
 {
   dbc_slave_nodes.clear();
   dbc_slave_eles.clear();
@@ -532,7 +533,7 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::UTILS::DbcHandler::detect_dbc_slave_elements(
-    std::set<const DRT::Element*>& dbc_slave_eles,
+    std::set<const CORE::Elements::Element*>& dbc_slave_eles,
     const std::map<const DRT::Node*, int>& dbc_slave_nodes,
     const std::vector<const CORE::Conditions::Condition*>& sl_conds)
 {
@@ -550,10 +551,10 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_elements(
     }
     const CORE::Conditions::Condition& slcond = **sl_citer;
 
-    const std::map<int, Teuchos::RCP<DRT::Element>>& geometry = slcond.Geometry();
+    const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geometry = slcond.Geometry();
     for (const auto& iele_pair : geometry)
     {
-      const DRT::Element* ele = iele_pair.second.get();
+      const CORE::Elements::Element* ele = iele_pair.second.get();
 
       const int* ele_nids = ele->NodeIds();
       for (int i = 0; i < ele->num_node(); ++i)

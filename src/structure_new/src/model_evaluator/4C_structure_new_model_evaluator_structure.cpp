@@ -346,7 +346,7 @@ bool STR::MODELEVALUATOR::Structure::apply_force_external()
 
   // Set to default value, because it is unnecessary for the
   // evaluate_neumann routine.
-  eval_data().SetActionType(DRT::ELEMENTS::none);
+  eval_data().SetActionType(CORE::Elements::none);
   // set vector values needed by elements
   discret().ClearState();
   discret().set_state(0, "displacement", g_state().GetDisN());
@@ -441,7 +441,7 @@ void STR::MODELEVALUATOR::Structure::static_contributions(
     Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   // action for elements
-  eval_data().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiff);
+  eval_data().SetActionType(CORE::Elements::struct_calc_nlnstiff);
   // set default matrix
   eval_mat[0] = Teuchos::rcpFromRef(*stiff_ptr_);
   // set default force vector
@@ -453,7 +453,7 @@ void STR::MODELEVALUATOR::Structure::static_contributions(
 void STR::MODELEVALUATOR::Structure::static_contributions(Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   // action for elements
-  eval_data().SetActionType(DRT::ELEMENTS::struct_calc_internalforce);
+  eval_data().SetActionType(CORE::Elements::struct_calc_internalforce);
   // set default force vector
   eval_vec[0] = g_state().GetFintNp();
 }
@@ -467,7 +467,7 @@ void STR::MODELEVALUATOR::Structure::material_damping_contributions(
 
   // action for elements
   // (reset the action type to be independent of the calling order)
-  eval_data().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiff);
+  eval_data().SetActionType(CORE::Elements::struct_calc_nlnstiff);
   // set the discretization state
   discret().set_state(0, "velocity", g_state().GetVelNp());
   // reset damping matrix
@@ -489,9 +489,9 @@ void STR::MODELEVALUATOR::Structure::inertial_contributions(
 
   // overwrite element action
   if (TimInt().GetDataSDyn().IsMassLumping())
-    eval_data().SetActionType(DRT::ELEMENTS::struct_calc_nlnstifflmass);
+    eval_data().SetActionType(CORE::Elements::struct_calc_nlnstifflmass);
   else
-    eval_data().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiffmass);
+    eval_data().SetActionType(CORE::Elements::struct_calc_nlnstiffmass);
 
   // set the discretization state
   discret().set_state(0, "velocity", g_state().GetVelNp());
@@ -513,7 +513,7 @@ void STR::MODELEVALUATOR::Structure::inertial_contributions(Teuchos::RCP<Epetra_
   if (masslin_type_ == INPAR::STR::ml_none or TimInt().GetDataSDynPtr()->NeglectInertia()) return;
 
   // overwrite element action
-  eval_data().SetActionType(DRT::ELEMENTS::struct_calc_internalinertiaforce);
+  eval_data().SetActionType(CORE::Elements::struct_calc_internalinertiaforce);
   // set the discretization state
   discret().set_state(0, "velocity", g_state().GetVelNp());
   discret().set_state(0, "acceleration", g_state().GetAccNp());
@@ -599,7 +599,7 @@ void STR::MODELEVALUATOR::Structure::init_output_runtime_structure()
       const_cast<STR::MODELEVALUATOR::Structure*>(this)->discret_ptr(), true);
   vtu_writer_ptr_ = Teuchos::rcp(
       new IO::DiscretizationVisualizationWriterMesh(discretization, visualization_params_,
-          [](const DRT::Element* element)
+          [](const CORE::Elements::Element* element)
           {
             // Skip beam elements which live in the same discretization but use a different output
             // mechanism
@@ -616,7 +616,7 @@ void STR::MODELEVALUATOR::Structure::init_output_runtime_structure()
 void STR::MODELEVALUATOR::Structure::init_output_runtime_structure_gauss_point_data()
 {
   // Set all parameters in the evaluation data container.
-  eval_data().SetActionType(DRT::ELEMENTS::struct_init_gauss_point_data_output);
+  eval_data().SetActionType(CORE::Elements::struct_init_gauss_point_data_output);
   eval_data().set_gauss_point_data_output_manager_ptr(Teuchos::rcp(new GaussPointDataOutputManager(
       g_in_output().get_runtime_output_params()->GetStructureParams()->gauss_point_data_output())));
   eval_data().SetTotalTime(g_state().GetTimeNp());
@@ -836,7 +836,7 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress
           g_in_output().GetStrainOutputType() == INPAR::STR::strain_none))
   {
     // Set all parameters in the evaluation data container.
-    eval_data().SetActionType(DRT::ELEMENTS::struct_calc_stress);
+    eval_data().SetActionType(CORE::Elements::struct_calc_stress);
     eval_data().SetTotalTime(g_state().GetTimeNp());
     eval_data().SetDeltaTime((*g_state().GetDeltaTime())[0]);
     eval_data().SetStressData(Teuchos::rcp(new std::vector<char>()));
@@ -860,7 +860,7 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress
     evaluate_internal_specified_elements(
         eval_mat.data(), eval_vec.data(), discret().ElementRowMap());
 
-    auto DoPostprocessingOnElement = [](const DRT::Element& ele)
+    auto DoPostprocessingOnElement = [](const CORE::Elements::Element& ele)
     {
       // If it is not a beam element, we post-process it.
       return dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(&ele) == nullptr;
@@ -889,7 +889,7 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress
             Epetra_MultiVector& assembled_data)
     {
       discret_ptr()->Evaluate(
-          [&](DRT::Element& ele)
+          [&](CORE::Elements::Element& ele)
           {
             if (DoPostprocessingOnElement(ele))
               CORE::FE::ExtrapolateGaussPointQuantityToNodes(
@@ -902,7 +902,7 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress
             Epetra_MultiVector& assembled_data)
     {
       discret_ptr()->Evaluate(
-          [&](DRT::Element& ele)
+          [&](CORE::Elements::Element& ele)
           {
             if (DoPostprocessingOnElement(ele))
               CORE::FE::EvaluateGaussPointQuantityAtElementCenter(
@@ -966,7 +966,7 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_gauss_point_data()
   {
     check_init_setup();
 
-    eval_data().SetActionType(DRT::ELEMENTS::struct_gauss_point_data_output);
+    eval_data().SetActionType(CORE::Elements::struct_gauss_point_data_output);
     eval_data().SetTotalTime(g_state().GetTimeNp());
     eval_data().SetDeltaTime((*g_state().GetDeltaTime())[0]);
 
@@ -1135,7 +1135,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_internal(
   pre_evaluate_internal();
 
   Teuchos::ParameterList p;
-  p.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", eval_data_ptr());
+  p.set<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface", eval_data_ptr());
 
   evaluate_internal(p, eval_mat, eval_vec);
 }
@@ -1151,7 +1151,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_internal(Teuchos::ParameterList& p
         "Please use the STR::ELEMENTS::Interface and its derived "
         "classes to set and get parameters.");
   }
-  if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>(
+  if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<CORE::Elements::ParamsInterface>>(
           "interface"))
     FOUR_C_THROW("The given parameter has the wrong type!");
 
@@ -1170,7 +1170,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_internal_specified_elements(
   pre_evaluate_internal();
 
   Teuchos::ParameterList p;
-  p.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", eval_data_ptr());
+  p.set<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface", eval_data_ptr());
 
   evaluate_internal_specified_elements(p, eval_mat, eval_vec, ele_map_to_be_evaluated);
 }
@@ -1187,7 +1187,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_internal_specified_elements(Teucho
         "Please use the STR::ELEMENTS::Interface and its derived "
         "classes to set and get parameters.");
   }
-  if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>(
+  if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<CORE::Elements::ParamsInterface>>(
           "interface"))
     FOUR_C_THROW("The given parameter has the wrong type!");
 
@@ -1206,7 +1206,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_neumann(const Teuchos::RCP<Epetra_
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& eval_mat)
 {
   Teuchos::ParameterList p;
-  p.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", eval_data_ptr());
+  p.set<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface", eval_data_ptr());
   evaluate_neumann(p, eval_vec, eval_mat);
 }
 
@@ -1222,7 +1222,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_neumann(Teuchos::ParameterList& p,
         "Please use the STR::ELEMENTS::Interface and its derived "
         "classes to set and get parameters.");
   }
-  if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>(
+  if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<CORE::Elements::ParamsInterface>>(
           "interface"))
     FOUR_C_THROW("The given parameter has the wrong type!");
   discret().evaluate_neumann(p, eval_vec, eval_mat);
@@ -1262,7 +1262,7 @@ void STR::MODELEVALUATOR::Structure::read_restart(IO::DiscretizationReader& iore
 void STR::MODELEVALUATOR::Structure::Predict(const INPAR::STR::PredEnum& pred_type)
 {
   // set the element action
-  eval_data().SetActionType(DRT::ELEMENTS::struct_calc_predict);
+  eval_data().SetActionType(CORE::Elements::struct_calc_predict);
   eval_data().SetPredictorType(pred_type);
 
   // set the matrix and vector pointers to Teuchos::null
@@ -1291,7 +1291,7 @@ void STR::MODELEVALUATOR::Structure::RunRecover()
   discret().set_state(0, "residual displacement", dis_incr_ptr_);
   discret().set_state(0, "displacement", g_state().GetDisNp());
   // set the element action
-  eval_data().SetActionType(DRT::ELEMENTS::struct_calc_recover);
+  eval_data().SetActionType(CORE::Elements::struct_calc_recover);
   // set the matrix and vector pointers to Teuchos::null
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
@@ -1383,7 +1383,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_jacobian_contributions_from_elemen
   std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
       Teuchos::null, Teuchos::null};
 
-  eval_data().SetActionType(DRT::ELEMENTS::struct_calc_addjacPTC);
+  eval_data().SetActionType(CORE::Elements::struct_calc_addjacPTC);
 
   // set vector values needed by elements
   discret().ClearState();
@@ -1423,12 +1423,12 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
       IO::cout << "====== Entering PRESTRESSING update" << IO::endl;
 
     // Choose special update action for elements in case of MULF
-    eval_data().SetActionType(DRT::ELEMENTS::struct_update_prestress);
+    eval_data().SetActionType(CORE::Elements::struct_update_prestress);
   }
   else
   {
     // Call the normal element  update routine
-    eval_data().SetActionType(DRT::ELEMENTS::struct_calc_update_istep);
+    eval_data().SetActionType(CORE::Elements::struct_calc_update_istep);
   }
 
 
@@ -1465,7 +1465,7 @@ void STR::MODELEVALUATOR::Structure::determine_stress_strain()
     return;
 
   // set all parameters in the evaluation data container
-  eval_data().SetActionType(DRT::ELEMENTS::struct_calc_stress);
+  eval_data().SetActionType(CORE::Elements::struct_calc_stress);
   eval_data().SetTotalTime(g_state().GetTimeNp());
   eval_data().SetDeltaTime((*g_state().GetDeltaTime())[0]);
   eval_data().SetStressData(Teuchos::rcp(new std::vector<char>()));
@@ -1495,7 +1495,7 @@ void STR::MODELEVALUATOR::Structure::determine_strain_energy(
   check_init_setup();
 
   // set required parameters in the evaluation data container
-  eval_data().SetActionType(DRT::ELEMENTS::struct_calc_energy);
+  eval_data().SetActionType(CORE::Elements::struct_calc_energy);
   eval_data().SetTotalTime(g_state().GetTimeNp());
   eval_data().SetDeltaTime((*g_state().GetDeltaTime())[0]);
 
@@ -1513,7 +1513,7 @@ void STR::MODELEVALUATOR::Structure::determine_strain_energy(
   pre_evaluate_internal();
 
   Teuchos::ParameterList p;
-  p.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", eval_data_ptr());
+  p.set<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface", eval_data_ptr());
 
   // evaluate energy contributions on element level (row elements only)
   evaluate_internal_specified_elements(
@@ -1579,7 +1579,7 @@ void STR::MODELEVALUATOR::Structure::determine_optional_quantity()
     case INPAR::STR::optquantity_membranethickness:
     {
       // evaluate thickness of membrane finite elements
-      eval_data().SetActionType(DRT::ELEMENTS::struct_calc_thickness);
+      eval_data().SetActionType(CORE::Elements::struct_calc_thickness);
       break;
     }
     default:
@@ -1611,10 +1611,10 @@ bool STR::MODELEVALUATOR::Structure::determine_element_volumes(
     const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols)
 {
   // set action in params-interface
-  eval_data().SetActionType(DRT::ELEMENTS::struct_calc_mass_volume);
+  eval_data().SetActionType(CORE::Elements::struct_calc_mass_volume);
 
   Teuchos::ParameterList p;
-  p.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", eval_data_ptr());
+  p.set<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface", eval_data_ptr());
 
   // set vector values needed by elements
   discret().ClearState();
@@ -1626,7 +1626,7 @@ bool STR::MODELEVALUATOR::Structure::determine_element_volumes(
   ele_vols = Teuchos::rcp(new Epetra_Vector(*relemap, true));
   const unsigned my_num_reles = relemap->NumMyElements();
 
-  DRT::Element::LocationArray la(discret().NumDofSets());
+  CORE::Elements::Element::LocationArray la(discret().NumDofSets());
   CORE::LINALG::SerialDenseVector ele_vol(6, true);
 
   CORE::LINALG::SerialDenseMatrix empty_dummy_mat;
@@ -1635,16 +1635,16 @@ bool STR::MODELEVALUATOR::Structure::determine_element_volumes(
   STR::ELEMENTS::EvalErrorFlag ele_eval_error = STR::ELEMENTS::ele_error_none;
   for (unsigned elid = 0; elid < my_num_reles; ++elid)
   {
-    DRT::Element* rele = discret().lRowElement(elid);
+    CORE::Elements::Element* rele = discret().lRowElement(elid);
     rele->LocationVector(discret(), la, false);
 
-    eval_data().SetActionType(DRT::ELEMENTS::analyse_jacobian_determinant);
+    eval_data().SetActionType(CORE::Elements::analyse_jacobian_determinant);
     rele->Evaluate(p, discret(), la, empty_dummy_mat, empty_dummy_mat, ele_vol, empty_dummy_vec,
         empty_dummy_vec);
 
     if (not eval_data().IsEleEvalError())
     {
-      eval_data().SetActionType(DRT::ELEMENTS::struct_calc_mass_volume);
+      eval_data().SetActionType(CORE::Elements::struct_calc_mass_volume);
       rele->Evaluate(p, discret(), la, empty_dummy_mat, empty_dummy_mat, ele_vol, empty_dummy_vec,
           empty_dummy_vec);
     }
@@ -1742,7 +1742,7 @@ void STR::MODELEVALUATOR::Structure::ResetStepState()
   eval_data().SetTotalTime(g_state().GetTimeNp());
   eval_data().SetDeltaTime((*g_state().GetDeltaTime())[0]);
   // action for elements
-  eval_data().SetActionType(DRT::ELEMENTS::struct_calc_reset_istep);
+  eval_data().SetActionType(CORE::Elements::struct_calc_reset_istep);
 
   // set dummy evaluation vectors and matrices
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
@@ -1979,98 +1979,98 @@ void STR::MODELEVALUATOR::Structure::params_interface2_parameter_list(
   params.set<double>("timintfac_dis", interface_ptr->GetTimIntFactorDisp());
   params.set<double>("timintfac_vel", interface_ptr->GetTimIntFactorVel());
 
-  DRT::ELEMENTS::ActionType act = interface_ptr->GetActionType();
+  CORE::Elements::ActionType act = interface_ptr->GetActionType();
   std::string action;
   switch (act)
   {
-    case DRT::ELEMENTS::struct_calc_linstiff:
+    case CORE::Elements::struct_calc_linstiff:
       action = "calc_struct_linstiff";
       break;
-    case DRT::ELEMENTS::struct_calc_nlnstiff:
+    case CORE::Elements::struct_calc_nlnstiff:
       action = "calc_struct_nlnstiff";
       break;
-    case DRT::ELEMENTS::struct_calc_internalforce:
+    case CORE::Elements::struct_calc_internalforce:
       action = "calc_struct_internalforce";
       break;
-    case DRT::ELEMENTS::struct_calc_linstiffmass:
+    case CORE::Elements::struct_calc_linstiffmass:
       action = "calc_struct_linstiffmass";
       break;
-    case DRT::ELEMENTS::struct_calc_nlnstiffmass:
+    case CORE::Elements::struct_calc_nlnstiffmass:
       action = "calc_struct_nlnstiffmass";
       break;
-    case DRT::ELEMENTS::struct_calc_nlnstifflmass:
+    case CORE::Elements::struct_calc_nlnstifflmass:
       action = "calc_struct_nlnstifflmass";
       break;
-    case DRT::ELEMENTS::struct_calc_stress:
+    case CORE::Elements::struct_calc_stress:
       action = "calc_struct_stress";
       break;
-    case DRT::ELEMENTS::struct_calc_thickness:
+    case CORE::Elements::struct_calc_thickness:
       action = "calc_struct_thickness";
       break;
-    case DRT::ELEMENTS::struct_calc_eleload:
+    case CORE::Elements::struct_calc_eleload:
       action = "calc_struct_eleload";
       break;
-    case DRT::ELEMENTS::struct_calc_fsiload:
+    case CORE::Elements::struct_calc_fsiload:
       action = "calc_struct_fsiload";
       break;
-    case DRT::ELEMENTS::struct_calc_update_istep:
+    case CORE::Elements::struct_calc_update_istep:
       action = "calc_struct_update_istep";
       break;
-    case DRT::ELEMENTS::struct_calc_reset_istep:
+    case CORE::Elements::struct_calc_reset_istep:
       action = "calc_struct_reset_istep";
       break;
-    case DRT::ELEMENTS::struct_calc_store_istep:
+    case CORE::Elements::struct_calc_store_istep:
       action = "calc_struct_store_istep";
       break;
-    case DRT::ELEMENTS::struct_calc_recover_istep:
+    case CORE::Elements::struct_calc_recover_istep:
       action = "calc_struct_recover_istep";
       break;
-    case DRT::ELEMENTS::struct_calc_energy:
+    case CORE::Elements::struct_calc_energy:
       action = "calc_struct_energy";
       break;
-    case DRT::ELEMENTS::multi_init_eas:
+    case CORE::Elements::multi_init_eas:
       action = "multi_eas_init";
       break;
-    case DRT::ELEMENTS::multi_set_eas:
+    case CORE::Elements::multi_set_eas:
       action = "multi_eas_set";
       break;
-    case DRT::ELEMENTS::multi_readrestart:
+    case CORE::Elements::multi_readrestart:
       action = "multi_readrestart";
       break;
-    case DRT::ELEMENTS::multi_calc_dens:
+    case CORE::Elements::multi_calc_dens:
       action = "multi_calc_dens";
       break;
-    case DRT::ELEMENTS::struct_postprocess_thickness:
+    case CORE::Elements::struct_postprocess_thickness:
       action = "postprocess_thickness";
       break;
-    case DRT::ELEMENTS::struct_update_prestress:
+    case CORE::Elements::struct_update_prestress:
       action = "calc_struct_prestress_update";
       break;
-    case DRT::ELEMENTS::struct_calc_global_gpstresses_map:
+    case CORE::Elements::struct_calc_global_gpstresses_map:
       action = "calc_global_gpstresses_map";
       break;
-    case DRT::ELEMENTS::struct_interpolate_velocity_to_point:
+    case CORE::Elements::struct_interpolate_velocity_to_point:
       action = "interpolate_velocity_to_given_point";
       break;
-    case DRT::ELEMENTS::struct_calc_mass_volume:
+    case CORE::Elements::struct_calc_mass_volume:
       action = "calc_struct_mass_volume";
       break;
-    case DRT::ELEMENTS::struct_calc_recover:
+    case CORE::Elements::struct_calc_recover:
       action = "calc_struct_recover";
       break;
-    case DRT::ELEMENTS::struct_calc_predict:
+    case CORE::Elements::struct_calc_predict:
       action = "calc_struct_predict";
       break;
-    case DRT::ELEMENTS::struct_init_gauss_point_data_output:
+    case CORE::Elements::struct_init_gauss_point_data_output:
       action = "struct_init_gauss_point_data_output";
       break;
-    case DRT::ELEMENTS::struct_gauss_point_data_output:
+    case CORE::Elements::struct_gauss_point_data_output:
       action = "struct_gauss_point_data_output";
       break;
-    case DRT::ELEMENTS::struct_poro_calc_fluidcoupling:
+    case CORE::Elements::struct_poro_calc_fluidcoupling:
       action = "struct_poro_calc_fluidcoupling";
       break;
-    case DRT::ELEMENTS::struct_poro_calc_scatracoupling:
+    case CORE::Elements::struct_poro_calc_scatracoupling:
       action = "struct_poro_calc_scatracoupling";
       break;
     default:
@@ -2096,7 +2096,7 @@ void STR::MODELEVALUATOR::Structure::CreateBackupState(const Epetra_Vector& dir)
   check_init_setup();
 
   // set all parameters in the evaluation data container
-  eval_data().SetActionType(DRT::ELEMENTS::struct_create_backup);
+  eval_data().SetActionType(CORE::Elements::struct_create_backup);
 
   // set vector values needed by elements
   discret().ClearState();
@@ -2120,7 +2120,7 @@ void STR::MODELEVALUATOR::Structure::recover_from_backup_state()
   check_init_setup();
 
   // set all parameters in the evaluation data container
-  eval_data().SetActionType(DRT::ELEMENTS::struct_recover_from_backup);
+  eval_data().SetActionType(CORE::Elements::struct_recover_from_backup);
 
   // set vector values needed by elements
   discret().ClearState();

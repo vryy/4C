@@ -96,7 +96,7 @@ namespace XFEM
     bool HasMovingInterface() override { return true; }
 
     void get_interface_slave_material(
-        DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat) override
+        CORE::Elements::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat) override
     {
       mat = Teuchos::null;
     }
@@ -229,8 +229,8 @@ namespace XFEM
         double& full_stab,                             //< full NIT Penalty scaling
         const CORE::LINALG::Matrix<3, 1>& x,           //< Position x in global coordinates
         const CORE::Conditions::Condition* cond,       //< Condition
-        DRT::Element* ele,                             //< Element
-        DRT::Element* bele,                            //< Boundary Element
+        CORE::Elements::Element* ele,                  //< Element
+        CORE::Elements::Element* bele,                 //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
@@ -294,8 +294,8 @@ namespace XFEM
         double& full_stab,                             //< full NIT Penalty scaling
         const CORE::LINALG::Matrix<3, 1>& x,           //< Position x in global coordinates
         const CORE::Conditions::Condition* cond,       //< Condition
-        DRT::Element* ele,                             //< Element
-        DRT::Element* bele,                            //< Boundary Element
+        CORE::Elements::Element* ele,                  //< Element
+        CORE::Elements::Element* bele,                 //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
@@ -426,7 +426,7 @@ namespace XFEM
       const size_t nen = CORE::FE::num_nodes<DISTYPE>;
 
       // Should this be provided as well by the input?
-      DRT::Element* actele = cutter_dis_->gElement(eid);
+      CORE::Elements::Element* actele = cutter_dis_->gElement(eid);
 
       //   Non-smoothed projection matrix
       CORE::LINALG::Matrix<nsd, 1> gradphi;
@@ -519,8 +519,8 @@ namespace XFEM
         double& full_stab,                             //< full NIT Penalty scaling
         const CORE::LINALG::Matrix<3, 1>& x,           //< Position x in global coordinates
         const CORE::Conditions::Condition* cond,       //< Condition
-        DRT::Element* ele,                             //< Element
-        DRT::Element* bele,                            //< Boundary Element
+        CORE::Elements::Element* ele,                  //< Element
+        CORE::Elements::Element* bele,                 //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
@@ -556,7 +556,8 @@ namespace XFEM
 
 
   /// set material pointer for coupling slave side
-  void get_interface_slave_material(DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat);
+  void get_interface_slave_material(
+      CORE::Elements::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat);
 
   template <CORE::FE::CellType DISTYPE, class M1, class M2>
   void EvaluateCurvature(double& icurvature,  ///< curvature to be computed

@@ -221,8 +221,8 @@ namespace MORTAR
 
     store knot vector, zerosized information and normal factor
     */
-    void prepare_nurbs_element(DRT::Discretization& discret, Teuchos::RCP<DRT::Element> ele,
-        Teuchos::RCP<MORTAR::Element> cele, int dim);
+    void prepare_nurbs_element(DRT::Discretization& discret,
+        Teuchos::RCP<CORE::Elements::Element> ele, Teuchos::RCP<MORTAR::Element> cele, int dim);
 
     /*!
     \brief Prepare mortar node for nurbs case

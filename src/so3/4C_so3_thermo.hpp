@@ -90,7 +90,7 @@ namespace DRT
       //!
       //! The Clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       //! Return unique ParObject id
       //!
@@ -114,7 +114,7 @@ namespace DRT
       void Print(std::ostream& os) const override;
 
       //! return elementtype thermo element
-      DRT::ElementType& ElementType() const override;
+      CORE::Elements::ElementType& ElementType() const override;
 
       //@}
 
@@ -176,7 +176,7 @@ namespace DRT
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
-          DRT::Element::LocationArray& la,      //!< location array for de-assembly
+          CORE::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           CORE::LINALG::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.
           CORE::LINALG::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.
@@ -191,8 +191,8 @@ namespace DRT
       void pre_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
-          DRT::Element::LocationArray& la       //!< location array for de-assembly
+          DRT::Discretization& discretization,        //!< pointer to discretization for de-assembly
+          CORE::Elements::Element::LocationArray& la  //!< location array for de-assembly
       );
 
       //@}
@@ -251,7 +251,7 @@ namespace DRT
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
-          DRT::Element::LocationArray& la,      //!< location array for de-assembly
+          CORE::Elements::Element::LocationArray& la,  //!< location array for de-assembly
           CORE::LINALG::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.
           CORE::LINALG::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.
@@ -262,7 +262,7 @@ namespace DRT
       );
 
       //! Calculate temperature coupling term for the internal force (geometric linear)
-      virtual void lin_fint_tsi(DRT::Element::LocationArray& la,  //!< location array
+      virtual void lin_fint_tsi(CORE::Elements::Element::LocationArray& la,  //!< location array
           std::vector<double>& disp,                              //!< current displacements
           std::vector<double>& temp,                              //!< current temperature
           CORE::LINALG::Matrix<numdofperelement_, 1>* force,      //!< element internal force vector
@@ -272,7 +272,7 @@ namespace DRT
       );
 
       //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
-      virtual void lin_kd_t_tsi(DRT::Element::LocationArray& la,
+      virtual void lin_kd_t_tsi(CORE::Elements::Element::LocationArray& la,
           std::vector<double>& disp,  //!< (i): current displacement
           std::vector<double>& temp,  // current temperatures
           CORE::LINALG::Matrix<numdofperelement_, nen_>*
@@ -280,10 +280,11 @@ namespace DRT
           Teuchos::ParameterList& params);
 
       //! Calculate nonlinear stiffness and mass matrix with temperature fraction
-      virtual void nln_stifffint_tsi(DRT::Element::LocationArray& la,  //!< location array
-          DRT::Discretization& discretization,  ///< discretisation to extract knot vector
-          std::vector<double>& disp,            //!< current displacements
-          std::vector<double>& temp,            //!< current temperature
+      virtual void nln_stifffint_tsi(
+          CORE::Elements::Element::LocationArray& la,  //!< location array
+          DRT::Discretization& discretization,         ///< discretisation to extract knot vector
+          std::vector<double>& disp,                   //!< current displacements
+          std::vector<double>& temp,                   //!< current temperature
           CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
               stiffmatrix,                                        // element stiffness matrix
           CORE::LINALG::Matrix<numdofperelement_, 1>* force,      //!< element internal force vector
@@ -293,7 +294,7 @@ namespace DRT
       );
 
       //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
-      virtual void nln_kd_t_tsi(DRT::Element::LocationArray& la,
+      virtual void nln_kd_t_tsi(CORE::Elements::Element::LocationArray& la,
           DRT::Discretization& discretization,  ///< discretisation to extract knot vector
           std::vector<double>& disp,            //!< (i): current displacement
           std::vector<double>& temp,            //!< current temperature
@@ -357,9 +358,10 @@ namespace DRT
 
       //! Calculate nonlinear stiffness and mass matrix with temperature fraction
       //! implementation for hex8fbar elements differs from standard implementation
-      virtual void nln_stifffint_tsi_fbar(DRT::Element::LocationArray& la,  //!< location array
-          std::vector<double>& disp,  //!< current displacements
-          std::vector<double>& temp,  //!< current temperature
+      virtual void nln_stifffint_tsi_fbar(
+          CORE::Elements::Element::LocationArray& la,  //!< location array
+          std::vector<double>& disp,                   //!< current displacements
+          std::vector<double>& temp,                   //!< current temperature
           CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
               stiffmatrix,                                        // element stiffness matrix
           CORE::LINALG::Matrix<numdofperelement_, 1>* force,      //!< element internal force vector
@@ -369,7 +371,7 @@ namespace DRT
       );
 
       //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
-      virtual void nln_kd_t_tsi_fbar(DRT::Element::LocationArray& la,
+      virtual void nln_kd_t_tsi_fbar(CORE::Elements::Element::LocationArray& la,
           std::vector<double>& disp,  //!< (i): current displacement
           std::vector<double>& temp,  //!< current temperature
           CORE::LINALG::Matrix<numdofperelement_, nen_>*

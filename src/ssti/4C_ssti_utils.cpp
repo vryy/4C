@@ -702,7 +702,8 @@ std::map<std::string, std::string> SSTI::SSTIScatraStructureCloneStrategy::condi
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 void SSTI::SSTIScatraStructureCloneStrategy::set_element_data(
-    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
+    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+    const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual

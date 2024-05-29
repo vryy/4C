@@ -579,8 +579,8 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::MortarCellCalcElch(
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition(
     const DRT::Discretization& idiscret, MORTAR::IntCell& cell, MORTAR::Element& slaveelement,
-    MORTAR::Element& masterelement, DRT::Element::LocationArray& la_slave,
-    DRT::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
+    MORTAR::Element& masterelement, CORE::Elements::Element::LocationArray& la_slave,
+    CORE::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,
     CORE::LINALG::SerialDenseMatrix& k_ms, CORE::LINALG::SerialDenseMatrix& k_mm,
     CORE::LINALG::SerialDenseVector& r_s, CORE::LINALG::SerialDenseVector& r_m)
@@ -661,7 +661,8 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition_nts(
 
   // access material of slave element
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(
-      Teuchos::rcp_dynamic_cast<DRT::FaceElement>(condition.Geometry()[slaveelement.Id()])
+      Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
+          condition.Geometry()[slaveelement.Id()])
           ->parent_element()
           ->Material());
   if (matelectrode == Teuchos::null)
@@ -761,19 +762,19 @@ SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::MortarCellCalcElchSTITh
  *--------------------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
-    const DRT::Discretization& idiscret,           //!< interface discretization
-    MORTAR::IntCell& cell,                         //!< mortar integration cell
-    MORTAR::Element& slaveelement,                 //!< slave-side mortar element
-    MORTAR::Element& masterelement,                //!< master-side mortar element
-    DRT::Element::LocationArray& la_slave,         //!< slave-side location array
-    DRT::Element::LocationArray& la_master,        //!< master-side location array
-    const Teuchos::ParameterList& params,          //!< parameter list
-    CORE::LINALG::SerialDenseMatrix& cellmatrix1,  //!< cell matrix 1
-    CORE::LINALG::SerialDenseMatrix& cellmatrix2,  //!< cell matrix 2
-    CORE::LINALG::SerialDenseMatrix& cellmatrix3,  //!< cell matrix 3
-    CORE::LINALG::SerialDenseMatrix& cellmatrix4,  //!< cell matrix 4
-    CORE::LINALG::SerialDenseVector& cellvector1,  //!< cell vector 1
-    CORE::LINALG::SerialDenseVector& cellvector2   //!< cell vector 2
+    const DRT::Discretization& idiscret,                //!< interface discretization
+    MORTAR::IntCell& cell,                              //!< mortar integration cell
+    MORTAR::Element& slaveelement,                      //!< slave-side mortar element
+    MORTAR::Element& masterelement,                     //!< master-side mortar element
+    CORE::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
+    CORE::Elements::Element::LocationArray& la_master,  //!< master-side location array
+    const Teuchos::ParameterList& params,               //!< parameter list
+    CORE::LINALG::SerialDenseMatrix& cellmatrix1,       //!< cell matrix 1
+    CORE::LINALG::SerialDenseMatrix& cellmatrix2,       //!< cell matrix 2
+    CORE::LINALG::SerialDenseMatrix& cellmatrix3,       //!< cell matrix 3
+    CORE::LINALG::SerialDenseMatrix& cellmatrix4,       //!< cell matrix 4
+    CORE::LINALG::SerialDenseVector& cellvector1,       //!< cell vector 1
+    CORE::LINALG::SerialDenseVector& cellvector2        //!< cell vector 2
 )
 {
   // extract and evaluate action
@@ -805,13 +806,13 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition_od(
-    const DRT::Discretization& idiscret,     //!< interface discretization
-    MORTAR::IntCell& cell,                   //!< mortar integration cell
-    MORTAR::Element& slaveelement,           //!< slave-side mortar element
-    MORTAR::Element& masterelement,          //!< master-side mortar element
-    DRT::Element::LocationArray& la_slave,   //!< slave-side location array
-    DRT::Element::LocationArray& la_master,  //!< master-side location array
-    const Teuchos::ParameterList& params,    //!< parameter list
+    const DRT::Discretization& idiscret,                //!< interface discretization
+    MORTAR::IntCell& cell,                              //!< mortar integration cell
+    MORTAR::Element& slaveelement,                      //!< slave-side mortar element
+    MORTAR::Element& masterelement,                     //!< master-side mortar element
+    CORE::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
+    CORE::Elements::Element::LocationArray& la_master,  //!< master-side location array
+    const Teuchos::ParameterList& params,               //!< parameter list
     CORE::LINALG::SerialDenseMatrix&
         k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
     CORE::LINALG::SerialDenseMatrix&
@@ -832,7 +833,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition
 
   // access material of slave element
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(
-      Teuchos::rcp_dynamic_cast<DRT::FaceElement>(s2icondition->Geometry()[slaveelement.Id()])
+      Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
+          s2icondition->Geometry()[slaveelement.Id()])
           ->parent_element()
           ->Material());
   if (matelectrode == Teuchos::null)
@@ -883,9 +885,9 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition
  *------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::extract_node_values(
-    const DRT::Discretization& idiscret,    //!< interface discretization
-    DRT::Element::LocationArray& la_slave,  //!< slave-side location array
-    DRT::Element::LocationArray& la_master  //!< master-side location array
+    const DRT::Discretization& idiscret,               //!< interface discretization
+    CORE::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
+    CORE::Elements::Element::LocationArray& la_master  //!< master-side location array
 )
 {
   // call base class routine
@@ -972,19 +974,19 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
  *--------------------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
-    const DRT::Discretization& idiscret,           //!< interface discretization
-    MORTAR::IntCell& cell,                         //!< mortar integration cell
-    MORTAR::Element& slaveelement,                 //!< slave-side mortar element
-    MORTAR::Element& masterelement,                //!< master-side mortar element
-    DRT::Element::LocationArray& la_slave,         //!< slave-side location array
-    DRT::Element::LocationArray& la_master,        //!< master-side location array
-    const Teuchos::ParameterList& params,          //!< parameter list
-    CORE::LINALG::SerialDenseMatrix& cellmatrix1,  //!< cell matrix 1
-    CORE::LINALG::SerialDenseMatrix& cellmatrix2,  //!< cell matrix 2
-    CORE::LINALG::SerialDenseMatrix& cellmatrix3,  //!< cell matrix 3
-    CORE::LINALG::SerialDenseMatrix& cellmatrix4,  //!< cell matrix 4
-    CORE::LINALG::SerialDenseVector& cellvector1,  //!< cell vector 1
-    CORE::LINALG::SerialDenseVector& cellvector2   //!< cell vector 2
+    const DRT::Discretization& idiscret,                //!< interface discretization
+    MORTAR::IntCell& cell,                              //!< mortar integration cell
+    MORTAR::Element& slaveelement,                      //!< slave-side mortar element
+    MORTAR::Element& masterelement,                     //!< master-side mortar element
+    CORE::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
+    CORE::Elements::Element::LocationArray& la_master,  //!< master-side location array
+    const Teuchos::ParameterList& params,               //!< parameter list
+    CORE::LINALG::SerialDenseMatrix& cellmatrix1,       //!< cell matrix 1
+    CORE::LINALG::SerialDenseMatrix& cellmatrix2,       //!< cell matrix 2
+    CORE::LINALG::SerialDenseMatrix& cellmatrix3,       //!< cell matrix 3
+    CORE::LINALG::SerialDenseMatrix& cellmatrix4,       //!< cell matrix 4
+    CORE::LINALG::SerialDenseVector& cellvector1,       //!< cell vector 1
+    CORE::LINALG::SerialDenseVector& cellvector2        //!< cell vector 2
 )
 {
   // extract and evaluate action
@@ -1025,13 +1027,13 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
-    const DRT::Discretization& idiscret,     //!< interface discretization
-    MORTAR::IntCell& cell,                   //!< mortar integration cell
-    MORTAR::Element& slaveelement,           //!< slave-side mortar element
-    MORTAR::Element& masterelement,          //!< master-side mortar element
-    DRT::Element::LocationArray& la_slave,   //!< slave-side location array
-    DRT::Element::LocationArray& la_master,  //!< master-side location array
-    const Teuchos::ParameterList& params,    //!< parameter list
+    const DRT::Discretization& idiscret,                //!< interface discretization
+    MORTAR::IntCell& cell,                              //!< mortar integration cell
+    MORTAR::Element& slaveelement,                      //!< slave-side mortar element
+    MORTAR::Element& masterelement,                     //!< master-side mortar element
+    CORE::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
+    CORE::Elements::Element::LocationArray& la_master,  //!< master-side location array
+    const Teuchos::ParameterList& params,               //!< parameter list
     CORE::LINALG::SerialDenseMatrix&
         k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
     CORE::LINALG::SerialDenseVector& r_s  //!< slave-side residual vector
@@ -1048,12 +1050,14 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
 
   // access primary and secondary materials of slave element
   const Teuchos::RCP<const MAT::Soret> matsoret = Teuchos::rcp_dynamic_cast<const MAT::Soret>(
-      Teuchos::rcp_dynamic_cast<DRT::FaceElement>(s2icondition->Geometry()[slaveelement.Id()])
+      Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
+          s2icondition->Geometry()[slaveelement.Id()])
           ->parent_element()
           ->Material());
   const Teuchos::RCP<const MAT::Electrode> matelectrode =
       Teuchos::rcp_dynamic_cast<const MAT::Electrode>(
-          Teuchos::rcp_dynamic_cast<DRT::FaceElement>(s2icondition->Geometry()[slaveelement.Id()])
+          Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
+              s2icondition->Geometry()[slaveelement.Id()])
               ->parent_element()
               ->Material(1));
   if (matsoret == Teuchos::null or matelectrode == Teuchos::null)
@@ -1101,13 +1105,13 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
-    const DRT::Discretization& idiscret,     //!< interface discretization
-    MORTAR::IntCell& cell,                   //!< mortar integration cell
-    MORTAR::Element& slaveelement,           //!< slave-side mortar element
-    MORTAR::Element& masterelement,          //!< master-side mortar element
-    DRT::Element::LocationArray& la_slave,   //!< slave-side location array
-    DRT::Element::LocationArray& la_master,  //!< master-side location array
-    const Teuchos::ParameterList& params,    //!< parameter list
+    const DRT::Discretization& idiscret,                //!< interface discretization
+    MORTAR::IntCell& cell,                              //!< mortar integration cell
+    MORTAR::Element& slaveelement,                      //!< slave-side mortar element
+    MORTAR::Element& masterelement,                     //!< master-side mortar element
+    CORE::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
+    CORE::Elements::Element::LocationArray& la_master,  //!< master-side location array
+    const Teuchos::ParameterList& params,               //!< parameter list
     CORE::LINALG::SerialDenseMatrix&
         k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
     CORE::LINALG::SerialDenseMatrix&
@@ -1125,11 +1129,13 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
 
   // access primary and secondary materials of parent element
   Teuchos::RCP<const MAT::Soret> matsoret = Teuchos::rcp_dynamic_cast<const MAT::Soret>(
-      Teuchos::rcp_dynamic_cast<DRT::FaceElement>(s2icondition->Geometry()[slaveelement.Id()])
+      Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
+          s2icondition->Geometry()[slaveelement.Id()])
           ->parent_element()
           ->Material());
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(
-      Teuchos::rcp_dynamic_cast<DRT::FaceElement>(s2icondition->Geometry()[slaveelement.Id()])
+      Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
+          s2icondition->Geometry()[slaveelement.Id()])
           ->parent_element()
           ->Material(1));
   if (matsoret == Teuchos::null or matelectrode == Teuchos::null)
@@ -1176,9 +1182,9 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
  *------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::extract_node_values(
-    const DRT::Discretization& idiscret,    //!< interface discretization
-    DRT::Element::LocationArray& la_slave,  //!< slave-side location array
-    DRT::Element::LocationArray& la_master  //!< master-side location array
+    const DRT::Discretization& idiscret,               //!< interface discretization
+    CORE::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
+    CORE::Elements::Element::LocationArray& la_master  //!< master-side location array
 )
 {
   // extract nodal temperature variables associated with slave element

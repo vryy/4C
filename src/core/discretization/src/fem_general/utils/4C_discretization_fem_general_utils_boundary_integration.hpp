@@ -18,13 +18,13 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element_integration_select.hpp"
 #include "4C_discretization_fem_general_utils_gausspoints.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_discretization_geometry_position_array.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element_integration_select.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -604,7 +604,7 @@ namespace CORE::FE
    */
   template <int parent_ele_dim>
   CORE::LINALG::Matrix<parent_ele_dim, 1> CalculateParentGPFromFaceElementData(
-      const double* faceele_xi, const DRT::FaceElement* faceele);
+      const double* faceele_xi, const CORE::Elements::FaceElement* faceele);
 
   //! compute covariant metric tensor for surface element
   void ComputeMetricTensorForSurface(const CORE::LINALG::SerialDenseMatrix& xyze,
@@ -1628,7 +1628,7 @@ namespace CORE::FE
       double& fac, CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, 1>& unitnormal, double& drs,
       CORE::LINALG::Matrix<CORE::FE::dim<distype>, 1>& xsi,
       CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, CORE::FE::num_nodes<distype>>& xyze,
-      DRT::Element* ele, DRT::Discretization& discretization,
+      CORE::Elements::Element* ele, DRT::Discretization& discretization,
       CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
       const bool isnurbs, const bool isale)
   {

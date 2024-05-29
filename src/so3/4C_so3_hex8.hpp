@@ -13,12 +13,12 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_element_integration_select.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_element_integration_select.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
@@ -61,7 +61,7 @@ namespace DRT
     class SoSh8Type;
 
 
-    class SoHex8Type : public DRT::ElementType
+    class SoHex8Type : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "So_hex8Type"; }
@@ -70,15 +70,15 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(
+      Teuchos::RCP<CORE::Elements::Element> Create(
           std::string eletype, std::string eledistype, int id, int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(int id, int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(int id, int owner) override;
 
       int Initialize(DRT::Discretization& dis) override;
 
       void nodal_block_information(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -142,7 +142,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
@@ -168,13 +168,13 @@ namespace DRT
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
 
       virtual std::vector<double> element_center_refe_coords();
@@ -214,7 +214,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
@@ -226,7 +226,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
+             (implements pure virtual CORE::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -243,7 +243,7 @@ namespace DRT
       void Print(std::ostream& os) const override;
 
 
-      DRT::ElementType& ElementType() const override { return SoHex8Type::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override { return SoHex8Type::Instance(); }
 
       //@}
 
@@ -409,7 +409,7 @@ namespace DRT
       bool structale_;
 
       //! action parameters recognized by so_hex8
-      //  FixMe Deprecated: Should be replaced by the DRT::ELEMENTS::ActionType! hiermeier 04/16
+      //  FixMe Deprecated: Should be replaced by the CORE::Elements::ActionType! hiermeier 04/16
       enum ActionType
       {
         none,

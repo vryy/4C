@@ -30,9 +30,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
-  class Element;
   class Node;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace BEAMINTERACTION
 {
   class SphereBeamLinkingParams;
@@ -142,8 +147,9 @@ namespace BEAMINTERACTION
           std::map<int, std::vector<std::pair<int, int>>>& newlinks);
 
       /// get neighboring eles in discret
-      virtual void check_feasibility_of_new_link(DRT::Element const* currele,
-          std::vector<DRT::Element const*> const& neighbors, std::unordered_set<int>& tobebonded,
+      virtual void check_feasibility_of_new_link(CORE::Elements::Element const* currele,
+          std::vector<CORE::Elements::Element const*> const& neighbors,
+          std::unordered_set<int>& tobebonded,
           std::map<int, std::vector<std::pair<int, int>>>& newlinks) const;
 
       /// create new beam to sphere joint object

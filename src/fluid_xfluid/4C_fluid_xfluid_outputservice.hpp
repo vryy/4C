@@ -28,8 +28,12 @@ namespace DRT
 {
   class Discretization;
   class DiscretizationXFEM;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace CORE::Dofsets
 {
@@ -232,7 +236,7 @@ namespace FLD
         std::ofstream& vel_f,                               ///< output file stream for velocity
         std::ofstream& press_f,                             ///< output file stream for pressure
         std::ofstream& acc_f,                               ///< output file stream for acceleration
-        DRT::Element* actele,                               ///< element
+        CORE::Elements::Element* actele,                    ///< element
         std::vector<int>& nds,                              ///< vector holding the nodal dofsets
         Teuchos::RCP<const Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
         Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null,  ///< vector holding acceleration
@@ -245,7 +249,7 @@ namespace FLD
         std::ofstream& vel_f,                                   ///< output file stream for velocity
         std::ofstream& press_f,                                 ///< output file stream for pressure
         std::ofstream& acc_f,                      ///< output file stream for acceleration
-        DRT::Element* actele,                      ///< element
+        CORE::Elements::Element* actele,           ///< element
         CORE::GEO::CUT::ElementHandle* e,          ///< elementhandle
         CORE::GEO::CUT::VolumeCell* vc,            ///< volumecell
         const std::vector<int>& nds,               ///< vector holding the nodal dofsets

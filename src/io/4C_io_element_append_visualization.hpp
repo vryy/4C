@@ -9,20 +9,20 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_ELEMENT_APPEND_VISUALIZATION_HPP
-#define FOUR_C_LIB_ELEMENT_APPEND_VISUALIZATION_HPP
+#ifndef FOUR_C_IO_ELEMENT_APPEND_VISUALIZATION_HPP
+#define FOUR_C_IO_ELEMENT_APPEND_VISUALIZATION_HPP
 
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
-#include "4C_lib_element_vtk_cell_type_register.hpp"
+#include "4C_io_element_vtk_cell_type_register.hpp"
 #include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace IO
 {
   /**
    * \brief Add the element geometry visualization for elements that use Lagrange shape functions
@@ -33,12 +33,12 @@ namespace DRT::ELEMENTS
    * @param point_coordinates (in/out) point coordinates for the representation of this element
    * @return Number of added points
    */
-  unsigned int AppendVisualizationGeometryLagrangeEle(const DRT::Element& ele,
+  unsigned int AppendVisualizationGeometryLagrangeEle(const CORE::Elements::Element& ele,
       const DRT::Discretization& discret, std::vector<uint8_t>& cell_types,
       std::vector<double>& point_coordinates)
   {
     const unsigned int num_spatial_dimensions = 3;
-    auto vtk_cell_info = DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele.Shape());
+    auto vtk_cell_info = GetVtkCellTypeFromFourCElementShapeType(ele.Shape());
     const std::vector<int>& numbering = vtk_cell_info.second;
 
     // Add the cell type to the output.
@@ -64,10 +64,10 @@ namespace DRT::ELEMENTS
     switch (celltype)
     {
       case CORE::FE::CellType::nurbs9:
-        return DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(CORE::FE::CellType::quad9);
+        return GetVtkCellTypeFromFourCElementShapeType(CORE::FE::CellType::quad9);
         break;
       case CORE::FE::CellType::nurbs27:
-        return DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(CORE::FE::CellType::hex27);
+        return GetVtkCellTypeFromFourCElementShapeType(CORE::FE::CellType::hex27);
         break;
       default:
         FOUR_C_THROW("The VTK cell type for the NURBS element %s is not implemented",
@@ -117,7 +117,7 @@ namespace DRT::ELEMENTS
    * @return Number of added points
    */
   template <CORE::FE::CellType celltype>
-  unsigned int AppendVisualizationGeometryNURBS(const DRT::Element& ele,
+  unsigned int AppendVisualizationGeometryNURBS(const CORE::Elements::Element& ele,
       const DRT::Discretization& discret, std::vector<uint8_t>& cell_types,
       std::vector<double>& point_coordinates)
   {
@@ -190,7 +190,7 @@ namespace DRT::ELEMENTS
   /**
    * \brief Helper function to append the coordinates of vertices of NURBS elements.
    */
-  unsigned int AppendVisualizationGeometryNURBSEle(const DRT::Element& ele,
+  unsigned int AppendVisualizationGeometryNURBSEle(const CORE::Elements::Element& ele,
       const DRT::Discretization& discret, std::vector<uint8_t>& cell_types,
       std::vector<double>& point_coordinates)
   {
@@ -217,13 +217,13 @@ namespace DRT::ELEMENTS
    * @param vtu_point_result_data (in/out) Result data vector.
    * @return Number of points added by this element.
    */
-  unsigned int AppendVisualizationDofBasedResultDataVectorLagrangeEle(const DRT::Element& ele,
-      const DRT::Discretization& discret, const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
+  unsigned int AppendVisualizationDofBasedResultDataVectorLagrangeEle(
+      const CORE::Elements::Element& ele, const DRT::Discretization& discret,
+      const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
       unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
       std::vector<double>& vtu_point_result_data)
   {
-    const std::vector<int>& numbering =
-        DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele.Shape()).second;
+    const std::vector<int>& numbering = GetVtkCellTypeFromFourCElementShapeType(ele.Shape()).second;
 
     for (unsigned int inode = 0; inode < (unsigned int)ele.num_node(); ++inode)
     {
@@ -267,7 +267,7 @@ namespace DRT::ELEMENTS
    * @return Number of points added by this element.
    */
   template <CORE::FE::CellType celltype, unsigned int result_num_dofs_per_node>
-  unsigned int AppendVisualizationDofBasedResultDataVectorNURBS(const DRT::Element& ele,
+  unsigned int AppendVisualizationDofBasedResultDataVectorNURBS(const CORE::Elements::Element& ele,
       const DRT::Discretization& discret, const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
       const unsigned int read_result_data_from_dofindex, std::vector<double>& vtu_point_result_data)
   {
@@ -345,8 +345,9 @@ namespace DRT::ELEMENTS
    * @param vtu_point_result_data (in/out) Result data vector.
    * @return Number of points added by this element.
    */
-  unsigned int AppendVisualizationDofBasedResultDataVectorNURBSEle(const DRT::Element& ele,
-      const DRT::Discretization& discret, const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
+  unsigned int AppendVisualizationDofBasedResultDataVectorNURBSEle(
+      const CORE::Elements::Element& ele, const DRT::Discretization& discret,
+      const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
       unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
       std::vector<double>& vtu_point_result_data)
   {
@@ -373,7 +374,7 @@ namespace DRT::ELEMENTS
         });
   }
 
-}  // namespace DRT::ELEMENTS
+}  // namespace IO
 
 FOUR_C_NAMESPACE_CLOSE
 

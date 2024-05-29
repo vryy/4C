@@ -55,7 +55,7 @@ DRT::ELEMENTS::Wall1Poro<distype>::Wall1Poro(const DRT::ELEMENTS::Wall1Poro<dist
 }
 
 template <CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::Wall1Poro<distype>::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Wall1Poro<distype>::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::Wall1Poro<distype>(*this);
   return newelement;
@@ -153,13 +153,13 @@ void DRT::ELEMENTS::Wall1Poro<distype>::Unpack(const std::vector<char>& data)
 }
 
 template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1Poro<distype>::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Wall1Poro<distype>::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1Poro>(CORE::COMM::buildLines, *this);
 }
 
 template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1Poro<distype>::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Wall1Poro<distype>::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

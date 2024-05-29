@@ -352,7 +352,7 @@ void XFEM::MeshVolCoupling::get_coupling_ele_location_vector(
     const int sid, std::vector<int>& patchlm)
 {
   std::vector<int> patchlmstride, patchlmowner;  // dummy
-  DRT::Element* coupl_ele = GetCouplingElement(sid);
+  CORE::Elements::Element* coupl_ele = GetCouplingElement(sid);
   coupl_ele->LocationVector(*coupl_dis_, patchlm, patchlmowner, patchlmstride);
   return;
 }
@@ -380,7 +380,7 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
     const DRT::Node* cond_node = cond_dis_->gNode(cond_node_gid);
 
     // get associated elements
-    const DRT::Element* const* cond_eles = cond_node->Elements();
+    const CORE::Elements::Element* const* cond_eles = cond_node->Elements();
     const int num_cond_ele = cond_node->NumElement();
 
     // loop over associated elements
@@ -439,11 +439,11 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
   {
     for (int fele_lid = 0; fele_lid < cutter_dis_->NumMyColElements(); fele_lid++)
     {
-      DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(
+      CORE::Elements::FaceElement* fele = dynamic_cast<CORE::Elements::FaceElement*>(
           cutter_dis_->gElement(cutter_dis_->ElementColMap()->GID(fele_lid)));
       if (!fele) FOUR_C_THROW("Cast to FaceElement failed!");
 
-      DRT::Element* ele = cond_dis_->gElement(fele->ParentElementId());
+      CORE::Elements::Element* ele = cond_dis_->gElement(fele->ParentElementId());
       if (!ele) FOUR_C_THROW("Couldn't get Parent Element!");
 
       fele->set_parent_master_element(ele, fele->FaceParentNumber());
@@ -453,7 +453,8 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-double XFEM::MeshVolCoupling::get_estimate_nitsche_trace_max_eigenvalue(DRT::Element* ele)
+double XFEM::MeshVolCoupling::get_estimate_nitsche_trace_max_eigenvalue(
+    CORE::Elements::Element* ele)
 {
   if (ele_to_max_eigenvalue_->find(ele->Id()) == ele_to_max_eigenvalue_->end())
     estimate_nitsche_trace_max_eigenvalue(ele);
@@ -525,7 +526,7 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
   // loop all column elements and label all row nodes next to a xfem node
   for (int i = 0; i < cond_dis_->NumMyColElements(); ++i)
   {
-    DRT::Element* actele = cond_dis_->lColElement(i);
+    CORE::Elements::Element* actele = cond_dis_->lColElement(i);
 
     // get the node ids of this element
     const int numnode = actele->num_node();
@@ -560,7 +561,7 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
     // add the element to the discretization
     if (cond_dis_->ElementRowMap()->MyGID(actele->Id()))
     {
-      Teuchos::RCP<DRT::Element> bndele = Teuchos::rcp(actele->Clone());
+      Teuchos::RCP<CORE::Elements::Element> bndele = Teuchos::rcp(actele->Clone());
       aux_coup_dis_->add_element(bndele);
     }
   }  // end loop over column elements
@@ -1030,9 +1031,9 @@ void XFEM::MeshCouplingWeakDirichlet::update_configuration_map_gp(
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
     double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    DRT::Element* ele,   //< Element
-    DRT::Element* bele,  //< Boundary Element
-    double* funct,       //< local shape function for Gauss Point (from fluid element)
+    CORE::Elements::Element* ele,   //< Element
+    CORE::Elements::Element* bele,  //< Boundary Element
+    double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
@@ -1097,9 +1098,9 @@ void XFEM::MeshCouplingNeumann::update_configuration_map_gp(
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
     double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    DRT::Element* ele,   //< Element
-    DRT::Element* bele,  //< Boundary Element
-    double* funct,       //< local shape function for Gauss Point (from fluid element)
+    CORE::Elements::Element* ele,   //< Element
+    CORE::Elements::Element* bele,  //< Boundary Element
+    double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
@@ -1537,9 +1538,9 @@ void XFEM::MeshCouplingNavierSlip::update_configuration_map_gp(
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
     double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    DRT::Element* ele,   //< Element
-    DRT::Element* bele,  //< Boundary Element
-    double* funct,       //< local shape function for Gauss Point (from fluid element)
+    CORE::Elements::Element* ele,   //< Element
+    CORE::Elements::Element* bele,  //< Boundary Element
+    double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
@@ -1824,7 +1825,7 @@ void XFEM::MeshCouplingFSI::set_condition_specific_parameters()
     double hmax = 0.0;
     for (int ele = 0; ele < bg_dis_->NumMyRowElements(); ++ele)
     {
-      DRT::Element* fluid_ele = bg_dis_->lRowElement(ele);
+      CORE::Elements::Element* fluid_ele = bg_dis_->lRowElement(ele);
       if (fluid_ele->Shape() == CORE::FE::CellType::hex8)
       {
         CORE::LINALG::Matrix<3, 8> xyze(true);
@@ -2092,9 +2093,9 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp(double& kappa_m,  //< fl
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
     double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    DRT::Element* ele,   //< Element
-    DRT::Element* bele,  //< Boundary Element
-    double* funct,       //< local shape function for Gauss Point (from fluid element)
+    CORE::Elements::Element* ele,   //< Element
+    CORE::Elements::Element* bele,  //< Boundary Element
+    double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
@@ -2201,9 +2202,9 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp_contact(
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
     double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    DRT::Element* ele,   //< Element
-    DRT::Element* bele,  //< Boundary Element
-    double* funct,       //< local shape function for Gauss Point (from fluid element)
+    CORE::Elements::Element* ele,   //< Element
+    CORE::Elements::Element* bele,  //< Boundary Element
+    double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
@@ -2313,7 +2314,7 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp_contact(
  * Evaluate the Structural Cauchy Stress Matrix and it's linearization with respect to the
  *displacements
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress(DRT::Element* coupl_ele,
+void XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress(CORE::Elements::Element* coupl_ele,
     CORE::LINALG::Matrix<3, 1>& rst_slave, std::vector<double>& eledisp,
     const CORE::LINALG::Matrix<3, 1>& normal,
     std::vector<CORE::LINALG::SerialDenseMatrix>& solid_stress)
@@ -2394,8 +2395,9 @@ void XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress(DRT::Element* coup
 /*--------------------------------------------------------------------------*
  * get stress tangent of the slave solid
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFSI::get_stress_tangent_slave(DRT::Element* coup_ele,  ///< solid ele
-    double& e_s)  ///< stress tangent slavesided
+void XFEM::MeshCouplingFSI::get_stress_tangent_slave(
+    CORE::Elements::Element* coup_ele,  ///< solid ele
+    double& e_s)                        ///< stress tangent slavesided
 {
   //  if (coup_ele->Material()->MaterialType() == CORE::Materials::m_elasthyper)
   //    e_s = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(coup_ele->Material())->GetYoung();
@@ -2412,7 +2414,7 @@ void XFEM::MeshCouplingFSI::get_stress_tangent_slave(DRT::Element* coup_ele,  //
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFSI::estimate_nitsche_trace_max_eigenvalue(DRT::Element* ele)
+void XFEM::MeshCouplingFSI::estimate_nitsche_trace_max_eigenvalue(CORE::Elements::Element* ele)
 {
   DRT::ELEMENTS::StructuralSurface* solidfaceele =
       dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(ele);
@@ -2421,7 +2423,7 @@ void XFEM::MeshCouplingFSI::estimate_nitsche_trace_max_eigenvalue(DRT::Element* 
   solidfaceele->set_parent_master_element(
       coupl_dis_->gElement(solidfaceele->ParentElementId()), solidfaceele->FaceParentNumber());
 
-  DRT::Element::LocationArray la(1);
+  CORE::Elements::Element::LocationArray la(1);
   solidfaceele->parent_element()->LocationVector(*coupl_dis_, la, false);
 
   // extract eledisp here
@@ -2492,7 +2494,7 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
  * doesn't matter if you have the same material on both sides ...
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFluidFluid::get_interface_slave_material(
-    DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat)
+    CORE::Elements::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat)
 {
   XFEM::UTILS::get_volume_cell_material(actele, mat, CORE::GEO::CUT::Point::outside);
 }
@@ -2570,9 +2572,9 @@ void XFEM::MeshCouplingFluidFluid::update_configuration_map_gp(
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
     double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    DRT::Element* ele,   //< Element
-    DRT::Element* bele,  //< Boundary Element
-    double* funct,       //< local shape function for Gauss Point (from fluid element)
+    CORE::Elements::Element* ele,   //< Element
+    CORE::Elements::Element* bele,  //< Boundary Element
+    double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
@@ -2597,8 +2599,9 @@ void XFEM::MeshCouplingFluidFluid::update_configuration_map_gp(
 /*--------------------------------------------------------------------------*
  * get viscosity of the slave fluid
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFluidFluid::GetViscositySlave(DRT::Element* coup_ele,  ///< xfluid ele
-    double& visc_s)  ///< viscosity slavesided
+void XFEM::MeshCouplingFluidFluid::GetViscositySlave(
+    CORE::Elements::Element* coup_ele,  ///< xfluid ele
+    double& visc_s)                     ///< viscosity slavesided
 {
   Teuchos::RCP<CORE::MAT::Material> mat_s;
   XFEM::UTILS::get_volume_cell_material(coup_ele, mat_s, CORE::GEO::CUT::Point::outside);
@@ -2612,15 +2615,16 @@ void XFEM::MeshCouplingFluidFluid::GetViscositySlave(DRT::Element* coup_ele,  //
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFluidFluid::estimate_nitsche_trace_max_eigenvalue(DRT::Element* ele)
+void XFEM::MeshCouplingFluidFluid::estimate_nitsche_trace_max_eigenvalue(
+    CORE::Elements::Element* ele)
 {
   Teuchos::ParameterList params;
-  DRT::Element::LocationArray la(1);
+  CORE::Elements::Element::LocationArray la(1);
   params.set<Teuchos::RCP<std::map<int, double>>>(
       "trace_estimate_max_eigenvalue_map", ele_to_max_eigenvalue_);
   CORE::LINALG::SerialDenseMatrix dummyelemat;
   CORE::LINALG::SerialDenseVector dummyelevec;
-  DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+  CORE::Elements::FaceElement* faceele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
   if (!faceele) FOUR_C_THROW("Cast to faceele failed!");  // todo change to FOUR_C_ASSERT
 
   faceele->LocationVector(*coupl_dis_, la, false);

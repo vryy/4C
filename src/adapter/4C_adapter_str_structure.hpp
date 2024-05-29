@@ -16,8 +16,8 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_field.hpp"
+#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_elements_paramsinterface.hpp"
 #include "4C_utils_result_test.hpp"
 
 #include <Epetra_Operator.h>
@@ -265,7 +265,7 @@ namespace ADAPTER
     };
 
     /// set evaluation action
-    virtual void SetActionType(const DRT::ELEMENTS::ActionType& action) = 0;
+    virtual void SetActionType(const CORE::Elements::ActionType& action) = 0;
 
     //@}
 

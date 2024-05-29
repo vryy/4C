@@ -10,10 +10,10 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 
@@ -94,7 +94,8 @@ namespace STR::UTILS::SHELL
   Teuchos::SerialDenseMatrix<int, double> ComputeShellNullSpace(
       DRT::Node& node, const double* x0, const CORE::LINALG::Matrix<3, 1>& dir);
 
-  void NodalBlockInformationShell(DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+  void NodalBlockInformationShell(
+      CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
   void LumpMassMatrix(CORE::LINALG::SerialDenseMatrix& mass_matrix);
 
@@ -108,7 +109,7 @@ namespace STR::UTILS::SHELL
      * @param dis (in) : Reference to the discretization
      */
     void SetupShellElementDirectors(
-        const DRT::ElementType& eletype, const DRT::Discretization& dis);
+        const CORE::Elements::ElementType& eletype, const DRT::Discretization& dis);
 
     /*!
      * @brief Sets the nodal directors for one element
@@ -117,7 +118,7 @@ namespace STR::UTILS::SHELL
      * @param nodal_directors (in/out) : Nodal directors of one element
      */
     void SetupDirectorForElement(
-        const DRT::Element& ele, CORE::LINALG::SerialDenseMatrix& nodal_directors);
+        const CORE::Elements::Element& ele, CORE::LINALG::SerialDenseMatrix& nodal_directors);
 
     /*!
      * @brief Evaluates the average director for one node depending on the neighboring nodes
@@ -136,8 +137,8 @@ namespace STR::UTILS::SHELL
      * @param dis (in) : Reference to the discretization
      * @param director_map (in/out) : Nodal director map
      */
-    void AverageDirectorsAtNodes(const DRT::ElementType& eletype, const DRT::Discretization& dis,
-        std::map<int, std::vector<double>>& director_map);
+    void AverageDirectorsAtNodes(const CORE::Elements::ElementType& eletype,
+        const DRT::Discretization& dis, std::map<int, std::vector<double>>& director_map);
 
     /*!
      * @brief Export map of nodal directors from nodal row map to nodal column map
@@ -146,7 +147,7 @@ namespace STR::UTILS::SHELL
      * @param dis (in) : Reference to the discretization
      * @param director_map (in) : Nodal director map
      */
-    void ExportDirectorMapFromRowToColMap(const DRT::ElementType& eletype,
+    void ExportDirectorMapFromRowToColMap(const CORE::Elements::ElementType& eletype,
         const DRT::Discretization& dis, std::map<int, std::vector<double>>& director_map);
 
   }  // namespace DIRECTOR

@@ -36,12 +36,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Truss3ScatraType::Create(const std::vector
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3ScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Truss3ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TRUSS3SCATRA")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Truss3Scatra(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::Truss3Scatra(id, owner));
     return ele;
   }
   // return base class
@@ -51,9 +52,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3ScatraType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3ScatraType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Truss3ScatraType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Truss3Scatra(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::Truss3Scatra(id, owner));
   return ele;
 }
 
@@ -89,7 +92,7 @@ DRT::ELEMENTS::Truss3Scatra::Truss3Scatra(const DRT::ELEMENTS::Truss3Scatra& old
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Truss3Scatra::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Truss3Scatra::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::Truss3Scatra(*this);
   return newelement;

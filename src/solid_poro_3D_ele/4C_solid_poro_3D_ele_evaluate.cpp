@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
     CORE::LINALG::SerialDenseVector& elevec3)
@@ -33,18 +33,18 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
   // get ptr to interface to time integration
   set_params_interface_ptr(params);
 
-  const ELEMENTS::ActionType action = std::invoke(
+  const CORE::Elements::ActionType action = std::invoke(
       [&]()
       {
         if (IsParamsInterface())
           return params_interface().GetActionType();
         else
-          return String2ActionType(params.get<std::string>("action", "none"));
+          return CORE::Elements::String2ActionType(params.get<std::string>("action", "none"));
       });
 
   switch (action)
   {
-    case DRT::ELEMENTS::struct_calc_nlnstiff:
+    case CORE::Elements::struct_calc_nlnstiff:
     {
       std::visit(
           [&](auto& interface)
@@ -70,7 +70,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       }
       return 0;
     }
-    case struct_calc_internalforce:
+    case CORE::Elements::struct_calc_internalforce:
     {
       std::visit(
           [&](auto& interface)
@@ -96,7 +96,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       }
       return 0;
     }
-    case struct_calc_nlnstiffmass:
+    case CORE::Elements::struct_calc_nlnstiffmass:
     {
       std::visit(
           [&](auto& interface)
@@ -127,7 +127,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       }
       return 0;
     }
-    case struct_calc_nlnstifflmass:
+    case CORE::Elements::struct_calc_nlnstifflmass:
     {
       std::visit(
           [&](auto& interface)
@@ -139,12 +139,12 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       DRT::ELEMENTS::LumpMatrix(elemat2);
       return 0;
     }
-    case struct_poro_calc_scatracoupling:
+    case CORE::Elements::struct_poro_calc_scatracoupling:
     {
       // no coupling -> return
       return 0;
     }
-    case struct_poro_calc_fluidcoupling:
+    case CORE::Elements::struct_poro_calc_fluidcoupling:
     {
       if (la.Size() > 2)
       {
@@ -162,21 +162,21 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       }
       return 0;
     }
-    case DRT::ELEMENTS::struct_calc_update_istep:
+    case CORE::Elements::struct_calc_update_istep:
     {
       std::visit([&](auto& interface)
           { interface->Update(*this, SolidPoroMaterial(), discretization, la[0].lm_, params); },
           solid_calc_variant_);
       return 0;
     }
-    case DRT::ELEMENTS::struct_calc_recover:
+    case CORE::Elements::struct_calc_recover:
     {
       std::visit([&](auto& interface)
           { interface->Recover(*this, discretization, la[0].lm_, params); },
           solid_calc_variant_);
       return 0;
     }
-    case struct_calc_stress:
+    case CORE::Elements::struct_calc_stress:
     {
       std::visit(
           [&](auto& interface)
@@ -199,7 +199,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       }
       return 0;
     }
-    case struct_init_gauss_point_data_output:
+    case CORE::Elements::struct_init_gauss_point_data_output:
     {
       std::visit(
           [&](auto& interface)
@@ -210,7 +210,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
           solid_calc_variant_);
       return 0;
     }
-    case struct_gauss_point_data_output:
+    case CORE::Elements::struct_gauss_point_data_output:
     {
       std::visit(
           [&](auto& interface)
@@ -221,7 +221,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
           solid_calc_variant_);
       return 0;
     }
-    case DRT::ELEMENTS::struct_calc_predict:
+    case CORE::Elements::struct_calc_predict:
     {
       // do nothing for now
       return 0;

@@ -295,11 +295,11 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(const DRT::Discretization& dis
     std::vector<int> lmowner_full;
     std::vector<int> lmstride_full;
 
-    const std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
-    std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator curr;
+    const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond.Geometry();
+    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
-      Teuchos::RCP<DRT::Element> actele = curr->second;
+      Teuchos::RCP<CORE::Elements::Element> actele = curr->second;
 
       static const int probdim = GLOBAL::Problem::Instance()->NDim();
       const CORE::FE::CellType distype = actele->Shape();
@@ -314,8 +314,8 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(const DRT::Discretization& dis
       bool zero_size = false;
       if (isboundary)
       {
-        Teuchos::RCP<DRT::FaceElement> faceele =
-            Teuchos::rcp_dynamic_cast<DRT::FaceElement>(actele, true);
+        Teuchos::RCP<CORE::Elements::FaceElement> faceele =
+            Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(actele, true);
         double normalfac = 0.0;
         std::vector<CORE::LINALG::SerialDenseVector> pknots(probdim);
         zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(actele.get(),
@@ -502,9 +502,10 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(const DRT::Discretization& dis
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
-    Teuchos::RCP<DRT::Element> actele, const std::vector<CORE::LINALG::SerialDenseVector>* knots,
-    const std::vector<int>& lm, const std::vector<int>* funct, const std::vector<double>* val,
-    const unsigned deg, const double time, CORE::LINALG::SerialDenseMatrix& elemass,
+    Teuchos::RCP<CORE::Elements::Element> actele,
+    const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
+    const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
+    const double time, CORE::LINALG::SerialDenseMatrix& elemass,
     std::vector<CORE::LINALG::SerialDenseVector>& elerhs) const
 {
   if (deg + 1 != elerhs.size())
@@ -643,9 +644,10 @@ void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
-    Teuchos::RCP<DRT::Element> actele, const std::vector<CORE::LINALG::SerialDenseVector>* knots,
-    const std::vector<int>& lm, const std::vector<int>* funct, const std::vector<double>* val,
-    const unsigned deg, const double time, CORE::LINALG::SerialDenseMatrix& elemass,
+    Teuchos::RCP<CORE::Elements::Element> actele,
+    const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
+    const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
+    const double time, CORE::LINALG::SerialDenseMatrix& elemass,
     std::vector<CORE::LINALG::SerialDenseVector>& elerhs) const
 {
   if (deg + 1 != elerhs.size())

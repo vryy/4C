@@ -501,8 +501,8 @@ double XFEM::UTILS::ComputeMeasCutSurf(const std::map<int, std::vector<CORE::FE:
 /*--------------------------------------------------------------------------------
  * compute the measure of the elements surface with given local id
  *--------------------------------------------------------------------------------*/
-double XFEM::UTILS::ComputeMeasFace(DRT::Element *ele,  ///< fluid element
-    CORE::LINALG::SerialDenseMatrix &ele_xyze,          ///< element coordinates
+double XFEM::UTILS::ComputeMeasFace(CORE::Elements::Element *ele,  ///< fluid element
+    CORE::LINALG::SerialDenseMatrix &ele_xyze,                     ///< element coordinates
     const int local_face_id,  ///< the local id of the face w.r.t the fluid element
     const int nsd             ///< number of space dimensions
 )
@@ -658,9 +658,9 @@ double XFEM::UTILS::EvalElementVolume(CORE::LINALG::Matrix<3, CORE::FE::num_node
  * compute characteristic element length
  *--------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid element
-    CORE::LINALG::SerialDenseMatrix &ele_xyze,                 ///< element coordinates
-    const Teuchos::RCP<XFEM::ConditionManager> &cond_manager,  ///< XFEM condition manager
+double XFEM::UTILS::ComputeCharEleLength(CORE::Elements::Element *ele,  ///< fluid element
+    CORE::LINALG::SerialDenseMatrix &ele_xyze,                          ///< element coordinates
+    const Teuchos::RCP<XFEM::ConditionManager> &cond_manager,           ///< XFEM condition manager
     const CORE::GEO::CUT::plain_volumecell_set &vcSet,  ///< volumecell sets for volume integration
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>>
         &bcells,  ///< bcells for boundary cell integration
@@ -668,8 +668,8 @@ double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid elemen
         &bintpoints,  ///< integration points for boundary cell integration
     const INPAR::XFEM::ViscStabHk visc_stab_hk,  ///< h definition
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>>
-        emb,            ///< pointer to the embedded coupling implementation
-    DRT::Element *face  ///< side element in 3D
+        emb,                       ///< pointer to the embedded coupling implementation
+    CORE::Elements::Element *face  ///< side element in 3D
 )
 {
   static const int nsd = 3;
@@ -777,7 +777,7 @@ double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid elemen
         FOUR_C_THROW(
             "ViscStab_hk_ele_vol_div_by_ele_surf just reasonable for Embedded_Sided_Coupling!");
 
-      DRT::FaceElement *fele = dynamic_cast<DRT::FaceElement *>(face);
+      CORE::Elements::FaceElement *fele = dynamic_cast<CORE::Elements::FaceElement *>(face);
       if (!fele) FOUR_C_THROW("Cast to FaceElement failed!");
 
       //---------------------------------------------------
@@ -1047,14 +1047,14 @@ double XFEM::UTILS::Evaluate_Full_Traction(const double &intraction, const doubl
   return intraction + traction.Dot(elenormal);
 }
 
-void XFEM::UTILS::EvaluteStateatGP(const DRT::Element *sele,
+void XFEM::UTILS::EvaluteStateatGP(const CORE::Elements::Element *sele,
     const CORE::LINALG::Matrix<3, 1> &selexsi, const DRT::Discretization &discret,
     const std::string &state, CORE::LINALG::Matrix<3, 1> &vel_s)
 {
   vel_s.Clear();
 
   std::vector<double> ivel;
-  DRT::Element::LocationArray las(1);
+  CORE::Elements::Element::LocationArray las(1);
   sele->LocationVector(discret, las, false);
   Teuchos::RCP<const Epetra_Vector> matrix_state = discret.GetState(state);
   CORE::FE::ExtractMyValues(*matrix_state, ivel, las[0].lm_);
@@ -1110,54 +1110,54 @@ template double XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::wedge15>(
     CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::wedge15>, 1> *,
     std::vector<CORE::LINALG::SerialDenseVector> *);
 
-template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::hex8>(DRT::Element *,
-    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
-    const CORE::GEO::CUT::plain_volumecell_set &,
+template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::hex8>(
+    CORE::Elements::Element *, CORE::LINALG::SerialDenseMatrix &,
+    const Teuchos::RCP<XFEM::ConditionManager> &, const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::hex8>>,
-    DRT::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::hex20>(DRT::Element *,
-    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
-    const CORE::GEO::CUT::plain_volumecell_set &,
+    CORE::Elements::Element *);
+template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::hex20>(
+    CORE::Elements::Element *, CORE::LINALG::SerialDenseMatrix &,
+    const Teuchos::RCP<XFEM::ConditionManager> &, const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::hex20>>,
-    DRT::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::hex27>(DRT::Element *,
-    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
-    const CORE::GEO::CUT::plain_volumecell_set &,
+    CORE::Elements::Element *);
+template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::hex27>(
+    CORE::Elements::Element *, CORE::LINALG::SerialDenseMatrix &,
+    const Teuchos::RCP<XFEM::ConditionManager> &, const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::hex27>>,
-    DRT::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::tet4>(DRT::Element *,
-    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
-    const CORE::GEO::CUT::plain_volumecell_set &,
+    CORE::Elements::Element *);
+template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::tet4>(
+    CORE::Elements::Element *, CORE::LINALG::SerialDenseMatrix &,
+    const Teuchos::RCP<XFEM::ConditionManager> &, const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::tet4>>,
-    DRT::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::tet10>(DRT::Element *,
-    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
-    const CORE::GEO::CUT::plain_volumecell_set &,
+    CORE::Elements::Element *);
+template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::tet10>(
+    CORE::Elements::Element *, CORE::LINALG::SerialDenseMatrix &,
+    const Teuchos::RCP<XFEM::ConditionManager> &, const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::tet10>>,
-    DRT::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::wedge6>(DRT::Element *,
-    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
-    const CORE::GEO::CUT::plain_volumecell_set &,
+    CORE::Elements::Element *);
+template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::wedge6>(
+    CORE::Elements::Element *, CORE::LINALG::SerialDenseMatrix &,
+    const Teuchos::RCP<XFEM::ConditionManager> &, const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::wedge6>>,
-    DRT::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::wedge15>(DRT::Element *,
-    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
-    const CORE::GEO::CUT::plain_volumecell_set &,
+    CORE::Elements::Element *);
+template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::wedge15>(
+    CORE::Elements::Element *, CORE::LINALG::SerialDenseMatrix &,
+    const Teuchos::RCP<XFEM::ConditionManager> &, const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::wedge15>>,
-    DRT::Element *);
+    CORE::Elements::Element *);
 
 FOUR_C_NAMESPACE_CLOSE

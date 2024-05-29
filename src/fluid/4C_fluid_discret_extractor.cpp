@@ -124,7 +124,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // loop all column elements and label all row nodes of the separate section
     for (int i = 0; i < parentdiscret_->NumMyColElements(); ++i)
     {
-      DRT::Element* actele = parentdiscret_->lColElement(i);
+      CORE::Elements::Element* actele = parentdiscret_->lColElement(i);
 
       // get the node ids of this element
       const int numnode = actele->num_node();
@@ -184,7 +184,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // loop all row elements and add all elements with a separation node
     for (int i = 0; i < parentdiscret_->NumMyRowElements(); ++i)
     {
-      DRT::Element* actele = parentdiscret_->lRowElement(i);
+      CORE::Elements::Element* actele = parentdiscret_->lRowElement(i);
 
       // get the node ids of this element
       const int numnode = actele->num_node();
@@ -215,7 +215,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       // yes, we have a turbulent separation condition (for this element)
       if (found == true)
       {
-        Teuchos::RCP<DRT::Element> sepcondele = Teuchos::rcp(actele->Clone());
+        Teuchos::RCP<CORE::Elements::Element> sepcondele = Teuchos::rcp(actele->Clone());
 
         childdiscret_->add_element(sepcondele);
       }
@@ -491,7 +491,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       // loop all column eles, check dofs for each node
       for (int i = 0; i < childdiscret_->NumMyColElements(); ++i)
       {
-        DRT::Element* actele = childdiscret_->lColElement(i);
+        CORE::Elements::Element* actele = childdiscret_->lColElement(i);
 
         // get the node ids of this element
         const int numnode = actele->num_node();

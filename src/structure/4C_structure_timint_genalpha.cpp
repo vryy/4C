@@ -888,7 +888,7 @@ bool STR::TimIntGenAlpha::SolelyBeam3Elements(Teuchos::RCP<DRT::Discretization> 
 
   for (int i = 0; i < actdis->NumMyRowElements(); i++)
   {
-    DRT::Element* element = actdis->lColElement(i);
+    CORE::Elements::Element* element = actdis->lColElement(i);
     DRT::Node* node = (element->Nodes())[0];
     int numdof = actdis->NumDof(node);
 

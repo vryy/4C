@@ -26,8 +26,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace ADAPTER
 {
@@ -96,12 +100,12 @@ namespace POROFLUIDMULTIPHASE
      * @param[in] evaluate_on_lateral_surface   is coupling evaluated on lateral surface?
      * @return               AABB of element as 3x2 CORE::LINALG::Matrix
      */
-    CORE::LINALG::Matrix<3, 2> GetAABB(DRT::Element* ele,
+    CORE::LINALG::Matrix<3, 2> GetAABB(CORE::Elements::Element* ele,
         std::map<int, CORE::LINALG::Matrix<3, 1>>& positions,
         const bool evaluate_on_lateral_surface);
 
     /// maximum distance between two nodes of an element
-    double GetMaxNodalDistance(DRT::Element* ele, Teuchos::RCP<DRT::Discretization> dis);
+    double GetMaxNodalDistance(CORE::Elements::Element* ele, Teuchos::RCP<DRT::Discretization> dis);
 
     /**
      * \brief perform octtree search for NTP coupling

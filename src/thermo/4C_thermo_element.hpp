@@ -20,10 +20,10 @@ Pack, Unpack, NumDofPerNode etc.
  *----------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -39,7 +39,7 @@ namespace DRT
     // forward declarations
     class ThermoBoundary;
 
-    class ThermoType : public DRT::ElementType
+    class ThermoType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "ThermoType"; }
@@ -48,13 +48,13 @@ namespace DRT
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -71,7 +71,7 @@ namespace DRT
     //!
     //! \brief A C++ wrapper for the thermo element
     //!
-    class Thermo : public DRT::Element
+    class Thermo : public CORE::Elements::Element
     {
      public:
       //! @name Friends
@@ -94,7 +94,7 @@ namespace DRT
       //!
       //! The Clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       //! \brief Get shape type of element
       CORE::FE::CellType Shape() const override;
@@ -183,10 +183,10 @@ namespace DRT
       }
 
       //! \brief Get vector of Teuchos::RCPs to the lines of this element
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       //! \brief Get vector of Teuchos::RCPs to the surfaces of this element
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       //! \brief Return unique ParObject id
       //!
@@ -209,7 +209,7 @@ namespace DRT
       //! @name Acess methods
 
       //! \brief Get number of degrees of freedom of a certain node
-      //!        (implements pure virtual DRT::Element)
+      //!        (implements pure virtual CORE::Elements::Element)
       //!
       //! The element decides how many degrees of freedom its nodes must have.
       //! As this may vary along a simulation, the element can redecide the
@@ -219,7 +219,7 @@ namespace DRT
 
       //!
       //! \brief Get number of degrees of freedom per element
-      //!        (implements pure virtual DRT::Element)
+      //!        (implements pure virtual CORE::Elements::Element)
       //!
       //! The element decides how many element degrees of freedom it has.
       //! It can redecide along the way of a simulation.
@@ -232,7 +232,7 @@ namespace DRT
       //! \brief Print this element
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return ThermoType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override { return ThermoType::Instance(); }
 
       //! \brief Query names of element data to be visualized using BINIO
       //!
@@ -311,7 +311,7 @@ namespace DRT
       //!                         to fill this vector
       //! \return 0 if successful, negative otherwise
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseVector& elevec2,
           CORE::LINALG::SerialDenseVector& elevec3) override;
@@ -363,17 +363,17 @@ namespace DRT
     ////=======================================================================
     ////=======================================================================
     ////=======================================================================
-    class ThermoBoundaryType : public DRT::ElementType
+    class ThermoBoundaryType : public CORE::Elements::ElementType
     {
      public:
       std::string Name() const override { return "ThermoBoundaryType"; }
 
       static ThermoBoundaryType& Instance();
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -394,7 +394,7 @@ namespace DRT
     //! \note This is a pure boundary condition element. It's only
     //!       purpose is to evaluate certain boundary conditions that might be
     //!       adjacent to a parent Thermo element.
-    class ThermoBoundary : public DRT::FaceElement
+    class ThermoBoundary : public CORE::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -420,7 +420,7 @@ namespace DRT
       //!
       //! The Clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-constructor is needed
-      DRT::Element* Clone() const override;
+      CORE::Elements::Element* Clone() const override;
 
       //! \brief Get shape type of element
       CORE::FE::CellType Shape() const override;
@@ -461,10 +461,10 @@ namespace DRT
       }
 
       //! \brief Get vector of Teuchos::RCPs to the lines of this element
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
       //! \brief Get vector of Teuchos::RCPs to the surfaces of this element
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       //! \brief Return unique ParObject id
       //!
@@ -491,7 +491,7 @@ namespace DRT
       //! @name Acess methods
 
       //! \brief Get number of degrees of freedom of a certain node
-      //!       (implements pure virtual DRT::Element)
+      //!       (implements pure virtual CORE::Elements::Element)
       //!
       //! The element decides how many degrees of freedom its nodes must have.
       //! As this may vary along a simulation, the element can redecide the
@@ -511,7 +511,7 @@ namespace DRT
       */
 
       //! \brief Get number of degrees of freedom per element
-      //!       (implements pure virtual DRT::Element)
+      //!       (implements pure virtual CORE::Elements::Element)
       //!
       //! The element decides how many element degrees of freedom it has.
       //! It can redecide along the way of a simulation.
@@ -524,7 +524,10 @@ namespace DRT
       //! \brief Print this element
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return ThermoBoundaryType::Instance(); }
+      CORE::Elements::ElementType& ElementType() const override
+      {
+        return ThermoBoundaryType::Instance();
+      }
 
       //@}
 
@@ -556,7 +559,7 @@ namespace DRT
       //!                         to fill this vector
       //! \return 0 if successful, negative otherwise
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseVector& elevec2,
           CORE::LINALG::SerialDenseVector& elevec3) override;

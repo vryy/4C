@@ -12,8 +12,8 @@
 
 #include "4C_discretization_dofset_pbc.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 FOUR_C_NAMESPACE_OPEN

@@ -115,7 +115,7 @@ int DRT::ELEMENTS::TransportBoundary::evaluate_neumann(Teuchos::ParameterList& p
   params.set<CORE::Conditions::Condition*>("condition", &condition);
 
   LocationArray la(discretization.NumDofSets());
-  DRT::Element::LocationVector(discretization, la, false);
+  CORE::Elements::Element::LocationVector(discretization, la, false);
 
   // evaluate boundary element
   return Evaluate(params, discretization, la, *elemat1, *elemat1, elevec1, elevec1, elevec1);
@@ -140,7 +140,7 @@ void DRT::ELEMENTS::TransportBoundary::LocationVector(const Discretization& dis,
       parent_element()->LocationVector(dis, la, doDirichlet);
       break;
     default:
-      DRT::Element::LocationVector(dis, la, doDirichlet);
+      CORE::Elements::Element::LocationVector(dis, la, doDirichlet);
       break;
   }
 }

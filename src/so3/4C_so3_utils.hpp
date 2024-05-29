@@ -11,9 +11,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -26,7 +26,7 @@ namespace DRT
     namespace UTILS
     {
       template <CORE::FE::CellType distype>
-      void CalcR(const DRT::Element* ele, const std::vector<double>& disp,
+      void CalcR(const CORE::Elements::Element* ele, const std::vector<double>& disp,
           CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>>& R);
 
       template <CORE::FE::CellType distype>

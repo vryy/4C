@@ -36,9 +36,10 @@ namespace DRT
 
 
       //! evaluate action
-      int evaluate_action(DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      int evaluate_action(CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, SCATRA::BoundaryAction action,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::Elements::Element::LocationArray& la,
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -50,12 +51,12 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate loma thermal press
-      void calc_loma_therm_press(DRT::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la);
+      void calc_loma_therm_press(CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la);
 
       //! calculate Neumann inflow boundary conditions
-      void neumann_inflow(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      void neumann_inflow(const CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs) override;
 
       //! get density at integration point
@@ -63,8 +64,9 @@ namespace DRT
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k) override;
 
       //! integral of normal diffusive flux and velocity over boundary surface
-      void norm_diff_flux_and_vel_integral(const DRT::Element* ele, Teuchos::ParameterList& params,
-          const std::vector<double>& enormdiffflux, const std::vector<double>& enormvel);
+      void norm_diff_flux_and_vel_integral(const CORE::Elements::Element* ele,
+          Teuchos::ParameterList& params, const std::vector<double>& enormdiffflux,
+          const std::vector<double>& enormvel);
 
       //! thermodynamic pressure
       double thermpress_;

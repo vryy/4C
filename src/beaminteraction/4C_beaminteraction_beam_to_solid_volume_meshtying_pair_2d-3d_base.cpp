@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>::CreateGeometryPair(
-    const DRT::Element* element1, const DRT::Element* element2,
+    const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   // Cast the geometry evaluation data to the correct format.

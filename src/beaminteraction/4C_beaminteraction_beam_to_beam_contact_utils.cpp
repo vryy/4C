@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Check, if current element is a solid contact element      popp 05/16|
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::SolidContactElement(const DRT::Element& element)
+bool BEAMINTERACTION::SolidContactElement(const CORE::Elements::Element& element)
 {
-  const DRT::ElementType& ele_type = element.ElementType();
+  const CORE::Elements::ElementType& ele_type = element.ElementType();
 
   if (ele_type == CONTACT::ElementType::Instance())
     return true;
@@ -35,7 +35,8 @@ bool BEAMINTERACTION::SolidContactElement(const DRT::Element& element)
 /*----------------------------------------------------------------------*
  |  Check, if two elements share a node -> neighbor elements meier 05/14|
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::ElementsShareNode(const DRT::Element& element1, const DRT::Element& element2)
+bool BEAMINTERACTION::ElementsShareNode(
+    const CORE::Elements::Element& element1, const CORE::Elements::Element& element2)
 {
   bool sharenode = false;
 
@@ -55,7 +56,7 @@ bool BEAMINTERACTION::ElementsShareNode(const DRT::Element& element1, const DRT:
 /*----------------------------------------------------------------------*
  |  Calculate beam radius                                    meier 10/14|
  *----------------------------------------------------------------------*/
-double BEAMINTERACTION::CalcEleRadius(const DRT::Element* ele)
+double BEAMINTERACTION::CalcEleRadius(const CORE::Elements::Element* ele)
 {
   double eleradius = 0.0;
 

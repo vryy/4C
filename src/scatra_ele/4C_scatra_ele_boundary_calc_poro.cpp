@@ -67,9 +67,9 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::ScaTraEleBoundaryCal
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_action(
-    DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, SCATRA::BoundaryAction action,
+    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -187,7 +187,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_action(
 template <CORE::FE::CellType distype, int probdim>
 std::vector<double>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::calc_convective_flux(
-    const DRT::FaceElement* ele, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
+    const CORE::Elements::FaceElement* ele,
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, CORE::LINALG::SerialDenseVector& erhs)
 {
   // integration points and weights
@@ -238,7 +239,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::calc_convective_flux
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::compute_porosity(
-    const DRT::FaceElement* ele  //!< the element we are dealing with
+    const CORE::Elements::FaceElement* ele  //!< the element we are dealing with
 )
 {
   double porosity = 0.0;

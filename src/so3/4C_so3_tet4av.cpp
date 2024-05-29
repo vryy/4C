@@ -38,12 +38,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoTet4avType::Create(const std::vector<cha
 
 
 //------------------------------------------------------------------------
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4avType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet4avType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoTet4av(id, owner));
+    Teuchos::RCP<CORE::Elements::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::SoTet4av(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -51,16 +52,17 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4avType::Create(
 
 
 //------------------------------------------------------------------------
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4avType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet4avType::Create(
+    const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoTet4av(id, owner));
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoTet4av(id, owner));
   return ele;
 }
 
 
 //------------------------------------------------------------------------
 void DRT::ELEMENTS::SoTet4avType::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
@@ -120,7 +122,7 @@ DRT::ELEMENTS::SoTet4av::SoTet4av(const DRT::ELEMENTS::SoTet4av& old) : SoBase(o
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::SoTet4av::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::SoTet4av::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::SoTet4av(*this);
   return newelement;
@@ -214,18 +216,18 @@ void DRT::ELEMENTS::SoTet4av::Print(std::ostream& os) const
 |  get vector of surfaces (public)                             maf 04/07|
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SoTet4av::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SoTet4av::Surfaces()
 {
-  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, CORE::Elements::Element>(
       CORE::COMM::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------***++
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SoTet4av::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SoTet4av::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, CORE::Elements::Element>(
       CORE::COMM::buildLines, *this);
 }
 
@@ -245,7 +247,7 @@ void DRT::ELEMENTS::SoTet4av::VisNames(std::map<std::string, int>& names)
 bool DRT::ELEMENTS::SoTet4av::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (DRT::Element::VisData(name, data)) return true;
+  if (CORE::Elements::Element::VisData(name, data)) return true;
 
   return SolidMaterial()->VisData(name, data, NUMGPT_SOTET4av, this->Id());
 }

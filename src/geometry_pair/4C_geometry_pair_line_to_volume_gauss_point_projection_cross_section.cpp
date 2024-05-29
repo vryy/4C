@@ -12,11 +12,11 @@ line.
 
 #include "4C_beam3_base.hpp"
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_geometry_pair_element_evaluation_functions.hpp"
 #include "4C_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "4C_geometry_pair_utility_classes.hpp"
-#include "4C_lib_element.hpp"
 
 #include <math.h>
 
@@ -27,8 +27,9 @@ FOUR_C_NAMESPACE_OPEN
  */
 template <typename scalar_type, typename line, typename volume>
 GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
-    volume>::GeometryPairLineToVolumeGaussPointProjectionCrossSection(const DRT::Element* element1,
-    const DRT::Element* element2,
+    volume>::GeometryPairLineToVolumeGaussPointProjectionCrossSection(const CORE::Elements::Element*
+                                                                          element1,
+    const CORE::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
     : GeometryPairLineToVolume<scalar_type, line, volume>(element1, element2, evaluation_data)
 {

@@ -48,7 +48,7 @@ namespace BINSTRATEGY
       std::set<int> nodes;
       for (int lid = 0; lid < extendedelecolmap->NumMyElements(); ++lid)
       {
-        DRT::Element* ele = discret->gElement(extendedelecolmap->GID(lid));
+        CORE::Elements::Element* ele = discret->gElement(extendedelecolmap->GID(lid));
         const int* nodeids = ele->NodeIds();
         for (int inode = 0; inode < ele->num_node(); ++inode) nodes.insert(nodeids[inode]);
       }
@@ -76,7 +76,7 @@ namespace BINSTRATEGY
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     BINSTRATEGY::UTILS::BinContentType ConvertElementToBinContentType(
-        DRT::Element const* const eleptr)
+        CORE::Elements::Element const* const eleptr)
     {
       // (Todo make this nicer and cheaper)
 
@@ -117,7 +117,7 @@ namespace BINSTRATEGY
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void CommunicateElements(Teuchos::RCP<DRT::Discretization>& discret,
-        std::map<int, std::vector<DRT::Element*>> const& toranktosendeles)
+        std::map<int, std::vector<CORE::Elements::Element*>> const& toranktosendeles)
     {
       // build exporter
       CORE::COMM::Exporter exporter(discret->Comm());
@@ -129,10 +129,10 @@ namespace BINSTRATEGY
       // ---- pack data for sending -----
       std::map<int, std::vector<char>> sdata;
       std::vector<int> targetprocs(numproc, 0);
-      std::map<int, std::vector<DRT::Element*>>::const_iterator p;
+      std::map<int, std::vector<CORE::Elements::Element*>>::const_iterator p;
       for (p = toranktosendeles.begin(); p != toranktosendeles.end(); ++p)
       {
-        std::vector<DRT::Element*>::const_iterator iter;
+        std::vector<CORE::Elements::Element*>::const_iterator iter;
         for (iter = p->second.begin(); iter != p->second.end(); ++iter)
         {
           CORE::COMM::PackBuffer data;
@@ -187,7 +187,8 @@ namespace BINSTRATEGY
             // this Teuchos::rcp holds the memory of the node
             Teuchos::RCP<CORE::COMM::ParObject> object =
                 Teuchos::rcp(CORE::COMM::Factory(data), true);
-            Teuchos::RCP<DRT::Element> element = Teuchos::rcp_dynamic_cast<DRT::Element>(object);
+            Teuchos::RCP<CORE::Elements::Element> element =
+                Teuchos::rcp_dynamic_cast<CORE::Elements::Element>(object);
             if (element == Teuchos::null) FOUR_C_THROW("Received object is not a element");
 
             // safety check
@@ -318,7 +319,7 @@ namespace BINSTRATEGY
       // standard case
       DRT::Node const* node_with_position_Dofs = node;
 
-      const DRT::Element* element = node->Elements()[0];
+      const CORE::Elements::Element* element = node->Elements()[0];
       const DRT::ELEMENTS::Beam3Base* beamelement =
           dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element);
 

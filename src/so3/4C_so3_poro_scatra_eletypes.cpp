@@ -32,12 +32,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8PoroScatraType::Create(const std::ve
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PoroScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8PoroScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(
             id, owner));
     return ele;
@@ -45,10 +45,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PoroScatraType::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PoroScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex8PoroScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(id, owner));
   return ele;
 }
@@ -86,12 +86,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoTet4PoroScatraType::Create(const std::ve
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PoroScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet4PoroScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(
             id, owner));
     return ele;
@@ -99,10 +99,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PoroScatraType::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PoroScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet4PoroScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(id, owner));
   return ele;
 }
@@ -140,12 +140,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex27PoroScatraType::Create(const std::v
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27PoroScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex27PoroScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>(
             id, owner));
     return ele;
@@ -153,10 +153,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27PoroScatraType::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27PoroScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex27PoroScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>(
           id, owner));
   return ele;
@@ -197,12 +197,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoTet10PoroScatraType::Create(const std::v
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet10PoroScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet10PoroScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>(
             id, owner));
     return ele;
@@ -210,10 +210,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet10PoroScatraType::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet10PoroScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoTet10PoroScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(
       new DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>(
           id, owner));
   return ele;
@@ -254,12 +254,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoNurbs27PoroScatraType::Create(const std:
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoNurbs27PoroScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoNurbs27PoroScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<DRT::Element> ele =
+    Teuchos::RCP<CORE::Elements::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::NURBS::SoNurbs27,
             CORE::FE::CellType::nurbs27>(id, owner));
     return ele;
@@ -267,10 +267,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoNurbs27PoroScatraType::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoNurbs27PoroScatraType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoNurbs27PoroScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
+  Teuchos::RCP<CORE::Elements::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::NURBS::SoNurbs27,
           CORE::FE::CellType::nurbs27>(id, owner));
   return ele;

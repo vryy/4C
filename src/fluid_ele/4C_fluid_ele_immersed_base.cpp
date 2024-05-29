@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidTypeImmersedBase::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidTypeImmersedBase::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDIMMERSED") return Teuchos::rcp(new DRT::ELEMENTS::FluidImmersed(id, owner));

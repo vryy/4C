@@ -24,9 +24,13 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Element;
   class Node;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 namespace BINSTRATEGY
 {
@@ -69,7 +73,7 @@ namespace BINSTRATEGY
      *
      * @return bin content type
      */
-    BinContentType ConvertElementToBinContentType(DRT::Element const* const eleptr);
+    BinContentType ConvertElementToBinContentType(CORE::Elements::Element const* const eleptr);
 
     /*!
      * \brief communicate elements that get a new owner
@@ -78,7 +82,7 @@ namespace BINSTRATEGY
      * @param[in] toranktosendeles key: new owner std::vector: elements that are sended to new owner
      */
     void CommunicateElements(Teuchos::RCP<DRT::Discretization>& discret,
-        std::map<int, std::vector<DRT::Element*>> const& toranktosendeles);
+        std::map<int, std::vector<CORE::Elements::Element*>> const& toranktosendeles);
 
     /*!
      * \brief communicate distribution of transferred elements to bins

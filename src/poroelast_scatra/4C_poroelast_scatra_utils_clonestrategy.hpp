@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace CORE::Elements
 {
   class Element;
 }
@@ -37,7 +37,7 @@ namespace POROELASTSCATRA
       explicit PoroelastCloneStrategyforScatraElements() = default;
       //! determine element type string and whether element is copied or not
       bool determine_ele_type(
-          DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+          CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
     };
 
     //! \brief implementation of special clone strategy for automatic generation
@@ -52,23 +52,23 @@ namespace POROELASTSCATRA
 
       //! return SCATRA::ImplType of the element
       INPAR::SCATRA::ImplType GetImplType(
-          DRT::Element* ele  //! element whose SCATRA::ImplType shall be determined
+          CORE::Elements::Element* ele  //! element whose SCATRA::ImplType shall be determined
       );
 
      protected:
       //! determine element type string and whether element is copied or not
       bool determine_ele_type(
-          DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+          CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
       //! check for correct material
       void check_material_type(const int matid);
 
       //! provide cloned element with element specific data (material etc.)
-      void set_element_data(
-          Teuchos::RCP<DRT::Element> newele,  //! current cloned element on target discretization
-          DRT::Element* oldele,               //! current element on source discretization
-          const int matid,                    //! material of cloned element
-          const bool isnurbs                  //! nurbs flag
+      void set_element_data(Teuchos::RCP<CORE::Elements::Element>
+                                newele,     //! current cloned element on target discretization
+          CORE::Elements::Element* oldele,  //! current element on source discretization
+          const int matid,                  //! material of cloned element
+          const bool isnurbs                //! nurbs flag
       );
 
       //! returns conditions names to be copied (source and target name)

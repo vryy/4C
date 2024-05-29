@@ -11,7 +11,7 @@
 
 #include "4C_discretization_condition.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 
 #include <utility>
 
@@ -52,8 +52,8 @@ void CORE::Conditions::Condition::Print(std::ostream& os) const
 
 void CORE::Conditions::Condition::AdjustId(const int shift)
 {
-  std::map<int, Teuchos::RCP<DRT::Element>> geometry;
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator iter;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>> geometry;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator iter;
 
   for (const auto& [ele_id, ele] : *geometry_)
   {

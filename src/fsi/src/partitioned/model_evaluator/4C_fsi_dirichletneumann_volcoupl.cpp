@@ -277,7 +277,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
   for (std::map<int, std::vector<int>>::iterator it = fluidalenodemap_.begin();
        it != fluidalenodemap_.end(); ++it)
   {
-    DRT::Element* aleele = fluidale->ale_field()->discretization()->gElement(it->first);
+    CORE::Elements::Element* aleele = fluidale->ale_field()->discretization()->gElement(it->first);
 
     // loop over fluid volume nodes within one ale FSI element
     for (size_t i = 0; i < it->second.size(); ++i)
@@ -410,7 +410,7 @@ void FSI::VolCorrector::correct_vol_displacements_phys_space(
   {
     // 1 map node into bele
     int gid = fluidale->ale_field()->discretization()->ElementColMap()->GID(i);
-    DRT::Element* aleele = fluidale->ale_field()->discretization()->gElement(gid);
+    CORE::Elements::Element* aleele = fluidale->ale_field()->discretization()->gElement(gid);
 
     if (FSIaleeles->find(aleele->Id()) == FSIaleeles->end()) continue;
   }
@@ -446,7 +446,7 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
 
   for (int lid = 0; lid < fluidale->fluid_field()->discretization()->NumMyColElements(); ++lid)
   {
-    DRT::Element* sele = fluidale->fluid_field()->discretization()->lColElement(lid);
+    CORE::Elements::Element* sele = fluidale->fluid_field()->discretization()->lColElement(lid);
 
     // calculate slabs for every node on every element
     for (int k = 0; k < sele->num_node(); k++)
@@ -483,7 +483,7 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
   {
     // 1 map node into bele
     int gid = fluidale->ale_field()->discretization()->ElementColMap()->GID(i);
-    DRT::Element* aleele = fluidale->ale_field()->discretization()->gElement(gid);
+    CORE::Elements::Element* aleele = fluidale->ale_field()->discretization()->gElement(gid);
 
     if (FSIaleeles->find(aleele->Id()) == FSIaleeles->end()) continue;
 
@@ -499,7 +499,7 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
   for (std::map<int, std::vector<int>>::iterator it = fluidaleelemap_.begin();
        it != fluidaleelemap_.end(); ++it)
   {
-    DRT::Element* aleele = fluidale->ale_field()->discretization()->gElement(it->first);
+    CORE::Elements::Element* aleele = fluidale->ale_field()->discretization()->gElement(it->first);
 
     std::vector<int> localnodeids;
     std::vector<int> localnodeidsFSI;
@@ -508,7 +508,7 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
     for (size_t i = 0; i < it->second.size(); ++i)
     {
       int gid = it->second[i];
-      DRT::Element* fluidele = fluidale->fluid_field()->discretization()->gElement(gid);
+      CORE::Elements::Element* fluidele = fluidale->fluid_field()->discretization()->gElement(gid);
 
       for (int j = 0; j < fluidele->num_node(); ++j)
       {
@@ -608,7 +608,7 @@ std::map<int, CORE::LINALG::Matrix<9, 2>> FSI::VolCorrector::calc_background_dop
 
   for (int lid = 0; lid < searchdis->NumMyColElements(); ++lid)
   {
-    DRT::Element* sele = searchdis->lColElement(lid);
+    CORE::Elements::Element* sele = searchdis->lColElement(lid);
 
     currentKDOPs[sele->Id()] = calc_dop(*sele);
   }
@@ -619,7 +619,7 @@ std::map<int, CORE::LINALG::Matrix<9, 2>> FSI::VolCorrector::calc_background_dop
 /*----------------------------------------------------------------------*
  |  Calculate Dop for one Element                            farah 05/16|
  *----------------------------------------------------------------------*/
-CORE::LINALG::Matrix<9, 2> FSI::VolCorrector::calc_dop(DRT::Element& ele)
+CORE::LINALG::Matrix<9, 2> FSI::VolCorrector::calc_dop(CORE::Elements::Element& ele)
 {
   CORE::LINALG::Matrix<9, 2> dop;
 
@@ -664,7 +664,7 @@ CORE::LINALG::Matrix<9, 2> FSI::VolCorrector::calc_dop(DRT::Element& ele)
  |  Perform searching procedure                              farah 05/16|
  *----------------------------------------------------------------------*/
 std::vector<int> FSI::VolCorrector::search(
-    DRT::Element& ele, std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs)
+    CORE::Elements::Element& ele, std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs)
 {
   // vector of global ids of found elements
   std::vector<int> gids;

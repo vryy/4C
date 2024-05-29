@@ -17,13 +17,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneLine2Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneLine2Type::Create(
+    const int id, const int owner)
 {
   // return Teuchos::rcp( new MembraneLine( id, owner ) );
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneLine3Type::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneLine3Type::Create(
+    const int id, const int owner)
 {
   // return Teuchos::rcp( new MembraneLine( id, owner ) );
   return Teuchos::null;
@@ -35,7 +37,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneLine3Type::Create(const int id
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Membrane<distype>::Membrane(int id, int owner)
-    : DRT::Element(id, owner),
+    : CORE::Elements::Element(id, owner),
       thickness_(0.0),
       cur_thickness_(0),
       planetype_(plane_stress),
@@ -85,7 +87,7 @@ DRT::ELEMENTS::Membrane<distype>::Membrane(int id, int owner)
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Membrane<distype>::Membrane(const DRT::ELEMENTS::Membrane<distype>& old)
-    : DRT::Element(old),
+    : CORE::Elements::Element(old),
       thickness_(old.thickness_),
       cur_thickness_(old.cur_thickness_),
       planetype_(old.planetype_),
@@ -100,7 +102,7 @@ DRT::ELEMENTS::Membrane<distype>::Membrane(const DRT::ELEMENTS::Membrane<distype
  |                                                           fbraeu 06/16 |
  *------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::Membrane<distype>::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Membrane<distype>::Clone() const
 {
   DRT::ELEMENTS::Membrane<distype>* newelement = new DRT::ELEMENTS::Membrane<distype>(*this);
   return newelement;
@@ -184,7 +186,8 @@ void DRT::ELEMENTS::Membrane<distype>::Unpack(const std::vector<char>& data)
 template <CORE::FE::CellType distype>
 Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::Membrane<distype>::SolidMaterial(int nummat) const
 {
-  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat), true);
+  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(
+      CORE::Elements::Element::Material(nummat), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -193,7 +196,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Membrane<distype>::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
-    interface_ptr_ = p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface");
+    interface_ptr_ = p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface");
   else
     interface_ptr_ = Teuchos::null;
 }
@@ -201,7 +204,7 @@ void DRT::ELEMENTS::Membrane<distype>::set_params_interface_ptr(const Teuchos::P
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Membrane<distype>::ParamsInterfacePtr()
+Teuchos::RCP<CORE::Elements::ParamsInterface> DRT::ELEMENTS::Membrane<distype>::ParamsInterfacePtr()
 {
   return interface_ptr_;
 }
@@ -232,7 +235,7 @@ void DRT::ELEMENTS::Membrane<distype>::Print(std::ostream& os) const
  |  get vector of lines (public)                           fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Membrane<distype>::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Membrane<distype>::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<MembraneLine<distype>, Membrane<distype>>(
       CORE::COMM::buildLines, *this);
@@ -242,7 +245,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Membrane<distype>::Lines(
  |  get vector of surfaces (public)                        fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Membrane<distype>::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Membrane<distype>::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

@@ -40,11 +40,15 @@ namespace CORE::Dofsets
   class DofSet;
 }
 
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace DRT
 {
   class Discretization;
   class ResultTest;
-  class Element;
 }  // namespace DRT
 
 namespace IO

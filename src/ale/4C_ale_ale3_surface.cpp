@@ -23,7 +23,7 @@ DRT::ELEMENTS::Ale3SurfaceType& DRT::ELEMENTS::Ale3SurfaceType::Instance() { ret
 /*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale3Surface::Ale3Surface(int id, int owner, int nnode, const int* nodeids,
     DRT::Node** nodes, DRT::ELEMENTS::Ale3* parent, const int lsurface)
-    : DRT::FaceElement(id, owner)
+    : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -33,13 +33,13 @@ DRT::ELEMENTS::Ale3Surface::Ale3Surface(int id, int owner, int nnode, const int*
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale3Surface::Ale3Surface(const DRT::ELEMENTS::Ale3Surface& old)
-    : DRT::FaceElement(old)
+    : CORE::Elements::FaceElement(old)
 {
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Ale3Surface::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Ale3Surface::Clone() const
 {
   DRT::ELEMENTS::Ale3Surface* newelement = new DRT::ELEMENTS::Ale3Surface(*this);
   return newelement;

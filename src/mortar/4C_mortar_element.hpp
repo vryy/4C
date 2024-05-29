@@ -11,9 +11,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_inpar_mortar.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_mortar_node.hpp"
@@ -35,10 +35,10 @@ namespace MORTAR
 namespace MORTAR
 {
   /*!
-  \brief A subclass of DRT::ElementType that adds mortar element type specific methods
+  \brief A subclass of CORE::Elements::ElementType that adds mortar element type specific methods
 
   */
-  class ElementType : public DRT::ElementType
+  class ElementType : public CORE::Elements::ElementType
   {
    public:
     std::string Name() const override { return "MORTAR::ElementType"; }
@@ -47,10 +47,10 @@ namespace MORTAR
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-    Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
     void nodal_block_information(
-        DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+        CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
     CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -289,7 +289,7 @@ namespace MORTAR
   \brief A mortar coupling element
 
   */
-  class Element : public DRT::FaceElement
+  class Element : public CORE::Elements::FaceElement
   {
    public:
     //! @name Enums and Friends
@@ -393,7 +393,7 @@ namespace MORTAR
     \brief Deep copy the derived class and return pointer to it
 
     */
-    DRT::Element* Clone() const override;
+    CORE::Elements::Element* Clone() const override;
 
     /*!
     \brief Return unique ParObject id
@@ -420,7 +420,7 @@ namespace MORTAR
     */
     void Unpack(const std::vector<char>& data) override;
 
-    DRT::ElementType& ElementType() const override { return ElementType::Instance(); }
+    CORE::Elements::ElementType& ElementType() const override { return ElementType::Instance(); }
 
     //@}
 
@@ -448,9 +448,9 @@ namespace MORTAR
     \brief Get vector of Teuchos::RCPs to the lines of this element
 
     */
-    std::vector<Teuchos::RCP<DRT::Element>> Lines() override
+    std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override
     {
-      std::vector<Teuchos::RCP<DRT::Element>> lines(0);
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> lines(0);
       return lines;
     }
 
@@ -458,9 +458,9 @@ namespace MORTAR
     \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
     */
-    std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override
+    std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override
     {
-      std::vector<Teuchos::RCP<DRT::Element>> surfaces(0);
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> surfaces(0);
       return surfaces;
     }
 

@@ -10,8 +10,8 @@
 
 #include "4C_porofluidmultiphase_ele_boundary_factory.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_porofluidmultiphase_ele_boundary_calc.hpp"
 #include "4C_porofluidmultiphase_ele_interface.hpp"
 
@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::PoroFluidMultiPhaseEleInterface*
 DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
-    const DRT::Element* ele, const int numdofpernode, const std::string& disname)
+    const CORE::Elements::Element* ele, const int numdofpernode, const std::string& disname)
 {
   switch (ele->Shape())
   {

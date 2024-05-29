@@ -126,7 +126,7 @@ void AIRWAY::RedAirwayResultTest::TestElement(
   {
     if (dis_->HaveGlobalElement(element))
     {
-      const DRT::Element* actelement = dis_->gElement(element);
+      const CORE::Elements::Element* actelement = dis_->gElement(element);
 
       // Here we are just interested in the elements that we own (i.e. a row element)!
       if (actelement->Owner() != dis_->Comm().MyPID()) return;

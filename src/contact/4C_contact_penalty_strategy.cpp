@@ -92,7 +92,7 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vect
     for (int j = 0; j < interface_[i]->SlaveColElements()->NumMyElements(); ++j)
     {
       int gid1 = interface_[i]->SlaveColElements()->GID(j);
-      DRT::Element* ele1 = interface_[i]->Discret().gElement(gid1);
+      CORE::Elements::Element* ele1 = interface_[i]->Discret().gElement(gid1);
       if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
       Element* selement = dynamic_cast<Element*>(ele1);
 

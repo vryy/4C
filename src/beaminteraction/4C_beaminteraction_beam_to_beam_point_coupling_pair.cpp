@@ -84,7 +84,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_p
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const
 {
-  const std::array<const DRT::Element*, 2> beam_ele = {this->Element1(), this->Element2()};
+  const std::array<const CORE::Elements::Element*, 2> beam_ele = {
+      this->Element1(), this->Element2()};
 
   // Initialize variables for evaluation of the positional coupling terms.
   std::array<CORE::LINALG::Matrix<beam::n_dof_, 1, int>, 2> gid_pos;
@@ -175,7 +176,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_r
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const
 {
-  const std::array<const DRT::Element*, 2> beam_ele = {this->Element1(), this->Element2()};
+  const std::array<const CORE::Elements::Element*, 2> beam_ele = {
+      this->Element1(), this->Element2()};
 
   // Declare variables for evaluation of the rotational coupling terms.
   std::array<CORE::LINALG::Matrix<n_dof_rot_, 1, int>, 2> gid_rot;

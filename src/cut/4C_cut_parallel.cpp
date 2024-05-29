@@ -1259,7 +1259,7 @@ void CORE::GEO::CUT::Parallel::print_dof_set_data()
  *------------------------------------------------------------------------------------------------*/
 int CORE::GEO::CUT::Parallel::get_dof_set_vec_index(int nid, int eid)
 {
-  DRT::Element* ele = discret_->gElement(eid);
+  CORE::Elements::Element* ele = discret_->gElement(eid);
 
   if (ele == nullptr) FOUR_C_THROW("element %d not available on proc %d", eid, myrank_);
 

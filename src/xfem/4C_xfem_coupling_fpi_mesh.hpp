@@ -132,7 +132,8 @@ namespace XFEM
     Teuchos::RCP<Epetra_Vector> IForcecol() { return iforcecol_; }
 
     //! Caluculate the Porosity for this FaceElement Gausspoint
-    double CalcPorosity(DRT::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& J);
+    double CalcPorosity(
+        CORE::Elements::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& J);
 
     //! get distance when transition between FPSI and PSCI is started
     double get_fpi_pcontact_exchange_dist() { return fpsi_contact_hfraction_ * h_scaling_; }
@@ -185,8 +186,8 @@ namespace XFEM
         double& full_stab,                             //< full NIT Penalty scaling
         const CORE::LINALG::Matrix<3, 1>& x,           //< Position x in global coordinates
         const CORE::Conditions::Condition* cond,       //< Condition
-        DRT::Element* ele,                             //< Element
-        DRT::Element* bele,                            //< Boundary Element
+        CORE::Elements::Element* ele,                  //< Element
+        CORE::Elements::Element* bele,                 //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
@@ -213,8 +214,8 @@ namespace XFEM
         double& full_stab,                        //< full NIT Penalty scaling
         const CORE::LINALG::Matrix<3, 1>& x,      //< Position x in global coordinates
         const CORE::Conditions::Condition* cond,  //< Condition
-        DRT::Element* ele,                        //< Element
-        DRT::Element* bele,                       //< Boundary Element
+        CORE::Elements::Element* ele,             //< Element
+        CORE::Elements::Element* bele,            //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
@@ -224,11 +225,11 @@ namespace XFEM
     );
 
     //! Caluculate the Porosity for J,porosity pair on this FaceElement
-    double calctr_permeability(DRT::Element* ele, double& porosity, double& J);
+    double calctr_permeability(CORE::Elements::Element* ele, double& porosity, double& J);
 
     //! Compute Jacobian and extract PoroFluidPressure this FaceElement Gausspoint
     double compute_jacobianand_pressure(
-        DRT::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& pres);
+        CORE::Elements::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& pres);
 
     //------------------------------- vectors -----------------------------
     //! @name cutter-dis state vectors

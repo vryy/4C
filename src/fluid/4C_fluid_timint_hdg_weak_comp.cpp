@@ -318,7 +318,7 @@ void FLD::TimIntHDGWeakComp::IterUpdate(const Teuchos::RCP<const Epetra_Vector> 
   params.set<int>("action", FLD::update_local_solution);
 
   // location array
-  DRT::Element::LocationArray la(2);
+  CORE::Elements::Element::LocationArray la(2);
 
   // interior dofs map
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
@@ -340,7 +340,7 @@ void FLD::TimIntHDGWeakComp::IterUpdate(const Teuchos::RCP<const Epetra_Vector> 
   for (int el = 0; el < discret_->NumMyColElements(); ++el)
   {
     // get element
-    DRT::Element* ele = discret_->lColElement(el);
+    CORE::Elements::Element* ele = discret_->lColElement(el);
     ele->LocationVector(*discret_, la, false);
 
     // evaluate interior local increments
@@ -434,11 +434,11 @@ void FLD::TimIntHDGWeakComp::SetInitialFlowField(
   initParams.set<int>("initfield", initfield);
 
   // loop over all elements on the processor
-  DRT::Element::LocationArray la(2);
+  CORE::Elements::Element::LocationArray la(2);
   double error = 0;
   for (int el = 0; el < discret_->NumMyColElements(); ++el)
   {
-    DRT::Element* ele = discret_->lColElement(el);
+    CORE::Elements::Element* ele = discret_->lColElement(el);
 
     ele->LocationVector(*discret_, la, false);
     if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
@@ -679,7 +679,7 @@ namespace
 
     for (int el = 0; el < dis.NumMyColElements(); ++el)
     {
-      DRT::Element* ele = dis.lColElement(el);
+      CORE::Elements::Element* ele = dis.lColElement(el);
       if (interpolVec.numRows() == 0)
         interpolVec.resize(ele->num_node() * (msd + 1 + ndim + 1 + ndim));
 

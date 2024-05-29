@@ -442,7 +442,7 @@ void WEAR::Algorithm::create_material_interface()
     for (int j = 0; j < (int)currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
-      std::map<int, Teuchos::RCP<DRT::Element>>& currele = currentgroup[j]->Geometry();
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& currele = currentgroup[j]->Geometry();
 
       // elements in a boundary condition have a unique id
       // but ids are not unique among 2 distinct conditions
@@ -456,10 +456,10 @@ void WEAR::Algorithm::create_material_interface()
       int gsize = 0;
       Comm().SumAll(&lsize, &gsize, 1);
 
-      std::map<int, Teuchos::RCP<DRT::Element>>::iterator fool;
+      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator fool;
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
-        Teuchos::RCP<DRT::Element> ele = fool->second;
+        Teuchos::RCP<CORE::Elements::Element> ele = fool->second;
         Teuchos::RCP<CONTACT::Element> cele =
             Teuchos::rcp(new CONTACT::Element(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
                 ele->num_node(), ele->NodeIds(), isslave[j], cparams.get<bool>("NURBS")));
@@ -475,8 +475,8 @@ void WEAR::Algorithm::create_material_interface()
           std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim);
           std::vector<CORE::LINALG::SerialDenseVector> mortarknots(dim - 1);
 
-          Teuchos::RCP<DRT::FaceElement> faceele =
-              Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
+          Teuchos::RCP<CORE::Elements::FaceElement> faceele =
+              Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(ele, true);
           double normalfac = 0.0;
           bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots,
               normalfac, faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());

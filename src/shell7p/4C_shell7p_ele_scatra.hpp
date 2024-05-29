@@ -10,9 +10,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_inpar_scatra.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_shell7p_ele_calc_interface.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
@@ -29,7 +29,7 @@ namespace DRT::ELEMENTS
   class Shell7pEleCalcInterface;
   class Shell7pLine;
 
-  class Shell7pScatraType : public DRT::ElementType
+  class Shell7pScatraType : public CORE::Elements::ElementType
   {
    public:
     void setup_element_definition(
@@ -37,16 +37,17 @@ namespace DRT::ELEMENTS
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-    Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-        const int id, const int owner) override;
+    Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+        const std::string eledistype, const int id, const int owner) override;
 
-    Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
     [[nodiscard]] std::string Name() const override { return "Shell7pScatraType"; }
 
     int Initialize(DRT::Discretization& dis) override;
 
-    void nodal_block_information(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+    void nodal_block_information(
+        CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
     CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -57,7 +58,7 @@ namespace DRT::ELEMENTS
     static Shell7pScatraType instance_;
   };
 
-  class Shell7pScatra : public DRT::Element
+  class Shell7pScatra : public CORE::Elements::Element
   {
     //! @name Friends
     friend class Shell7pScatraType;
@@ -71,7 +72,7 @@ namespace DRT::ELEMENTS
      * @param id (in) : A unique global id
      * @param owner (in) : elements owner
      */
-    Shell7pScatra(int id, int owner) : DRT::Element(id, owner){};
+    Shell7pScatra(int id, int owner) : CORE::Elements::Element(id, owner){};
 
     //! copy Constructor
     Shell7pScatra(const Shell7pScatra& other);
@@ -87,7 +88,7 @@ namespace DRT::ELEMENTS
     Shell7pScatra& operator=(Shell7pScatra&& other) noexcept = default;
     //! @}
 
-    [[nodiscard]] DRT::Element* Clone() const override;
+    [[nodiscard]] CORE::Elements::Element* Clone() const override;
 
     [[nodiscard]] int UniqueParObjectId() const override
     {
@@ -98,9 +99,9 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] int NumSurface() const override;
 
-    std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+    std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
-    std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+    std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
     [[nodiscard]] int NumDofPerNode(const DRT::Node& node) const override { return 6; }
 
@@ -113,7 +114,7 @@ namespace DRT::ELEMENTS
     void Print(std::ostream& os) const override;
 
 
-    [[nodiscard]] DRT::ElementType& ElementType() const override
+    [[nodiscard]] CORE::Elements::ElementType& ElementType() const override
     {
       return Shell7pScatraType::Instance();
     }
@@ -126,7 +127,7 @@ namespace DRT::ELEMENTS
     //! @name Evaluation
     //! @{
     int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
+        CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
         CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
         CORE::LINALG::SerialDenseVector& elevec2,
         CORE::LINALG::SerialDenseVector& elevec3) override;

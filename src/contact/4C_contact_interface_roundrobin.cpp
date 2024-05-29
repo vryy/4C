@@ -27,14 +27,14 @@ void CONTACT::Interface::round_robin_extend_ghosting(bool firstevaluation)
   for (int k = 0; k < SlaveColElements()->NumMyElements(); ++k)
   {
     int gid = SlaveColElements()->GID(k);
-    DRT::Element* ele = Discret().gElement(gid);
+    CORE::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     Element* slave_ele = dynamic_cast<Element*>(ele);
 
     for (int j = 0; j < slave_ele->MoData().NumSearchElements(); ++j)
     {
       int gid2 = slave_ele->MoData().SearchElements()[j];
-      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
@@ -126,7 +126,7 @@ void CONTACT::Interface::round_robin_change_ownership()
   for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColelesdummy->GID(i);
-    DRT::Element* ele = Discret().gElement(gid);
+    CORE::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
@@ -142,7 +142,7 @@ void CONTACT::Interface::round_robin_change_ownership()
   for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColelesdummy->GID(i);
-    DRT::Element* ele = Discret().gElement(gid);
+    CORE::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
@@ -163,7 +163,7 @@ void CONTACT::Interface::round_robin_change_ownership()
   for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColelesdummy->GID(i);
-    DRT::Element* ele = Discret().gElement(gid);
+    CORE::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 

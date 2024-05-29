@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner)
-    : DRT::Element(id, owner),
+    : CORE::Elements::Element(id, owner),
       Tref_(0),
       centerline_hermite_(true),
       filamenttype_(INPAR::BEAMINTERACTION::filtype_arbitrary),
@@ -40,7 +40,7 @@ DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3Base::Beam3Base(const DRT::ELEMENTS::Beam3Base& old)
-    : DRT::Element(old),
+    : CORE::Elements::Element(old),
       Tref_(old.Tref_),
       centerline_hermite_(old.centerline_hermite_),
       bspotposxi_(old.bspotposxi_),
@@ -98,7 +98,7 @@ void DRT::ELEMENTS::Beam3Base::set_params_interface_ptr(const Teuchos::Parameter
 {
   if (p.isParameter("interface"))
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface"));
+        p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface"));
   else
     interface_ptr_ = Teuchos::null;
 }
@@ -114,7 +114,7 @@ void DRT::ELEMENTS::Beam3Base::set_brownian_dyn_params_interface_ptr()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Beam3Base::ParamsInterfacePtr()
+Teuchos::RCP<CORE::Elements::ParamsInterface> DRT::ELEMENTS::Beam3Base::ParamsInterfacePtr()
 {
   return interface_ptr_;
 }

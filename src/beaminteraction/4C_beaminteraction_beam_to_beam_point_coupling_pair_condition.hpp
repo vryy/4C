@@ -49,7 +49,7 @@ namespace BEAMINTERACTION
      * \brief Create the beam contact pairs needed for this condition (derived).
      */
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
-        const std::vector<DRT::Element const*>& ele_ptrs) override;
+        const std::vector<CORE::Elements::Element const*>& ele_ptrs) override;
 
     /**
      * \brief Build the ID sets for this condition. The ID sets will be used to check if an element

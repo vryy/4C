@@ -11,13 +11,13 @@
 
 #include "4C_fluid_ele_boundary_parent_calc.hpp"
 
+#include "4C_discretization_fem_general_element_integration_select.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_boundary_integration.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_geometry_position_array.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_element_integration_select.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_mat_arrhenius_pv.hpp"
 #include "4C_mat_carreauyasuda.hpp"
@@ -39,7 +39,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(
-    DRT::FaceElement* ele)
+    CORE::Elements::FaceElement* ele)
 {
   switch (ele->Shape())
   {
@@ -374,9 +374,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
-    DRT::FaceElement* surfele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix::Base& elemat1,
-    CORE::LINALG::SerialDenseMatrix::Base& elemat2)
+    CORE::Elements::FaceElement* surfele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix::Base& elemat1, CORE::LINALG::SerialDenseMatrix::Base& elemat2)
 {
   switch (surfele->Shape())
   {
@@ -599,7 +599,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     //---------------------------------------------------------------------
     // get parent element data
     //---------------------------------------------------------------------
-    DRT::Element* parent = surfele->parent_element();
+    CORE::Elements::Element* parent = surfele->parent_element();
 
     // parent element id
     int pid = parent->Id();
@@ -651,7 +651,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     std::vector<int> blm;
     std::vector<int> blmowner;
     std::vector<int> blmstride;
-    surfele->DRT::Element::LocationVector(discretization, blm, blmowner, blmstride);
+    surfele->CORE::Elements::Element::LocationVector(discretization, blm, blmowner, blmstride);
 
     //---------------------------------------------------------------------
     // map Gaussian integration points to parent element for one-sided
@@ -1258,7 +1258,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   //---------------------------------------------------------------------
   // get parent element data
   //---------------------------------------------------------------------
-  DRT::Element* parent = surfele->parent_element();
+  CORE::Elements::Element* parent = surfele->parent_element();
 
   // parent element id
   int pid = parent->Id();
@@ -1310,7 +1310,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   std::vector<int> blm;
   std::vector<int> blmowner;
   std::vector<int> blmstride;
-  surfele->DRT::Element::LocationVector(discretization, blm, blmowner, blmstride);
+  surfele->CORE::Elements::Element::LocationVector(discretization, blm, blmowner, blmstride);
 
   //---------------------------------------------------------------------
   // map Gaussian integration points to parent element for one-sided
@@ -1589,7 +1589,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   //---------------------------------------------------------------------
   // get parent element data
   //---------------------------------------------------------------------
-  DRT::Element* parent = surfele->parent_element();
+  CORE::Elements::Element* parent = surfele->parent_element();
 
   // parent element id
   int pid = parent->Id();
@@ -1641,7 +1641,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   std::vector<int> blm;
   std::vector<int> blmowner;
   std::vector<int> blmstride;
-  surfele->DRT::Element::LocationVector(discretization, blm, blmowner, blmstride);
+  surfele->CORE::Elements::Element::LocationVector(discretization, blm, blmowner, blmstride);
 
   // get slip coefficient
   const double beta = params.get<double>("beta");
@@ -1931,7 +1931,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   //---------------------------------------------------------------------
   // get parent element data
   //---------------------------------------------------------------------
-  DRT::Element* parent = surfele->parent_element();
+  CORE::Elements::Element* parent = surfele->parent_element();
 
   // parent element id
   int pid = parent->Id();
@@ -1983,7 +1983,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   std::vector<int> blm;
   std::vector<int> blmowner;
   std::vector<int> blmstride;
-  surfele->DRT::Element::LocationVector(discretization, blm, blmowner, blmstride);
+  surfele->CORE::Elements::Element::LocationVector(discretization, blm, blmowner, blmstride);
 
   //---------------------------------------------------------------------
   // map Gaussian integration points to parent element for one-sided
@@ -3732,14 +3732,15 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 template <CORE::FE::CellType distype>
 template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
-    DRT::FaceElement* surfele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    std::vector<int>& blm, CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra1,
+    CORE::Elements::FaceElement* surfele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, std::vector<int>& blm,
+    CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra1,
     CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra2)
 {
   //---------------------------------------------------------------------
   // get parent element data
   //---------------------------------------------------------------------
-  DRT::Element* parent = surfele->parent_element();
+  CORE::Elements::Element* parent = surfele->parent_element();
 
   // parent element id
   int pid = parent->Id();
@@ -3770,7 +3771,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
   std::vector<int> plm;
   std::vector<int> plmowner;
   std::vector<int> plmstride;
-  parent->DRT::Element::LocationVector(discretization, plm, plmowner, plmstride);
+  parent->CORE::Elements::Element::LocationVector(discretization, plm, plmowner, plmstride);
 
   //---------------------------------------------------------------------
   // get boundary element data
@@ -4299,7 +4300,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 {
   //--------------------------------------------------
   // get my parent element
-  DRT::Element* parent = surfele->parent_element();
+  CORE::Elements::Element* parent = surfele->parent_element();
 
   // evaluate material at integration point
   const double rateofstrain = 0.0;

@@ -40,8 +40,13 @@ namespace BINSTRATEGY
 namespace DRT
 {
   class Discretization;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
+
 namespace FBI
 {
   class FBIGeometryCoupler;
@@ -184,7 +189,7 @@ namespace ADAPTER
      *\param[out] beam_dofvec current positions and velocities of the beam element
      *\param[out] fluid_dofvec current positions and velocities of the fluid element
      */
-    virtual void extract_current_element_dofs(std::vector<DRT::Element const*> elements,
+    virtual void extract_current_element_dofs(std::vector<CORE::Elements::Element const*> elements,
         std::vector<double>& beam_dofvec, std::vector<double>& fluid_dofvec) const;
 
     /**

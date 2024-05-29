@@ -40,8 +40,12 @@ namespace CORE::LINALG
 namespace DRT
 {
   class Discretization;
-  class Element;
 }  // namespace DRT
+
+namespace CORE::Elements
+{
+  class Element;
+}
 
 class Beam3ContactOctTree;
 
@@ -468,7 +472,7 @@ namespace CONTACT
     We search pairs of elements that might get in contact. Pairs of elements that are direct
     neighbours, i.e. share one node, will be rejected.
     */
-    std::vector<std::vector<DRT::Element*>> brute_force_search(
+    std::vector<std::vector<CORE::Elements::Element*>> brute_force_search(
         std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const double searchradius,
         const double sphericalsearchradius);
 
@@ -504,7 +508,8 @@ namespace CONTACT
     /*
     \brief Test if element midpoints are close (spherical bounding box intersection)
     */
-    bool close_midpoint_distance(const DRT::Element* ele1, const DRT::Element* ele2,
+    bool close_midpoint_distance(const CORE::Elements::Element* ele1,
+        const CORE::Elements::Element* ele2,
         std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
         const double sphericalsearchradius);
 
@@ -512,7 +517,7 @@ namespace CONTACT
     \brief Set the member variables numnodes_ and numnodalvalues depending on the element type
     handed in!
     */
-    void set_element_type_and_distype(DRT::Element* ele1);
+    void set_element_type_and_distype(CORE::Elements::Element* ele1);
 
     /*!
     \brief Check, if pair with given element IDs is allready existing in the vector pairs_!
@@ -590,54 +595,56 @@ namespace CONTACT
     \brief Sort found element pairs and fill vectors of contact pairs (BTB, BTSOL and BTSPH)
 
     */
-    void fill_contact_pairs_vectors(const std::vector<std::vector<DRT::Element*>> elementpairs);
+    void fill_contact_pairs_vectors(
+        const std::vector<std::vector<CORE::Elements::Element*>> elementpairs);
 
     /*!
     \brief Sort found element pairs and fill vectors of potential pairs (BTB, BTSOL and BTSPH)
 
     */
-    void fill_potential_pairs_vectors(const std::vector<std::vector<DRT::Element*>> elementpairs);
+    void fill_potential_pairs_vectors(
+        const std::vector<std::vector<CORE::Elements::Element*>> elementpairs);
 
     /*!
     \brief Compute coordinates for GMSH-Output for two-noded-elements
 
     */
     void gmsh_2_noded(const int& n, const CORE::LINALG::SerialDenseMatrix& coord,
-        const DRT::Element* thisele, std::stringstream& gmshfilecontent);
+        const CORE::Elements::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Output for three-noded-elements
 
     */
     void gmsh_3_noded(const int& n, const CORE::LINALG::SerialDenseMatrix& allcoord,
-        const DRT::Element* thisele, std::stringstream& gmshfilecontent);
+        const CORE::Elements::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Output for four-noded-elements
 
     */
     void gmsh_4_noded(const int& n, const CORE::LINALG::SerialDenseMatrix& allcoord,
-        const DRT::Element* thisele, std::stringstream& gmshfilecontent);
+        const CORE::Elements::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Output for N-noded-elements
     */
     void gmsh_n_noded(const int& n, int& n_axial, const CORE::LINALG::SerialDenseMatrix& allcoord,
-        const DRT::Element* thisele, std::stringstream& gmshfilecontent);
+        const CORE::Elements::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Line-Output for N-noded-elements
     */
     void gmsh_n_noded_line(const int& n, const int& n_axial,
-        const CORE::LINALG::SerialDenseMatrix& allcoord, const DRT::Element* thisele,
+        const CORE::LINALG::SerialDenseMatrix& allcoord, const CORE::Elements::Element* thisele,
         std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Output of rigid sphere
 
     */
-    void gmsh_sphere(const CORE::LINALG::SerialDenseMatrix& coord, const DRT::Element* thisele,
-        std::stringstream& gmshfilecontent);
+    void gmsh_sphere(const CORE::LINALG::SerialDenseMatrix& coord,
+        const CORE::Elements::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Print Gmsh Triangle to stringstream by specifying the vertices
@@ -657,19 +664,19 @@ namespace CONTACT
     /*!
     \brief GMSH-Surface-Output for solid elements
     */
-    void gmsh_solid(const DRT::Element* element, const Epetra_Vector& disrow,
+    void gmsh_solid(const CORE::Elements::Element* element, const Epetra_Vector& disrow,
         std::stringstream& gmshfilecontent);
 
     /*!
     \brief GMSH-Surface-Output for solid surfaces
     */
-    void gmsh_solid_surface_element_numbers(const DRT::Element* element,
+    void gmsh_solid_surface_element_numbers(const CORE::Elements::Element* element,
         const Epetra_Vector& disrow, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Get color of solid element surfaces for GMSH-Output
     */
-    void gmsh_get_surf_color(const DRT::Element* element, const int& n_surfNodes,
+    void gmsh_get_surf_color(const CORE::Elements::Element* element, const int& n_surfNodes,
         const int surfNodes[6][9], double surfColor[6]);
 
     /*!

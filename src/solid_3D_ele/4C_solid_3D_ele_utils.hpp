@@ -10,15 +10,16 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_solid_3D_ele_properties.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace STR::UTILS
 {
-  void NodalBlockInformationSolid(DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+  void NodalBlockInformationSolid(
+      CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
   /*!
    * @brief Converts the 2nd Piola-Kirchhoff stress tensor in stress like Voigt notation to the

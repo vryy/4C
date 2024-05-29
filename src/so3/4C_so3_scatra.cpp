@@ -11,10 +11,10 @@
 
 #include "4C_so3_scatra.hpp"
 
+#include "4C_discretization_fem_general_element_integration_select.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ssi.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_element_integration_select.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -63,7 +63,7 @@ DRT::ELEMENTS::So3Scatra<so3_ele, distype>::So3Scatra(
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Clone() const
 {
   auto* newelement = new DRT::ELEMENTS::So3Scatra<so3_ele, distype>(*this);
   return newelement;
@@ -151,7 +151,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Print(std::ostream& os) const
 {
   os << "So3_scatra ";
   os << " discretization type: " << CORE::FE::CellTypeToString(distype).c_str();
-  Element::Print(os);
+  CORE::Elements::Element::Print(os);
   return;
 }
 

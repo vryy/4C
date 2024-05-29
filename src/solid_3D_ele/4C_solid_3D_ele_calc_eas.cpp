@@ -655,7 +655,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Unpack(
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_nonlinear_force_stiffness_mass(
-    const DRT::Element& ele, MAT::So3Material& solid_material,
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
     CORE::LINALG::SerialDenseMatrix* stiffness_matrix, CORE::LINALG::SerialDenseMatrix* mass_matrix)
@@ -780,7 +780,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_nonlinear_force
 }
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Recover(DRT::Element& ele,
+void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Recover(CORE::Elements::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
@@ -812,7 +812,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Recover(DRT::Element& el
 }
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Update(const DRT::Element& ele,
+void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Update(const CORE::Elements::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
@@ -856,9 +856,9 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Update(const DRT::Elemen
 }
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateStress(const DRT::Element& ele,
-    MAT::So3Material& solid_material, const StressIO& stressIO, const StrainIO& strainIO,
-    const DRT::Discretization& discretization, const std::vector<int>& lm,
+void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateStress(
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material, const StressIO& stressIO,
+    const StrainIO& strainIO, const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;
@@ -911,7 +911,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateStress(const DR
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
 double DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::calculate_internal_energy(
-    const DRT::Element& ele, MAT::So3Material& solid_material,
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
@@ -956,7 +956,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Setup(
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::material_post_setup(
-    const DRT::Element& ele, MAT::So3Material& solid_material)
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material)
 {
   Teuchos::ParameterList params{};
 
@@ -970,7 +970,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::material_post_setup(
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::initialize_gauss_point_data_output(
-    const DRT::Element& ele, const MAT::So3Material& solid_material,
+    const CORE::Elements::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   FOUR_C_ASSERT(ele.IsParamsInterface(),
@@ -982,7 +982,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::initialize_gauss_point_d
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_gauss_point_data_output(
-    const DRT::Element& ele, const MAT::So3Material& solid_material,
+    const CORE::Elements::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   FOUR_C_ASSERT(ele.IsParamsInterface(),
@@ -994,7 +994,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_gauss_point_dat
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::reset_to_last_converged(
-    const DRT::Element& ele, MAT::So3Material& solid_material)
+    const CORE::Elements::Element& ele, MAT::So3Material& solid_material)
 {
   solid_material.reset_step();
 }

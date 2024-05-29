@@ -196,7 +196,7 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
 
     if (myrank == 0)
     {
-      Teuchos::RCP<DRT::Element> constraintele =
+      Teuchos::RCP<CORE::Elements::Element> constraintele =
           CORE::COMM::Factory(element_name, "Polynomial", j, myrank);
       // set the same global node ids to the ale element
       constraintele->SetNodeIds(ngid.size(), ngid.data());
@@ -290,7 +290,7 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<DRT::Discretiz
   // loop over column elements
   for (int i = 0; i < numcolele; ++i)
   {
-    DRT::Element* actele = disc->lColElement(i);
+    CORE::Elements::Element* actele = disc->lColElement(i);
     CORE::Conditions::Condition& cond = *(constrcond_[actele->Id()]);
     int condID = cond.parameters().Get<int>("ConditionID");
 

@@ -1927,7 +1927,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::Create(const CORE::FE::CellType& sid
 CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::Create(const unsigned& shardskey, const int& sid,
     const std::vector<Node*>& nodes, const std::vector<Edge*>& edges)
 {
-  return Create(DRT::ShardsKeyToDisType(shardskey), sid, nodes, edges);
+  return Create(CORE::Elements::ShardsKeyToDisType(shardskey), sid, nodes, edges);
 }
 
 

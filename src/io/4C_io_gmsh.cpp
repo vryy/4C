@@ -35,7 +35,7 @@ void IO::GMSH::ScalarFieldToGmsh(const Teuchos::RCP<DRT::Discretization> discret
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
-    const DRT::Element* ele = discret->lRowElement(iele);
+    const CORE::Elements::Element* ele = discret->lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
 
@@ -85,7 +85,7 @@ void IO::GMSH::ScalarFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
-    const DRT::Element* ele = discret->lRowElement(iele);
+    const CORE::Elements::Element* ele = discret->lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
 
@@ -105,7 +105,7 @@ void IO::GMSH::ScalarFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
     // write node coordinates to Gmsh stream
     CoordinatesToStream(xyze, distype, s);
 
-    DRT::Element::LocationArray la(discret->NumDofSets());
+    CORE::Elements::Element::LocationArray la(discret->NumDofSets());
     ele->LocationVector(*discret, la, false);
 
     // extract local values from the global vector
@@ -159,7 +159,7 @@ void IO::GMSH::ScalarElementFieldToGmsh(const Teuchos::RCP<DRT::Discretization> 
   // elements (similar to discontinuous methods)
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
-    const DRT::Element* ele = discret->lRowElement(iele);
+    const CORE::Elements::Element* ele = discret->lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
 
@@ -206,7 +206,7 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
-    const DRT::Element* ele = discret->lRowElement(iele);
+    const CORE::Elements::Element* ele = discret->lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
     const int nsd = CORE::FE::getDimension(distype);
@@ -219,7 +219,7 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
       for (int idim = 0; idim < nsd; ++idim) xyze(idim, inode) = nodes[inode]->X()[idim];
     }
 
-    DRT::Element::LocationArray la(discret->NumDofSets());
+    CORE::Elements::Element::LocationArray la(discret->NumDofSets());
     ele->LocationVector(*discret, la, false);
 
     // extract local values from the global vector
@@ -271,7 +271,7 @@ void IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
-    const DRT::Element* ele = discret->lRowElement(iele);
+    const CORE::Elements::Element* ele = discret->lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
     const int nsd = CORE::FE::getDimension(distype);
@@ -293,7 +293,7 @@ void IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
     // write node coordinates to Gmsh stream
     CoordinatesToStream(xyze, distype, s);
 
-    DRT::Element::LocationArray la(discret->NumDofSets());
+    CORE::Elements::Element::LocationArray la(discret->NumDofSets());
     ele->LocationVector(*discret, la, false);
 
     // extract local values from the global vector
@@ -332,7 +332,7 @@ void IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discreti
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
-    const DRT::Element* ele = discret->lRowElement(iele);
+    const CORE::Elements::Element* ele = discret->lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
 
@@ -392,7 +392,7 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
-    const DRT::Element* ele = discret->lRowElement(iele);
+    const CORE::Elements::Element* ele = discret->lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
     const int nsd = CORE::FE::getDimension(distype);
@@ -405,7 +405,7 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
       for (int idim = 0; idim < nsd; ++idim) xyze(idim, inode) = nodes[inode]->X()[idim];
     }
 
-    DRT::Element::LocationArray la(discret->NumDofSets());
+    CORE::Elements::Element::LocationArray la(discret->NumDofSets());
     ele->LocationVector(*discret, la, false);
 
     // extract local values from the global vector
@@ -484,7 +484,7 @@ void IO::GMSH::VectorFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
-    const DRT::Element* ele = discret->lRowElement(iele);
+    const CORE::Elements::Element* ele = discret->lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
     const int numnode = ele->num_node();
     const int nsd = CORE::FE::getDimension(distype);
@@ -533,7 +533,7 @@ void IO::GMSH::ScalarFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
   {
-    const DRT::Element* ele = discret->lRowElement(iele);
+    const CORE::Elements::Element* ele = discret->lRowElement(iele);
     const CORE::FE::CellType distype = ele->Shape();
     const int numnode = ele->num_node();
 
@@ -603,7 +603,7 @@ void IO::GMSH::VectorToStream(const CORE::LINALG::Matrix<3, 1>& pointXYZ,  ///< 
 }
 
 void IO::GMSH::elementAtInitialPositionToStream(
-    const double scalar, const DRT::Element* ele, std::ostream& s)
+    const double scalar, const CORE::Elements::Element* ele, std::ostream& s)
 {
   const DRT::Node* const* nodes = ele->Nodes();
 
@@ -633,7 +633,8 @@ void IO::GMSH::elementAtInitialPositionToStream(
 }
 
 
-std::string IO::GMSH::elementAtInitialPositionToString(const double scalar, const DRT::Element* ele)
+std::string IO::GMSH::elementAtInitialPositionToString(
+    const double scalar, const CORE::Elements::Element* ele)
 {
   std::ostringstream s;
   elementAtInitialPositionToStream(scalar, ele, s);
@@ -641,7 +642,8 @@ std::string IO::GMSH::elementAtInitialPositionToString(const double scalar, cons
 }
 
 
-void IO::GMSH::elementAtCurrentPositionToStream(const double scalar, const DRT::Element* ele,
+void IO::GMSH::elementAtCurrentPositionToStream(const double scalar,
+    const CORE::Elements::Element* ele,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentelepositions, std::ostream& s)
 {
   IO::GMSH::cellWithScalarToStream(
@@ -649,7 +651,8 @@ void IO::GMSH::elementAtCurrentPositionToStream(const double scalar, const DRT::
 }
 
 
-std::string IO::GMSH::elementAtCurrentPositionToString(const double scalar, const DRT::Element* ele,
+std::string IO::GMSH::elementAtCurrentPositionToString(const double scalar,
+    const CORE::Elements::Element* ele,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentelepositions)
 {
   std::ostringstream s;
@@ -684,7 +687,7 @@ void IO::GMSH::disToStream(const std::string& text, const double scalar,
   s << "View \" " << text << " Elements \" {\n";
   for (int i = 0; i < dis->NumMyRowElements(); ++i)
   {
-    const DRT::Element* actele = dis->lRowElement(i);
+    const CORE::Elements::Element* actele = dis->lRowElement(i);
     IO::GMSH::elementAtInitialPositionToStream(scalar, actele, s);
   }
   s << "};\n";
@@ -706,7 +709,7 @@ void IO::GMSH::disToStream(const std::string& text, const double scalar,
 
   for (int i = 0; i < dis->NumMyColElements(); ++i)
   {
-    const DRT::Element* actele = dis->lColElement(i);
+    const CORE::Elements::Element* actele = dis->lColElement(i);
     IO::GMSH::cellWithScalarToStream(
         actele->Shape(), scalar, CORE::GEO::getCurrentNodalPositions(actele, currentpositions), s);
   }

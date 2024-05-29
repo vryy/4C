@@ -1360,7 +1360,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
   // take care also of ghosted elements! -> ElementColMap!
   for (int i = 0; i < macro_dis->ElementColMap()->NumMyElements(); ++i)
   {
-    DRT::Element* actele = macro_dis->lColElement(i);
+    CORE::Elements::Element* actele = macro_dis->lColElement(i);
     Teuchos::RCP<CORE::MAT::Material> actmat = actele->Material();
 
     if (id_elch != -1 and actmat->MaterialType() == CORE::Materials::m_elchmat)

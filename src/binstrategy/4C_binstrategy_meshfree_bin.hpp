@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_lib_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -26,7 +26,7 @@ namespace DRT
      * \brief A meshfree bin adds the possibility to add and delete nodes
      *        from elements dynamically
      *
-     * Rather than deriving this class directly from DRT::Element, we set the base
+     * Rather than deriving this class directly from CORE::Elements::Element, we set the base
      * element as a template argument in order to allow for both standard elements
      * and face elements, i.e., elements that have a parent element. In
      * particular, it allows for a clean interface to the meshfree types with
@@ -68,12 +68,12 @@ namespace DRT
        * \brief Deep copy the derived class and return pointer to it
        *
        * This method is sort of a copy constructor for a class derived from
-       * DRT::Element. It allows to copy construct the derived class without
+       * CORE::Elements::Element. It allows to copy construct the derived class without
        * knowing what it actually is using the base class Element.
        *
        *///                                                  (public) ghamm 11/12
       /*------------------------------------------------------------------------*/
-      DRT::Element* Clone() const override = 0;
+      CORE::Elements::Element* Clone() const override = 0;
 
       /*------------------------------------------------------------------------*/
       /*!

@@ -33,7 +33,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Ale3NurbsType::Create(const std::ve
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale3NurbsType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::NURBS::Ale3NurbsType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ALE3")
@@ -48,7 +48,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale3NurbsType::Create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale3NurbsType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::NURBS::Ale3NurbsType::Create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Ale3Nurbs(id, owner));
@@ -57,7 +57,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale3NurbsType::Create(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::NURBS::Ale3NurbsType::nodal_block_information(
-    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;

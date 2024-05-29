@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInterface::Impl(
-    const DRT::Element* ele)
+    const CORE::Elements::Element* ele)
 {
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
@@ -123,7 +123,8 @@ DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(int numdofpernode
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(const DRT::ELEMENTS::ThermoBoundary* ele,
     Teuchos::ParameterList& params, const DRT::Discretization& discretization,
-    const DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    const CORE::Elements::Element::LocationArray& la,
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -140,7 +141,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(const DRT::ELEMENTS::Th
 
   // First, do the things that are needed for all actions:
   // get the material (of the parent element)
-  DRT::Element* genericparent = ele->parent_element();
+  CORE::Elements::Element* genericparent = ele->parent_element();
   // make sure the static cast below is really valid
   FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Thermo*>(genericparent) != nullptr,
       "Parent element is no fluid element");
@@ -584,7 +585,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(const DRT::ELEMENTS::Th
  | i.e. calculate q^ = q . n over surface da                            |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::TemperBoundaryImpl<distype>::evaluate_neumann(const DRT::Element* ele,
+int DRT::ELEMENTS::TemperBoundaryImpl<distype>::evaluate_neumann(const CORE::Elements::Element* ele,
     Teuchos::ParameterList& params, const DRT::Discretization& discretization,
     const CORE::Conditions::Condition& condition, const std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1)
@@ -668,7 +669,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::evaluate_neumann(const DRT::Elem
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::calculate_convection_fint_cond(
-    const DRT::Element* ele, CORE::LINALG::Matrix<nen_, nen_>* econd,
+    const CORE::Elements::Element* ele, CORE::LINALG::Matrix<nen_, nen_>* econd,
     CORE::LINALG::Matrix<nen_, 1>* efext, const double coeff, const double surtemp,
     const std::string& tempstate)
 {
@@ -750,7 +751,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::calculate_convection_fint_cond(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fint_cond(
-    const DRT::Element* ele,
+    const CORE::Elements::Element* ele,
     const std::vector<double>& disp,  // current displacements
     CORE::LINALG::Matrix<nen_, nen_>* econd,
     CORE::LINALG::Matrix<nen_, (nsd_ + 1) * nen_>* etangcoupl, CORE::LINALG::Matrix<nen_, 1>* efext,
@@ -1043,8 +1044,9 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::get_const_normal(
  | integrate shapefunctions over surface (private)            gjb 02/09 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::integrate_shape_functions(const DRT::Element* ele,
-    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& elevec1, const bool addarea)
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::integrate_shape_functions(
+    const CORE::Elements::Element* ele, Teuchos::ParameterList& params,
+    CORE::LINALG::SerialDenseVector& elevec1, const bool addarea)
 {
   // access boundary area variable with its actual value
   double boundaryint = params.get<double>("boundaryint");
@@ -1155,7 +1157,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::surface_integration(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::prepare_nurbs_eval(
-    const DRT::Element* ele,                   // the element whose matrix is calculated
+    const CORE::Elements::Element* ele,        // the element whose matrix is calculated
     const DRT::Discretization& discretization  // current discretisation
 )
 {
@@ -1173,7 +1175,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::prepare_nurbs_eval(
   std::vector<CORE::LINALG::SerialDenseVector> parentknots(3);
   myknots_.resize(2);
 
-  const auto* faceele = dynamic_cast<const DRT::FaceElement*>(ele);
+  const auto* faceele = dynamic_cast<const CORE::Elements::FaceElement*>(ele);
   (*nurbsdis).GetKnotVector()->get_boundary_ele_and_parent_knots(parentknots, myknots_, normalfac_,
       faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
 

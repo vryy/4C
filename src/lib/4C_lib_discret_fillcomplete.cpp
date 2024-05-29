@@ -213,7 +213,7 @@ void DRT::Discretization::build_element_row_map()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
   for (curr = element_.begin(); curr != element_.end(); ++curr)
     if (curr->second->Owner() == myrank) nummyeles++;
   std::vector<int> eleids(nummyeles);
@@ -239,7 +239,7 @@ void DRT::Discretization::build_element_col_map()
   int nummyeles = (int)element_.size();
   std::vector<int> eleids(nummyeles);
   elecolptr_.resize(nummyeles);
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
   int count = 0;
   for (curr = element_.begin(); curr != element_.end(); ++curr)
   {
@@ -258,7 +258,7 @@ void DRT::Discretization::build_element_col_map()
  *----------------------------------------------------------------------*/
 void DRT::Discretization::build_element_to_node_pointers()
 {
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator elecurr;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator elecurr;
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     bool success = elecurr->second->BuildNodalPointers(node_);
@@ -272,7 +272,7 @@ void DRT::Discretization::build_element_to_node_pointers()
  *----------------------------------------------------------------------*/
 void DRT::Discretization::build_element_to_element_pointers()
 {
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator elecurr;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator elecurr;
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     bool success = elecurr->second->build_element_pointers(element_);
@@ -290,7 +290,7 @@ void DRT::Discretization::build_node_to_element_pointers()
   for (nodecurr = node_.begin(); nodecurr != node_.end(); ++nodecurr)
     nodecurr->second->clear_my_element_topology();
 
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator elecurr;
+  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator elecurr;
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     const int nnode = elecurr->second->num_node();

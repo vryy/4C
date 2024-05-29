@@ -190,7 +190,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
       bool isleft = false;   // true, if element should be sorted into left treenode
 
       int gid = elelist()[i];
-      DRT::Element* element = discret().gElement(gid);
+      CORE::Elements::Element* element = discret().gElement(gid);
       if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
       DRT::Node** nodes = element->Points();
 
@@ -544,7 +544,7 @@ void MORTAR::BinaryTree::init_search_elements()
   for (int i = 0; i < selements_->NumMyElements(); ++i)
   {
     int gid = selements_->GID(i);
-    DRT::Element* ele = discret().gElement(gid);
+    CORE::Elements::Element* ele = discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     MORTAR::Element* sele = dynamic_cast<MORTAR::Element*>(ele);
 
@@ -611,7 +611,7 @@ void MORTAR::BinaryTree::set_enlarge()
   for (int i = 0; i < selements_->NumMyElements(); ++i)
   {
     int gid = selements_->GID(i);
-    DRT::Element* element = discret().gElement(gid);
+    CORE::Elements::Element* element = discret().gElement(gid);
     if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
     MORTAR::Element* mrtrelement = dynamic_cast<MORTAR::Element*>(element);
     double mincurrent = mrtrelement->MinEdgeSize();
@@ -622,7 +622,7 @@ void MORTAR::BinaryTree::set_enlarge()
   for (int i = 0; i < melements_->NumMyElements(); ++i)
   {
     int gid = melements_->GID(i);
-    DRT::Element* element = discret().gElement(gid);
+    CORE::Elements::Element* element = discret().gElement(gid);
     if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
     MORTAR::Element* mrtrelement = dynamic_cast<MORTAR::Element*>(element);
     double mincurrent = mrtrelement->MinEdgeSize();
@@ -787,7 +787,7 @@ void MORTAR::BinaryTree::evaluate_search(
     {
       int sgid = (int)streenode->elelist()[0];  // global id of slave element
       int mgid = (int)mtreenode->elelist()[0];  // global id of master element
-      DRT::Element* element = discret().gElement(sgid);
+      CORE::Elements::Element* element = discret().gElement(sgid);
       MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(element);
       selement->AddSearchElements(mgid);
     }

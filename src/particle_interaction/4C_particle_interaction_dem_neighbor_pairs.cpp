@@ -187,7 +187,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs()
         container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i));
 
     // get pointer to column wall element
-    DRT::Element* ele = potentialneighbors.second;
+    CORE::Elements::Element* ele = potentialneighbors.second;
 
     // determine nodal positions of column wall element
     std::map<int, CORE::LINALG::Matrix<3, 1>> colelenodalpos;
@@ -480,7 +480,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
         container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i));
 
     // get pointer to column wall element
-    DRT::Element* ele = potentialneighbors.second;
+    CORE::Elements::Element* ele = potentialneighbors.second;
 
     // adhesion surface energy
     double surface_energy = 0.0;

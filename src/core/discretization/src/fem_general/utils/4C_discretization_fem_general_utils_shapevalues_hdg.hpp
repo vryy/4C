@@ -12,9 +12,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_utils_gausspoints.hpp"
 #include "4C_discretization_fem_general_utils_polynomial.hpp"
-#include "4C_lib_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
@@ -121,7 +121,7 @@ namespace CORE::FE
     \brief Compute element-dependent data, like gradients in real cell, integration weights, for
     element dofs
     */
-    void Evaluate(const DRT::Element &ele, const std::vector<double> &aleDis = {});
+    void Evaluate(const CORE::Elements::Element &ele, const std::vector<double> &aleDis = {});
 
     /// polynomial degree
     unsigned int degree_;
@@ -203,13 +203,13 @@ namespace CORE::FE
     \brief Compute element-dependent data on faces, like integration weights, normal vectors,
     correctly oriented trace variables
     */
-    void EvaluateFace(
-        const DRT::Element &ele, const unsigned int face, const std::vector<double> &aleDis = {});
+    void EvaluateFace(const CORE::Elements::Element &ele, const unsigned int face,
+        const std::vector<double> &aleDis = {});
 
     /*!
     \brief Consider the orientation of faces for face degrees of freedom
      */
-    void adjust_face_orientation(const DRT::Element &ele, const unsigned int face);
+    void adjust_face_orientation(const CORE::Elements::Element &ele, const unsigned int face);
 
     /// Parameters underlying this structure, necessary for evaluating element basis functions on
     /// faces
@@ -277,7 +277,7 @@ namespace CORE::FE
 
     \Author: Berardocco
      */
-    void compute_face_reference_system(const DRT::Element &ele, const unsigned int face);
+    void compute_face_reference_system(const CORE::Elements::Element &ele, const unsigned int face);
   };
 
   /*!

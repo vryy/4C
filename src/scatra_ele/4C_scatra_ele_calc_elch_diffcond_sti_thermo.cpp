@@ -40,10 +40,10 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::Instance(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::extract_element_and_node_values(
-    DRT::Element* ele,                    //!< current element
-    Teuchos::ParameterList& params,       //!< parameter list
-    DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la       //!< location array
+    CORE::Elements::Element* ele,               //!< current element
+    Teuchos::ParameterList& params,             //!< parameter list
+    DRT::Discretization& discretization,        //!< discretization
+    CORE::Elements::Element::LocationArray& la  //!< location array
 )
 {
   // call base class routine to extract scatra-related quantities
@@ -59,12 +59,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::extract_element
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::get_material_params(
-    const DRT::Element* ele,      //!< current element
-    std::vector<double>& densn,   //!< density at t_(n)
-    std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-    std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-    double& visc,                 //!< fluid viscosity
-    const int iquad               //!< ID of current integration point
+    const CORE::Elements::Element* ele,  //!< current element
+    std::vector<double>& densn,          //!< density at t_(n)
+    std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
+    std::vector<double>& densam,         //!< density at t_(n+alpha_M)
+    double& visc,                        //!< fluid viscosity
+    const int iquad                      //!< ID of current integration point
 )
 {
   // call base class routine to get parameters of primary, isothermal electrolyte material
@@ -172,11 +172,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::calc_mat_and_rh
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::EvaluateActionOD(
-    DRT::Element* ele,                                //!< current element
+    CORE::Elements::Element* ele,                     //!< current element
     Teuchos::ParameterList& params,                   //!< parameter list
     DRT::Discretization& discretization,              //!< discretization
     const SCATRA::Action& action,                     //!< action parameter
-    DRT::Element::LocationArray& la,                  //!< location array
+    CORE::Elements::Element::LocationArray& la,       //!< location array
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
     CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
@@ -214,7 +214,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::EvaluateActionOD
  *------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::sysmat_od_scatra_thermo(
-    DRT::Element* ele,                     //!< current element
+    CORE::Elements::Element* ele,          //!< current element
     CORE::LINALG::SerialDenseMatrix& emat  //!< element matrix
 )
 {

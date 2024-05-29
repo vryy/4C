@@ -35,10 +35,10 @@ namespace DRT
 
      protected:
       //! Factor needed for the calculation of reference concentrations
-      double fac_for_ref_conc(const int iquad,  ///< current boundary integration point
-          const DRT::FaceElement* bele,         ///< current boundary element
-          Teuchos::ParameterList& params,       ///< parameter list
-          DRT::Discretization& discretization   ///< discretization
+      double fac_for_ref_conc(const int iquad,      ///< current boundary integration point
+          const CORE::Elements::FaceElement* bele,  ///< current boundary element
+          Teuchos::ParameterList& params,           ///< parameter list
+          DRT::Discretization& discretization       ///< discretization
           ) override;
 
      private:
@@ -48,11 +48,11 @@ namespace DRT
 
       template <CORE::FE::CellType bdistype,
           CORE::FE::CellType pdistype>
-      double calc_jat_int_point(const int iquad,  ///< current boundary integration point
-          const DRT::FaceElement* bele,           ///< current boundary element
-          const DRT::Element* pele,               ///< current parent element
-          Teuchos::ParameterList& params,         ///< parameter list
-          DRT::Discretization& discretization     ///< discretization
+      double calc_jat_int_point(const int iquad,    ///< current boundary integration point
+          const CORE::Elements::FaceElement* bele,  ///< current boundary element
+          const CORE::Elements::Element* pele,      ///< current parent element
+          Teuchos::ParameterList& params,           ///< parameter list
+          DRT::Discretization& discretization       ///< discretization
       );
 
     };  // class ScaTraEleBoundaryCalcRefConcReac

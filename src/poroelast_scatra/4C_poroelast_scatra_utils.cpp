@@ -34,7 +34,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-bool POROELASTSCATRA::UTILS::IsPoroScatraElement(const DRT::Element* actele)
+bool POROELASTSCATRA::UTILS::IsPoroScatraElement(const CORE::Elements::Element* actele)
 {
   // checks if element is a poro scatra element (new elements need to be listed here)
   return actele->ElementType() == DRT::ELEMENTS::SoHex8PoroScatraType::Instance() or
@@ -51,7 +51,7 @@ bool POROELASTSCATRA::UTILS::IsPoroScatraElement(const DRT::Element* actele)
          IsPoroP1ScatraElement(actele);
 }
 
-bool POROELASTSCATRA::UTILS::IsPoroP1ScatraElement(const DRT::Element* actele)
+bool POROELASTSCATRA::UTILS::IsPoroP1ScatraElement(const CORE::Elements::Element* actele)
 {
   // checks if element is a porop1 scatra element (new elements need to be listed here)
   return actele->ElementType() == DRT::ELEMENTS::SoHex8PoroP1ScatraType::Instance() or
@@ -170,9 +170,9 @@ void POROELASTSCATRA::UTILS::create_volume_ghosting(DRT::Discretization& idiscre
     {
       int gid = ielecolmap->GID(i);
 
-      DRT::Element* ele = idiscret.gElement(gid);
+      CORE::Elements::Element* ele = idiscret.gElement(gid);
       if (!ele) FOUR_C_THROW("ERROR: Cannot find element with gid %", gid);
-      auto* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+      auto* faceele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
 
       int volgid = 0;
       if (!faceele)

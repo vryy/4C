@@ -40,7 +40,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingCondition::Clear() {}
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToBeamPointCouplingCondition::CreateContactPair(
-    const std::vector<DRT::Element const*>& ele_ptrs)
+    const std::vector<CORE::Elements::Element const*>& ele_ptrs)
 {
   {
     // Check if the given elements are in this condition.
@@ -81,7 +81,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingCondition::BuildIdSets(
     // This means that the node is not in the column map of this proc and the element pair will thus
     // be created on a different processor
     if (node == nullptr) return;
-    DRT::Element* element = node->Elements()[0];
+    CORE::Elements::Element* element = node->Elements()[0];
     element_ids[i - 1] = element->Id();
     if (element->NodeIds()[0] == node_id)
       position_in_parameter_space[i - 1] = -1;

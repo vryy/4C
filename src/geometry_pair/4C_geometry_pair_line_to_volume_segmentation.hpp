@@ -45,7 +45,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToVolumeSegmentation(const DRT::Element* element1, const DRT::Element* element2,
+    GeometryPairLineToVolumeSegmentation(const CORE::Elements::Element* element1,
+        const CORE::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data);
 
 

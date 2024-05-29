@@ -17,9 +17,9 @@ loop for the evaluation.
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_element.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_shell7p_ele_calc_interface.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
@@ -49,17 +49,17 @@ namespace DRT
     class Shell7pLine;
 
 
-    class Shell7pType : public DRT::ElementType
+    class Shell7pType : public CORE::Elements::ElementType
     {
      public:
       void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
-      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
-          const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+          const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -68,7 +68,7 @@ namespace DRT
       [[nodiscard]] std::string Name() const override { return "Shell7pType"; }
 
       void nodal_block_information(
-          Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -118,7 +118,7 @@ namespace DRT
       *      PhD-Thesis
       *
       */
-    class Shell7p : public DRT::Element
+    class Shell7p : public CORE::Elements::Element
     {
      public:
       //! @name Friends
@@ -133,7 +133,7 @@ namespace DRT
       @param id    (in): A globally unique element id
       @param owner (in): owner processor of the element
       */
-      Shell7p(int id, int owner) : DRT::Element(id, owner){};
+      Shell7p(int id, int owner) : CORE::Elements::Element(id, owner){};
 
 
       //! copy constructor
@@ -149,7 +149,7 @@ namespace DRT
       Shell7p& operator=(Shell7p&& other) noexcept = default;
       //! @}
 
-      [[nodiscard]] DRT::Element* Clone() const override;
+      [[nodiscard]] CORE::Elements::Element* Clone() const override;
 
       [[nodiscard]] int UniqueParObjectId() const override
       {
@@ -160,7 +160,7 @@ namespace DRT
 
       void Unpack(const std::vector<char>& data) override;
 
-      [[nodiscard]] DRT::ElementType& ElementType() const override
+      [[nodiscard]] CORE::Elements::ElementType& ElementType() const override
       {
         return Shell7pType::Instance();
       }
@@ -171,9 +171,9 @@ namespace DRT
 
       [[nodiscard]] int NumSurface() const override;
 
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
       [[nodiscard]] int NumDofPerNode(const DRT::Node& node) const override { return 6; }
 

@@ -10,9 +10,9 @@
 
 #include "4C_linear_solver_method_parameters.hpp"
 
+#include "4C_discretization_fem_general_elementtype.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_discret_nullspace.hpp"
-#include "4C_lib_elementtype.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Xpetra_EpetraIntMultiVector.hpp>
@@ -38,7 +38,7 @@ void CORE::LINEAR_SOLVER::Parameters::compute_solver_parameters(
     if (nullspaceMap == Teuchos::null and dis.NumMyRowNodes() > 0)
     {
       // no map given, just grab the block information on the first element that appears
-      DRT::Element* dwele = dis.lRowElement(0);
+      CORE::Elements::Element* dwele = dis.lRowElement(0);
       dwele->ElementType().nodal_block_information(dwele, numdf, dimns, nv, np);
     }
     else
@@ -53,7 +53,7 @@ void CORE::LINEAR_SOLVER::Parameters::compute_solver_parameters(
 
         if (localIndex == -1) continue;
 
-        DRT::Element* dwele = dis.lRowElement(localIndex);
+        CORE::Elements::Element* dwele = dis.lRowElement(localIndex);
         actnode->Elements()[0]->ElementType().nodal_block_information(dwele, numdf, dimns, nv, np);
         break;
       }

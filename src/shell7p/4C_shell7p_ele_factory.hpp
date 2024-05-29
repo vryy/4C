@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_element.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -28,7 +28,7 @@ namespace DRT::ELEMENTS
     Shell7pFactory() = default;
 
     static std::unique_ptr<Shell7pEleCalcInterface> provide_shell7p_calculation_interface(
-        const DRT::Element& ele, const std::set<INPAR::STR::EleTech>& eletech);
+        const CORE::Elements::Element& ele, const std::set<INPAR::STR::EleTech>& eletech);
 
    private:
     //! define shell calculation instances dependent on element technology

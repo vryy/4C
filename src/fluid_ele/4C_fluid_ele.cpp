@@ -32,7 +32,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::FluidType::Create(const std::vector<char>&
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidType::Create(
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUID")
@@ -47,14 +47,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidType::Create(
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidType::Create(const int id, const int owner)
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidType::Create(
+    const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::Fluid(id, owner));
 }
 
 
 void DRT::ELEMENTS::FluidType::nodal_block_information(
-    Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
   dimns = numdf;
@@ -184,7 +185,7 @@ void DRT::ELEMENTS::FluidType::setup_element_definition(
  |  ctor (public)                                            gammi 02/08|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Fluid::Fluid(int id, int owner) : DRT::Element(id, owner), is_ale_(false)
+DRT::ELEMENTS::Fluid::Fluid(int id, int owner) : CORE::Elements::Element(id, owner), is_ale_(false)
 {
   distype_ = CORE::FE::CellType::dis_none;
   tds_ = Teuchos::null;
@@ -195,7 +196,7 @@ DRT::ELEMENTS::Fluid::Fluid(int id, int owner) : DRT::Element(id, owner), is_ale
  |  copy-ctor (public)                                       gammi 02/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid::Fluid(const DRT::ELEMENTS::Fluid& old)
-    : DRT::Element(old), distype_(old.distype_), is_ale_(old.is_ale_)
+    : CORE::Elements::Element(old), distype_(old.distype_), is_ale_(old.is_ale_)
 {
   tds_ = Teuchos::null;
   if (old.tds_ != Teuchos::null)
@@ -207,7 +208,7 @@ DRT::ELEMENTS::Fluid::Fluid(const DRT::ELEMENTS::Fluid& old)
  |  Deep copy this instance of Fluid and return pointer to it (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Fluid::Clone() const
+CORE::Elements::Element* DRT::ELEMENTS::Fluid::Clone() const
 {
   DRT::ELEMENTS::Fluid* newelement = new DRT::ELEMENTS::Fluid(*this);
   return newelement;
@@ -303,7 +304,7 @@ void DRT::ELEMENTS::Fluid::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)                 ae  02/010|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Fluid::Lines()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Fluid::Lines()
 {
   return CORE::COMM::GetElementLines<FluidBoundary, Fluid>(*this);
 }
@@ -312,7 +313,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Fluid::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          ehrl  02/10|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Fluid::Surfaces()
+std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Fluid::Surfaces()
 {
   return CORE::COMM::GetElementSurfaces<FluidBoundary, Fluid>(*this);
 }
@@ -321,14 +322,14 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Fluid::Surfaces()
 /*----------------------------------------------------------------------*
  |  get face element (public)                               schott 03/12|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid::CreateFaceElement(
-    DRT::Element* parent_slave,            //!< parent slave fluid3 element
-    int nnode,                             //!< number of surface nodes
-    const int* nodeids,                    //!< node ids of surface element
-    DRT::Node** nodes,                     //!< nodes of surface element
-    const int lsurface_master,             //!< local surface number w.r.t master parent element
-    const int lsurface_slave,              //!< local surface number w.r.t slave parent element
-    const std::vector<int>& localtrafomap  //! local trafo map
+Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Fluid::CreateFaceElement(
+    CORE::Elements::Element* parent_slave,  //!< parent slave fluid3 element
+    int nnode,                              //!< number of surface nodes
+    const int* nodeids,                     //!< node ids of surface element
+    DRT::Node** nodes,                      //!< nodes of surface element
+    const int lsurface_master,              //!< local surface number w.r.t master parent element
+    const int lsurface_slave,               //!< local surface number w.r.t slave parent element
+    const std::vector<int>& localtrafomap   //! local trafo map
 )
 {
   // dynamic cast for slave parent element

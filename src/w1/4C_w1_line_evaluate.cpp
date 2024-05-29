@@ -8,12 +8,12 @@
 */
 /*---------------------------------------------------------------------------*/
 
+#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_boundary_integration.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_elements_paramsinterface.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
@@ -697,7 +697,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_area_poro:
     {
       // get the parent element
-      const DRT::Element* parentele = parent_element();
+      const CORE::Elements::Element* parentele = parent_element();
       const int nenparent = parentele->num_node();
       // get element location vector and ownerships
       std::vector<int> lmpar;

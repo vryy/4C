@@ -10,7 +10,6 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_element.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_3D_ele_formulation.hpp"
 
@@ -23,7 +22,7 @@ namespace DRT::ELEMENTS
   class ElementFormulationDerivativeEvaluator
   {
    public:
-    ElementFormulationDerivativeEvaluator(const DRT::Element& ele,
+    ElementFormulationDerivativeEvaluator(const CORE::Elements::Element& ele,
         const DRT::ELEMENTS::ElementNodes<celltype>& element_nodes,
         const CORE::LINALG::Matrix<3, 1>& xi,
         const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -68,7 +67,7 @@ namespace DRT::ELEMENTS
     }
 
    private:
-    const DRT::Element& ele_;
+    const CORE::Elements::Element& ele_;
     const DRT::ELEMENTS::ElementNodes<celltype>& element_nodes_;
     const CORE::LINALG::Matrix<3, 1>& xi_;
     const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions_;
