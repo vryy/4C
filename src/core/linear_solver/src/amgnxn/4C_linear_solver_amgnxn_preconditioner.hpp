@@ -42,8 +42,12 @@ namespace CORE::LINEAR_SOLVER
 
     virtual void Setup(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A);
 
+    /// linear operator used for preconditioning
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override;
+
    private:
     // Private variables
+    Teuchos::RCP<Epetra_Operator> p_;                      // The underlying preconditioner object
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a_;  // A own copy of the system matrix
     Teuchos::ParameterList &params_;
 
