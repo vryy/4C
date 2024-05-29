@@ -1,6 +1,6 @@
 /*! \file
 
-\brief A library of free functions for a default solid element
+\brief A library of free functions for a default solid element with Nitsche contact
 
 \level 1
 */
@@ -10,11 +10,16 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_cell_type.hpp"
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
 #include "4C_lib_element.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "4C_solid_3D_ele_calc_lib_formulation.hpp"
 #include "4C_utils_demangle.hpp"
+#include "4C_utils_exceptions.hpp"
+
+#include <optional>
 
 
 FOUR_C_NAMESPACE_OPEN
@@ -48,7 +53,7 @@ namespace DRT::ELEMENTS
    * @param d_cauchyndir_dd (out) : result
    */
   template <CORE::FE::CellType celltype>
-  void EvaluateDCauchyNDirDDisplacements(
+  void evaluate_d_cauchy_n_dir_d_displacements(
       const CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>&
           d_F_dd,
       const CORE::LINALG::Matrix<9, 1>& d_cauchyndir_dF,
@@ -68,7 +73,7 @@ namespace DRT::ELEMENTS
    * @param d2_cauchyndir_dd_dn (out) : result
    */
   template <CORE::FE::CellType celltype>
-  void EvaluateD2CauchyNDirDDisplacementsDNormal(
+  void evaluate_d2_cauchy_n_dir_d_displacements_d_normal(
       const CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>&
           d_F_dd,
       const CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>>& d2_cauchyndir_dF_dn,
@@ -88,7 +93,7 @@ namespace DRT::ELEMENTS
    * @param d2_cauchyndir_dd_ddir (out) : result
    */
   template <CORE::FE::CellType celltype>
-  void EvaluateD2CauchyNDirDDisplacementsDDir(
+  void evaluate_d2_cauchy_n_dir_d_displacements_d_dir(
       const CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>&
           d_F_dd,
       const CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>>& d2_cauchyndir_dF_ddir,
@@ -107,7 +112,7 @@ namespace DRT::ELEMENTS
    * @param d2_cauchyndir_dd_dd (out) : result
    */
   template <CORE::FE::CellType celltype>
-  void EvaluateD2CauchyNDirDDisplacements2(
+  void evaluate_d2_cauchy_n_dir_d_displacements2(
       const CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>&
           d_F_dd,
       const CORE::LINALG::Matrix<9, 9>& d2_cauchyndir_dF2,
@@ -128,7 +133,7 @@ namespace DRT::ELEMENTS
    * @param d_cauchyndir_dxi (out) : result
    */
   template <CORE::FE::CellType celltype>
-  void EvaluateDCauchyNDirDXi(const CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>>& d_F_dxi,
+  void evaluate_d_cauchy_n_dir_d_xi(const CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>>& d_F_dxi,
       const CORE::LINALG::Matrix<9, 1>& d_cauchyndir_dF,
       CORE::LINALG::Matrix<3, 1>& d_cauchyndir_dxi)
   {
@@ -146,7 +151,7 @@ namespace DRT::ELEMENTS
    * @param d2_cauchyndir_dd_dxi (out) : result
    */
   template <CORE::FE::CellType celltype>
-  void EvaluateD2CauchyNDirDDisplacementsDXi(
+  void evaluate_d2_cauchy_n_dir_d_displacements_d_xi(
       const CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> *
                                         CORE::FE::dim<celltype>>& d2_F_dxi_dd,
       const CORE::LINALG::Matrix<9, 1>& d_cauchyndir_dF,
@@ -217,13 +222,181 @@ namespace DRT::ELEMENTS
     ///@}
   };
 
+  /*!
+   * @brief Struct holding dependencies needed to evalaute the linearizations of the Cauchy stress
+   * at xi
+   *
+   * @tparam celltype
+   */
+  template <CORE::FE::CellType celltype>
+  struct CauchyNDirLinearizationDependencies
+  {
+    std::optional<CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>>
+        d_F_dd{};
+    std::optional<CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>>> d_F_dxi{};
+    std::optional<CORE::LINALG::Matrix<9, 1>> d_cauchyndir_dF{};
+    std::optional<CORE::LINALG::Matrix<9, 9>> d2_cauchyndir_dF2{};
+    std::optional<CORE::LINALG::Matrix<9, 3>> d2_cauchyndir_dF_ddir{};
+    std::optional<CORE::LINALG::Matrix<9, 3>> d2_cauchyndir_dF_dn{};
+    std::optional<CORE::LINALG::Matrix<9,
+        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>>
+        d2_F_dxi_dd{};
+  };
+
+
+  namespace DETAILS
+  {
+    template <typename T, typename... Args>
+    std::optional<T> make_optional_if(bool condition, Args&&... params)
+    {
+      if (condition) return std::optional<T>(std::forward<Args>(params)...);
+      return std::nullopt;
+    }
+  }  // namespace DETAILS
+
+  /*!
+   * @brief Returns the tensor-dependencies with those values initialized that are needed for the
+   * evaluation of the requested linearizations
+   *
+   * @tparam celltype
+   * @tparam SolidFormulation
+   * @param evaluator
+   * @param linearizations (in) : requested linearizations
+   * @return CauchyNDirLinearizationDependencies<celltype>
+   */
+  template <CORE::FE::CellType celltype, typename SolidFormulation>
+  CauchyNDirLinearizationDependencies<celltype>
+  get_initialized_cauchy_n_dir_linearization_dependencies(
+      const DRT::ELEMENTS::ElementFormulationDerivativeEvaluator<celltype, SolidFormulation>&
+          evaluator,
+      DRT::ELEMENTS::CauchyNDirLinearizations<3>& linearizations)
+  {
+    CauchyNDirLinearizationDependencies<celltype> linearization_dependencies{};
+    linearization_dependencies.d_cauchyndir_dF =
+        DETAILS::make_optional_if<CORE::LINALG::Matrix<9, 1>>(
+            linearizations.d_cauchyndir_dd || linearizations.d_cauchyndir_dxi ||
+                linearizations.d2_cauchyndir_dd_dxi,
+            true);
+
+    linearization_dependencies.d2_cauchyndir_dF2 =
+        DETAILS::make_optional_if<CORE::LINALG::Matrix<9, 9>>(
+            linearizations.d2_cauchyndir_dd2, true);
+
+    linearization_dependencies.d2_cauchyndir_dF_dn =
+        DETAILS::make_optional_if<CORE::LINALG::Matrix<9, 3>>(
+            linearizations.d2_cauchyndir_dd_dn, true);
+
+    linearization_dependencies.d2_cauchyndir_dF_ddir =
+        DETAILS::make_optional_if<CORE::LINALG::Matrix<9, 3>>(
+            linearizations.d2_cauchyndir_dd_ddir, true);
+
+
+    if (linearizations.d_cauchyndir_dd || linearizations.d2_cauchyndir_dd_dn ||
+        linearizations.d2_cauchyndir_dd_ddir || linearizations.d2_cauchyndir_dd2)
+    {
+      linearization_dependencies.d_F_dd.emplace(
+          evaluator.evaluate_d_deformation_gradient_d_displacements());
+    }
+
+    if (linearizations.d_cauchyndir_dxi)
+    {
+      linearization_dependencies.d_F_dxi.emplace(evaluator.evaluate_d_deformation_gradient_d_xi());
+    }
+
+    if (linearizations.d2_cauchyndir_dd_dxi)
+    {
+      linearization_dependencies.d2_F_dxi_dd.emplace(
+          evaluator.evaluate_d2_deformation_gradient_d_displacements_d_xi());
+    }
+
+    return linearization_dependencies;
+  }
+
+  /*!
+   * @brief Evaluate the requested linearizations
+   *
+   * @tparam celltype
+   * @param linearization_dependencies (in) : tensor-dependencies needed for the evaluation
+   * @param linearizations (out) : Linearizations
+   */
+  template <CORE::FE::CellType celltype>
+  void evaluate_cauchy_n_dir_linearizations(
+      const CauchyNDirLinearizationDependencies<celltype>& linearization_dependencies,
+      DRT::ELEMENTS::CauchyNDirLinearizations<3>& linearizations)
+  {
+    // evaluate first derivative w.r.t. displacements
+    if (linearizations.d_cauchyndir_dd)
+    {
+      FOUR_C_ASSERT(linearization_dependencies.d_F_dd && linearization_dependencies.d_cauchyndir_dF,
+          "Not all tensors are computed!");
+      DRT::ELEMENTS::evaluate_d_cauchy_n_dir_d_displacements<celltype>(
+          *linearization_dependencies.d_F_dd, *linearization_dependencies.d_cauchyndir_dF,
+          *linearizations.d_cauchyndir_dd);
+    }
+
+
+    // evaluate second derivative w.r.t. displacements, normal
+    if (linearizations.d2_cauchyndir_dd_dn)
+    {
+      FOUR_C_ASSERT(
+          linearization_dependencies.d_F_dd && linearization_dependencies.d2_cauchyndir_dF_dn,
+          "Not all tensors are computed!");
+      DRT::ELEMENTS::evaluate_d2_cauchy_n_dir_d_displacements_d_normal<celltype>(
+          *linearization_dependencies.d_F_dd, *linearization_dependencies.d2_cauchyndir_dF_dn,
+          *linearizations.d2_cauchyndir_dd_dn);
+    }
+
+    // evaluate second derivative w.r.t. displacements, direction
+    if (linearizations.d2_cauchyndir_dd_ddir)
+    {
+      FOUR_C_ASSERT(
+          linearization_dependencies.d_F_dd && linearization_dependencies.d2_cauchyndir_dF_ddir,
+          "Not all tensors are computed!");
+      DRT::ELEMENTS::evaluate_d2_cauchy_n_dir_d_displacements_d_dir<celltype>(
+          *linearization_dependencies.d_F_dd, *linearization_dependencies.d2_cauchyndir_dF_ddir,
+          *linearizations.d2_cauchyndir_dd_ddir);
+    }
+
+    // evaluate second derivative w.r.t. displacements, displacements
+    if (linearizations.d2_cauchyndir_dd2)
+    {
+      FOUR_C_ASSERT(
+          linearization_dependencies.d_F_dd && linearization_dependencies.d2_cauchyndir_dF2,
+          "Not all tensors are computed!");
+      DRT::ELEMENTS::evaluate_d2_cauchy_n_dir_d_displacements2<celltype>(
+          *linearization_dependencies.d_F_dd, *linearization_dependencies.d2_cauchyndir_dF2,
+          *linearizations.d2_cauchyndir_dd2);
+    }
+
+    // evaluate first derivative w.r.t. xi
+    if (linearizations.d_cauchyndir_dxi)
+    {
+      FOUR_C_ASSERT(
+          linearization_dependencies.d_F_dxi && linearization_dependencies.d_cauchyndir_dF,
+          "Not all tensors are computed!");
+      DRT::ELEMENTS::evaluate_d_cauchy_n_dir_d_xi<celltype>(*linearization_dependencies.d_F_dxi,
+          *linearization_dependencies.d_cauchyndir_dF, *linearizations.d_cauchyndir_dxi);
+    }
+
+    // evaluate second derivative w.r.t. displacements, xi
+    if (linearizations.d2_cauchyndir_dd_dxi)
+    {
+      FOUR_C_ASSERT(
+          linearization_dependencies.d2_F_dxi_dd && linearization_dependencies.d_cauchyndir_dF,
+          "Not all tensors are computed!");
+      DRT::ELEMENTS::evaluate_d2_cauchy_n_dir_d_displacements_d_xi<celltype>(
+          *linearization_dependencies.d2_F_dxi_dd, *linearization_dependencies.d_cauchyndir_dF,
+          *linearizations.d2_cauchyndir_dd_dxi);
+    }
+  }
+
   /// Check wheter a solid variant can evaluate the Cauchy stress at xi in a specifc direction
   /// including the derivatives
   template <typename T, int dim, typename AlwaysVoid = void>
-  constexpr bool CanEvaluateEvaluateCauchyNDir = false;
+  constexpr bool can_evaluate_cauchy_n_dir = false;
 
   template <typename T, int dim>
-  constexpr bool CanEvaluateEvaluateCauchyNDir<T, dim,
+  constexpr bool can_evaluate_cauchy_n_dir<T, dim,
       std::void_t<decltype(std::declval<T>()->GetCauchyNDirAtXi(std::declval<const DRT::Element&>(),
           std::declval<MAT::So3Material&>(), std::declval<const std::vector<double>&>(),
           std::declval<const CORE::LINALG::Matrix<dim, 1>&>(),
@@ -244,14 +417,14 @@ namespace DRT::ELEMENTS
       {
       }
 
-      template <typename T, std::enable_if_t<CanEvaluateEvaluateCauchyNDir<T&, dim>, bool> = true>
+      template <typename T, std::enable_if_t<can_evaluate_cauchy_n_dir<T&, dim>, bool> = true>
       double operator()(T& cauchy_n_dir_evaluatable)
       {
         return cauchy_n_dir_evaluatable->GetCauchyNDirAtXi(
             element, mat, disp, xi, n, dir, linearizations);
       }
 
-      template <typename T, std::enable_if_t<!CanEvaluateEvaluateCauchyNDir<T&, dim>, bool> = true>
+      template <typename T, std::enable_if_t<!can_evaluate_cauchy_n_dir<T&, dim>, bool> = true>
       double operator()(T& other)
       {
         FOUR_C_THROW(
