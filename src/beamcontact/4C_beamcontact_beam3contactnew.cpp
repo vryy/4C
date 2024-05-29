@@ -413,7 +413,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_fc_contact(con
   for (int i = 0; i < numnodes; ++i)
   {
     // get node pointer and dof ids
-    DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
+    CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     // compute force vector Fc1 and prepare assembly
@@ -427,7 +427,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_fc_contact(con
   for (int i = 0; i < numnodes; ++i)
   {
     // get node pointer and dof ids
-    DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
+    CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     // compute force vector Fc1 and prepare assembly
@@ -657,7 +657,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and dof ids
-      DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
+      CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
@@ -671,7 +671,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and node ids
-      DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
+      CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
@@ -685,7 +685,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and node ids
-      DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
+      CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
@@ -699,7 +699,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and node ids
-      DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
+      CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
@@ -1209,7 +1209,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_fo
   for (int i = 0; i < numnodes; ++i)
   {
     // get node pointer and dof ids
-    DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
+    CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     // compute force vector Fc1 and prepare assembly
@@ -1223,7 +1223,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_fo
   for (int i = 0; i < numnodes; ++i)
   {
     // get node pointer and dof ids
-    DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
+    CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     // compute force vector Fc1 and prepare assembly
@@ -1505,7 +1505,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_st
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and dof ids
-      DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
+      CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
@@ -1519,7 +1519,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_st
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and node ids
-      DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
+      CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
@@ -1533,7 +1533,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_st
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and node ids
-      DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
+      CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
@@ -1547,7 +1547,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_st
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and node ids
-      DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
+      CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
@@ -3260,7 +3260,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::check_contact_status(co
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 std::vector<int> CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_global_dofs(
-    const DRT::Node* node)
+    const CORE::Nodes::Node* node)
 {
   // get dofs in beam contact discretization
   std::vector<int> cdofs = ContactDiscret().Dof(node);

@@ -18,6 +18,7 @@
 #include "4C_ale_utils_mapextractor.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_debugwriter.hpp"
 #include "4C_fsi_monolithic.hpp"
@@ -27,7 +28,6 @@
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_rebalance_graph_based.hpp"
@@ -50,12 +50,12 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
   /***********************/
 
   // initialize maps for row nodes
-  std::map<int, DRT::Node*> structurenodes;
-  std::map<int, DRT::Node*> fluidnodes;
+  std::map<int, CORE::Nodes::Node*> structurenodes;
+  std::map<int, CORE::Nodes::Node*> fluidnodes;
 
   // initialize maps for column nodes
-  std::map<int, DRT::Node*> structuregnodes;
-  std::map<int, DRT::Node*> fluidgnodes;
+  std::map<int, CORE::Nodes::Node*> structuregnodes;
+  std::map<int, CORE::Nodes::Node*> fluidgnodes;
 
   // initialize maps for elements
   std::map<int, Teuchos::RCP<CORE::Elements::Element>> structureelements;
@@ -75,8 +75,8 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
   CORE::Conditions::FindConditionObjects(
       *fluiddis, fluidnodes, fluidgnodes, fluidelements, "FSICoupling");
 
-  std::map<int, DRT::Node*>* slavenodesPtr = nullptr;
-  std::map<int, DRT::Node*>* mastergnodesPtr = nullptr;
+  std::map<int, CORE::Nodes::Node*>* slavenodesPtr = nullptr;
+  std::map<int, CORE::Nodes::Node*>* mastergnodesPtr = nullptr;
 
   // ToDo (mayr) Move this to routine in derived classes to replace the if-clause by inheritence
   if (coupling == fsi_iter_mortar_monolithicfluidsplit or
@@ -302,12 +302,12 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const INPAR::FSI::R
   /***********************/
 
   // initialize maps for row nodes
-  std::map<int, DRT::Node*> structurenodes;
-  std::map<int, DRT::Node*> fluidnodes;
+  std::map<int, CORE::Nodes::Node*> structurenodes;
+  std::map<int, CORE::Nodes::Node*> fluidnodes;
 
   // initialize maps for column nodes
-  std::map<int, DRT::Node*> structuregnodes;
-  std::map<int, DRT::Node*> fluidgnodes;
+  std::map<int, CORE::Nodes::Node*> structuregnodes;
+  std::map<int, CORE::Nodes::Node*> fluidgnodes;
 
   // initialize maps for elements
   std::map<int, Teuchos::RCP<CORE::Elements::Element>> structureelements;
@@ -327,8 +327,8 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const INPAR::FSI::R
   CORE::Conditions::FindConditionObjects(
       *fluiddis, fluidnodes, fluidgnodes, fluidelements, "FSICoupling");
 
-  std::map<int, DRT::Node*>* slavenodesPtr = nullptr;
-  std::map<int, DRT::Node*>* mastergnodesPtr = nullptr;
+  std::map<int, CORE::Nodes::Node*>* slavenodesPtr = nullptr;
+  std::map<int, CORE::Nodes::Node*>* mastergnodesPtr = nullptr;
 
   // ToDo (mayr) Move this to routine in derived classes to replace the if-clause by inheritence
   if (coupling == fsi_iter_mortar_monolithicfluidsplit or
@@ -1297,17 +1297,17 @@ void FSI::BlockMonolithic::InsertDeletedEdges(std::map<int, std::list<int>>* del
 }
 
 /*----------------------------------------------------------------------------*/
-void FSI::BlockMonolithic::find_node_related_to_dof(std::map<int, DRT::Node*>* nodes, int gdofid,
-    Teuchos::RCP<DRT::Discretization> discretization, int* re)
+void FSI::BlockMonolithic::find_node_related_to_dof(std::map<int, CORE::Nodes::Node*>* nodes,
+    int gdofid, Teuchos::RCP<DRT::Discretization> discretization, int* re)
 {
   re[0] = -2;  // code: the node cannot be found on this proc
   bool breakout = false;
   std::vector<int> dofs;
-  std::map<int, DRT::Node*>::iterator nodeiterator;
+  std::map<int, CORE::Nodes::Node*>::iterator nodeiterator;
 
   for (nodeiterator = nodes->begin(); nodeiterator != nodes->end(); nodeiterator++)
   {
-    discretization->Dof((const DRT::Node*)nodeiterator->second, dofs);
+    discretization->Dof((const CORE::Nodes::Node*)nodeiterator->second, dofs);
     for (int i = 0; i < (int)dofs.size(); ++i)
     {
       if (dofs[i] == gdofid)

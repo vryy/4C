@@ -2670,7 +2670,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
           get_dofs_vector_local_indicesfor_node(gIdNode, nodeNormals, false, &dofsLocalInd);
 
           // Calculate current position for node
-          DRT::Node* currNode = discret_->gNode(gIdNode);
+          CORE::Nodes::Node* currNode = discret_->gNode(gIdNode);
           std::vector<double> currPos(numdim_);
 
           const auto& refPos = currNode->X();
@@ -2909,7 +2909,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
           get_dofs_vector_local_indicesfor_node(gIdNode, nodeNormals, false, &dofsLocalInd);
 
           // Calculate current position for node and its vector length
-          DRT::Node* currNode = discret_->gNode(gIdNode);
+          CORE::Nodes::Node* currNode = discret_->gNode(gIdNode);
           std::vector<double> currPos(numdim_);
 
           const auto& refPos = currNode->X();
@@ -3687,7 +3687,7 @@ void FLD::FluidImplicitTimeInt::Output()
     // get global id of a node
     gid = noderowmap->GID(lid);
     // get the node
-    DRT::Node* node = discret_->gNode(gid);
+    CORE::Nodes::Node* node = discret_->gNode(gid);
     // get the coordinates of the node
     const auto& X = node->X();
     // get degrees of freedom of a node
@@ -4256,7 +4256,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
     for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
     {
       // get the processor local node
-      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+      CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
       const std::vector<int> nodedofset = discret_->Dof(0, lnode);
 
@@ -4308,7 +4308,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
       {
         // get the processor local node
-        DRT::Node* lnode = discret_->lRowNode(lnodeid);
+        CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->Dof(lnode);
 
@@ -4331,7 +4331,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
       {
         // get the processor local node
-        DRT::Node* lnode = discret_->lRowNode(lnodeid);
+        CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->Dof(lnode);
 
@@ -4447,7 +4447,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
     for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
     {
       // get the processor local node
-      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+      CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
       // the set of degrees of freedom associated with the node
       std::vector<int> nodedofset = discret_->Dof(lnode);
@@ -4526,7 +4526,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
     for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
     {
       // get the processor local node
-      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+      CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
       // the set of degrees of freedom associated with the node
       std::vector<int> nodedofset = discret_->Dof(lnode);
@@ -4654,7 +4654,7 @@ void FLD::FluidImplicitTimeInt::SetIterScalarFields(Teuchos::RCP<const Epetra_Ve
     for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
     {
       // get the processor's local scatra node
-      DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
+      CORE::Nodes::Node* lscatranode = scatradis->lRowNode(lnodeid);
 
       // find out the global dof id of the last(!) dof at the scatra node
       const int numscatradof = scatradis->NumDof(dofset, lscatranode);
@@ -4663,7 +4663,7 @@ void FLD::FluidImplicitTimeInt::SetIterScalarFields(Teuchos::RCP<const Epetra_Ve
       if (localscatradofid < 0) FOUR_C_THROW("localdofid not found in map for given globaldofid");
 
       // get the processor's local fluid node
-      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+      CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
       // get global and processor's local pressure dof id (using the map!)
       const int numdof = discret_->NumDof(0, lnode);
       const int globaldofid = discret_->Dof(0, lnode, numdof - 1);
@@ -4702,7 +4702,7 @@ void FLD::FluidImplicitTimeInt::SetIterScalarFields(Teuchos::RCP<const Epetra_Ve
     for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
     {
       // get the processor's local fluid node
-      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+      CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
       // get global and processor's local pressure dof id (using the map!)
       const int numdof = discret_->NumDof(0, lnode);
       const int globaldofid = discret_->Dof(0, lnode, numdof - 1);
@@ -4755,7 +4755,7 @@ void FLD::FluidImplicitTimeInt::SetScalarFields(Teuchos::RCP<const Epetra_Vector
   for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
   {
     // get the processor's local scatra node
-    DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
+    CORE::Nodes::Node* lscatranode = scatradis->lRowNode(lnodeid);
 
     // find out the global dof id of the last(!) dof at the scatra node
     const int numscatradof = scatradis->NumDof(0, lscatranode);
@@ -4774,7 +4774,7 @@ void FLD::FluidImplicitTimeInt::SetScalarFields(Teuchos::RCP<const Epetra_Vector
     if (localscatradofid < 0) FOUR_C_THROW("localdofid not found in map for given globaldofid");
 
     // get the processor's local fluid node
-    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+    CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
     // get the global ids of degrees of freedom associated with this node
     nodedofs = discret_->Dof(0, lnode);
     // get global and processor's local pressure dof id (using the map!)

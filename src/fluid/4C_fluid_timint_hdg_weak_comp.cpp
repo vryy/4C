@@ -688,7 +688,7 @@ namespace
       // sum values on nodes into vectors and record the touch count (build average of values)
       for (int i = 0; i < ele->num_node(); ++i)
       {
-        DRT::Node* node = ele->Nodes()[i];
+        CORE::Nodes::Node* node = ele->Nodes()[i];
         const int localIndex = dis.NodeRowMap()->LID(node->Id());
         if (localIndex < 0) continue;
         touchCount[localIndex]++;

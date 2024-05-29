@@ -628,9 +628,9 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // loop over all column nodes of underlying problem discret and add
   for (int i = 0; i < (ProblemDiscret().NodeColMap())->NumMyElements(); ++i)
   {
-    DRT::Node* node = ProblemDiscret().lColNode(i);
+    CORE::Nodes::Node* node = ProblemDiscret().lColNode(i);
     if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
-    Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
+    Teuchos::RCP<CORE::Nodes::Node> newnode = Teuchos::rcp(node->Clone());
     if (BEAMINTERACTION::UTILS::IsBeamNode(*newnode))
     {
       BTSolDiscret().AddNode(newnode);
@@ -703,7 +703,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       int gid = (*nodeids)[k];
       // do only nodes that I have in my discretization
       if (!ProblemDiscret().NodeColMap()->MyGID(gid)) continue;
-      DRT::Node* node = ProblemDiscret().gNode(gid);
+      CORE::Nodes::Node* node = ProblemDiscret().gNode(gid);
 
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
@@ -782,7 +782,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       int gid = (*nodeids)[k];
       // do only nodes that I have in my discretization
       if (!ProblemDiscret().NodeColMap()->MyGID(gid)) continue;
-      DRT::Node* node = ProblemDiscret().gNode(gid);
+      CORE::Nodes::Node* node = ProblemDiscret().gNode(gid);
 
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
@@ -929,7 +929,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // Determine offset between the IDs of problem discretization and BTSol discretization
   for (int i = 0; i < (BTSolDiscret().NodeColMap())->NumMyElements(); ++i)
   {
-    DRT::Node* node = BTSolDiscret().lColNode(i);
+    CORE::Nodes::Node* node = BTSolDiscret().lColNode(i);
     int nodeid = node->Id();
     std::vector<int> btsolnodedofids = BTSolDiscret().Dof(0, node);
     std::vector<int> originalnodedofids = nodedofs[nodeid];
@@ -964,7 +964,7 @@ void CONTACT::Beam3cmanager::set_current_positions(
   for (int i = 0; i < FullNodes()->NumMyElements(); ++i)
   {
     // get node pointer
-    DRT::Node* node = BTSolDiscret().lColNode(i);
+    CORE::Nodes::Node* node = BTSolDiscret().lColNode(i);
 
     // TODO maybe this can be done in a more elegant way in the future
     /* check whether node is a beam node which is NOT used for centerline interpolation
@@ -1005,7 +1005,7 @@ void CONTACT::Beam3cmanager::set_state(
   for (int i = 0; i < FullNodes()->NumMyElements(); ++i)
   {
     // get node pointer
-    DRT::Node* node = BTSolDiscret().lColNode(i);
+    CORE::Nodes::Node* node = BTSolDiscret().lColNode(i);
 
     // TODO maybe this can be done in a more elegant way in the future
     /* check whether node is a beam node which is NOT used for centerline interpolation
@@ -1502,8 +1502,8 @@ void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
     // since only the nodes know about their conditions, we need this workaround
     // we assume that a linecharge condition is always applied to the entire physical beam, i.e. it
     // is sufficient to check only one node
-    DRT::Node** nodes1;
-    DRT::Node** nodes2;
+    CORE::Nodes::Node** nodes1;
+    CORE::Nodes::Node** nodes2;
     nodes1 = ele1->Nodes();
     nodes2 = ele2->Nodes();
 
@@ -1589,7 +1589,7 @@ std::vector<std::vector<CORE::Elements::Element*>> CONTACT::Beam3cmanager::brute
   {
     // get global id, node itself and current position
     int firstgid = ColNodes()->GID(i);
-    DRT::Node* firstnode = BTSolDiscret().gNode(firstgid);
+    CORE::Nodes::Node* firstnode = BTSolDiscret().gNode(firstgid);
 
     // TODO see also LOOP 2 below
     /* check whether node position has been stored in currentpositions previously;
@@ -1697,7 +1697,7 @@ std::vector<std::vector<CORE::Elements::Element*>> CONTACT::Beam3cmanager::brute
     for (int j = 0; j < (int)NearNodesGIDs.size(); ++j)
     {
       // node pointer
-      DRT::Node* tempnode = BTSolDiscret().gNode(NearNodesGIDs[j]);
+      CORE::Nodes::Node* tempnode = BTSolDiscret().gNode(NearNodesGIDs[j]);
       // getting the elements tempnode is linked to
       CORE::Elements::Element** TempEles = tempnode->Elements();
 
@@ -1930,8 +1930,8 @@ void CONTACT::Beam3cmanager::get_max_ele_length(double& maxelelength)
       // get global IDs of edge nodes and pointers
       int node0_gid = thisele->NodeIds()[0];
       int node1_gid = thisele->NodeIds()[1];
-      DRT::Node* node0 = BTSolDiscret().gNode(node0_gid);
-      DRT::Node* node1 = BTSolDiscret().gNode(node1_gid);
+      CORE::Nodes::Node* node0 = BTSolDiscret().gNode(node0_gid);
+      CORE::Nodes::Node* node1 = BTSolDiscret().gNode(node1_gid);
 
       // get coordinates of edge nodes
       std::vector<double> x_n0(3);
@@ -4993,8 +4993,8 @@ bool CONTACT::Beam3cmanager::close_midpoint_distance(const CORE::Elements::Eleme
   // get midpoint position of element 1
   if (ele1->num_node() == 2)  // 2-noded beam element
   {
-    const DRT::Node* node1ele1 = ele1->Nodes()[0];
-    const DRT::Node* node2ele1 = ele1->Nodes()[1];
+    const CORE::Nodes::Node* node1ele1 = ele1->Nodes()[0];
+    const CORE::Nodes::Node* node2ele1 = ele1->Nodes()[1];
 
     for (int i = 0; i < 3; ++i)
       midpos1(i) =
@@ -5002,7 +5002,7 @@ bool CONTACT::Beam3cmanager::close_midpoint_distance(const CORE::Elements::Eleme
   }
   else if (ele1->num_node() == 1)  // rigidsphere element
   {
-    const DRT::Node* node1ele1 = ele1->Nodes()[0];
+    const CORE::Nodes::Node* node1ele1 = ele1->Nodes()[0];
 
     for (int i = 0; i < 3; ++i) midpos1(i) = (currentpositions[node1ele1->Id()])(i);
   }
@@ -5010,8 +5010,8 @@ bool CONTACT::Beam3cmanager::close_midpoint_distance(const CORE::Elements::Eleme
   // get midpoint position of element 2
   if (ele2->num_node() == 2)  // 2-noded beam element
   {
-    const DRT::Node* node1ele2 = ele2->Nodes()[0];
-    const DRT::Node* node2ele2 = ele2->Nodes()[1];
+    const CORE::Nodes::Node* node1ele2 = ele2->Nodes()[0];
+    const CORE::Nodes::Node* node2ele2 = ele2->Nodes()[1];
 
     for (int i = 0; i < 3; ++i)
       midpos2(i) =
@@ -5019,7 +5019,7 @@ bool CONTACT::Beam3cmanager::close_midpoint_distance(const CORE::Elements::Eleme
   }
   else if (ele2->num_node() == 1)  // rigidsphere element
   {
-    const DRT::Node* node1ele2 = ele2->Nodes()[0];
+    const CORE::Nodes::Node* node1ele2 = ele2->Nodes()[0];
 
     for (int i = 0; i < 3; ++i) midpos2(i) = (currentpositions[node1ele2->Id()])(i);
   }

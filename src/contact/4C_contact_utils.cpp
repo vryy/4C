@@ -429,13 +429,13 @@ void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int inte
 void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
     const DRT::Discretization& str_discret,
     const std::vector<std::vector<CORE::Conditions::Condition*>>& ccond_grps,
-    std::set<const DRT::Node*>& dbc_slave_nodes,
+    std::set<const CORE::Nodes::Node*>& dbc_slave_nodes,
     std::set<const CORE::Elements::Element*>& dbc_slave_eles)
 {
   dbc_slave_nodes.clear();
   dbc_slave_eles.clear();
 
-  std::map<const DRT::Node*, int> dbc_slave_node_map;
+  std::map<const CORE::Nodes::Node*, int> dbc_slave_node_map;
 
   std::vector<const CORE::Conditions::Condition*> sl_conds;
 
@@ -483,7 +483,8 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes(
-    std::map<const DRT::Node*, int>& dbc_slave_node_map, const DRT::Discretization& str_discret,
+    std::map<const CORE::Nodes::Node*, int>& dbc_slave_node_map,
+    const DRT::Discretization& str_discret,
     const std::vector<const CORE::Conditions::Condition*>& sl_conds)
 {
   std::vector<CORE::Conditions::Condition*> dconds;
@@ -524,7 +525,7 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes(
     // skip nullptr ptrs
     if (str_discret.HaveGlobalNode(snid))
     {
-      const DRT::Node* node = str_discret.gNode(snid);
+      const CORE::Nodes::Node* node = str_discret.gNode(snid);
       dbc_slave_node_map.insert(std::make_pair(node, slpair.second));
     }
   }
@@ -534,7 +535,7 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes(
  *----------------------------------------------------------------------------*/
 void CONTACT::UTILS::DbcHandler::detect_dbc_slave_elements(
     std::set<const CORE::Elements::Element*>& dbc_slave_eles,
-    const std::map<const DRT::Node*, int>& dbc_slave_nodes,
+    const std::map<const CORE::Nodes::Node*, int>& dbc_slave_nodes,
     const std::vector<const CORE::Conditions::Condition*>& sl_conds)
 {
   for (const auto& dbc_sl_node : dbc_slave_nodes)

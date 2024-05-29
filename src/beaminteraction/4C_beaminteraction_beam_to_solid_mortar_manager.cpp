@@ -117,7 +117,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
   std::vector<int> my_nodes_gid;
   for (int i_node = 0; i_node < discret_->NodeRowMap()->NumMyElements(); i_node++)
   {
-    DRT::Node const& node = *(discret_->lRowNode(i_node));
+    CORE::Nodes::Node const& node = *(discret_->lRowNode(i_node));
     if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node)) my_nodes_gid.push_back(node.Id());
   }
 
@@ -263,7 +263,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetGlobalMaps()
   std::vector<int> solid_dofs(0);
   for (int i_node = 0; i_node < discret_->NodeRowMap()->NumMyElements(); i_node++)
   {
-    const DRT::Node* node = discret_->lRowNode(i_node);
+    const CORE::Nodes::Node* node = discret_->lRowNode(i_node);
     if (BEAMINTERACTION::UTILS::IsBeamNode(*node))
       discret_->Dof(node, beam_dofs);
     else
@@ -414,7 +414,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
   {
     for (int i_node = 0; i_node < contact_pair.Element1()->num_node(); i_node++)
     {
-      const DRT::Node& node = *(contact_pair.Element1()->Nodes()[i_node]);
+      const CORE::Nodes::Node& node = *(contact_pair.Element1()->Nodes()[i_node]);
       if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node))
       {
         // Get the global id of the node.

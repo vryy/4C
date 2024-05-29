@@ -46,7 +46,7 @@ void CORE::LINEAR_SOLVER::Parameters::compute_solver_parameters(
       // if a map is given, grab the block information of the first element in that map
       for (int i = 0; i < dis.NumMyRowNodes(); ++i)
       {
-        DRT::Node* actnode = dis.lRowNode(i);
+        CORE::Nodes::Node* actnode = dis.lRowNode(i);
         std::vector<int> dofs = dis.Dof(0, actnode);
 
         const int localIndex = nullspaceMap->LID(dofs[0]);

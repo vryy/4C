@@ -95,7 +95,7 @@ namespace POROMULTIPHASESCATRA
      * format
      * @param this_connected_comp : current connected component
      */
-    void depth_first_search_util(DRT::Node* actnode, Teuchos::RCP<Epetra_IntVector> visited,
+    void depth_first_search_util(CORE::Nodes::Node* actnode, Teuchos::RCP<Epetra_IntVector> visited,
         Teuchos::RCP<DRT::Discretization> artconncompdis,
         Teuchos::RCP<const Epetra_Vector> ele_diams_artery_full_overlap,
         std::vector<int>& this_connected_comp);

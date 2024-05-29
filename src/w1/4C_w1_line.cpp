@@ -24,7 +24,7 @@ DRT::ELEMENTS::Wall1LineType& DRT::ELEMENTS::Wall1LineType::Instance() { return 
  |  ctor (public)                                            mgit 03/07|
   *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1Line::Wall1Line(int id, int owner, int nnode, const int* nodeids,
-    DRT::Node** nodes, DRT::ELEMENTS::Wall1* parent, const int lline)
+    CORE::Nodes::Node** nodes, DRT::ELEMENTS::Wall1* parent, const int lline)
     : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);

@@ -494,7 +494,7 @@ void CORE::ADAPTER::Coupling::build_dof_maps(const DRT::Discretization& dis,
 
   for (int i = 0; i < numnode; ++i)
   {
-    const DRT::Node* actnode = dis.gNode(nodes[i]);
+    const CORE::Nodes::Node* actnode = dis.gNode(nodes[i]);
 
     // ----------------------------------------------------------------
     // get all periodic boundary conditions on this node

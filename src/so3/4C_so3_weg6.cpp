@@ -69,7 +69,7 @@ void DRT::ELEMENTS::SoWeg6Type::nodal_block_information(
 }
 
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoWeg6Type::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
@@ -253,7 +253,7 @@ void DRT::ELEMENTS::SoWeg6::Print(std::ostream& os) const
 std::vector<double> DRT::ELEMENTS::SoWeg6::element_center_refe_coords()
 {
   // update element geometry
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_WEG6; ++i)
   {

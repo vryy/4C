@@ -444,7 +444,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
 
   // update element geometry of parent element
   {
-    DRT::Node** nodes = pele->Nodes();
+    CORE::Nodes::Node** nodes = pele->Nodes();
     for (int inode = 0; inode < nenparent; ++inode)
     {
       for (int idof = 0; idof < nsd_; ++idof)
@@ -1855,7 +1855,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
   CORE::LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
-    DRT::Node** nodes = pele->Nodes();
+    CORE::Nodes::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
       const auto& x = nodes[i]->X();
@@ -2564,7 +2564,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
   CORE::LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
-    DRT::Node** nodes = pele->Nodes();
+    CORE::Nodes::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
       for (int j = 0; j < nsd_; ++j)
@@ -3286,7 +3286,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
   CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
   CORE::LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
-    DRT::Node** nodes = pele->Nodes();
+    CORE::Nodes::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
       for (int j = 0; j < nsd_; ++j)
@@ -3679,7 +3679,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
   CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
   CORE::LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
-    DRT::Node** nodes = pele->Nodes();
+    CORE::Nodes::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
       for (int j = 0; j < nsd_; ++j)
@@ -4268,7 +4268,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
   CORE::LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
-    DRT::Node** nodes = pele->Nodes();
+    CORE::Nodes::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
       for (int j = 0; j < nsd_; ++j)
@@ -4629,7 +4629,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
   CORE::LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
-    DRT::Node** nodes = pele->Nodes();
+    CORE::Nodes::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
       for (int j = 0; j < nsd_; ++j)

@@ -123,7 +123,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::get_additional_dbc_
 
   for (int inode = 0; inode < numrownodes; ++inode)
   {
-    DRT::Node* actnode = arterydis_->lRowNode(inode);
+    CORE::Nodes::Node* actnode = arterydis_->lRowNode(inode);
     CORE::Elements::Element** eles = actnode->Elements();
     bool all_eles_collapsed = true;
     for (int iele = 0; iele < (actnode->NumElement()); iele++)
@@ -762,7 +762,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::find_free_hang
   for (int i = 0; i < artconncompdis->NumMyColNodes(); ++i)
   {
     // pointer to current node
-    DRT::Node* actnode = artconncompdis->lColNode(i);
+    CORE::Nodes::Node* actnode = artconncompdis->lColNode(i);
     // if not visited start a new connected component
     if ((*visited)[actnode->LID()] == 0)
     {
@@ -801,7 +801,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::find_free_hang
       CORE::Conditions::Condition* dirich = nullptr;
       for (int j = 0; j < conn_comp_size; ++j)
       {
-        DRT::Node* mynode = artconncompdis->gNode((connected_components[i])[j]);
+        CORE::Nodes::Node* mynode = artconncompdis->gNode((connected_components[i])[j]);
         dirich = mynode->GetCondition("Dirichlet");
         if (dirich != nullptr)
         {
@@ -819,7 +819,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::find_free_hang
         // get the elements which have to be deleted
         for (int j = 0; j < conn_comp_size; ++j)
         {
-          DRT::Node* mynode = artconncompdis->gNode((connected_components[i])[j]);
+          CORE::Nodes::Node* mynode = artconncompdis->gNode((connected_components[i])[j]);
           CORE::Elements::Element** myeles = mynode->Elements();
           for (int i_element = 0; i_element < mynode->NumElement(); i_element++)
             eles_to_be_deleted.push_back(myeles[i_element]->Id());
@@ -857,7 +857,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::find_free_hang
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::depth_first_search_util(
-    DRT::Node* actnode, Teuchos::RCP<Epetra_IntVector> visited,
+    CORE::Nodes::Node* actnode, Teuchos::RCP<Epetra_IntVector> visited,
     Teuchos::RCP<DRT::Discretization> artconncompdis,
     Teuchos::RCP<const Epetra_Vector> ele_diams_artery_full_overlap,
     std::vector<int>& this_connected_comp)
@@ -871,7 +871,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::depth_first_se
   CORE::Elements::Element** Elements = actnode->Elements();
   for (int i_element = 0; i_element < actnode->NumElement(); i_element++)
   {
-    DRT::Node** Nodes = Elements[i_element]->Nodes();
+    CORE::Nodes::Node** Nodes = Elements[i_element]->Nodes();
 
     // get diameter
     const double diam = (*ele_diams_artery_full_overlap)[Elements[i_element]->LID()];

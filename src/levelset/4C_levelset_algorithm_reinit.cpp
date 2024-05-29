@@ -640,7 +640,7 @@ void SCATRA::LevelSetAlgorithm::reinit_geo(
       {
         const int lid = discret_->NodeRowMap()->LID(gid);
         if (lid < 0) continue;
-        const DRT::Node* lnode = discret_->lRowNode(lid);
+        const CORE::Nodes::Node* lnode = discret_->lRowNode(lid);
         const auto& coord = lnode->X();
         if (coord[planenormal.back()] < min) min = coord[planenormal.back()];
         if (coord[planenormal.back()] > max) max = coord[planenormal.back()];
@@ -679,7 +679,7 @@ void SCATRA::LevelSetAlgorithm::reinit_geo(
       {
         const int coordbase = 3 * numnodesperele * ivec;
         const CORE::Elements::Element* ele = discret_->lRowElement(elelid);
-        const DRT::Node* const* nodes = ele->Nodes();
+        const CORE::Nodes::Node* const* nodes = ele->Nodes();
         for (int inode = 0; inode < ele->num_node(); ++inode)
         {
           const int nodecoordbase = coordbase + 3 * inode;
@@ -700,7 +700,7 @@ void SCATRA::LevelSetAlgorithm::reinit_geo(
   for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
   {
     // get the processor local node
-    const DRT::Node* lnode = discret_->lRowNode(lnodeid);
+    const CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
     // get the dof associated with this node
     const int dofgid =

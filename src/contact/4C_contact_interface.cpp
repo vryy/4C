@@ -237,7 +237,7 @@ void CONTACT::Interface::update_master_slave_sets()
     for (int i = 0; i < Discret().NodeColMap()->NumMyElements(); ++i)
     {
       int gid = Discret().NodeColMap()->GID(i);
-      DRT::Node* node = Discret().gNode(gid);
+      CORE::Nodes::Node* node = Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       auto* mrtrnode = dynamic_cast<Node*>(node);
       const bool isslave = mrtrnode->IsSlave();
@@ -311,7 +311,7 @@ void CONTACT::Interface::set_cn_ct_values(const int& iter)
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %i", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -575,7 +575,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       for (int i = 0; i < noderowmap->NumMyElements(); ++i)
       {
         int gid = noderowmap->GID(i);
-        DRT::Node* node = Discret().gNode(gid);
+        CORE::Nodes::Node* node = Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
         if (!mrtrnode->IsSlave()) sdata.push_back(gid);
@@ -590,7 +590,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       for (int i = 0; i < nodecolmap->NumMyElements(); ++i)
       {
         int gid = nodecolmap->GID(i);
-        DRT::Node* node = Discret().gNode(gid);
+        CORE::Nodes::Node* node = Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
         if (mrtrnode->IsSlave()) rdata.push_back(gid);
@@ -840,7 +840,7 @@ void CONTACT::Interface::Redistribute()
   for (int k = 0; k < numMySlaveRowNodes; ++k)
   {
     int gid = SlaveRowNodes()->GID(k);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
     // find adjacent elements first
@@ -1227,7 +1227,7 @@ void CONTACT::Interface::initialize_data_container()
     for (int i = 0; i < masternodes->NumMyElements(); ++i)
     {
       int gid = masternodes->GID(i);
-      DRT::Node* node = Discret().gNode(gid);
+      CORE::Nodes::Node* node = Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %i", gid);
       CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
       mnode->initialize_data_container();
@@ -1261,7 +1261,7 @@ void CONTACT::Interface::Initialize()
     for (int i = 0; i < MasterColNodes()->NumMyElements(); ++i)
     {
       int gid = MasterColNodes()->GID(i);
-      DRT::Node* node = Discret().gNode(gid);
+      CORE::Nodes::Node* node = Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1289,7 +1289,7 @@ void CONTACT::Interface::Initialize()
   for (int i = 0; i < SlaveColNodesBound()->NumMyElements(); ++i)
   {
     int gid = SlaveColNodesBound()->GID(i);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1565,7 +1565,7 @@ void CONTACT::Interface::store_nt_svalues()
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1664,7 +1664,7 @@ void CONTACT::Interface::store_lt_svalues()
     double ssum = 0.0;
 
     int gid = SlaveRowNodes()->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1808,7 +1808,7 @@ void CONTACT::Interface::store_lt_lvalues()
   //  for(int i=0; i<SlaveRowNodes()->NumMyElements();++i)
   //  {
   //    int gid = SlaveRowNodes()->GID(i);
-  //    DRT::Node* node = idiscret_->gNode(gid);
+  //    CORE::Nodes::Node* node = idiscret_->gNode(gid);
   //    if (!node)
   //      FOUR_C_THROW("Cannot find node with gid %",gid);
   //    Node* cnode = dynamic_cast<Node*>(node);
@@ -1943,7 +1943,7 @@ void CONTACT::Interface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -1966,7 +1966,7 @@ void CONTACT::Interface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -2018,7 +2018,7 @@ void CONTACT::Interface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* snode = idiscret_->gNode(gid3);
+          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2045,7 +2045,7 @@ void CONTACT::Interface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* snode = idiscret_->gNode(gid3);
+          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2086,7 +2086,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -2109,7 +2109,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -2221,7 +2221,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
         int sgid = scurr->first;
         ++scurr;
 
-        DRT::Node* snode = idiscret_->gNode(sgid);
+        CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
         if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
         Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2265,7 +2265,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
         int mgid = mcurr->first;
         ++mcurr;
 
-        DRT::Node* mnode = idiscret_->gNode(mgid);
+        CORE::Nodes::Node* mnode = idiscret_->gNode(mgid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -2309,7 +2309,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
           {
             // node id
             int gid3 = p->first;
-            DRT::Node* snode = idiscret_->gNode(gid3);
+            CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
             if (!snode) FOUR_C_THROW("Cannot find node with gid");
             Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2337,7 +2337,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
           {
             // node id
             int gid3 = p->first;
-            DRT::Node* snode = idiscret_->gNode(gid3);
+            CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
             if (!snode) FOUR_C_THROW("Cannot find node with gid");
             Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2371,7 +2371,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
           {
             // node id
             int gid3 = p->first;
-            DRT::Node* snode = idiscret_->gNode(gid3);
+            CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
             if (!snode) FOUR_C_THROW("Cannot find node with gid");
             Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2400,7 +2400,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
           {
             // node id
             int gid3 = p->first;
-            DRT::Node* snode = idiscret_->gNode(gid3);
+            CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
             if (!snode) FOUR_C_THROW("Cannot find node with gid");
             Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2428,7 +2428,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
           {
             // node id
             int gid3 = p->first;
-            DRT::Node* snode = idiscret_->gNode(gid3);
+            CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
             if (!snode) FOUR_C_THROW("Cannot find node with gid");
             Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2455,7 +2455,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
           {
             // node id
             int gid3 = p->first;
-            DRT::Node* snode = idiscret_->gNode(gid3);
+            CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
             if (!snode) FOUR_C_THROW("Cannot find node with gid");
             Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2494,7 +2494,7 @@ void CONTACT::Interface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff)
   for (int j = 0; j < mnoderowmap_->NumMyElements(); ++j)
   {
     int gid = mnoderowmap_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2513,7 +2513,7 @@ void CONTACT::Interface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff)
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* snode = idiscret_->gNode(gid3);
+          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2541,7 +2541,7 @@ void CONTACT::Interface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff)
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* snode = idiscret_->gNode(gid3);
+          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2578,7 +2578,7 @@ void CONTACT::Interface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff)
   for (int j = 0; j < mnoderowmap_->NumMyElements(); ++j)
   {
     int gid = mnoderowmap_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2601,7 +2601,7 @@ void CONTACT::Interface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff)
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* snode = idiscret_->gNode(gid3);
+          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2629,7 +2629,7 @@ void CONTACT::Interface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff)
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* snode = idiscret_->gNode(gid3);
+          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2668,7 +2668,7 @@ void CONTACT::Interface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2685,7 +2685,7 @@ void CONTACT::Interface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* snode = idiscret_->gNode(gid3);
+          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2712,7 +2712,7 @@ void CONTACT::Interface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* snode = idiscret_->gNode(gid3);
+          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2747,7 +2747,7 @@ void CONTACT::Interface::add_lt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
   for (int j = 0; j < mnoderowmap_->NumMyElements(); ++j)
   {
     int gid = mnoderowmap_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2779,7 +2779,7 @@ void CONTACT::Interface::add_lt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
         int sgid = scurr->first;
         ++scurr;
 
-        DRT::Node* snode = idiscret_->gNode(sgid);
+        CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
         if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
         Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2823,7 +2823,7 @@ void CONTACT::Interface::add_lt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
         int mgid = mcurr->first;
         ++mcurr;
 
-        DRT::Node* mnode = idiscret_->gNode(mgid);
+        CORE::Nodes::Node* mnode = idiscret_->gNode(mgid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -2862,7 +2862,7 @@ void CONTACT::Interface::add_lt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* snode = idiscret_->gNode(gid3);
+          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2898,7 +2898,7 @@ void CONTACT::Interface::add_lt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* snode = idiscret_->gNode(gid3);
+          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2944,7 +2944,7 @@ void CONTACT::Interface::add_nt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
   for (int j = 0; j < mnoderowmap_->NumMyElements(); ++j)
   {
     int gid = mnoderowmap_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2973,7 +2973,7 @@ void CONTACT::Interface::add_nt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
         int mgid = mcurr->first;
         ++mcurr;
 
-        DRT::Node* mnode = idiscret_->gNode(mgid);
+        CORE::Nodes::Node* mnode = idiscret_->gNode(mgid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -3012,7 +3012,7 @@ void CONTACT::Interface::add_nt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* snode = idiscret_->gNode(gid3);
+          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -3048,7 +3048,7 @@ void CONTACT::Interface::add_nt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* snode = idiscret_->gNode(gid3);
+          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -3094,7 +3094,7 @@ void CONTACT::Interface::AddLTLstiffness(Teuchos::RCP<CORE::LINALG::SparseMatrix
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -3120,7 +3120,7 @@ void CONTACT::Interface::AddLTLstiffness(Teuchos::RCP<CORE::LINALG::SparseMatrix
         int sgid = scurr->first;
         ++scurr;
 
-        DRT::Node* snode = idiscret_->gNode(sgid);
+        CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
         if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
         Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -3164,7 +3164,7 @@ void CONTACT::Interface::AddLTLstiffness(Teuchos::RCP<CORE::LINALG::SparseMatrix
         int mgid = mcurr->first;
         ++mcurr;
 
-        DRT::Node* mnode = idiscret_->gNode(mgid);
+        CORE::Nodes::Node* mnode = idiscret_->gNode(mgid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -3203,7 +3203,7 @@ void CONTACT::Interface::AddLTLstiffness(Teuchos::RCP<CORE::LINALG::SparseMatrix
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* snode = idiscret_->gNode(gid3);
+          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -3231,7 +3231,7 @@ void CONTACT::Interface::AddLTLstiffness(Teuchos::RCP<CORE::LINALG::SparseMatrix
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* snode = idiscret_->gNode(gid3);
+          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -3420,7 +3420,7 @@ void CONTACT::Interface::scale_terms_ltl()
   //  for(int i=0; i<snoderowmap_->NumMyElements();++i)
   //  {
   //    int gid = snoderowmap_->GID(i);
-  //    DRT::Node* node = idiscret_->gNode(gid);
+  //    CORE::Nodes::Node* node = idiscret_->gNode(gid);
   //    if (!node)
   //      FOUR_C_THROW("Cannot find node with gid %",gid);
   //    Node* cnode = dynamic_cast<Node*>(node);
@@ -3581,7 +3581,7 @@ void CONTACT::Interface::scale_terms_ltl()
   //        int sgid = scurr->first;
   //        ++scurr;
   //
-  //        DRT::Node* snode = idiscret_->gNode(sgid);
+  //        CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
   //        if (!snode) FOUR_C_THROW("Cannot find node with gid %",sgid);
   //
   //        // Mortar matrix D derivatives
@@ -3890,7 +3890,7 @@ void CONTACT::Interface::detect_non_smooth_geometries()
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -4445,7 +4445,7 @@ void CONTACT::Interface::evaluate_cpp_normals()
   for (int i = 0; i < MasterRowNodes()->NumMyElements(); ++i)
   {
     int gid = MasterRowNodes()->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* mrtrnode = dynamic_cast<Node*>(node);
 
@@ -4463,7 +4463,7 @@ void CONTACT::Interface::evaluate_cpp_normals()
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
 
@@ -4548,7 +4548,7 @@ void CONTACT::Interface::export_master_nodal_normals()
   for (int i = 0; i < mnoderowmap_->NumMyElements(); ++i)
   {
     int gid = mnoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -4651,7 +4651,7 @@ void CONTACT::Interface::export_master_nodal_normals()
   {
     // only do something for ghosted nodes
     int gid = masternodes->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     int linsize = cnode->GetLinsize() + (int)(n_x_key[gid].size());
@@ -4758,7 +4758,7 @@ void CONTACT::Interface::evaluate_averaged_nodal_normals()
   for (int i = 0; i < smoothnodes_->NumMyElements(); ++i)
   {
     int gid = smoothnodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* mrtrnode = dynamic_cast<Node*>(node);
 
@@ -4891,7 +4891,7 @@ void CONTACT::Interface::compute_scaling_ltl()
               j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
-          std::array<DRT::Node*, 2> nodes = {
+          std::array<CORE::Nodes::Node*, 2> nodes = {
               selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
           lineEle->BuildNodalPointers(nodes.data());
 
@@ -4987,7 +4987,7 @@ void CONTACT::Interface::compute_scaling_ltl()
                 j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
-            std::array<DRT::Node*, 2> nodes = {
+            std::array<CORE::Nodes::Node*, 2> nodes = {
                 melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
             lineEle->BuildNodalPointers(nodes.data());
 
@@ -5123,7 +5123,7 @@ void CONTACT::Interface::compute_scaling_ltl()
   //  for (int i = 0; i < smoothnodes_->NumMyElements(); ++i)
   //  {
   //    int gid = smoothnodes_->GID(i);
-  //    DRT::Node* node = idiscret_->gNode(gid);
+  //    CORE::Nodes::Node* node = idiscret_->gNode(gid);
   //    if (!node)
   //      FOUR_C_THROW("Cannot find node with gid %", gid);
   //    Node* cnode = dynamic_cast<Node*>(node);
@@ -5140,7 +5140,7 @@ void CONTACT::Interface::compute_scaling_ltl()
   //  for (int i = 0; i < nonsmoothnodes_->NumMyElements(); ++i)
   //  {
   //    int gid = nonsmoothnodes_->GID(i);
-  //    DRT::Node* node = idiscret_->gNode(gid);
+  //    CORE::Nodes::Node* node = idiscret_->gNode(gid);
   //    if (!node)
   //      FOUR_C_THROW("Cannot find node with gid %", gid);
   //    Node* cnode = dynamic_cast<Node*>(node);
@@ -5306,7 +5306,7 @@ void CONTACT::Interface::scale_normals2_d()
   for (int i = 0; i < nonsmoothnodes_->NumMyElements(); ++i)
   {
     int gid = nonsmoothnodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -5546,7 +5546,7 @@ double CONTACT::Interface::compute_cpp_normal2_d(MORTAR::Node& mrtrnode,
       int linsize = 0;
       for (int i = 0; i < meles[ele]->num_node(); ++i)
       {
-        DRT::Node* node = meles[ele]->Nodes()[i];
+        CORE::Nodes::Node* node = meles[ele]->Nodes()[i];
         if (!node) FOUR_C_THROW("Cannot find master node");
         CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
         linsize += mnode->GetLinsize();
@@ -5611,7 +5611,7 @@ double CONTACT::Interface::compute_cpp_normal2_d(MORTAR::Node& mrtrnode,
     int linsize = 0;
     for (int i = 0; i < meles[ele]->num_node(); ++i)
     {
-      DRT::Node* node = meles[ele]->Nodes()[i];
+      CORE::Nodes::Node* node = meles[ele]->Nodes()[i];
       if (!node) FOUR_C_THROW("Cannot find master node");
       CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
       linsize += mnode->GetLinsize();
@@ -5876,7 +5876,7 @@ double CONTACT::Interface::compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
               j, meles[ele]->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
-          DRT::Node* nodes[2] = {
+          CORE::Nodes::Node* nodes[2] = {
               meles[ele]->Nodes()[nodeLIds[0]], meles[ele]->Nodes()[nodeLIds[1]]};
           lineEle->BuildNodalPointers(nodes);
 
@@ -5933,7 +5933,7 @@ double CONTACT::Interface::compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
       int linsize = 0;
       for (int i = 0; i < meles[ele]->num_node(); ++i)
       {
-        DRT::Node* node = meles[ele]->Nodes()[i];
+        CORE::Nodes::Node* node = meles[ele]->Nodes()[i];
         if (!node) FOUR_C_THROW("Cannot find master node");
         CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
         linsize += mnode->GetLinsize();
@@ -6444,7 +6444,7 @@ void CONTACT::Interface::export_nodal_normals() const
   for (int i = 0; i < snoderowmapbound_->NumMyElements(); ++i)
   {
     int gid = snoderowmapbound_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -6551,7 +6551,7 @@ void CONTACT::Interface::export_nodal_normals() const
     int gid = snodecolmapbound_->GID(i);
     if (snoderowmapbound_->MyGID(gid)) continue;
 
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     int linsize = cnode->GetLinsize() + (int)(n_x_key[gid].size());
@@ -6638,7 +6638,7 @@ void CONTACT::Interface::export_nodal_normals() const
       for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
       {
         int gid = snodecolmapbound_->GID(i);
-        DRT::Node* node = idiscret_->gNode(gid);
+        CORE::Nodes::Node* node = idiscret_->gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %",gid);
         Node* cnode = dynamic_cast<Node*>(node);
 
@@ -6705,7 +6705,7 @@ bool CONTACT::Interface::evaluate_search_binarytree()
     for (int i = 0; i < SlaveColNodesBound()->NumMyElements(); ++i)
     {
       int gid = SlaveColNodesBound()->GID(i);
-      DRT::Node* node = Discret().gNode(gid);
+      CORE::Nodes::Node* node = Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %i", gid);
       MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(node);
 
@@ -6814,7 +6814,7 @@ void CONTACT::Interface::evaluate_stl()
                 j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
-            std::array<DRT::Node*, 2> nodes = {
+            std::array<CORE::Nodes::Node*, 2> nodes = {
                 melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
             lineEle->BuildNodalPointers(nodes.data());
 
@@ -7103,7 +7103,7 @@ void CONTACT::Interface::EvaluateLTSMaster()
               j, meleElements[m]->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
-          std::array<DRT::Node*, 2> nodes = {
+          std::array<CORE::Nodes::Node*, 2> nodes = {
               meleElements[m]->Nodes()[nodeLIds[0]], meleElements[m]->Nodes()[nodeLIds[1]]};
           lineEle->BuildNodalPointers(nodes.data());
 
@@ -7325,7 +7325,7 @@ void CONTACT::Interface::evaluate_lts()
             j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
         // get nodes
-        std::array<DRT::Node*, 2> nodes = {
+        std::array<CORE::Nodes::Node*, 2> nodes = {
             selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
         lineEle->BuildNodalPointers(nodes.data());
 
@@ -7441,7 +7441,7 @@ void CONTACT::Interface::evaluate_ltl()
               j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
-          std::array<DRT::Node*, 2> nodes = {
+          std::array<CORE::Nodes::Node*, 2> nodes = {
               selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
           lineEle->BuildNodalPointers(nodes.data());
 
@@ -7511,7 +7511,7 @@ void CONTACT::Interface::evaluate_ltl()
               j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
-          std::array<DRT::Node*, 2> nodes = {
+          std::array<CORE::Nodes::Node*, 2> nodes = {
               selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
           lineEle->BuildNodalPointers(nodes.data());
 
@@ -7607,7 +7607,7 @@ void CONTACT::Interface::evaluate_ltl()
                 j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
-            std::array<DRT::Node*, 2> nodes = {
+            std::array<CORE::Nodes::Node*, 2> nodes = {
                 melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
             lineEle->BuildNodalPointers(nodes.data());
 
@@ -7677,7 +7677,7 @@ void CONTACT::Interface::evaluate_ltl()
                 j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
-            std::array<DRT::Node*, 2> nodes = {
+            std::array<CORE::Nodes::Node*, 2> nodes = {
                 melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
             lineEle->BuildNodalPointers(nodes.data());
 
@@ -7727,7 +7727,7 @@ void CONTACT::Interface::evaluate_nts()
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
 
@@ -7938,7 +7938,7 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
     double cn = GetCnRef()[GetCnRef().Map().LID(cnode->Id())];
@@ -8009,7 +8009,7 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
       for (scurr = snodes.begin(); scurr != snodes.end(); scurr++)
       {
         int gid = *scurr;
-        DRT::Node* snode = idiscret_->gNode(gid);
+        CORE::Nodes::Node* snode = idiscret_->gNode(gid);
         if (!snode) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -8051,7 +8051,7 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
       for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
       {
         int gid = *mcurr;
-        DRT::Node* mnode = idiscret_->gNode(gid);
+        CORE::Nodes::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -8084,7 +8084,7 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
         for (scurr = snodes.begin(); scurr != snodes.end(); scurr++)
         {
           int gid = *scurr;
-          DRT::Node* snode = idiscret_->gNode(gid);
+          CORE::Nodes::Node* snode = idiscret_->gNode(gid);
           if (!snode) FOUR_C_THROW("Cannot find node with gid %", gid);
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -8158,7 +8158,7 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
       for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
       {
         int gid = *mcurr;
-        DRT::Node* mnode = idiscret_->gNode(gid);
+        CORE::Nodes::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -8182,7 +8182,7 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
       for (dscurr = ddmap.begin(); dscurr != ddmap.end(); ++dscurr)
       {
         int gid = dscurr->first;
-        DRT::Node* snode = idiscret_->gNode(gid);
+        CORE::Nodes::Node* snode = idiscret_->gNode(gid);
         if (!snode) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -8213,7 +8213,7 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
       for (dmcurr = dmmap.begin(); dmcurr != dmmap.end(); ++dmcurr)
       {
         int gid = dmcurr->first;
-        DRT::Node* mnode = idiscret_->gNode(gid);
+        CORE::Nodes::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
         double* mxi = cmnode->xspatial();
@@ -8539,7 +8539,7 @@ void CONTACT::Interface::EvaluateTangentNorm(double& cnormtan)
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -8641,7 +8641,7 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
   for (int j = 0; j < SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = SlaveRowNodes()->GID(j);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
     Node* cnode = dynamic_cast<Node*>(node);
@@ -8882,7 +8882,7 @@ bool CONTACT::Interface::BuildActiveSet(bool init)
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     const int numdof = cnode->NumDof();
@@ -9049,7 +9049,7 @@ bool CONTACT::Interface::SplitActiveDofs()
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     const int numdof = cnode->NumDof();
@@ -9115,7 +9115,7 @@ bool CONTACT::Interface::SplitActiveDofs()
   for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
   {
     int gid = slipnodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     const int numdof = cnode->NumDof();
@@ -9144,7 +9144,7 @@ bool CONTACT::Interface::SplitActiveDofs()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::Interface::GetForceOfNode(CORE::LINALG::Matrix<3, 1>& nodal_force,
-    const Epetra_Vector& force, const DRT::Node& node) const
+    const Epetra_Vector& force, const CORE::Nodes::Node& node) const
 {
   std::vector<int> dofs;
   idiscret_->Dof(&node, dofs);
@@ -9289,7 +9289,7 @@ void CONTACT::Interface::StoreToOld(MORTAR::StrategyBase::QuantityType type)
   for (int j = 0; j < SlaveColNodes()->NumMyElements(); ++j)
   {
     int gid = SlaveColNodes()->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
     switch (type)

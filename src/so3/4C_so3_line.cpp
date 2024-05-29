@@ -33,7 +33,7 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::StructuralLineType::Create(
  |  ctor (public)                                              gee 04/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::StructuralLine::StructuralLine(int id, int owner, int nnode, const int* nodeids,
-    DRT::Node** nodes, CORE::Elements::Element* parent, const int lline)
+    CORE::Nodes::Node** nodes, CORE::Elements::Element* parent, const int lline)
     : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);

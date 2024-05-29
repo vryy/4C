@@ -60,7 +60,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     //! @name member variables
 
     //! Map of the Corner Node IDs Ni
-    std::map<std::string, DRT::Node*> rve_ref_node_map_;
+    std::map<std::string, CORE::Nodes::Node*> rve_ref_node_map_;
 
     //! RVE reference length vectors
     std::array<double, 2> r_xmxp_, r_ymyp_;

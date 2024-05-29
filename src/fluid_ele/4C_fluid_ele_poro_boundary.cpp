@@ -28,7 +28,7 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidPoroBoundaryType::Crea
 }
 
 DRT::ELEMENTS::FluidPoroBoundary::FluidPoroBoundary(int id, int owner, int nnode,
-    const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface)
+    const int* nodeids, CORE::Nodes::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface)
     : FluidBoundary(id, owner, nnode, nodeids, nodes, parent, lsurface)
 {
 }

@@ -424,7 +424,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     // insert values into final flux vector for visualization
     for (int lnodid = 0; lnodid < discret_->NumMyRowNodes(); ++lnodid)
     {
-      DRT::Node* actnode = discret_->lRowNode(lnodid);
+      CORE::Nodes::Node* actnode = discret_->lRowNode(lnodid);
       for (int idof = 0; idof < discret_->NumDof(0, actnode); ++idof)
       {
         const int dofgid = discret_->Dof(0, actnode, idof);
@@ -688,7 +688,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity()
   for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
   {
     // get current node
-    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+    CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
     // get associated degrees of freedom
     std::vector<int> nodedofs = discret_->Dof(0, lnode);
@@ -902,7 +902,7 @@ void SCATRA::ScaTraTimIntImpl::add_flux_approx_to_parameter_list(Teuchos::Parame
     std::string name = "flux_phi_" + temp.str();
     for (int i = 0; i < fluxk->MyLength(); ++i)
     {
-      DRT::Node* actnode = discret_->lRowNode(i);
+      CORE::Nodes::Node* actnode = discret_->lRowNode(i);
       int dofgid = discret_->Dof(0, actnode, k);
       fluxk->ReplaceMyValue(i, 0, ((*flux)[0])[(flux->Map()).LID(dofgid)]);
       fluxk->ReplaceMyValue(i, 1, ((*flux)[1])[(flux->Map()).LID(dofgid)]);
@@ -1243,7 +1243,7 @@ void SCATRA::ScaTraTimIntImpl::output_flux(Teuchos::RCP<Epetra_MultiVector> flux
     std::string name = "flux_" + fluxtype + "_phi_" + temp.str();
     for (int i = 0; i < fluxk->MyLength(); ++i)
     {
-      DRT::Node* actnode = discret_->lRowNode(i);
+      CORE::Nodes::Node* actnode = discret_->lRowNode(i);
       int dofgid = discret_->Dof(0, actnode, writefluxid - 1);
       // get value for each component of flux vector
       double xvalue = ((*flux)[0])[(flux->Map()).LID(dofgid)];
@@ -3078,7 +3078,7 @@ int SCATRA::ScalarHandler::num_dof_per_node_in_condition(
     if (discret->NodeRowMap()->MyGID(nodegid))
     {
       // get node
-      DRT::Node* curnode = discret->gNode(nodegid);
+      CORE::Nodes::Node* curnode = discret->gNode(nodegid);
       // save number of dofs in set
       mynumdofpernode.insert(discret->NumDof(0, curnode));
     }

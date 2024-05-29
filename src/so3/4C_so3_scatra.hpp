@@ -355,7 +355,7 @@ namespace DRT
       //! \vec{r}} ]) at each gauss point
       std::vector<double> det_j_;
 
-      DRT::Node** Nodes() override;
+      CORE::Nodes::Node** Nodes() override;
 
       Teuchos::RCP<CORE::MAT::Material> material() const;
 

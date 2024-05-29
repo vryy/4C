@@ -757,7 +757,7 @@ CORE::COUPLING::NodeMatchingOctree::NodeMatchingOctree()
 void CORE::COUPLING::NodeMatchingOctree::calc_point_coordinate(
     const DRT::Discretization* dis, const int id, double* coord)
 {
-  DRT::Node* actnode = dis->gNode(id);
+  CORE::Nodes::Node* actnode = dis->gNode(id);
 
   const int dim = 3;
 
@@ -770,7 +770,7 @@ void CORE::COUPLING::NodeMatchingOctree::calc_point_coordinate(
 void CORE::COUPLING::NodeMatchingOctree::calc_point_coordinate(
     CORE::COMM::ParObject* entity, double* coord)
 {
-  auto* actnode = dynamic_cast<DRT::Node*>(entity);
+  auto* actnode = dynamic_cast<CORE::Nodes::Node*>(entity);
   if (actnode == nullptr) FOUR_C_THROW("dynamic_cast failed");
 
   const int dim = 3;
@@ -800,7 +800,7 @@ void CORE::COUPLING::NodeMatchingOctree::pack_entity(
     CORE::COMM::PackBuffer& data, const DRT::Discretization* dis, const int id)
 {
   // get the slavenode
-  DRT::Node* actnode = dis->gNode(id);
+  CORE::Nodes::Node* actnode = dis->gNode(id);
   // Add node to list of nodes which will be sent to the next proc
   CORE::COMM::ParObject::AddtoPack(data, actnode);
 }  // NodeMatchingOctree::PackEntity
@@ -819,7 +819,7 @@ int CORE::COUPLING::NodeMatchingOctree::check_valid_entity_type(
     Teuchos::RCP<CORE::COMM::ParObject> o)
 {
   // cast ParObject to Node
-  auto* actnode = dynamic_cast<DRT::Node*>(o.get());
+  auto* actnode = dynamic_cast<CORE::Nodes::Node*>(o.get());
   if (actnode == nullptr) FOUR_C_THROW("unpack of invalid data");
 
   return actnode->Id();
@@ -872,7 +872,7 @@ void CORE::COUPLING::ElementMatchingOctree::calc_point_coordinate(
   auto* actele = dynamic_cast<CORE::Elements::Element*>(entity);
   if (actele == nullptr) FOUR_C_THROW("dynamic_cast failed");
 
-  DRT::Node** nodes = actele->Nodes();
+  CORE::Nodes::Node** nodes = actele->Nodes();
   if (nodes == nullptr) FOUR_C_THROW("could not get pointer to nodes");
 
   const int numnode = actele->num_node();
@@ -907,7 +907,7 @@ void CORE::COUPLING::ElementMatchingOctree::pack_entity(
 {
   // get the slavenode
   CORE::Elements::Element* actele = dis->gElement(id);
-  DRT::Node** nodes = actele->Nodes();
+  CORE::Nodes::Node** nodes = actele->Nodes();
   // Add node to list of nodes which will be sent to the next proc
   CORE::COMM::ParObject::AddtoPack(data, actele->num_node());
   CORE::COMM::ParObject::AddtoPack(data, actele);
@@ -929,9 +929,9 @@ void CORE::COUPLING::ElementMatchingOctree::un_pack_entity(
     std::vector<char> nodedata;
     CORE::COMM::ParObject::ExtractfromPack(index, rblockofnodes, nodedata);
     Teuchos::RCP<CORE::COMM::ParObject> o = Teuchos::rcp(CORE::COMM::Factory(nodedata));
-    Teuchos::RCP<DRT::Node> actnode = Teuchos::rcp_dynamic_cast<DRT::Node>(o);
+    Teuchos::RCP<CORE::Nodes::Node> actnode = Teuchos::rcp_dynamic_cast<CORE::Nodes::Node>(o);
     if (actnode == Teuchos::null) FOUR_C_THROW("cast from ParObject to Node failed");
-    nodes_.insert(std::pair<int, Teuchos::RCP<DRT::Node>>(actnode->Id(), actnode));
+    nodes_.insert(std::pair<int, Teuchos::RCP<CORE::Nodes::Node>>(actnode->Id(), actnode));
   }
 
 }  // ElementMatchingOctree::un_pack_entity
@@ -978,7 +978,7 @@ CORE::COUPLING::OctreeNodalElement::OctreeNodalElement() : OctreeElement() {}  /
 void CORE::COUPLING::OctreeNodalElement::calc_point_coordinate(
     const DRT::Discretization* dis, const int id, double* coord)
 {
-  DRT::Node* actnode = dis->gNode(id);
+  CORE::Nodes::Node* actnode = dis->gNode(id);
 
   const int dim = 3;
 

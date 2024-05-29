@@ -167,7 +167,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   }
 
   // get number of DOFs of artery or artery-scatra
-  const DRT::Node* const* artnodes;
+  const CORE::Nodes::Node* const* artnodes;
   artnodes = element1_->Nodes();
 
   numdof_art_ = element1_->NumDofPerNode(*artnodes[0]);
@@ -177,7 +177,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   dim1_ = numdof_art_ * element1_->num_node();
 
   // get number of DOFs of continuous ele (scatra or porofluid)
-  const DRT::Node* const* contnodes;
+  const CORE::Nodes::Node* const* contnodes;
   contnodes = element2_->Nodes();
 
   numdof_cont_ = element2_->NumDofPerNode(*contnodes[0]);
@@ -249,7 +249,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   // Set reference nodal positions for artery element
   for (unsigned int n = 0; n < numnodesart_; ++n)
   {
-    const DRT::Node* node = element1_->Nodes()[n];
+    const CORE::Nodes::Node* node = element1_->Nodes()[n];
     for (unsigned int d = 0; d < numdim_; ++d) ele1posref_(numdim_ * n + d) = node->X()[d];
   }
 
@@ -269,7 +269,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   // Set reference nodal positions for continuous discretization element
   for (unsigned int inode = 0; inode < numnodescont_; ++inode)
   {
-    const DRT::Node* node = element2_->Nodes()[inode];
+    const CORE::Nodes::Node* node = element2_->Nodes()[inode];
     for (unsigned int idim = 0; idim < numdim_; ++idim) ele2posref_(idim, inode) = node->X()[idim];
   }
 

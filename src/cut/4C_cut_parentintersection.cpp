@@ -65,7 +65,7 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
     // get all adjacent elements to this node if this is a real (- not a shadow -) node
     if (n_gid >= 0)
     {
-      DRT::Node* node = dis.gNode(n_gid);
+      CORE::Nodes::Node* node = dis.gNode(n_gid);
 
       // get adjacent elements for this node
       const CORE::Elements::Element* const* adjelements = node->Elements();
@@ -469,7 +469,7 @@ void CORE::GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>&
 
         if (nid >= 0)
         {
-          DRT::Node* drt_node = dis.gNode(nid);
+          CORE::Nodes::Node* drt_node = dis.gNode(nid);
 
           // decide if the information for this cell has to be ordered from row-node or not
           // REMARK:

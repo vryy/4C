@@ -37,10 +37,10 @@ void FS3I::BIOFILM::UTILS::ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> 
   {
     // get current node
     int gid = (scatradis->NodeColMap())->GID(index);
-    DRT::Node* mynode = scatradis->gNode(gid);
+    CORE::Nodes::Node* mynode = scatradis->gNode(gid);
 
     // get local fluid/structure node with the same local node id
-    DRT::Node* lnode = dis->lColNode(index);
+    CORE::Nodes::Node* lnode = dis->lColNode(index);
 
     // get degrees of freedom associated with this fluid/structure node
     std::vector<int> nodedofs = dis->Dof(0, lnode);

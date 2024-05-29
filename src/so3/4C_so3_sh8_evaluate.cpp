@@ -556,7 +556,7 @@ double DRT::ELEMENTS::SoSh8::sosh8_calc_energy(
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
 
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
@@ -757,7 +757,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -1833,7 +1833,7 @@ void DRT::ELEMENTS::SoSh8::do_calc_stc_matrix(
   if (stc_scaling == INPAR::STR::stc_curr or stc_scaling == INPAR::STR::stc_currsym)
   {
     CORE::LINALG::Matrix<NUMDOF_SOH8, 1> adjele(true);
-    DRT::Node** nodes = Nodes();
+    CORE::Nodes::Node** nodes = Nodes();
 
     std::vector<CORE::Conditions::Condition*> cond0;
     std::vector<CORE::Conditions::Condition*> condFSI0;

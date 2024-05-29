@@ -154,7 +154,7 @@ void MAT::ScatraMultiScaleGP::Init()
         if (microdis->NodeRowMap()->MyGID(inode))
         {
           // extract node from micro-scale discretization
-          DRT::Node* node = microdis->gNode(inode);
+          CORE::Nodes::Node* node = microdis->gNode(inode);
 
           // safety checks
           if (node == nullptr)

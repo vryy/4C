@@ -59,8 +59,12 @@ namespace DRT
   // forward declarations
   class Discretization;
   class DiscretizationHDG;
-  class Node;
 }  // namespace DRT
+
+namespace CORE::Nodes
+{
+  class Node;
+}
 
 namespace CORE::Elements
 {
@@ -310,7 +314,7 @@ namespace CORE::Elements
     \return Ptr to pointers to nodes of the element in local nodal ordering.
             Returns nullptr if pointers to not exist.
     */
-    virtual DRT::Node** Nodes()
+    virtual CORE::Nodes::Node** Nodes()
     {
       if (node_.size())
         return node_.data();
@@ -319,7 +323,7 @@ namespace CORE::Elements
     }
 
     // mgee: change to this (as const and !const):
-    // virtual std::vector<DRT::Node*>& Nodes()
+    // virtual std::vector<CORE::Nodes::Node*>& Nodes()
     //{ return node_; }
 
     /*!
@@ -334,10 +338,10 @@ namespace CORE::Elements
     \return Ptr to pointers to nodes of the element in local nodal ordering.
             Returns nullptr if pointers to not exist.
     */
-    virtual const DRT::Node* const* Nodes() const
+    virtual const CORE::Nodes::Node* const* Nodes() const
     {
       if (node_.size())
-        return (const DRT::Node* const*)(node_.data());
+        return (const CORE::Nodes::Node* const*)(node_.data());
       else
         return nullptr;
     }
@@ -358,7 +362,7 @@ namespace CORE::Elements
      * discretization where the integration cell (i.e. the "element") is not
      * formed by the nodes and many more nodes can have influence.
      */
-    virtual DRT::Node** Points() { return Nodes(); }
+    virtual CORE::Nodes::Node** Points() { return Nodes(); }
 
     /*!
      * \brief Get const vector of ptrs to points forming the geometry of this element
@@ -367,7 +371,7 @@ namespace CORE::Elements
      * discretization where the integration cell (i.e. the "element") is not
      * formed by the nodes and many more nodes can have influence.
      */
-    virtual const DRT::Node* const* Points() const { return Nodes(); }
+    virtual const CORE::Nodes::Node* const* Points() const { return Nodes(); }
 
 
     /*!
@@ -473,7 +477,7 @@ might become invalid after a redistribution of the discretization.
         Element* parent_slave,                 //!< parent slave element
         int nnode,                             //!< number of nodes
         const int* nodeids,                    //!< node ids
-        DRT::Node** nodes,                     //!< nodeids
+        CORE::Nodes::Node** nodes,             //!< nodeids
         const int lsurface_master,             //!< local index of surface w.r.t master element
         const int lsurface_slave,              //!< local index of surface w.r.t slave element
         const std::vector<int>& localtrafomap  //!< local trafo map
@@ -517,7 +521,7 @@ might become invalid after a redistribution of the discretization.
     method.
 
     */
-    virtual int NumDofPerNode(const DRT::Node& node) const
+    virtual int NumDofPerNode(const CORE::Nodes::Node& node) const
     {
       FOUR_C_THROW("not implemented");
       return -1;
@@ -1126,7 +1130,7 @@ might become invalid after a redistribution of the discretization.
 
     \param nodes (in): A map of all nodes of a discretization
     */
-    virtual bool BuildNodalPointers(std::map<int, Teuchos::RCP<DRT::Node>>& nodes);
+    virtual bool BuildNodalPointers(std::map<int, Teuchos::RCP<CORE::Nodes::Node>>& nodes);
 
     /*!
     \brief Build pointer vector from vector of nodal pointers
@@ -1140,7 +1144,7 @@ might become invalid after a redistribution of the discretization.
                        is implicitly expected to be of length num_node() and contain pointers
                        to nodes in the correct element local ordering scheme.
     */
-    virtual bool BuildNodalPointers(DRT::Node** nodes);
+    virtual bool BuildNodalPointers(CORE::Nodes::Node** nodes);
 
     /*!
     \brief Build pointer vector from map of elements
@@ -1262,7 +1266,7 @@ might become invalid after a redistribution of the discretization.
     std::vector<int> nodeid_;
 
     //! \brief Pointers to adjacent nodes in element local ordering
-    std::vector<DRT::Node*> node_;
+    std::vector<CORE::Nodes::Node*> node_;
 
     //! \brief List of my faces, length NumFace(). Only filled if face elements are created, when
     //! using DiscretizationFaces

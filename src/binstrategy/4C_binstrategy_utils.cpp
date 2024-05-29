@@ -306,7 +306,8 @@ namespace BINSTRATEGY
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
     void GetCurrentNodePos(Teuchos::RCP<const DRT::Discretization> const discret,
-        DRT::Node const* node, Teuchos::RCP<const Epetra_Vector> const disnp, double* currpos)
+        CORE::Nodes::Node const* node, Teuchos::RCP<const Epetra_Vector> const disnp,
+        double* currpos)
     {
       // Todo make this nicer
 
@@ -317,7 +318,7 @@ namespace BINSTRATEGY
       // first node of the  element here (for the sake of binning)
 
       // standard case
-      DRT::Node const* node_with_position_Dofs = node;
+      CORE::Nodes::Node const* node_with_position_Dofs = node;
 
       const CORE::Elements::Element* element = node->Elements()[0];
       const DRT::ELEMENTS::Beam3Base* beamelement =

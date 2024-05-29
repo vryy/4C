@@ -20,7 +20,7 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Shell7pLineType::Create(
 }
 
 DRT::ELEMENTS::Shell7pLine::Shell7pLine(int id, int owner, int nnode, const int* nodeids,
-    DRT::Node** nodes, CORE::Elements::Element* parent, const int lline)
+    CORE::Nodes::Node** nodes, CORE::Elements::Element* parent, const int lline)
     : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);

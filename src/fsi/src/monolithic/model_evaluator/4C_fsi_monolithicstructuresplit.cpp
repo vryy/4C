@@ -74,7 +74,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(
     //
     //      // do only nodes that I have in my discretization
     //      if (!structure_field()->discretization()->NodeColMap()->MyGID(gid)) continue;
-    //      DRT::Node* node = structure_field()->discretization()->gNode(gid);
+    //      CORE::Nodes::Node* node = structure_field()->discretization()->gNode(gid);
     //      if (!node) FOUR_C_THROW("Cannot find node with gid %",gid);
     //
     //      std::vector<int> nodedofs = structure_field()->discretization()->Dof(node);

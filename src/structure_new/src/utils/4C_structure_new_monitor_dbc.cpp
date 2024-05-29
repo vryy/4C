@@ -201,7 +201,7 @@ void STR::MonitorDbc::create_reaction_maps(const DRT::Discretization& discret,
     const int rlid = discret.NodeRowMap()->LID(nid);
     if (rlid == -1) continue;
 
-    const DRT::Node* node = discret.lRowNode(rlid);
+    const CORE::Nodes::Node* node = discret.lRowNode(rlid);
 
     for (unsigned i = 0; i < DIM; ++i)
       if ((*onoff)[i] == 1) my_dofs[i].push_back(discret.Dof(node, i));
@@ -453,7 +453,7 @@ void STR::MonitorDbc::get_area(double area[], const CORE::Conditions::Condition*
     if (!fele->parent_element() or fele->parent_element()->Owner() != discret.Comm().MyPID())
       continue;
 
-    const DRT::Node* const* fnodes = fele->Nodes();
+    const CORE::Nodes::Node* const* fnodes = fele->Nodes();
     const unsigned num_fnodes = fele->num_node();
     std::vector<int> fele_dofs;
     fele_dofs.reserve(num_fnodes * DIM);
@@ -468,7 +468,7 @@ void STR::MonitorDbc::get_area(double area[], const CORE::Conditions::Condition*
 
     for (unsigned i = 0; i < num_fnodes; ++i)
     {
-      const DRT::Node& fnode = *fnodes[i];
+      const CORE::Nodes::Node& fnode = *fnodes[i];
       std::copy(fnode.X().data(), fnode.X().data() + DIM, &xyze_ref(0, i));
       std::copy(fnode.X().data(), fnode.X().data() + DIM, &xyze_curr(0, i));
 
@@ -554,7 +554,7 @@ double STR::MonitorDbc::get_reaction_moment(CORE::LINALG::Matrix<DIM, 1>& rmomen
     const int rlid = discret_ptr_->NodeRowMap()->LID(nid);
     if (rlid == -1) continue;
 
-    const DRT::Node* node = discret_ptr_->lRowNode(rlid);
+    const CORE::Nodes::Node* node = discret_ptr_->lRowNode(rlid);
 
     for (unsigned i = 0; i < DIM; ++i) node_gid[i] = discret_ptr_->Dof(node, i);
 

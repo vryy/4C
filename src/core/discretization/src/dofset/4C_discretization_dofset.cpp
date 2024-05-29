@@ -219,7 +219,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
     int numrownodes = dis.NumMyRowNodes();
     for (int i = 0; i < numrownodes; ++i)
     {
-      DRT::Node* actnode = dis.lRowNode(i);
+      CORE::Nodes::Node* actnode = dis.lRowNode(i);
       numdfrownodes[i] = NumDofPerNode(*actnode);
     }
 
@@ -229,7 +229,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
 
     for (int i = 0; i < numrownodes; ++i)
     {
-      DRT::Node* actnode = dis.lRowNode(i);
+      CORE::Nodes::Node* actnode = dis.lRowNode(i);
       const int gid = actnode->Id();
 
       // **********************************************************************
@@ -551,7 +551,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
     }
     else
     {
-      DRT::Node* lastnode = dis.lColNode(i - 1);
+      CORE::Nodes::Node* lastnode = dis.lColNode(i - 1);
       (*shiftcolnodes_)[i] = (*shiftcolnodes_)[i - 1] + NumDofPerNode(*lastnode);
     }
   }

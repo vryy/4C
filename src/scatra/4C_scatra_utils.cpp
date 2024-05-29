@@ -167,7 +167,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
   gradphirow->PutScalar(0.0);
 
   // map of pointers to nodes which must be reconstructed by this processor <local id, node>
-  std::map<int, const DRT::Node*> nodesToReconstruct;
+  std::map<int, const CORE::Nodes::Node*> nodesToReconstruct;
   nodesToReconstruct.clear();
 
   //--------------------------------------------------------------------------------------------
@@ -182,7 +182,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
     // get number of nodes of this element (number of vertices)
     const int numberOfNodes = actele->num_node();
     // get vector of pointers of node (for this element)
-    const DRT::Node* const* ele_vecOfPtsToNode = actele->Nodes();
+    const CORE::Nodes::Node* const* ele_vecOfPtsToNode = actele->Nodes();
 
     // loop nodes of this element
     for (int vec_it = 0; vec_it < numberOfNodes; vec_it++)
@@ -213,7 +213,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
 
     // get local processor id of current node and pointer to current node
     // int lid_node = it_node->first;
-    const DRT::Node* ptToNode = it_node.second;
+    const CORE::Nodes::Node* ptToNode = it_node.second;
     const int nodegid = ptToNode->Id();
 
     // vector of elements located around this node
@@ -280,7 +280,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
       for (int icoupnode : coupnodegid)
       {
         // get coupled pbc node (master or slave)
-        const DRT::Node* ptToCoupNode = discret->gNode(icoupnode);
+        const CORE::Nodes::Node* ptToCoupNode = discret->gNode(icoupnode);
         // get adjacent elements of this node
         const CORE::Elements::Element* const* pbcelements = ptToCoupNode->Elements();
         // add elements to list

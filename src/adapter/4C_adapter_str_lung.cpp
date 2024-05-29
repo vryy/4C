@@ -69,7 +69,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
     {
       if (discretization()->HaveGlobalNode(gid))
       {
-        DRT::Node* node = discretization()->gNode(gid);
+        CORE::Nodes::Node* node = discretization()->gNode(gid);
         std::vector<int> dofs = discretization()->Dof(node);
         std::copy(dofs.begin(), dofs.end(), std::inserter(constrdofs, constrdofs.begin()));
       }
@@ -85,7 +85,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
     {
       if (discretization()->HaveGlobalNode(gid))
       {
-        DRT::Node* node = discretization()->gNode(gid);
+        CORE::Nodes::Node* node = discretization()->gNode(gid);
         std::vector<int> dofs = discretization()->Dof(node);
         std::copy(dofs.begin(), dofs.end(), std::inserter(asidofs, asidofs.begin()));
       }
@@ -119,7 +119,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   const int ndim = GLOBAL::Problem::Instance()->NDim();
   for (int i = 0; i < numnode; ++i)
   {
-    const DRT::Node* actnode = discretization()->gNode(nodes[i]);
+    const CORE::Nodes::Node* actnode = discretization()->gNode(nodes[i]);
     const std::vector<int> dof = discretization()->Dof(actnode);
     if (ndim > static_cast<int>(dof.size()))
       FOUR_C_THROW(

@@ -17,8 +17,8 @@
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 #include <Epetra_Vector.h>
@@ -52,7 +52,7 @@ namespace DRT
           CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
@@ -202,7 +202,7 @@ namespace DRT
     number of degrees of freedom per node along the way for each of it's nodes
     separately.
     */
-      int NumDofPerNode(const DRT::Node& node) const override { return 3; }
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 3; }
 
       /*!
     \brief Get number of degrees of freedom per element
@@ -307,7 +307,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented for element type vele3!");
@@ -331,8 +331,8 @@ namespace DRT
       /*!
       \brief Standard Constructor
       */
-      explicit Vele3Surface(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
-          DRT::ELEMENTS::Vele3* parent, const int lsurface);
+      explicit Vele3Surface(int id, int owner, int nnode, const int* nodeids,
+          CORE::Nodes::Node** nodes, DRT::ELEMENTS::Vele3* parent, const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -372,7 +372,7 @@ namespace DRT
 
       //! @name Access methods
 
-      int NumDofPerNode(const DRT::Node&) const override { return 3; }
+      int NumDofPerNode(const CORE::Nodes::Node&) const override { return 3; }
       int num_dof_per_element() const override { return 0; }
       void Print(std::ostream& os) const override;
       CORE::Elements::ElementType& ElementType() const override
@@ -460,7 +460,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented for element type vele3!");
@@ -492,7 +492,7 @@ namespace DRT
       \param parent: The parent fluid element of this line
       \param lline: the local line number of this line w.r.t. the parent element
       */
-      Vele3Line(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
+      Vele3Line(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
           CORE::Elements::Element* parent, const int lline);
 
       /*!
@@ -524,7 +524,7 @@ namespace DRT
 
       For this 3D boundary element, we have 3 displacements, if needed
       */
-      int NumDofPerNode(const DRT::Node&) const override { return 3; }
+      int NumDofPerNode(const CORE::Nodes::Node&) const override { return 3; }
 
       int num_dof_per_element() const override { return 0; }
 

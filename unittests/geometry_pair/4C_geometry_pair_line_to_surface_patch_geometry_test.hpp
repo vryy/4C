@@ -90,13 +90,13 @@ namespace
     // Add all nodes to the discretization.
     {
       std::vector<double> coordinates(3);
-      Teuchos::RCP<DRT::Node> new_node;
+      Teuchos::RCP<CORE::Nodes::Node> new_node;
       for (unsigned int i_node = 0; i_node < n_nodes_problem; i_node++)
       {
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           coordinates[i_dim] = points[i_node + n_nodes_problem * i_dim];
 
-        new_node = Teuchos::rcp(new DRT::Node(i_node, coordinates, 0));
+        new_node = Teuchos::rcp(new CORE::Nodes::Node(i_node, coordinates, 0));
         discret->AddNode(new_node);
       }
     }
@@ -119,7 +119,7 @@ namespace
     // Create the face elements.
     {
       std::vector<int> node_ids(n_nodes_face);
-      std::vector<DRT::Node*> element_nodes(n_nodes_face);
+      std::vector<CORE::Nodes::Node*> element_nodes(n_nodes_face);
       int node_index;
       for (unsigned int i_el = 0; i_el < n_el_face; i_el++)
       {

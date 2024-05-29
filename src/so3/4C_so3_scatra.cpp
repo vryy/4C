@@ -197,7 +197,7 @@ bool DRT::ELEMENTS::So3Scatra<so3_ele, distype>::ReadElement(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-inline DRT::Node** DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Nodes()
+inline CORE::Nodes::Node** DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Nodes()
 {
   return so3_ele::Nodes();
 }

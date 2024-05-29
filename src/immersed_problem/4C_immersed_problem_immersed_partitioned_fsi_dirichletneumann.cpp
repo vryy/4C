@@ -194,7 +194,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
   // find positions of the background fluid discretization
   for (int lid = 0; lid < fluiddis_->NumMyColNodes(); ++lid)
   {
-    const DRT::Node* node = fluiddis_->lColNode(lid);
+    const CORE::Nodes::Node* node = fluiddis_->lColNode(lid);
     CORE::LINALG::Matrix<3, 1> currpos;
 
     currpos(0) = node->X()[0];
@@ -464,10 +464,10 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::build_immersed_dirich_map
         dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis->gElement(elecolmap->GID(i)));
     if (immersedele->has_projected_dirichlet())
     {
-      DRT::Node** nodes = immersedele->Nodes();
+      CORE::Nodes::Node** nodes = immersedele->Nodes();
       for (int inode = 0; inode < (immersedele->num_node()); inode++)
       {
-        if (static_cast<DRT::ImmersedNode*>(nodes[inode])->IsMatched() and
+        if (static_cast<CORE::Nodes::ImmersedNode*>(nodes[inode])->IsMatched() and
             nodes[inode]->Owner() == myrank_)
         {
           std::vector<int> dofs = dis->Dof(nodes[inode]);
@@ -532,7 +532,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::setup_structural_discreti
   std::map<int, CORE::LINALG::Matrix<3, 1>> my_currpositions_struct;
   for (int lid = 0; lid < structdis_->NumMyRowNodes(); ++lid)
   {
-    const DRT::Node* node = structdis_->lRowNode(lid);
+    const CORE::Nodes::Node* node = structdis_->lRowNode(lid);
     CORE::LINALG::Matrix<3, 1> currpos;
 
     currpos(0) = node->X()[0];
@@ -631,7 +631,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::prepare_fluid_op()
   std::map<int, CORE::LINALG::Matrix<3, 1>> my_currpositions_struct;
   for (int lid = 0; lid < structdis_->NumMyRowNodes(); ++lid)
   {
-    const DRT::Node* node = structdis_->lRowNode(lid);
+    const CORE::Nodes::Node* node = structdis_->lRowNode(lid);
     CORE::LINALG::Matrix<3, 1> currpos;
     std::vector<int> dofstoextract(3);
     std::vector<double> mydisp(3);

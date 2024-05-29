@@ -95,7 +95,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
   {
     const int sgid = mysnodegids[i];
 
-    DRT::Node* node = idiscret_.gNode(sgid);
+    CORE::Nodes::Node* node = idiscret_.gNode(sgid);
     Node* cnode = dynamic_cast<Node*>(node);
     if (not cnode) FOUR_C_THROW("Dynamic cast failed!");
 

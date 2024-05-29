@@ -23,10 +23,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace DRT
+namespace CORE::Nodes
 {
   class Node;
-}  // namespace DRT
+}
 namespace MORTAR
 {
   class MatrixRowColTransformer;
@@ -1136,7 +1136,7 @@ namespace CONTACT
         /// undo the perturbation
         void undo_perturbation(const int gid, const int dof) const;
 
-        DRT::Node* find_i_node(const int gid) const;
+        CORE::Nodes::Node* find_i_node(const int gid) const;
 
         /// call back to the wrapping strategy
         Strategy* strat_;

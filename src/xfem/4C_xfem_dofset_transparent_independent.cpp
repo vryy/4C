@@ -24,7 +24,7 @@ XFEM::XFEMTransparentIndependentDofSet::XFEMTransparentIndependentDofSet(
   return;
 }
 
-int XFEM::XFEMTransparentIndependentDofSet::NumDofPerNode(const DRT::Node &node) const
+int XFEM::XFEMTransparentIndependentDofSet::NumDofPerNode(const CORE::Nodes::Node &node) const
 {
   if (wizard_ != Teuchos::null)
   {

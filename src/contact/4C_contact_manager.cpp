@@ -313,7 +313,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
         if (!Discret().NodeColMap()->MyGID(gid)) continue;
-        DRT::Node* node = Discret().gNode(gid);
+        CORE::Nodes::Node* node = Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // store global IDs of initially active nodes

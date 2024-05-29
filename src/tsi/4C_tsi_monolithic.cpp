@@ -2584,7 +2584,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
 
       // -------------------- evaluation in special direction, here z-direction
       // get node with global id gid
-      DRT::Node* node = structure_field()->discretization()->gNode(gid);
+      CORE::Nodes::Node* node = structure_field()->discretization()->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       // check coordinates in z-direction, i.e. third value of X()
       double zcoord = node->X()[2];
@@ -2669,7 +2669,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   necking_radius_dof.at(0) = -1.;
   for (int k = 0; k < (int)structure_field()->discretization()->NodeRowMap()->NumMyElements(); k++)
   {
-    DRT::Node* node = structure_field()->discretization()->lRowNode(k);
+    CORE::Nodes::Node* node = structure_field()->discretization()->lRowNode(k);
     // change here value for different geometries
     if ((abs(node->X()[0] - necking_x) < 1.e-8)      // x-direction
         and (abs(node->X()[1] - necking_y) < 1.e-8)  // y-direction
@@ -2706,7 +2706,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   neck_temperature_dof.at(0) = -1.0;
   for (int k = 0; k < (int)ThermoField()->discretization()->NodeRowMap()->NumMyElements(); k++)
   {
-    DRT::Node* node = ThermoField()->discretization()->lRowNode(k);
+    CORE::Nodes::Node* node = ThermoField()->discretization()->lRowNode(k);
     // change here value for different geometries
     if ((abs(node->X()[0] - necking_x) < 1.e-8)      // x-direction
         and (abs(node->X()[1] - necking_y) < 1.e-8)  // y-direction
@@ -2739,7 +2739,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   top_temperature_dof.at(0) = -1.0;
   for (int k = 0; k < (int)ThermoField()->discretization()->NodeRowMap()->NumMyElements(); k++)
   {
-    DRT::Node* node = ThermoField()->discretization()->lRowNode(k);
+    CORE::Nodes::Node* node = ThermoField()->discretization()->lRowNode(k);
     // change here value for different geometries
     if ((abs(node->X()[0] - top_x) < 1.e-8)      // x-direction
         and (abs(node->X()[1] - top_y) < 1.e-8)  // y-direction

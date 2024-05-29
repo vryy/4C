@@ -449,7 +449,7 @@ void STR::MODELEVALUATOR::Meshtying::apply_mesh_initialization(
     int ilid = node_colmap->LID(gid);
     if (ilid < 0) continue;
 
-    DRT::Node* mynode = discret_ptr()->gNode(gid);
+    CORE::Nodes::Node* mynode = discret_ptr()->gNode(gid);
 
     // get degrees of freedom associated with this fluid/structure node
     std::vector<int> nodedofs = discret_ptr()->Dof(0, mynode);

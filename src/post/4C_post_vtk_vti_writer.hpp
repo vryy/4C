@@ -32,9 +32,12 @@ class PostResult;
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
 
+namespace CORE::Nodes
+{
+  class Node;
+}
 
 /*
  \brief Base class for VTU output generation

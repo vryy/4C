@@ -936,7 +936,7 @@ void STR::TimInt::apply_mesh_initialization(Teuchos::RCP<const Epetra_Vector> Xs
     int ilid = discret_->NodeColMap()->LID(gid);
     if (ilid < 0) continue;
 
-    DRT::Node* mynode = discret_->gNode(gid);
+    CORE::Nodes::Node* mynode = discret_->gNode(gid);
 
     // get degrees of freedom associated with this fluid/structure node
     std::vector<int> nodedofs = discret_->Dof(0, mynode);
@@ -2615,7 +2615,7 @@ void STR::TimInt::OutputContact()
     {
       // get current node
       int gid = (discret_->NodeRowMap())->GID(k);
-      DRT::Node* mynode = discret_->gNode(gid);
+      CORE::Nodes::Node* mynode = discret_->gNode(gid);
       std::vector<int> globaldofs = discret_->Dof(mynode);
 
       // loop over all DOFs comprised by this node
@@ -2854,7 +2854,7 @@ void STR::TimInt::output_nodal_positions()
     // get global id of a node
     gid = noderowmap->GID(lid);
     // get the node
-    DRT::Node* node = discret_->gNode(gid);
+    CORE::Nodes::Node* node = discret_->gNode(gid);
     // std::cout<<"mynode"<<*node<<std::endl;
 
     // get the coordinates of the node

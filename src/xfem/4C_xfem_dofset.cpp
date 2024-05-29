@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Get the gid of all dofs of a node                      schott 12/14 |
  *----------------------------------------------------------------------*/
 void XFEM::XFEMDofSet::Dof(
-    std::vector<int>& dofs, const DRT::Node* node, unsigned nodal_dofset_id) const
+    std::vector<int>& dofs, const CORE::Nodes::Node* node, unsigned nodal_dofset_id) const
 {
   const int lid = node->LID();
   if (lid == -1) return;
@@ -39,7 +39,7 @@ void XFEM::XFEMDofSet::Dof(
 /*----------------------------------------------------------------------*
  |  Get the gid of all dofs of a node                      schott 12/14 |
  *----------------------------------------------------------------------*/
-int XFEM::XFEMDofSet::NumDofPerNode(const DRT::Node& node) const
+int XFEM::XFEMDofSet::NumDofPerNode(const CORE::Nodes::Node& node) const
 {
   CORE::GEO::CUT::Node* n = wizard_.GetNode(node.Id());
   if (n != nullptr)

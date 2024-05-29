@@ -163,7 +163,7 @@ void DRT::Discretization::build_node_row_map()
 {
   const int myrank = Comm().MyPID();
   int nummynodes = 0;
-  std::map<int, Teuchos::RCP<DRT::Node>>::iterator curr;
+  std::map<int, Teuchos::RCP<CORE::Nodes::Node>>::iterator curr;
   for (curr = node_.begin(); curr != node_.end(); ++curr)
     if (curr->second->Owner() == myrank) ++nummynodes;
   std::vector<int> nodeids(nummynodes);
@@ -192,7 +192,7 @@ void DRT::Discretization::build_node_col_map()
   nodecolptr_.resize(nummynodes);
 
   int count = 0;
-  std::map<int, Teuchos::RCP<DRT::Node>>::iterator curr;
+  std::map<int, Teuchos::RCP<CORE::Nodes::Node>>::iterator curr;
   for (curr = node_.begin(); curr != node_.end(); ++curr)
   {
     nodeids[count] = curr->second->Id();
@@ -286,7 +286,7 @@ void DRT::Discretization::build_element_to_element_pointers()
  *----------------------------------------------------------------------*/
 void DRT::Discretization::build_node_to_element_pointers()
 {
-  std::map<int, Teuchos::RCP<DRT::Node>>::iterator nodecurr;
+  std::map<int, Teuchos::RCP<CORE::Nodes::Node>>::iterator nodecurr;
   for (nodecurr = node_.begin(); nodecurr != node_.end(); ++nodecurr)
     nodecurr->second->clear_my_element_topology();
 
@@ -297,7 +297,7 @@ void DRT::Discretization::build_node_to_element_pointers()
     const int* nodes = elecurr->second->NodeIds();
     for (int j = 0; j < nnode; ++j)
     {
-      DRT::Node* node = gNode(nodes[j]);
+      CORE::Nodes::Node* node = gNode(nodes[j]);
       if (!node)
         FOUR_C_THROW("Node %d is not on this proc %d", j, Comm().MyPID());
       else

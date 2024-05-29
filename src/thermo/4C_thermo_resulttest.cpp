@@ -60,7 +60,7 @@ void THR::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test
     // this implementation does not allow testing of heatfluxes
     if (thrdisc_->HaveGlobalNode(node))
     {
-      const DRT::Node* actnode = thrdisc_->gNode(node);
+      const CORE::Nodes::Node* actnode = thrdisc_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != thrdisc_->Comm().MyPID()) return;

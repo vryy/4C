@@ -41,7 +41,8 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::StructuralSurfaceType::Crea
  |  ctor (public)                                              gee 04/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner, int nnode,
-    const int* nodeids, DRT::Node** nodes, CORE::Elements::Element* parent, const int lsurface)
+    const int* nodeids, CORE::Nodes::Node** nodes, CORE::Elements::Element* parent,
+    const int lsurface)
     : CORE::Elements::FaceElement(id, owner),
       distype_(CORE::FE::CellType::dis_none),
       numdofpernode_(-1),

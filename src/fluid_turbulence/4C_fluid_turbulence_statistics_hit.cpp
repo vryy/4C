@@ -116,7 +116,7 @@ namespace FLD
     // loop all nodes and store x1-coordinate
     for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
     {
-      DRT::Node* node = discret_->lRowNode(inode);
+      CORE::Nodes::Node* node = discret_->lRowNode(inode);
       if ((node->X()[1] < 2e-9 && node->X()[1] > -2e-9) and
           (node->X()[2] < 2e-9 && node->X()[2] > -2e-9))
         coords.insert(node->X()[0]);
@@ -394,7 +394,7 @@ namespace FLD
     for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
     {
       // get node
-      DRT::Node* node = discret_->lRowNode(inode);
+      CORE::Nodes::Node* node = discret_->lRowNode(inode);
 
       // get coordinates
       CORE::LINALG::Matrix<3, 1> xyz(true);
@@ -643,7 +643,7 @@ namespace FLD
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
       // get node
-      DRT::Node* node = discret_->lRowNode(nn);
+      CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
       // get global dof ids
       std::vector<int> dof = discret_->Dof(node);
@@ -756,7 +756,7 @@ namespace FLD
     for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
     {
       // get node
-      DRT::Node* node = discret_->lRowNode(inode);
+      CORE::Nodes::Node* node = discret_->lRowNode(inode);
 
       // get coordinates
       CORE::LINALG::Matrix<3, 1> xyz(true);
@@ -806,7 +806,7 @@ namespace FLD
     for (int inode = 0; inode < scatradiscret_->NumMyRowNodes(); inode++)
     {
       // get node
-      DRT::Node* node = scatradiscret_->lRowNode(inode);
+      CORE::Nodes::Node* node = scatradiscret_->lRowNode(inode);
 
       // get coordinates
       CORE::LINALG::Matrix<3, 1> xyz(true);
@@ -1065,7 +1065,7 @@ namespace FLD
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
       // get node
-      DRT::Node* node = discret_->lRowNode(nn);
+      CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
       // get global dof ids
       std::vector<int> dof = discret_->Dof(node);
@@ -2133,7 +2133,7 @@ namespace FLD
     //  for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
     //  {
     //    // get node
-    //    DRT::Node* node = discret_->lRowNode(nn);
+    //    CORE::Nodes::Node* node = discret_->lRowNode(nn);
     //
     //    // get global dof ids
     //    std::vector<int> dof = discret_->Dof(node);

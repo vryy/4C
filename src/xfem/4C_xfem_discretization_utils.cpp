@@ -67,7 +67,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
       s << " col n->Id() \" {\n";
       for (int i = 0; i < dis->NumMyColNodes(); ++i)
       {
-        const DRT::Node* actnode = dis->lColNode(i);
+        const CORE::Nodes::Node* actnode = dis->lColNode(i);
         CORE::LINALG::Matrix<3, 1> pos(true);
 
         if (curr_pos != nullptr)
@@ -92,7 +92,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
       s << " row n->Id() \" {\n";
       for (int i = 0; i < dis->NumMyRowNodes(); ++i)
       {
-        const DRT::Node* actnode = dis->lRowNode(i);
+        const CORE::Nodes::Node* actnode = dis->lRowNode(i);
         CORE::LINALG::Matrix<3, 1> pos(true);
 
         if (curr_pos != nullptr)
@@ -244,7 +244,7 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
 
   // get the number of DoF's per node
   int gid_node = src_dis->NodeRowMap()->MinMyGID();
-  DRT::Node* node_ptr = src_dis->gNode(gid_node);
+  CORE::Nodes::Node* node_ptr = src_dis->gNode(gid_node);
   int num_dof_per_node = src_dis->NumDof(node_ptr);
 
   std::vector<std::string> conditions_to_copy;
@@ -273,10 +273,10 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
     const std::vector<std::string>& conditions_to_copy) const
 {
   // row node map (id -> pointer)
-  std::map<int, DRT::Node*> sourcenodes;
+  std::map<int, CORE::Nodes::Node*> sourcenodes;
 
   // column node map
-  std::map<int, DRT::Node*> sourcegnodes;
+  std::map<int, CORE::Nodes::Node*> sourcegnodes;
 
   // element map
   std::map<int, Teuchos::RCP<CORE::Elements::Element>> sourceelements;
@@ -293,7 +293,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
     Teuchos::RCP<DRT::Discretization> sourcedis, Teuchos::RCP<DRT::Discretization> targetdis,
-    const std::map<int, DRT::Node*>& sourcenodes, const std::map<int, DRT::Node*>& sourcegnodes,
+    const std::map<int, CORE::Nodes::Node*>& sourcenodes,
+    const std::map<int, CORE::Nodes::Node*>& sourcegnodes,
     const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& sourceelements,
     const std::vector<std::string>& conditions_to_copy) const
 {
@@ -326,14 +327,14 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
   // ------------------------------------------------------------------------
   // add conditioned nodes and fill the id vectors
   // ------------------------------------------------------------------------
-  for (std::map<int, DRT::Node*>::const_iterator sourcegnode_iter = sourcegnodes.begin();
+  for (std::map<int, CORE::Nodes::Node*>::const_iterator sourcegnode_iter = sourcegnodes.begin();
        sourcegnode_iter != sourcegnodes.end(); ++sourcegnode_iter)
   {
     const int nid = sourcegnode_iter->first;
     if (sourcegnode_iter->second->Owner() == myrank)
     {
-      Teuchos::RCP<DRT::Node> sourcegnode =
-          Teuchos::rcp(new DRT::Node(nid, sourcegnode_iter->second->X(), myrank));
+      Teuchos::RCP<CORE::Nodes::Node> sourcegnode =
+          Teuchos::rcp(new CORE::Nodes::Node(nid, sourcegnode_iter->second->X(), myrank));
       targetdis->AddNode(sourcegnode);
       condnoderowset.insert(nid);
       targetnoderowvec.push_back(nid);
@@ -489,10 +490,10 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_co
   std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator cit;
   std::map<int, Teuchos::RCP<CORE::Elements::Element>> src_elements;
   // row node map (id -> pointer)
-  std::map<int, DRT::Node*> src_my_gnodes;
+  std::map<int, CORE::Nodes::Node*> src_my_gnodes;
   std::vector<int> condnoderowvec;
   // column node map
-  std::map<int, DRT::Node*> src_gnodes;
+  std::map<int, CORE::Nodes::Node*> src_gnodes;
   std::vector<int> condnodecolvec;
   // find all parent elements
   for (cit = src_cond_elements.begin(); cit != src_cond_elements.end(); ++cit)
@@ -512,7 +513,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_co
       const int gid = n[i];
       if (sourcedis->HaveGlobalNode(gid))
       {
-        DRT::Node* node = sourcedis->gNode(gid);
+        CORE::Nodes::Node* node = sourcedis->gNode(gid);
         src_gnodes[gid] = node;
 
         if (node->Owner() == myrank) src_my_gnodes[gid] = node;

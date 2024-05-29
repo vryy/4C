@@ -64,10 +64,10 @@ int DRT::DiscretizationHDG::fill_complete(
     f->second->set_local_trafo_map(trafoMap[f->first]);
 
     // refresh node pointers if they have been set up
-    DRT::Node** oldnodes = f->second->Nodes();
+    CORE::Nodes::Node** oldnodes = f->second->Nodes();
     if (oldnodes != nullptr)
     {
-      std::vector<DRT::Node*> nodes(ids.size(), nullptr);
+      std::vector<CORE::Nodes::Node*> nodes(ids.size(), nullptr);
 
       for (unsigned int i = 0; i < ids.size(); ++i)
       {

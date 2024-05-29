@@ -6,8 +6,8 @@
 *----------------------------------------------------------------------*/
 
 
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_so3_hex27.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 std::vector<double> DRT::ELEMENTS::SoHex27::soh27_element_center_refe_coords()
 {
   // update element geometry
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   CORE::LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_SOH27; ++i)
   {

@@ -570,7 +570,7 @@ void DRT::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  // lo
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_, NUMDIM_> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<NUMNOD_, NUMDIM_> xcurr;  // current  coord. of element
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -2320,7 +2320,7 @@ void DRT::ELEMENTS::SoSh8p8::do_calc_stc_matrix(CORE::LINALG::Matrix<NUMDOF_, NU
   if (stc_scaling == INPAR::STR::stc_curr or stc_scaling == INPAR::STR::stc_currsym)
   {
     CORE::LINALG::Matrix<NUMDOF_, 1> adjele(true);
-    DRT::Node** nodes = Nodes();
+    CORE::Nodes::Node** nodes = Nodes();
 
     std::vector<CORE::Conditions::Condition*> cond0;
     int condnum0 = 1000;    // minimun STCid of layer with nodes 0..3

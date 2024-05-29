@@ -306,7 +306,7 @@ void CONTACT::AUG::Strategy::FdDebug::Evaluate(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Strategy::FdDebug::do_perturbation(const int gid, const int dof)
 {
-  DRT::Node* node = find_i_node(gid);
+  CORE::Nodes::Node* node = find_i_node(gid);
 
   Node* cnode = dynamic_cast<Node*>(node);
 
@@ -336,7 +336,7 @@ void CONTACT::AUG::Strategy::FdDebug::do_perturbation(const int gid, const int d
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Strategy::FdDebug::undo_perturbation(const int gid, const int dof) const
 {
-  DRT::Node* node = find_i_node(gid);
+  CORE::Nodes::Node* node = find_i_node(gid);
 
   Node* cnode = dynamic_cast<Node*>(node);
 
@@ -347,9 +347,9 @@ void CONTACT::AUG::Strategy::FdDebug::undo_perturbation(const int gid, const int
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::Node* CONTACT::AUG::Strategy::FdDebug::find_i_node(const int gid) const
+CORE::Nodes::Node* CONTACT::AUG::Strategy::FdDebug::find_i_node(const int gid) const
 {
-  DRT::Node* node = nullptr;
+  CORE::Nodes::Node* node = nullptr;
 
   // do the finite difference step
   for (auto& interface : strat_->interfaces())

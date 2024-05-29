@@ -132,7 +132,7 @@ namespace DRT
       \brief Get number of degrees of freedom per node, zero for the primary
       and the secondary dof set and equal to the given number for the tertiary dof set
       */
-      int NumDofPerNode(const DRT::Node&) const override { return 0; }
+      int NumDofPerNode(const CORE::Nodes::Node&) const override { return 0; }
 
       /*!
       \brief Returns the number of dofs per node for the ALE displacements

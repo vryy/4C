@@ -167,14 +167,14 @@ namespace CORE::VOLMORTAR
 
      */
     virtual void assemble_consistent_interpolation_p12(
-        DRT::Node* node, std::vector<int>& foundeles);
+        CORE::Nodes::Node* node, std::vector<int>& foundeles);
 
     /*!
      \brief Assemble p matrix for cons. interpolation approach
 
      */
     virtual void assemble_consistent_interpolation_p21(
-        DRT::Node* node, std::vector<int>& foundeles);
+        CORE::Nodes::Node* node, std::vector<int>& foundeles);
 
     /*!
      \brief get auxiliary plane normal (2D)

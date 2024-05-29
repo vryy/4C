@@ -179,7 +179,7 @@ void WEAR::LagrangeStrategyWear::setup_wear(bool redistributed, bool init)
       for (int j = 0; j < (int)interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -191,7 +191,7 @@ void WEAR::LagrangeStrategyWear::setup_wear(bool redistributed, bool init)
         for (int j = 0; j < (int)interface_[i]->MasterColNodes()->NumMyElements(); ++j)
         {
           int gid = interface_[i]->MasterColNodes()->GID(j);
-          DRT::Node* node = interface_[i]->Discret().gNode(gid);
+          CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
           if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
           CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -442,7 +442,7 @@ void WEAR::LagrangeStrategyWear::AssembleMortar()
         for (int j = 0; j < (int)interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
         {
           int gid = interface_[i]->SlaveRowNodes()->GID(j);
-          DRT::Node* node = interface_[i]->Discret().gNode(gid);
+          CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
           if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
           CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -4067,7 +4067,7 @@ void WEAR::LagrangeStrategyWear::OutputWear()
       for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -4268,7 +4268,7 @@ void WEAR::LagrangeStrategyWear::DoWriteRestart(
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       int dof = (activetoggle->Map()).LID(gid);
@@ -4774,7 +4774,7 @@ void WEAR::LagrangeStrategyWear::DoReadRestart(
 
       if ((*activetoggle)[dof] == 1)
       {
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -4957,7 +4957,7 @@ void WEAR::LagrangeStrategyWear::update_wear_discret_iterate(bool store)
       for (int j = 0; j < (int)interface_[i]->SlaveColNodes()->NumMyElements(); ++j)
       {
         int gid = interface_[i]->SlaveColNodes()->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -4974,7 +4974,7 @@ void WEAR::LagrangeStrategyWear::update_wear_discret_iterate(bool store)
         for (int j = 0; j < (int)masternodes->NumMyElements(); ++j)
         {
           int gid = masternodes->GID(j);
-          DRT::Node* node = interface_[i]->Discret().gNode(gid);
+          CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
           if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
           CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -5096,7 +5096,7 @@ void WEAR::LagrangeStrategyWear::store_nodal_quantities(MORTAR::StrategyBase::Qu
       for (int j = 0; j < masternodes->NumMyElements(); ++j)
       {
         int gid = masternodes->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -5110,7 +5110,7 @@ void WEAR::LagrangeStrategyWear::store_nodal_quantities(MORTAR::StrategyBase::Qu
       for (int j = 0; j < masternodes->NumMyElements(); ++j)
       {
         int gid = masternodes->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -5125,7 +5125,7 @@ void WEAR::LagrangeStrategyWear::store_nodal_quantities(MORTAR::StrategyBase::Qu
       for (int j = 0; j < snodemap->NumMyElements(); ++j)
       {
         int gid = snodemap->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 

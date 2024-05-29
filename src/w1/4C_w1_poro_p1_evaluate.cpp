@@ -403,7 +403,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::nonlinear_stiffness_poroelast(std::vec
   CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Base::Nodes();
+  CORE::Nodes::Node** nodes = Base::Nodes();
   for (int i = 0; i < Base::numnod_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -711,7 +711,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::coupling_poroelast(
   CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Base::Nodes();
+  CORE::Nodes::Node** nodes = Base::Nodes();
   for (int i = 0; i < Base::numnod_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -895,7 +895,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::evaluate_neumann(Teuchos::ParameterList
   CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Base::Nodes();
+  CORE::Nodes::Node** nodes = Base::Nodes();
   for (int i = 0; i < Base::numnod_; ++i)
   {
     const auto& x = nodes[i]->X();

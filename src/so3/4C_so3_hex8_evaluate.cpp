@@ -1414,7 +1414,7 @@ void DRT::ELEMENTS::SoHex8::init_jacobian_mapping()
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    Node** nodes = Nodes();
+    CORE::Nodes::Node** nodes = Nodes();
     if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
     xrefe(i, 0) = Nodes()[i]->X()[0];
     xrefe(i, 1) = Nodes()[i]->X()[1];
@@ -1449,7 +1449,7 @@ int DRT::ELEMENTS::SoHex8::init_jacobian_mapping(std::vector<double>& dispmat)
 
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    Node** nodes = Nodes();
+    CORE::Nodes::Node** nodes = Nodes();
     if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
 
     xmat(i, 0) = Nodes()[i]->X()[0] + dispmat[i * NODDOF_SOH8 + 0];
@@ -3036,7 +3036,7 @@ void DRT::ELEMENTS::SoHex8::evaluate_finite_difference_material_tangent(
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;
 
   // get nodes
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
 
   //////////////////////////////////////////////////////////////////////////////
   ////// evaluate partial derivatives of stress (S(d_n+delta) - S(d_n))/delta
@@ -3236,7 +3236,7 @@ void DRT::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
   static CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr(true);  // current  coord. of element
   xrefe.Clear();
   xcurr.Clear();
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
 
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {

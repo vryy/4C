@@ -221,7 +221,7 @@ namespace DRT
       /*!
       \brief Get vector of ptrs to nodes
       */
-      DRT::Node** Nodes() override;
+      CORE::Nodes::Node** Nodes() override;
 
       /*!
       \brief Get shape type of element

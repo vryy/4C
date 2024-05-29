@@ -201,7 +201,7 @@ void MORTAR::STRATEGY::Factory::prepare_nurbs_element(const DRT::Discretization&
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::prepare_nurbs_node(
-    const DRT::Node* node, Teuchos::RCP<MORTAR::Node> mnode) const
+    const CORE::Nodes::Node* node, Teuchos::RCP<MORTAR::Node> mnode) const
 {
   const DRT::NURBS::ControlPoint* cp = dynamic_cast<const DRT::NURBS::ControlPoint*>(node);
 

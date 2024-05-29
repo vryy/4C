@@ -53,7 +53,7 @@ void SCATRA::ScaTraResultTest::test_node(INPUT::LineDefinition& res, int& nerr, 
   {
     if (scatratimint_->discretization()->HaveGlobalNode(node))
     {
-      DRT::Node* actnode = scatratimint_->discretization()->gNode(node);
+      CORE::Nodes::Node* actnode = scatratimint_->discretization()->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != scatratimint_->discretization()->Comm().MyPID()) return;
@@ -79,7 +79,7 @@ void SCATRA::ScaTraResultTest::test_node(INPUT::LineDefinition& res, int& nerr, 
  *----------------------------------------------------------------------*/
 double SCATRA::ScaTraResultTest::result_node(
     const std::string quantity,  //! name of quantity to be tested
-    DRT::Node* node              //! node carrying the result to be tested
+    CORE::Nodes::Node* node      //! node carrying the result to be tested
 ) const
 {
   // initialize variable for result

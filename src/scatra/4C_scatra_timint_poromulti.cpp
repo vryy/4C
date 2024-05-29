@@ -68,7 +68,7 @@ void SCATRA::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
     for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
     {
       // get the processor local node
-      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+      CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
       // get dofs associated with current node
       std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
@@ -214,7 +214,7 @@ void SCATRA::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
       if (discret_->HaveGlobalNode(nodegid))
       {
         // extract current node
-        const DRT::Node* const node = discret_->gNode(nodegid);
+        const CORE::Nodes::Node* const node = discret_->gNode(nodegid);
 
         // process only nodes owned by current processor
         if (node->Owner() == discret_->Comm().MyPID())

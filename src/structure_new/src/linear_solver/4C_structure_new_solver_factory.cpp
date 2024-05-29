@@ -146,7 +146,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_structure_lin_sol
 
       for (int i = 0; i < actdis.NumMyRowNodes(); i++)
       {
-        const DRT::Node* node = actdis.lRowNode(i);
+        const CORE::Nodes::Node* node = actdis.lRowNode(i);
 
         if (BEAMINTERACTION::UTILS::IsBeamNode(*node))
           actdis.Dof(node, beamDofs);

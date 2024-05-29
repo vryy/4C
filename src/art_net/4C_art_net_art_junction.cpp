@@ -111,7 +111,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
 
         int local_id = discret_->NodeRowMap()->LID((*nodes)[0]);
         // Get the actual node connected to the condition
-        DRT::Node *nd = discret_->lColNode(local_id);
+        CORE::Nodes::Node *nd = discret_->lColNode(local_id);
 
         // find whether the nodes is at the inlet or at the outlet of the element
         std::string terminalType =

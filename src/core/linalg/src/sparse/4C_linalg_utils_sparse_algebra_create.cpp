@@ -88,7 +88,7 @@ void CORE::LINALG::CreateMapExtractorFromDiscretization(
   int numrownodes = dis.NumMyRowNodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    DRT::Node* node = dis.lRowNode(i);
+    CORE::Nodes::Node* node = dis.lRowNode(i);
 
     std::vector<int> dof = dis.Dof(0, node);
     for (unsigned j = 0; j < dof.size(); ++j)
@@ -138,7 +138,7 @@ void CORE::LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretizatio
   int numrownodes = dis.NumMyRowNodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    DRT::Node* node = dis.lRowNode(i);
+    CORE::Nodes::Node* node = dis.lRowNode(i);
 
     std::vector<int> dof = dofset.Dof(node);
     for (unsigned j = 0; j < dof.size(); ++j)
@@ -187,7 +187,7 @@ void CORE::LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretizatio
   int numrownodes = dis.NumMyRowNodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    DRT::Node* node = dis.lRowNode(i);
+    CORE::Nodes::Node* node = dis.lRowNode(i);
 
     std::vector<int> dof = dis.Dof(0, node);
 

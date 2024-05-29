@@ -420,7 +420,7 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
             if (scatratimint_->discretization()->HaveGlobalNode(nodegid))
             {
               // extract current node
-              const DRT::Node* const node = scatratimint_->discretization()->gNode(nodegid);
+              const CORE::Nodes::Node* const node = scatratimint_->discretization()->gNode(nodegid);
 
               // process only nodes owned by current processor
               if (node->Owner() == scatratimint_->discretization()->Comm().MyPID())

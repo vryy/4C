@@ -154,7 +154,7 @@ void XFEM::EvaluateNeumannStandard(
     {
       // do only nodes in my row map
       if (!discret->NodeRowMap()->MyGID((*nodeids)[i])) continue;
-      DRT::Node* actnode = discret->gNode((*nodeids)[i]);
+      CORE::Nodes::Node* actnode = discret->gNode((*nodeids)[i]);
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", (*nodeids)[i]);
       // call explicitly the main dofset, i.e. the first column
       std::vector<int> dofs = discret->Dof(0, actnode);

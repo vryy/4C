@@ -15,8 +15,8 @@
 
 #include "4C_discretization_dofset_interface.hpp"
 #include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_shape_function_type.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_std_cxx20_ranges.hpp"
 
@@ -274,8 +274,8 @@ namespace DRT
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void Dof(
-        const CORE::Elements::Element* element, const Node* node, std::vector<int>& lm) const
+    virtual void Dof(const CORE::Elements::Element* element, const CORE::Nodes::Node* node,
+        std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
       Dof(0, element, node, lm);
@@ -308,7 +308,8 @@ namespace DRT
     \param startindex (in): first index of vector at which will be written to end
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void Dof(const Node* node, const unsigned startindex, std::vector<int>& lm) const
+    virtual void Dof(
+        const CORE::Nodes::Node* node, const unsigned startindex, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
       Dof(0, node, startindex, lm);
@@ -346,7 +347,7 @@ namespace DRT
     - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param node (in)      : the node those number of dofs are requested
     */
-    int NumDof(const Node* node) const
+    int NumDof(const CORE::Nodes::Node* node) const
     {
       FOUR_C_ASSERT(NumDofSets() == 1, "expect just one dof set");
       return NumDof(0, node);
@@ -361,7 +362,7 @@ namespace DRT
     \param nds (in)       : number of dofset
     \param node (in)      : the node those number of dofs are requested
     */
-    virtual int NumDof(unsigned nds, const Node* node) const
+    virtual int NumDof(unsigned nds, const CORE::Nodes::Node* node) const
     {
       FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(havedof_, "no dofs assigned");
@@ -394,7 +395,7 @@ namespace DRT
      *  \param node (in)      : the node those number of DoF's are requested
      *
      *  \author hiermeier \date 10/16 */
-    virtual int NumStandardDof(const unsigned& nds, const Node* node) const
+    virtual int NumStandardDof(const unsigned& nds, const CORE::Nodes::Node* node) const
     {
       return NumDof(nds, node);
     }
@@ -408,7 +409,7 @@ namespace DRT
     \param node (in)      : the node
     \param dof (in)       : the node local dof number
     */
-    int Dof(const Node* node, const int ldof) const
+    int Dof(const CORE::Nodes::Node* node, const int ldof) const
     {
       FOUR_C_ASSERT(NumDofSets() == 1, "expect just one dof set");
       return Dof(0, node, ldof);
@@ -424,7 +425,7 @@ namespace DRT
     \param node (in)      : the node
     \param dof (in)       : the node local dof number
     */
-    virtual int Dof(unsigned nds, const Node* node, const int dof) const
+    virtual int Dof(unsigned nds, const CORE::Nodes::Node* node, const int dof) const
     {
       FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(havedof_, "no dofs assigned");
@@ -457,7 +458,7 @@ namespace DRT
     - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param node (in)      : the node
     */
-    std::vector<int> Dof(const Node* node) const
+    std::vector<int> Dof(const CORE::Nodes::Node* node) const
     {
       FOUR_C_ASSERT(NumDofSets() == 1, "expect just one dof set");
       return Dof(0, node);
@@ -473,7 +474,7 @@ namespace DRT
     \param nds (in)       : number of dofset
     \param node (in)      : the node
     */
-    virtual std::vector<int> Dof(unsigned nds, const Node* node) const
+    virtual std::vector<int> Dof(unsigned nds, const CORE::Nodes::Node* node) const
     {
       FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(havedof_, "no dofs assigned");
@@ -497,8 +498,8 @@ namespace DRT
     \param nodaldofset (in) : number of nodal dofset
     \param element     (in) : the element (optionally)
     */
-    virtual void Dof(std::vector<int>& dof, const Node* node, unsigned nds, unsigned nodaldofset,
-        const CORE::Elements::Element* element = nullptr) const
+    virtual void Dof(std::vector<int>& dof, const CORE::Nodes::Node* node, unsigned nds,
+        unsigned nodaldofset, const CORE::Elements::Element* element = nullptr) const
     {
       FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(havedof_, "no dofs assigned");
@@ -532,7 +533,7 @@ namespace DRT
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    void Dof(const Node* node, std::vector<int>& lm) const
+    void Dof(const CORE::Nodes::Node* node, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(NumDofSets() == 1, "expect just one dof set");
       Dof((unsigned)0, node, lm);
@@ -549,7 +550,7 @@ namespace DRT
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void Dof(unsigned nds, const Node* node, std::vector<int>& lm) const
+    virtual void Dof(unsigned nds, const CORE::Nodes::Node* node, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(havedof_, "no dofs assigned");
@@ -568,8 +569,8 @@ namespace DRT
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void Dof(unsigned nds, const CORE::Elements::Element* element, const Node* node,
-        std::vector<int>& lm) const
+    virtual void Dof(unsigned nds, const CORE::Elements::Element* element,
+        const CORE::Nodes::Node* node, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(havedof_, "no dofs assigned");
@@ -607,8 +608,8 @@ namespace DRT
     \param startindex (in): first index of vector at which will be written to end
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void Dof(
-        unsigned nds, const Node* node, const unsigned startindex, std::vector<int>& lm) const
+    virtual void Dof(unsigned nds, const CORE::Nodes::Node* node, const unsigned startindex,
+        std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(havedof_, "no dofs assigned");
@@ -831,8 +832,8 @@ namespace DRT
     \brief Query whether a node with global id @p gid is stored (i.e. owned or ghosted) on this proc
            (Filled()==true NOT prerequisite)
 
-    \note: this query does not tell, if the node is owned by this proc. Use DRT::Node.Owner() for
-    this.
+    \note: this query does not tell, if the node is owned by this proc. Use
+    CORE::Nodes::Node.Owner() for this.
 
     */
     [[nodiscard]] virtual bool HaveGlobalNode(int gid) const;
@@ -846,7 +847,7 @@ namespace DRT
 
     \return Address of node if node is stored on calling proc
     */
-    [[nodiscard]] virtual DRT::Node* gNode(int gid) const;
+    [[nodiscard]] virtual CORE::Nodes::Node* gNode(int gid) const;
 
     /*!
     \brief Get the node with local row id lid (Filled()==true prerequisite)
@@ -857,7 +858,7 @@ namespace DRT
 
     \return Address of node if node is owned and stored by calling proc
     */
-    [[nodiscard]] virtual DRT::Node* lRowNode(int lid) const
+    [[nodiscard]] virtual CORE::Nodes::Node* lRowNode(int lid) const
     {
       FOUR_C_ASSERT(Filled(), "discretization not Filled().");
       return noderowptr_[lid];
@@ -872,7 +873,7 @@ namespace DRT
 
     \return Address of node if node is stored by calling proc
     */
-    virtual DRT::Node* lColNode(int lid) const
+    virtual CORE::Nodes::Node* lColNode(int lid) const
     {
       FOUR_C_ASSERT(Filled(), "discretization not Filled().");
       return nodecolptr_[lid];
@@ -941,7 +942,7 @@ namespace DRT
 
     \note Sets Filled()=false
     */
-    virtual void AddNode(Teuchos::RCP<DRT::Node> node);
+    virtual void AddNode(Teuchos::RCP<CORE::Nodes::Node> node);
 
     /*!
     \brief Delete an node from the discretization (Filled()==true NOT prerequisite)
@@ -959,7 +960,7 @@ namespace DRT
 
     \note Sets Filled()=false and calls Reset() upon discretization.
     */
-    virtual bool DeleteNode(Teuchos::RCP<DRT::Node> node);
+    virtual bool DeleteNode(Teuchos::RCP<CORE::Nodes::Node> node);
 
     /*!
     \brief Delete an node with global id gid from the discretization
@@ -2241,13 +2242,13 @@ namespace DRT
     Teuchos::RCP<Epetra_Map> nodecolmap_;
 
     //! Vector of pointers to row nodes for faster access
-    std::vector<DRT::Node*> noderowptr_;
+    std::vector<CORE::Nodes::Node*> noderowptr_;
 
     //! Vector of pointers to column nodes for faster access
-    std::vector<DRT::Node*> nodecolptr_;
+    std::vector<CORE::Nodes::Node*> nodecolptr_;
 
     //! Map from nodal Gid to node pointers
-    std::map<int, Teuchos::RCP<DRT::Node>> node_;
+    std::map<int, Teuchos::RCP<CORE::Nodes::Node>> node_;
 
     //! @}
 

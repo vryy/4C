@@ -14,10 +14,10 @@
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_fluid_ele_nullspace.hpp"
 #include "4C_inpar_bio.hpp"
-#include "4C_lib_node.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
@@ -59,7 +59,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
       }
@@ -179,7 +179,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         switch (impltype_)
         {

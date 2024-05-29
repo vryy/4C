@@ -1373,7 +1373,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       // geometry (surface ele)
       CORE::LINALG::Matrix<3, 4> xrefe;  // material coord. of element
 
-      DRT::Node** nodes = this->Nodes();
+      CORE::Nodes::Node** nodes = this->Nodes();
       for (int i = 0; i < nen; ++i)
       {
         const auto& x = nodes[i]->X();
@@ -2459,7 +2459,7 @@ void DRT::ELEMENTS::StructuralSurface::calculate_surface_porosity(
   CORE::LINALG::SerialDenseMatrix xrefe(numdim, nenparent);  // material coord. of element
   CORE::LINALG::SerialDenseMatrix xcurr(numdim, nenparent);  // current  coord. of element
 
-  DRT::Node** nodes = parentele->Nodes();
+  CORE::Nodes::Node** nodes = parentele->Nodes();
   for (int i = 0; i < nenparent; ++i)
   {
     const auto& x = nodes[i]->X();

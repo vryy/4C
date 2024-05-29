@@ -406,7 +406,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::nonlinear_stiffness_poroelast(s
   CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Base::Nodes();
+  CORE::Nodes::Node** nodes = Base::Nodes();
   for (int i = 0; i < Base::numnod_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -733,7 +733,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::coupling_poroelast(std::vector<
   CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Base::Nodes();
+  CORE::Nodes::Node** nodes = Base::Nodes();
   for (int i = 0; i < Base::numnod_; ++i)
   {
     const auto& x = nodes[i]->X();

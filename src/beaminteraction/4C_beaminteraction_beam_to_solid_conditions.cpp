@@ -447,7 +447,8 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
   for (const auto& face_element_iterator : pair_face_elemets)
   {
     // Loop over the nodes of the face element.
-    const DRT::Node* const* nodes = face_element_iterator.second->GetDrtFaceElement()->Nodes();
+    const CORE::Nodes::Node* const* nodes =
+        face_element_iterator.second->GetDrtFaceElement()->Nodes();
     for (int i_node = 0; i_node < face_element_iterator.second->GetDrtFaceElement()->num_node();
          i_node++)
     {

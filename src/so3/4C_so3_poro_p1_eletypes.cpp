@@ -72,7 +72,7 @@ void DRT::ELEMENTS::SoHex8PoroP1Type::nodal_block_information(
 }
 
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoHex8PoroP1Type::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
@@ -165,7 +165,7 @@ void DRT::ELEMENTS::SoTet4PoroP1Type::nodal_block_information(
 }
 
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoTet4PoroP1Type::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }

@@ -95,7 +95,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
   for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
   {
     // create node object
-    DRT::Node* node = discret_->lRowNode(i);
+    CORE::Nodes::Node* node = discret_->lRowNode(i);
 
     // Is the actual node on z-axis?
     // => get z-coordinates of nodes on z-axis
@@ -257,7 +257,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
     for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
     {
       // create node object
-      DRT::Node* node = discret_->lRowNode(i);
+      CORE::Nodes::Node* node = discret_->lRowNode(i);
 
       // Get all nodes on evaluation plane at this z position with y=0 and x>2e-9
       if (node->X()[2] < actZ + 2e-9 && node->X()[2] > actZ - 2e-9 && node->X()[1] < 2e-9 &&
@@ -468,7 +468,7 @@ void FLD::TurbulenceStatisticsBfda::DoTimeSample(Teuchos::RCP<Epetra_Vector> vel
     // write a 1.0 at the position of the actual node of the processor in the toggle vectors
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
-      DRT::Node* node = discret_->lRowNode(nn);
+      CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
       // If node is on z-axis then get toggle vector for pressure and velocity at actual node //
       // this is the wall node
@@ -559,7 +559,7 @@ void FLD::TurbulenceStatisticsBfda::DoTimeSample(Teuchos::RCP<Epetra_Vector> vel
         // Put 1.0 in toggle vectors if node on proc is desired node
         for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
         {
-          DRT::Node* node = discret_->lRowNode(nn);
+          CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
           // If node is on desired position then get toggle vector for pressure and velocity at
           // actual node

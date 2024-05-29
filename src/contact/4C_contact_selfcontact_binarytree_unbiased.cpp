@@ -78,7 +78,7 @@ void CONTACT::UnbiasedSelfBinaryTree::calculate_proc_specific_dual_graph(
     // get current elements and its nodes
     CORE::Elements::Element* element = discret().gElement(gid);
     if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
-    DRT::Node** nodes = element->Nodes();
+    CORE::Nodes::Node** nodes = element->Nodes();
     if (!nodes) FOUR_C_THROW("Null pointer!");
 
     // skip further steps, if element is not owned by processor p
@@ -105,7 +105,7 @@ void CONTACT::UnbiasedSelfBinaryTree::calculate_proc_specific_dual_graph(
     // first-order nodes are always stored before higher-order nodes)
     for (int j = 0; j < numnode; ++j)
     {
-      DRT::Node* node = nodes[j];
+      CORE::Nodes::Node* node = nodes[j];
       if (!node) FOUR_C_THROW("Null pointer!");
 
       // adjacent elements of current node
@@ -158,7 +158,7 @@ void CONTACT::UnbiasedSelfBinaryTree::define_search_elements()
     else
       for (int i = 0; i < element->num_node(); ++i)
       {
-        DRT::Node* node = element->Nodes()[i];
+        CORE::Nodes::Node* node = element->Nodes()[i];
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
         if (cnode->IsSlave() != true) FOUR_C_THROW("Node: this should not happen!");
       }
@@ -504,7 +504,7 @@ void CONTACT::UnbiasedSelfBinaryTree::search_contact()
     // set nodes to slave
     for (int i = 0; i < element->num_node(); ++i)
     {
-      DRT::Node* node = element->Nodes()[i];
+      CORE::Nodes::Node* node = element->Nodes()[i];
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       cnode->SetSlave() = true;
     }

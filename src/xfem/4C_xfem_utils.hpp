@@ -69,7 +69,8 @@ namespace XFEM
     \brief Needs a column-vector to extract correctly in parallel
      */
     void ExtractQuantityAtNode(CORE::LINALG::SerialDenseMatrix::Base& element_vector,
-        const DRT::Node* node, const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
+        const CORE::Nodes::Node* node,
+        const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
         Teuchos::RCP<DRT::Discretization>& dis, const int nds_vector, const unsigned int nsd);
 
   }  // namespace UTILS

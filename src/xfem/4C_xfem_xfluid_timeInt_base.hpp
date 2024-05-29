@@ -17,8 +17,8 @@
 
 #include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_inpar_xfem.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Map.h>
@@ -89,7 +89,7 @@ namespace XFEM
       /*========================================================================*/
 
       //! constructor for basic data for standard computation in Semi-Lagrangean algorithm
-      TimeIntData(DRT::Node& node,  //! node for which SL-algorithm is called
+      TimeIntData(CORE::Nodes::Node& node,  //! node for which SL-algorithm is called
           int nds_np,  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo
                        //! is called
           CORE::LINALG::Matrix<3, 1> vel,  //! velocity at point x (=x_Lagr(t^n+1))
@@ -128,7 +128,7 @@ namespace XFEM
 
       //! constructor for current data in Semi-Lagrangean algorithm (used for receiving data from
       //! other procs)
-      TimeIntData(DRT::Node& node,
+      TimeIntData(CORE::Nodes::Node& node,
           int nds_np,  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo
                        //! is called
           CORE::LINALG::Matrix<3, 1>& vel, std::vector<CORE::LINALG::Matrix<3, 3>>& velDeriv,
@@ -163,7 +163,7 @@ namespace XFEM
       // TODO: cleanup these constructors!
 
       //! constructor for failed data in Semi-Lagrange, standard computation
-      TimeIntData(DRT::Node& node,
+      TimeIntData(CORE::Nodes::Node& node,
           int nds_np,  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo
                        //! is called
           CORE::LINALG::Matrix<3, 1>& vel, std::vector<CORE::LINALG::Matrix<3, 3>>& velDeriv,
@@ -189,7 +189,7 @@ namespace XFEM
 
       //! constructor for done data in standard computation (at the end of Semi-Lagrangean
       //! algorithm)
-      TimeIntData(DRT::Node& node,
+      TimeIntData(CORE::Nodes::Node& node,
           int nds_np,  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo
                        //! is called
           CORE::LINALG::Matrix<3, 1> dispnp,  //! displacement at point x (=x_Lagr(t^n+1))
@@ -274,7 +274,7 @@ namespace XFEM
       //! @name data for the node and it's dofset for which the XFEM-timeintegration algorithm is
       //! called
       //------------------------------------------
-      DRT::Node node_;  //! node for which SL-algorithm is called, no pointer!
+      CORE::Nodes::Node node_;  //! node for which SL-algorithm is called, no pointer!
       int nds_np_;  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo is
                     //! called
 
@@ -505,10 +505,11 @@ namespace XFEM
 
     //! add adjacebt elements for a periodic boundary node
     void add_pb_celements(
-        const DRT::Node* node, std::vector<const CORE::Elements::Element*>& eles) const;
+        const CORE::Nodes::Node* node, std::vector<const CORE::Elements::Element*>& eles) const;
 
     //! find the PBC node
-    void find_pbc_node(const DRT::Node* node, DRT::Node*& pbcnode, bool& pbcnodefound) const;
+    void find_pbc_node(
+        const CORE::Nodes::Node* node, CORE::Nodes::Node*& pbcnode, bool& pbcnodefound) const;
 
     //@}
 
@@ -521,11 +522,11 @@ namespace XFEM
         std::vector<char>& dataRecv) const;
 
     //! packing a node
-    void pack_node(CORE::COMM::PackBuffer& dataSend, DRT::Node& node) const;
+    void pack_node(CORE::COMM::PackBuffer& dataSend, CORE::Nodes::Node& node) const;
 
     //! unpacking a node
     void unpack_node(std::vector<char>::size_type& posinData, std::vector<char>& dataRecv,
-        DRT::Node& node) const;
+        CORE::Nodes::Node& node) const;
 
 
     /*========================================================================*/
@@ -809,8 +810,8 @@ namespace XFEM
     );
 
     //! call and prepare the projection of point to point (distance computation)
-    void call_project_on_point(DRT::Node* node,  ///< pointer to node
-        const std::string state,                 ///< state n or np?
+    void call_project_on_point(CORE::Nodes::Node* node,  ///< pointer to node
+        const std::string state,                         ///< state n or np?
         CORE::LINALG::Matrix<3, 1>&
             newNodeCoords,  ///< node coordinates of point that has to be projected
         double& min_dist,   ///< minimal distance, potentially updated

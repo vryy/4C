@@ -11,8 +11,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_lib_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -37,7 +37,7 @@ namespace DRT
        * \param gpFiberHolder output of the projected fibers and angles
        */
       template <CORE::FE::CellType distype>
-      void ProjectFibersToGaussPoints(const DRT::Node* const* nodes,
+      void ProjectFibersToGaussPoints(const CORE::Nodes::Node* const* nodes,
           const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>>& shapefcts,
           FIBER::NodalFiberHolder& gpFiberHolder);
 
@@ -95,7 +95,7 @@ namespace DRT
        * \return false At least one one does not have a fiber
        */
       template <CORE::FE::CellType distype>
-      bool HaveNodalFibers(const DRT::Node* const* nodes);
+      bool HaveNodalFibers(const CORE::Nodes::Node* const* nodes);
     }  // namespace UTILS
   }    // namespace FIBER
 }  // namespace DRT

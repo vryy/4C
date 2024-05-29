@@ -36,7 +36,7 @@ namespace
           {1.20, 0.99, 0.5}, {-0.11, 1.20, 0.66}, {-0.10, -0.2, 1.9}, {1.00, 0.00, 1.90},
           {1.20, 0.99, 1.50}, {-0.11, -0.20, 1.66}};
       for (int lid = 0; lid < 8; ++lid)
-        testdis_->AddNode(Teuchos::rcp(new DRT::Node(lid, coords[lid], 0)));
+        testdis_->AddNode(Teuchos::rcp(new CORE::Nodes::Node(lid, coords[lid], 0)));
 
       // create 1 element
       testele_ = Teuchos::rcp(new DRT::ELEMENTS::SoHex8(0, 0));
@@ -82,7 +82,7 @@ namespace
   TEST_F(SoHex8Test, TestNumDofPerNode)
   {
     std::vector<double> pd = {1, 2, 3};
-    DRT::Node node_dummy(0, pd, false);
+    CORE::Nodes::Node node_dummy(0, pd, false);
     EXPECT_EQ(testele_->NumDofPerNode(node_dummy), 3);
     EXPECT_EQ(copytestele_->NumDofPerNode(node_dummy), 3);
   }

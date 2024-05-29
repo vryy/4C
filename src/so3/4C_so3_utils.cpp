@@ -90,7 +90,7 @@ void DRT::ELEMENTS::UTILS::get_temperature_for_structural_material(
 
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::UTILS::compute_deformation_gradient(
-    CORE::LINALG::Matrix<probdim, probdim>& defgrd, DRT::Node** nodes,
+    CORE::LINALG::Matrix<probdim, probdim>& defgrd, CORE::Nodes::Node** nodes,
     const CORE::LINALG::Matrix<probdim, 1>& xsi,
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xdisp)
 {
@@ -111,7 +111,7 @@ void DRT::ELEMENTS::UTILS::compute_deformation_gradient(
 
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::UTILS::compute_deformation_gradient(
-    CORE::LINALG::Matrix<probdim, probdim>& defgrd, DRT::Node** nodes,
+    CORE::LINALG::Matrix<probdim, probdim>& defgrd, CORE::Nodes::Node** nodes,
     const CORE::LINALG::Matrix<probdim, 1>& xsi, const std::vector<double>& displacement)
 {
   static CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim> xdisp;
@@ -197,7 +197,7 @@ void DRT::ELEMENTS::UTILS::ComputeDeformationGradientStandard(
 
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates(
-    DRT::Node** nodes, CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xrefe)
+    CORE::Nodes::Node** nodes, CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xrefe)
 {
   for (auto i = 0; i < CORE::FE::num_nodes<distype>; ++i)
   {
@@ -282,18 +282,18 @@ DRT::ELEMENTS::UTILS::get_temperature_for_structural_material<CORE::FE::CellType
     Teuchos::ParameterList& params);
 
 template void DRT::ELEMENTS::UTILS::compute_deformation_gradient<CORE::FE::CellType::hex8, 3>(
-    CORE::LINALG::Matrix<3, 3>& defgrd, DRT::Node** nodes, const CORE::LINALG::Matrix<3, 1>& xsi,
-    const CORE::LINALG::Matrix<8, 3>& xdisp);
+    CORE::LINALG::Matrix<3, 3>& defgrd, CORE::Nodes::Node** nodes,
+    const CORE::LINALG::Matrix<3, 1>& xsi, const CORE::LINALG::Matrix<8, 3>& xdisp);
 template void DRT::ELEMENTS::UTILS::compute_deformation_gradient<CORE::FE::CellType::tet4, 3>(
-    CORE::LINALG::Matrix<3, 3>& defgrd, DRT::Node** nodes, const CORE::LINALG::Matrix<3, 1>& xsi,
-    const CORE::LINALG::Matrix<4, 3>& xdisp);
+    CORE::LINALG::Matrix<3, 3>& defgrd, CORE::Nodes::Node** nodes,
+    const CORE::LINALG::Matrix<3, 1>& xsi, const CORE::LINALG::Matrix<4, 3>& xdisp);
 
 template void DRT::ELEMENTS::UTILS::compute_deformation_gradient<CORE::FE::CellType::hex8, 3>(
-    CORE::LINALG::Matrix<3, 3>& defgrd, DRT::Node** nodes, const CORE::LINALG::Matrix<3, 1>& xsi,
-    const std::vector<double>& displacement);
+    CORE::LINALG::Matrix<3, 3>& defgrd, CORE::Nodes::Node** nodes,
+    const CORE::LINALG::Matrix<3, 1>& xsi, const std::vector<double>& displacement);
 template void DRT::ELEMENTS::UTILS::compute_deformation_gradient<CORE::FE::CellType::tet4, 3>(
-    CORE::LINALG::Matrix<3, 3>& defgrd, DRT::Node** nodes, const CORE::LINALG::Matrix<3, 1>& xsi,
-    const std::vector<double>& displacement);
+    CORE::LINALG::Matrix<3, 3>& defgrd, CORE::Nodes::Node** nodes,
+    const CORE::LINALG::Matrix<3, 1>& xsi, const std::vector<double>& displacement);
 
 template void DRT::ELEMENTS::UTILS::compute_deformation_gradient<CORE::FE::CellType::hex8>(
     CORE::LINALG::Matrix<3, 3>& defgrd, const INPAR::STR::KinemType kinemType,
@@ -338,15 +338,15 @@ template void DRT::ELEMENTS::UTILS::ComputeDeformationGradientStandard<CORE::FE:
     const CORE::LINALG::Matrix<3, 10>& derivs, const CORE::LINALG::Matrix<3, 3>& inverseJacobian);
 
 template void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::hex8, 3>(
-    DRT::Node** nodes, CORE::LINALG::Matrix<8, 3>& xrefe);
+    CORE::Nodes::Node** nodes, CORE::LINALG::Matrix<8, 3>& xrefe);
 template void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::tet4, 3>(
-    DRT::Node** nodes, CORE::LINALG::Matrix<4, 3>& xrefe);
+    CORE::Nodes::Node** nodes, CORE::LINALG::Matrix<4, 3>& xrefe);
 template void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::tet10, 3>(
-    DRT::Node** nodes, CORE::LINALG::Matrix<10, 3>& xrefe);
+    CORE::Nodes::Node** nodes, CORE::LINALG::Matrix<10, 3>& xrefe);
 template void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::quad4, 3>(
-    DRT::Node** nodes, CORE::LINALG::Matrix<4, 3>& xrefe);
+    CORE::Nodes::Node** nodes, CORE::LINALG::Matrix<4, 3>& xrefe);
 template void DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<CORE::FE::CellType::tri3, 3>(
-    DRT::Node** nodes, CORE::LINALG::Matrix<3, 3>& xrefe);
+    CORE::Nodes::Node** nodes, CORE::LINALG::Matrix<3, 3>& xrefe);
 
 template void DRT::ELEMENTS::UTILS::EvaluateNodalDisplacements<CORE::FE::CellType::hex8, 3>(
     const std::vector<double>&, CORE::LINALG::Matrix<8, 3>& xrefe);

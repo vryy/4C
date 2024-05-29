@@ -9,12 +9,12 @@
 #include "4C_discretization_fem_general_utils_gauss_point_extrapolation.hpp"
 
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_fem_general_utils_gausspoints.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_nurbs_discret_nurbs_utils.hpp"

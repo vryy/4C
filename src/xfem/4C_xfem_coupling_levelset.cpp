@@ -125,8 +125,8 @@ bool XFEM::LevelSetCoupling::HaveMatchingNodes(
   // check for equal node coordinates
   for (int lid = 0; lid < noderowmap_A->NumMyElements(); ++lid)
   {
-    const DRT::Node* node_A = dis_A->lRowNode(lid);
-    const DRT::Node* node_B = dis_B->lRowNode(lid);
+    const CORE::Nodes::Node* node_A = dis_A->lRowNode(lid);
+    const CORE::Nodes::Node* node_B = dis_B->lRowNode(lid);
 
     const int nsd = node_A->Dim();
 
@@ -395,7 +395,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
   for (int lnodeid = 0; lnodeid < cutter_dis_->NumMyRowNodes(); lnodeid++)
   {
     // get the processor's local scatra node
-    DRT::Node* lnode = cutter_dis_->lRowNode(lnodeid);
+    CORE::Nodes::Node* lnode = cutter_dis_->lRowNode(lnodeid);
 
     // get value
     if (func_no < 0)
@@ -461,7 +461,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       for (int lnodeid = 0; lnodeid < numrows; ++lnodeid)
       {
         // get the processor's local node
-        DRT::Node* lsnode = cutter_dis_->lRowNode(lnodeid);
+        CORE::Nodes::Node* lsnode = cutter_dis_->lRowNode(lnodeid);
         if (lsnode == nullptr) FOUR_C_THROW("Returned node is null-pointer.");
 
         std::vector<int> initialdof =
@@ -545,8 +545,8 @@ void XFEM::LevelSetCoupling::MapCutterToBgVector(
     // loop the nodes
     for (int lnodeid = 0; lnodeid < target_dis->NumMyRowNodes(); ++lnodeid)
     {
-      DRT::Node* node_source = source_dis->lRowNode(lnodeid);
-      DRT::Node* node_target = target_dis->lRowNode(lnodeid);
+      CORE::Nodes::Node* node_source = source_dis->lRowNode(lnodeid);
+      CORE::Nodes::Node* node_target = target_dis->lRowNode(lnodeid);
 
       // get the set of source dof IDs for this node
       std::vector<int> lm_source;
@@ -584,7 +584,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::LevelSetCoupling::get_level_set_field_as_node_
   // loop the nodes
   for (int lnodeid = 0; lnodeid < bg_dis_->NumMyRowNodes(); ++lnodeid)
   {
-    DRT::Node* node = bg_dis_->lRowNode(lnodeid);
+    CORE::Nodes::Node* node = bg_dis_->lRowNode(lnodeid);
     std::vector<int> lm_source;
     bg_dis_->Dof(bg_nds_phi_, node, lm_source);
 

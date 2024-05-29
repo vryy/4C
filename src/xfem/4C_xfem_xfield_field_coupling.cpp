@@ -268,7 +268,7 @@ void XFEM::XFieldField::Coupling::build_min_dof_maps(const DRT::Discretization& 
 
   for (int i = 0; i < numnode; ++i)
   {
-    const DRT::Node* actnode = min_dis.gNode(ngids[i]);
+    const CORE::Nodes::Node* actnode = min_dis.gNode(ngids[i]);
 
     const int numdof = min_dis.NumDof(actnode);
     const std::vector<int> dof = min_dis.Dof(0, actnode);
@@ -335,7 +335,7 @@ void XFEM::XFieldField::Coupling::build_max_dof_maps(const DRT::Discretization& 
 
   for (int i = 0; i < numnode; ++i)
   {
-    const DRT::Node* actnode = max_dis.gNode(ngids[i]);
+    const CORE::Nodes::Node* actnode = max_dis.gNode(ngids[i]);
 
     // check if the nodal GID is part of the mindofmap
     std::map<int, unsigned>::const_iterator pos = my_mindofpernode.find(ngids[i]);

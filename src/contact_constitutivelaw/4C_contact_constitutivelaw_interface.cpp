@@ -14,10 +14,10 @@
 #include "4C_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 #include "4C_contact_defines.hpp"
 #include "4C_contact_element.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_mortar.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_CrsMatrix.h>
@@ -49,7 +49,7 @@ void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 

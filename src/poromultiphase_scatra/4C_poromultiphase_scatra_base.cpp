@@ -359,7 +359,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
 
     const int numscatramat = scatramat.NumMat();
 
-    DRT::Node** nodes = myele->Nodes();
+    CORE::Nodes::Node** nodes = myele->Nodes();
 
     for (int inode = 0; inode < (myele->num_node()); inode++)
     {

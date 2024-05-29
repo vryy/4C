@@ -19,7 +19,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -53,7 +53,7 @@ namespace DRT
     not a mesh point coordinate.
 
     */
-    class ControlPoint : public DRT::Node
+    class ControlPoint : public CORE::Nodes::Node
     {
      public:
       //! @name Enums and Friends

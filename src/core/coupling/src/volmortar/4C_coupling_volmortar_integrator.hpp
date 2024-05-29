@@ -374,7 +374,7 @@ namespace CORE::VOLMORTAR
 
   // evaluation of nts approach
   template <CORE::FE::CellType distype>
-  bool ConsInterpolatorEval(DRT::Node* node, CORE::Elements::Element* ele,
+  bool ConsInterpolatorEval(CORE::Nodes::Node* node, CORE::Elements::Element* ele,
       CORE::LINALG::SparseMatrix& pmatrix, Teuchos::RCP<const DRT::Discretization> nodediscret,
       Teuchos::RCP<const DRT::Discretization> elediscret, std::vector<int>& foundeles, int& found,
       int& eleid, double& dist, double* AuxXi, double* nodepos, std::pair<int, int>& dofset,
@@ -396,7 +396,7 @@ namespace CORE::VOLMORTAR
     \brief interpolation functionality
 
     */
-    void Interpolate(DRT::Node* node, CORE::LINALG::SparseMatrix& pmatrix_,
+    void Interpolate(CORE::Nodes::Node* node, CORE::LINALG::SparseMatrix& pmatrix_,
         Teuchos::RCP<const DRT::Discretization> nodediscret,
         Teuchos::RCP<const DRT::Discretization> elediscret, std::vector<int>& foundeles,
         std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,

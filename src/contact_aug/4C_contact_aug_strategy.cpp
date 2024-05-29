@@ -1424,7 +1424,7 @@ void CONTACT::AUG::Strategy::compute_contact_stresses()
     for (int j = 0; j < interface.SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface.SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface.Discret().gNode(gid);
+      CORE::Nodes::Node* node = interface.Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 

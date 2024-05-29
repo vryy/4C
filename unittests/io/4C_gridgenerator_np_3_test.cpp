@@ -71,7 +71,7 @@ namespace
 
     testdis_->fill_complete(false, false, false);
 
-    DRT::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
+    CORE::Nodes::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
     const auto nodePosition = lastNode->X();
 
     if (comm_->MyPID() == 0)
@@ -120,7 +120,7 @@ namespace
 
     testdis_->fill_complete(false, false, false);
 
-    DRT::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
+    CORE::Nodes::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
     const auto nodePosition = lastNode->X();
 
     if (comm_->MyPID() == 0)

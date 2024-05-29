@@ -240,7 +240,7 @@ void CONTACT::Interface::round_robin_change_ownership()
   for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColNodesdummy->GID(i);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find ele with gid %i", gid);
 
     if (ftype == INPAR::CONTACT::friction_none)
@@ -262,7 +262,7 @@ void CONTACT::Interface::round_robin_change_ownership()
   for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColNodesdummy->GID(i);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find ele with gid %i", gid);
 
     // check for ghosting
@@ -297,7 +297,7 @@ void CONTACT::Interface::round_robin_change_ownership()
   for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColNodesdummy->GID(i);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find ele with gid %i", gid);
 
     if (ftype == INPAR::CONTACT::friction_none)

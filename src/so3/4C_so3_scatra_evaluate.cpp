@@ -279,7 +279,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kd_s_ssi(
   // calculate current and material coordinates of element
   CORE::LINALG::Matrix<numnod_, numdim_> xrefe(true);  // X, material coord. of element
   CORE::LINALG::Matrix<numnod_, numdim_> xcurr(true);  // x, current  coord. of element
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -481,7 +481,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::InitElement()
   CORE::LINALG::Matrix<numnod_, numdim_> xrefe;
   for (int i = 0; i < numnod_; ++i)
   {
-    Node** nodes = Nodes();
+    CORE::Nodes::Node** nodes = Nodes();
     if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
     xrefe(i, 0) = Nodes()[i]->X()[0];
     xrefe(i, 1) = Nodes()[i]->X()[1];

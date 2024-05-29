@@ -62,7 +62,7 @@ void DRT::ELEMENTS::LubricationType::nodal_block_information(
 }
 
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::LubricationType::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
@@ -281,7 +281,8 @@ bool DRT::ELEMENTS::Lubrication::ReadElement(
  |  ctor (public)                                           wirtz 10/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::LubricationBoundary::LubricationBoundary(int id, int owner, int nnode,
-    const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Lubrication* parent, const int lsurface)
+    const int* nodeids, CORE::Nodes::Node** nodes, DRT::ELEMENTS::Lubrication* parent,
+    const int lsurface)
     : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);

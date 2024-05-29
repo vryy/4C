@@ -317,7 +317,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_cou
     ele_ptrs[0] = arterydis_->gElement(nearbyeleiter.first);
 
     // get nodes of artery element
-    const DRT::Node* const* artnodes = ele_ptrs[0]->Nodes();
+    const CORE::Nodes::Node* const* artnodes = ele_ptrs[0]->Nodes();
 
     // loop over nodes of artery element
     for (int i = 0; i < ele_ptrs[0]->num_node(); i++)

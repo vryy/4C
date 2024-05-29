@@ -210,7 +210,8 @@ void CORE::GEO::MESHFREE::BoundingBox::setup_bounding_box_discretization()
       undeformed_box_corner_point_position(corner_i, cornerpos);
       node_ids[corner_i] = corner_i;
 
-      Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(new DRT::Node(corner_i, cornerpos, 0));
+      Teuchos::RCP<CORE::Nodes::Node> newnode =
+          Teuchos::rcp(new CORE::Nodes::Node(corner_i, cornerpos, 0));
       boxdiscret_->AddNode(newnode);
     }
 
@@ -651,7 +652,7 @@ CORE::LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::reference_pos_of_co
 {
   // dof gids of node i (note: each proc just has one element and eight nodes,
   // therefore local numbering from 0 to 7 on each proc)
-  DRT::Node* node_i = boxdiscret_->lColNode(i);
+  CORE::Nodes::Node* node_i = boxdiscret_->lColNode(i);
 
   CORE::LINALG::Matrix<3, 1> x(true);
   for (int dim = 0; dim < 3; ++dim) x(dim) = node_i->X()[dim];
@@ -669,7 +670,7 @@ CORE::LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::current_position_of
   CORE::LINALG::Matrix<3, 1> x(true);
   if (boxdiscret_ != Teuchos::null)
   {
-    DRT::Node* node_i = boxdiscret_->lColNode(i);
+    CORE::Nodes::Node* node_i = boxdiscret_->lColNode(i);
     std::vector<int> dofnode = boxdiscret_->Dof(node_i);
 
     for (int dim = 0; dim < 3; ++dim)
@@ -759,7 +760,7 @@ void CORE::GEO::MESHFREE::BoundingBox::transform_from_undeformed_bounding_box_sy
 {
   throw_if_not_init_or_setup();
 
-  DRT::Node** mynodes = boxdiscret_->lColElement(0)->Nodes();
+  CORE::Nodes::Node** mynodes = boxdiscret_->lColElement(0)->Nodes();
   if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
   // reset globcoord variable

@@ -62,7 +62,7 @@ void DRT::ELEMENTS::SoHex18Type::nodal_block_information(
 }
 
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoHex18Type::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
@@ -558,7 +558,7 @@ int DRT::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
 
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xrefe;  // material coord. of element
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH18; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -630,7 +630,7 @@ int DRT::ELEMENTS::SoHex18::init_jacobian_mapping()
   CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xrefe;
   for (int i = 0; i < NUMNOD_SOH18; ++i)
   {
-    Node** nodes = Nodes();
+    CORE::Nodes::Node** nodes = Nodes();
     if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
     xrefe(i, 0) = Nodes()[i]->X()[0];
     xrefe(i, 1) = Nodes()[i]->X()[1];
@@ -677,7 +677,7 @@ void DRT::ELEMENTS::SoHex18::nlnstiffmass(std::vector<int>& lm,     ///< locatio
   CORE::LINALG::Matrix<NUMNOD_SOH18, 3> xrefe(false);  // X, material coord. of element
   CORE::LINALG::Matrix<NUMNOD_SOH18, 3> xcurr(false);  // x, current  coord. of element
 
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH18; ++i)
   {
     const auto& x = nodes[i]->X();

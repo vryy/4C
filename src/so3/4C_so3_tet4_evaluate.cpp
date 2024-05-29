@@ -357,7 +357,7 @@ int DRT::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
       // current  displacements of element
       CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xrefe;
       CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xdisp;
-      DRT::Node** nodes = Nodes();
+      CORE::Nodes::Node** nodes = Nodes();
       for (int i = 0; i < NUMNOD_SOTET4; ++i)
       {
         const auto& x = nodes[i]->X();
@@ -769,7 +769,7 @@ int DRT::ELEMENTS::SoTet4::evaluate_neumann(Teuchos::ParameterList& params,
 
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xrefe;
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOTET4; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -849,7 +849,7 @@ int DRT::ELEMENTS::SoTet4::evaluate_neumann(Teuchos::ParameterList& params,
 void DRT::ELEMENTS::SoTet4::init_jacobian_mapping()
 {
   CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xrefe;
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOTET4; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -972,7 +972,7 @@ void DRT::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location matr
    */
   // current  displacements of element
   CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xrefe;
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOTET4; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -2055,7 +2055,7 @@ void DRT::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
       true);  // current  coord. of element
   xrefe.Clear();
   xcurr.Clear();
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
 
   for (int i = 0; i < NUMNOD_SOTET4; ++i)
   {

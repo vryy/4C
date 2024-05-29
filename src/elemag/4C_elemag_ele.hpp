@@ -57,7 +57,7 @@ namespace DRT
           CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
@@ -156,7 +156,7 @@ namespace DRT
           CORE::Elements::Element* parent_slave,  //!< parent slave fluid3 element
           int nnode,                              //!< number of surface nodes
           const int* nodeids,                     //!< node ids of surface element
-          DRT::Node** nodes,                      //!< nodes of surface element
+          CORE::Nodes::Node** nodes,              //!< nodes of surface element
           const int lsurface_master,  //!< local surface number w.r.t master parent element
           const int lsurface_slave,   //!< local surface number w.r.t slave parent element
           const std::vector<int>& localtrafomap  //! local trafo map
@@ -197,7 +197,7 @@ namespace DRT
 
       HDG element: No dofs are associated with nodes
       */
-      int NumDofPerNode(const DRT::Node&) const override { return 0; }
+      int NumDofPerNode(const CORE::Nodes::Node&) const override { return 0; }
 
       /*!
       \brief Get number of degrees of freedom per face
@@ -429,7 +429,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
@@ -459,7 +459,7 @@ namespace DRT
       \param parent: The parent Elemag element of this surface
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
-      ElemagBoundary(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
+      ElemagBoundary(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
           DRT::ELEMENTS::Elemag* parent, const int lsurface);
 
       /*!
@@ -548,7 +548,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         return parent_element()->NumDofPerNode(node);
       }
@@ -704,7 +704,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
@@ -740,7 +740,7 @@ namespace DRT
       of the face w.r.t the master parent element's face's coordinate system and the slave element's
       face's coordinate system
       */
-      ElemagIntFace(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
+      ElemagIntFace(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
           DRT::ELEMENTS::Elemag* parent_master, DRT::ELEMENTS::Elemag* parent_slave,
           const int lsurface_master, const int lsurface_slave,
           const std::vector<int> localtrafomap);
@@ -829,7 +829,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         return std::max(
             ParentMasterElement()->NumDofPerNode(node), ParentSlaveElement()->NumDofPerNode(node));

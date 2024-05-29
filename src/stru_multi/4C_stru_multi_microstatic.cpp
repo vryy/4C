@@ -808,7 +808,7 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(
     {
       // do only nodes in my row map
       if (!discret_->NodeRowMap()->MyGID(nodeid)) continue;
-      DRT::Node* actnode = discret_->gNode(nodeid);
+      CORE::Nodes::Node* actnode = discret_->gNode(nodeid);
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", nodeid);
 
       // nodal coordinates

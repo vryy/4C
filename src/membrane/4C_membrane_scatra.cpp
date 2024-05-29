@@ -148,7 +148,7 @@ bool DRT::ELEMENTS::MembraneScatra<distype>::ReadElement(
  |  Get vector of ptrs to nodes (private)                  sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-inline DRT::Node** DRT::ELEMENTS::MembraneScatra<distype>::Nodes()
+inline CORE::Nodes::Node** DRT::ELEMENTS::MembraneScatra<distype>::Nodes()
 {
   return Membrane<distype>::Nodes();
 }

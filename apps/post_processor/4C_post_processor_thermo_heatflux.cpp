@@ -144,7 +144,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     {
       for (int i = 0; i < numnodes; ++i)
       {
-        const DRT::Node* lnode = dis->lRowNode(i);
+        const CORE::Nodes::Node* lnode = dis->lRowNode(i);
         const std::vector<int> lnodedofs = dis->Dof(lnode);
 
         if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
@@ -162,7 +162,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     {
       for (int i = 0; i < numnodes; ++i)
       {
-        const DRT::Node* lnode = dis->lRowNode(i);
+        const CORE::Nodes::Node* lnode = dis->lRowNode(i);
         const std::vector<int> lnodedofs = dis->Dof(lnode);
 
         if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
@@ -178,7 +178,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     {
       for (int i = 0; i < numnodes; ++i)
       {
-        const DRT::Node* lnode = dis->lRowNode(i);
+        const CORE::Nodes::Node* lnode = dis->lRowNode(i);
         const std::vector<int> lnodedofs = dis->Dof(lnode);
 
         if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");

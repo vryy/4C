@@ -41,7 +41,7 @@ int MORTAR::DofSet::assign_degrees_of_freedom(
   const int numMyColumnNodes = dis.NumMyColNodes();
   for (int i = 0; i < numMyColumnNodes; ++i)
   {
-    DRT::Node* node = dis.lColNode(i);
+    CORE::Nodes::Node* node = dis.lColNode(i);
     if (!node) FOUR_C_THROW("Cannot find local column node %d", i);
 
     // get dofs of node as created by base class DofSet
@@ -54,7 +54,7 @@ int MORTAR::DofSet::assign_degrees_of_freedom(
         static_cast<MORTAR::Node*>(node);
 #else
         dynamic_cast<MORTAR::Node*>(node);
-    if (!mrtrnode) FOUR_C_THROW("dynamic_cast DRT::Node -> MORTAR::Node failed");
+    if (!mrtrnode) FOUR_C_THROW("dynamic_cast CORE::Nodes::Node -> MORTAR::Node failed");
 #endif
     const auto& newdofs = mrtrnode->Dofs();
     for (std::size_t j = 0; j < numDofsOfNode; ++j)

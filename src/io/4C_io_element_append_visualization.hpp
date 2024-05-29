@@ -45,7 +45,7 @@ namespace IO
     cell_types.push_back(vtk_cell_info.first);
 
     // Add each node to the output.
-    const DRT::Node* const* nodes = ele.Nodes();
+    const CORE::Nodes::Node* const* nodes = ele.Nodes();
 
     for (int inode = 0; inode < ele.num_node(); ++inode)
       for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
@@ -145,7 +145,7 @@ namespace IO
       for (unsigned int i_controlpoint = 0; i_controlpoint < (unsigned int)ele.num_node();
            ++i_controlpoint)
       {
-        const DRT::Node* controlpoint = ele.Nodes()[i_controlpoint];
+        const CORE::Nodes::Node* controlpoint = ele.Nodes()[i_controlpoint];
         for (int i_dim = 0; i_dim < dim_output; ++i_dim)
           pos_controlpoints(dim_output * i_controlpoint + i_dim) = controlpoint->X()[i_dim];
       }

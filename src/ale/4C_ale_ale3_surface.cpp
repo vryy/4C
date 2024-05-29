@@ -22,7 +22,7 @@ DRT::ELEMENTS::Ale3SurfaceType& DRT::ELEMENTS::Ale3SurfaceType::Instance() { ret
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale3Surface::Ale3Surface(int id, int owner, int nnode, const int* nodeids,
-    DRT::Node** nodes, DRT::ELEMENTS::Ale3* parent, const int lsurface)
+    CORE::Nodes::Node** nodes, DRT::ELEMENTS::Ale3* parent, const int lsurface)
     : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);

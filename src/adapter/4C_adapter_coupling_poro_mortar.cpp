@@ -54,7 +54,7 @@ ADAPTER::CouplingPoroMortar::CouplingPoroMortar(int spatial_dimension,
 void ADAPTER::CouplingPoroMortar::read_mortar_condition(Teuchos::RCP<DRT::Discretization> masterdis,
     Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
     const std::string& couplingcond, Teuchos::ParameterList& input,
-    std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
+    std::map<int, CORE::Nodes::Node*>& mastergnodes, std::map<int, CORE::Nodes::Node*>& slavegnodes,
     std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
     std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements)
 {

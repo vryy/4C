@@ -39,7 +39,7 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::Setup(
   // interaction discretization is a copy - without the nurbs information
   face_reference_position_ =
       GEOMETRYPAIR::InitializeElementData<surface, double>::Initialize(this->GetDrtFaceElement());
-  const DRT::Node* const* nodes = drt_face_element_->Nodes();
+  const CORE::Nodes::Node* const* nodes = drt_face_element_->Nodes();
   for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       face_reference_position_.element_position_(i_node * 3 + i_dim) = nodes[i_node]->X()[i_dim];
@@ -149,7 +149,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::Setup(
   // First add the node GIDs of this face.
   for (int i_node = 0; i_node < this->drt_face_element_->num_node(); i_node++)
   {
-    const DRT::Node* my_node = this->drt_face_element_->Nodes()[i_node];
+    const CORE::Nodes::Node* my_node = this->drt_face_element_->Nodes()[i_node];
     my_node_gid.push_back(my_node->Id());
     discret->Dof(my_node, 0, temp_node_dof_gid);
   }
@@ -159,7 +159,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::Setup(
   for (int i_node = 0; i_node < this->drt_face_element_->num_node(); i_node++)
   {
     // Loop over all elements connected to a node of this face.
-    const DRT::Node* node = this->drt_face_element_->Nodes()[i_node];
+    const CORE::Nodes::Node* node = this->drt_face_element_->Nodes()[i_node];
     for (int i_element = 0; i_element < node->NumElement(); i_element++)
     {
       const CORE::Elements::Element* element = node->Elements()[i_element];
@@ -182,7 +182,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::Setup(
                i_node_connected_element < find_in_faces->second->GetDrtFaceElement()->num_node();
                i_node_connected_element++)
           {
-            const DRT::Node* other_node =
+            const CORE::Nodes::Node* other_node =
                 find_in_faces->second->GetDrtFaceElement()->Nodes()[i_node_connected_element];
             const int other_node_id = other_node->Id();
 
@@ -449,7 +449,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
       GEOMETRYPAIR::InitializeElementData<volume, double>::Initialize(nullptr);
   this->face_reference_position_ =
       GEOMETRYPAIR::InitializeElementData<surface, double>::Initialize(nullptr);
-  const DRT::Node* const* nodes = this->drt_face_element_->parent_element()->Nodes();
+  const CORE::Nodes::Node* const* nodes = this->drt_face_element_->parent_element()->Nodes();
   for (unsigned int i_node = 0; i_node < volume::n_nodes_; i_node++)
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       volume_reference_position_.element_position_(i_node * 3 + i_dim) = nodes[i_node]->X()[i_dim];

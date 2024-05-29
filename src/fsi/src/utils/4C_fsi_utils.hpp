@@ -161,15 +161,16 @@ namespace FSI
       //      struct elements in the interface
       std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>>
           istructslideles_;  ///< sliding struct elements in the interface
-      std::map<int, DRT::Node*>
+      std::map<int, CORE::Nodes::Node*>
           istructdispnodes_;  ///< struct nodes in the interface used for centerdisp calculation
       std::map<int, Teuchos::RCP<CORE::Elements::Element>>
           istructdispeles_;  ///< struct elements in the interface used for centerdisp calc
       //      std::map<int, Teuchos::RCP<Epetra_Map> >  slideeleredmap_;      ///< redundant version
       //      of sliding struct elements
-      std::map<int, std::map<int, DRT::Node*>>
-          ifluidslidnodes_;                        ///< sliding fluid nodes in the interface
-      std::map<int, DRT::Node*> ifluidconfnodes_;  ///< sticking fluid nodes in the interface
+      std::map<int, std::map<int, CORE::Nodes::Node*>>
+          ifluidslidnodes_;  ///< sliding fluid nodes in the interface
+      std::map<int, CORE::Nodes::Node*>
+          ifluidconfnodes_;  ///< sticking fluid nodes in the interface
 
       std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>> ifluidslideles_;
       std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>> ifluidslidstructeles_;

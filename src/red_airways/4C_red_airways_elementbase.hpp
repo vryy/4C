@@ -17,8 +17,8 @@
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_red_airways_elem_params.hpp"
 
@@ -60,7 +60,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
@@ -190,7 +190,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override { return 1; }
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -446,7 +446,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
@@ -580,7 +580,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override { return 1; }
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -842,7 +842,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
@@ -971,7 +971,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override { return 1; }
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -1215,7 +1215,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
@@ -1340,7 +1340,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override { return 1; }
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -1584,7 +1584,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
@@ -1716,7 +1716,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override { return 1; }
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element

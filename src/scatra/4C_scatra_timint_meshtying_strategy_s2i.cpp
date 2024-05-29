@@ -2197,12 +2197,12 @@ void SCATRA::MeshtyingStrategyS2I::setup_meshtying()
         const int condid = kinetics_slave_cond.first;
 
         // initialize maps for row nodes associated with current condition
-        std::map<int, DRT::Node*> masternodes;
-        std::map<int, DRT::Node*> slavenodes;
+        std::map<int, CORE::Nodes::Node*> masternodes;
+        std::map<int, CORE::Nodes::Node*> slavenodes;
 
         // initialize maps for column nodes associated with current condition
-        std::map<int, DRT::Node*> mastergnodes;
-        std::map<int, DRT::Node*> slavegnodes;
+        std::map<int, CORE::Nodes::Node*> mastergnodes;
+        std::map<int, CORE::Nodes::Node*> slavegnodes;
 
         // initialize maps for elements associated with current condition
         std::map<int, Teuchos::RCP<CORE::Elements::Element>> masterelements;
@@ -2862,7 +2862,7 @@ void SCATRA::MeshtyingStrategyS2I::setup_meshtying()
           if (scatratimint_->discretization()->HaveGlobalNode(nodegid))
           {
             // extract current node
-            const DRT::Node* const node = scatratimint_->discretization()->gNode(nodegid);
+            const CORE::Nodes::Node* const node = scatratimint_->discretization()->gNode(nodegid);
 
             // process only nodes owned by current processor
             if (node->Owner() == scatratimint_->discretization()->Comm().MyPID())
@@ -3251,7 +3251,7 @@ void SCATRA::MeshtyingStrategyS2I::Output() const
       if (scatratimint_->discretization()->HaveGlobalNode(nodegid))
       {
         // extract current node
-        const DRT::Node* const node = scatratimint_->discretization()->gNode(nodegid);
+        const CORE::Nodes::Node* const node = scatratimint_->discretization()->gNode(nodegid);
 
         // process only nodes owned by current processor
         if (node->Owner() == scatratimint_->discretization()->Comm().MyPID())

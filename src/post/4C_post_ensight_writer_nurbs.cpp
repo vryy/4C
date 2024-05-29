@@ -124,7 +124,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
       (*knotvec).GetEleKnots(knots, actele->Id());
     }
 
-    DRT::Node** nodes = actele->Nodes();
+    CORE::Nodes::Node** nodes = actele->Nodes();
 
     // get nurbs dis' element numbers
     std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(np));
@@ -1840,7 +1840,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
       }
       else if ((name == "phi") or (name == "averaged_phi"))
       {
-        DRT::Node* n = nurbsdis->lRowNode(inode);
+        CORE::Nodes::Node* n = nurbsdis->lRowNode(inode);
         int numdofpernode = actele->NumDofPerNode(*n);
         if (numdofpernode == 1)  // one passive scalar (Scalar_Transport problem)
           coldofset.insert(lm[inode] + offset);
@@ -1863,13 +1863,13 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
         else
           FOUR_C_THROW("Up to now, I'm not able to write a field named %s\n", name.c_str());
 
-        DRT::Node* n = nurbsdis->lRowNode(inode);
+        CORE::Nodes::Node* n = nurbsdis->lRowNode(inode);
         int numdofpernode = actele->NumDofPerNode(*n);
         coldofset.insert(lm[inode * numdofpernode + k] + offset);
       }
       else if (name == "normalflux")
       {
-        DRT::Node* n = nurbsdis->lRowNode(inode);
+        CORE::Nodes::Node* n = nurbsdis->lRowNode(inode);
         int numdofpernode = actele->NumDofPerNode(*n);
         coldofset.insert(lm[inode * numdofpernode] + offset);
       }
@@ -1953,7 +1953,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
       (*knotvec).GetEleKnots(knots, actele->Id());
     }
 
-    DRT::Node** nodes = actele->Nodes();
+    CORE::Nodes::Node** nodes = actele->Nodes();
 
     // number of all control points of the element
     const int numnp = actele->num_node();
@@ -2037,7 +2037,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
 
       for (int inode = 0; inode < numnp; ++inode)
       {
-        DRT::Node* n = nurbsdis->lRowNode(inode);
+        CORE::Nodes::Node* n = nurbsdis->lRowNode(inode);
         int numdofpernode = actele->NumDofPerNode(*n);
         if (numdofpernode == 1)  // one passive scalar (Scalar_Transport problem)
           my_data[inode] = (*coldata)[(*coldata).Map().LID(lm[inode * numdofpernode] + offset)];
@@ -2065,7 +2065,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
 
       for (int inode = 0; inode < numnp; ++inode)
       {
-        DRT::Node* n = nurbsdis->lRowNode(inode);
+        CORE::Nodes::Node* n = nurbsdis->lRowNode(inode);
         int numdofpernode = actele->NumDofPerNode(*n);
         my_data[inode] = (*coldata)[(*coldata).Map().LID(lm[inode * numdofpernode + k] + offset)];
       }
@@ -2076,7 +2076,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
 
       for (int inode = 0; inode < numnp; ++inode)
       {
-        // DRT::Node* n = nurbsdis->lRowNode(inode);
+        // CORE::Nodes::Node* n = nurbsdis->lRowNode(inode);
         int numdofpernode = 1;  // actele->NumDofPerNode(*n);
         my_data[inode] = (*coldata)[(*coldata).Map().LID(lm[inode * numdofpernode] + offset)];
       }
@@ -3475,7 +3475,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
       (*knotvec).GetEleKnots(knots, actele->Id());
     }
 
-    DRT::Node** nodes = actele->Nodes();
+    CORE::Nodes::Node** nodes = actele->Nodes();
 
     // number of all control points of the element
     const int numnp = actele->num_node();

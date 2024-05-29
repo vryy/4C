@@ -504,7 +504,7 @@ bool CORE::VOLMORTAR::VolMortarEleBasedGP(CORE::Elements::Element& sele,
   // dual shape functions
   for (int j = 0; j < ns_; ++j)
   {
-    DRT::Node* cnode = sele.Nodes()[j];
+    CORE::Nodes::Node* cnode = sele.Nodes()[j];
     if (cnode->Owner() != Adis->Comm().MyPID()) continue;
 
     const int nsdof = Adis->NumDof(dofseta, cnode);
@@ -513,7 +513,7 @@ bool CORE::VOLMORTAR::VolMortarEleBasedGP(CORE::Elements::Element& sele,
     {
       for (int j = 0; j < ns_; ++j)
       {
-        DRT::Node* cnode = sele.Nodes()[j];
+        CORE::Nodes::Node* cnode = sele.Nodes()[j];
         int nsdof = Adis->NumDof(dofseta, cnode);
 
         // loop over slave dofs
@@ -524,7 +524,7 @@ bool CORE::VOLMORTAR::VolMortarEleBasedGP(CORE::Elements::Element& sele,
           // integrate M
           for (int k = 0; k < nm_; ++k)
           {
-            DRT::Node* mnode = mele->Nodes()[k];
+            CORE::Nodes::Node* mnode = mele->Nodes()[k];
             int nmdof = Bdis->NumDof(dofsetb, mnode);
 
             for (int kdof = 0; kdof < nmdof; ++kdof)
@@ -545,7 +545,7 @@ bool CORE::VOLMORTAR::VolMortarEleBasedGP(CORE::Elements::Element& sele,
           // integrate D
           for (int k = 0; k < ns_; ++k)
           {
-            DRT::Node* snode = sele.Nodes()[k];
+            CORE::Nodes::Node* snode = sele.Nodes()[k];
             int nddof = Adis->NumDof(dofseta, snode);
 
             for (int kdof = 0; kdof < nddof; ++kdof)
@@ -579,7 +579,7 @@ bool CORE::VOLMORTAR::VolMortarEleBasedGP(CORE::Elements::Element& sele,
         // integrate M
         for (int k = 0; k < nm_; ++k)
         {
-          DRT::Node* mnode = mele->Nodes()[k];
+          CORE::Nodes::Node* mnode = mele->Nodes()[k];
           const int col = Bdis->Dof(dofsetb, mnode, jdof);
 
           if (not PAB_dofcolmap->MyGID(col)) continue;
@@ -913,7 +913,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
     {
       for (int j = 0; j < ns_; ++j)
       {
-        DRT::Node* cnode = sele.Nodes()[j];
+        CORE::Nodes::Node* cnode = sele.Nodes()[j];
         int nsdof = slavedis->NumDof(sdofset, cnode);
 
         if (cnode->Owner() != slavedis->Comm().MyPID()) continue;
@@ -927,7 +927,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
           // integrate M
           for (int k = 0; k < nm_; ++k)
           {
-            DRT::Node* mnode = mele.Nodes()[k];
+            CORE::Nodes::Node* mnode = mele.Nodes()[k];
             int nmdof = masterdis->NumDof(mdofset, mnode);
 
             for (int kdof = 0; kdof < nmdof; ++kdof)
@@ -949,7 +949,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
           // integrate D
           for (int k = 0; k < ns_; ++k)
           {
-            DRT::Node* snode = sele.Nodes()[k];
+            CORE::Nodes::Node* snode = sele.Nodes()[k];
             int nddof = slavedis->NumDof(sdofset, snode);
 
             for (int kdof = 0; kdof < nddof; ++kdof)
@@ -973,7 +973,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
     {
       for (int j = 0; j < ns_; ++j)
       {
-        DRT::Node* cnode = sele.Nodes()[j];
+        CORE::Nodes::Node* cnode = sele.Nodes()[j];
 
         if (cnode->Owner() != slavedis->Comm().MyPID()) continue;
 
@@ -988,7 +988,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
           // integrate M and D
           for (int k = 0; k < nm_; ++k)
           {
-            DRT::Node* mnode = mele.Nodes()[k];
+            CORE::Nodes::Node* mnode = mele.Nodes()[k];
             int nmdof = masterdis->NumDof(mdofset, mnode);
 
             for (int kdof = 0; kdof < nmdof; ++kdof)
@@ -1086,7 +1086,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
     // dual shape functions
     for (int j = 0; j < ns_; ++j)
     {
-      DRT::Node* cnode = Aele.Nodes()[j];
+      CORE::Nodes::Node* cnode = Aele.Nodes()[j];
       int nsdof = Adis->NumDof(sdofset_A, cnode);
 
       // loop over slave dofs
@@ -1097,7 +1097,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
         // integrate M and D
         for (int k = 0; k < nm_; ++k)
         {
-          DRT::Node* mnode = Bele.Nodes()[k];
+          CORE::Nodes::Node* mnode = Bele.Nodes()[k];
           int nmdof = Bdis->NumDof(mdofset_A, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
@@ -1122,7 +1122,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
     // dual shape functions
     for (int j = 0; j < nm_; ++j)
     {
-      DRT::Node* cnode = Bele.Nodes()[j];
+      CORE::Nodes::Node* cnode = Bele.Nodes()[j];
       int nsdof = Bdis->NumDof(sdofset_B, cnode);
 
       // loop over slave dofs
@@ -1133,7 +1133,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
         // integrate M and D
         for (int k = 0; k < ns_; ++k)
         {
-          DRT::Node* mnode = Aele.Nodes()[k];
+          CORE::Nodes::Node* mnode = Aele.Nodes()[k];
           int nmdof = Adis->NumDof(mdofset_B, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
@@ -1232,7 +1232,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS,
     // dual shape functions
     for (int j = 0; j < ns_; ++j)
     {
-      DRT::Node* cnode = Aele.Nodes()[j];
+      CORE::Nodes::Node* cnode = Aele.Nodes()[j];
       int nsdof = Adis->NumDof(sdofset_A, cnode);
 
       // loop over slave dofs
@@ -1243,7 +1243,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS,
         // integrate M and D
         for (int k = 0; k < nm_; ++k)
         {
-          DRT::Node* mnode = Bele.Nodes()[k];
+          CORE::Nodes::Node* mnode = Bele.Nodes()[k];
           int nmdof = Bdis->NumDof(mdofset_A, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
@@ -1269,7 +1269,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS,
     // dual shape functions
     for (int j = 0; j < nm_; ++j)
     {
-      DRT::Node* cnode = Bele.Nodes()[j];
+      CORE::Nodes::Node* cnode = Bele.Nodes()[j];
       int nsdof = Bdis->NumDof(sdofset_B, cnode);
 
       // loop over slave dofs
@@ -1280,7 +1280,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS,
         // integrate M and D
         for (int k = 0; k < ns_; ++k)
         {
-          DRT::Node* mnode = Aele.Nodes()[k];
+          CORE::Nodes::Node* mnode = Aele.Nodes()[k];
           int nmdof = Adis->NumDof(mdofset_B, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
@@ -1398,7 +1398,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
       // dual shape functions
       for (int j = 0; j < ns_; ++j)
       {
-        DRT::Node* cnode = Aele.Nodes()[j];
+        CORE::Nodes::Node* cnode = Aele.Nodes()[j];
         if (cnode->Owner() != Adis->Comm().MyPID()) continue;
 
         int nsdof = Adis->NumDof(dofsetA, cnode);
@@ -1415,7 +1415,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
           // integrate M
           for (int k = 0; k < nm_; ++k)
           {
-            DRT::Node* mnode = Bele->Nodes()[k];
+            CORE::Nodes::Node* mnode = Bele->Nodes()[k];
             int col = Bdis->Dof(dofsetB, mnode, jdof);
 
             // multiply the two shape functions
@@ -1523,7 +1523,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
       // dual shape functions
       for (int j = 0; j < nm_; ++j)
       {
-        DRT::Node* cnode = Bele.Nodes()[j];
+        CORE::Nodes::Node* cnode = Bele.Nodes()[j];
         if (cnode->Owner() != Bdis->Comm().MyPID()) continue;
 
         int nsdof = Bdis->NumDof(dofsetB, cnode);
@@ -1540,7 +1540,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
           // integrate M
           for (int k = 0; k < ns_; ++k)
           {
-            DRT::Node* mnode = Aele->Nodes()[k];
+            CORE::Nodes::Node* mnode = Aele->Nodes()[k];
             int col = Adis->Dof(dofsetA, mnode, jdof);
 
             // multiply the two shape functions
@@ -1633,7 +1633,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(in
     // dual shape functions
     for (int j = 0; j < ns_; ++j)
     {
-      DRT::Node* cnode = Aele.Nodes()[j];
+      CORE::Nodes::Node* cnode = Aele.Nodes()[j];
       int nsdof = Adis->NumDof(sdofset_A, cnode);
 
       // loop over slave dofs
@@ -1644,7 +1644,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(in
         // integrate M and D
         for (int k = 0; k < nm_; ++k)
         {
-          DRT::Node* mnode = Bele.Nodes()[k];
+          CORE::Nodes::Node* mnode = Bele.Nodes()[k];
           int nmdof = Bdis->NumDof(mdofset_A, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
@@ -1669,7 +1669,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(in
     // dual shape functions
     for (int j = 0; j < nm_; ++j)
     {
-      DRT::Node* cnode = Bele.Nodes()[j];
+      CORE::Nodes::Node* cnode = Bele.Nodes()[j];
       int nsdof = Bdis->NumDof(sdofset_B, cnode);
 
       // loop over slave dofs
@@ -1680,7 +1680,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(in
         // integrate M and D
         for (int k = 0; k < ns_; ++k)
         {
-          DRT::Node* mnode = Aele.Nodes()[k];
+          CORE::Nodes::Node* mnode = Aele.Nodes()[k];
           int nmdof = Adis->NumDof(mdofset_B, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
@@ -2039,7 +2039,7 @@ CORE::VOLMORTAR::ConsInterpolator::ConsInterpolator()
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 06/14|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::ConsInterpolator::Interpolate(DRT::Node* node,
+void CORE::VOLMORTAR::ConsInterpolator::Interpolate(CORE::Nodes::Node* node,
     CORE::LINALG::SparseMatrix& pmatrix, Teuchos::RCP<const DRT::Discretization> nodediscret,
     Teuchos::RCP<const DRT::Discretization> elediscret, std::vector<int>& foundeles,
     std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
@@ -2167,7 +2167,7 @@ void CORE::VOLMORTAR::ConsInterpolator::Interpolate(DRT::Node* node,
  |  node evaluation                                          farah 02/15|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool CORE::VOLMORTAR::ConsInterpolatorEval(DRT::Node* node, CORE::Elements::Element* ele,
+bool CORE::VOLMORTAR::ConsInterpolatorEval(CORE::Nodes::Node* node, CORE::Elements::Element* ele,
     CORE::LINALG::SparseMatrix& pmatrix, Teuchos::RCP<const DRT::Discretization> nodediscret,
     Teuchos::RCP<const DRT::Discretization> elediscret, std::vector<int>& foundeles, int& found,
     int& eleid, double& dist, double* AuxXi, double* nodepos, std::pair<int, int>& dofset,
@@ -2227,7 +2227,7 @@ bool CORE::VOLMORTAR::ConsInterpolatorEval(DRT::Node* node, CORE::Elements::Elem
 
     for (int k = 0; k < ele->num_node(); ++k)
     {
-      DRT::Node* bnode = ele->Nodes()[k];
+      CORE::Nodes::Node* bnode = ele->Nodes()[k];
       const int col = elediscret->Dof(dofset.second, bnode, jdof);
 
       if (not P_dofcolmap->MyGID(col)) continue;

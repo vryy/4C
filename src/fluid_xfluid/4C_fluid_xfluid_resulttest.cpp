@@ -81,7 +81,7 @@ void FLD::XFluidResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int
   {
     if (discret->HaveGlobalNode(node))
     {
-      DRT::Node* actnode = discret->gNode(node);
+      CORE::Nodes::Node* actnode = discret->gNode(node);
 
       if (actnode->Owner() != discret->Comm().MyPID()) return;
 

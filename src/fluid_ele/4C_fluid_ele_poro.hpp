@@ -256,7 +256,7 @@ namespace DRT
       \param parent: The parent fluid element of this surface
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
-      FluidPoroBoundary(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
+      FluidPoroBoundary(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
           DRT::ELEMENTS::Fluid* parent, const int lsurface);
 
       /*!

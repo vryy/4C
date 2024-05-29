@@ -903,7 +903,7 @@ void CONTACT::LagrangeStrategyTsi::store_nodal_quantities(
         for (int j = 0; j < snodemap->NumMyElements(); ++j)
         {
           int gid = snodemap->GID(j);
-          DRT::Node* node = interface_[i]->Discret().gNode(gid);
+          CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
           if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
           Node* cnode = dynamic_cast<Node*>(node);
 

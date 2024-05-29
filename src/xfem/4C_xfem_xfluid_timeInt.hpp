@@ -40,8 +40,12 @@ namespace CORE::COMM
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
+
+namespace CORE::Nodes
+{
+  class Node;
+}
 
 namespace CORE::Elements
 {
@@ -154,22 +158,23 @@ namespace XFEM
     std::string map_method_enum_to_string(const enum INPAR::XFEM::XFluidTimeInt term);
 
     /// all surrounding elements non-intersected?
-    bool non_intersected_elements(DRT::Node* n, const Teuchos::RCP<CORE::GEO::CutWizard> wizard);
+    bool non_intersected_elements(
+        CORE::Nodes::Node* n, const Teuchos::RCP<CORE::GEO::CutWizard> wizard);
 
     /// find all ghost dofsets around this node and its std-dofset
     void find_surrounding_ghost_dofsets(
         std::map<int, std::set<int>>&
-            ghostDofsets,       /// surrounding ghost dofsets to be filled, map of ghost nodes and
-                                /// correponding ghost nds index w.r.t given std nodal dofset
-        const DRT::Node* node,  /// node
-        const int nds_new       /// dofset of node used for finding the surrounding ghost dofs
+            ghostDofsets,  /// surrounding ghost dofsets to be filled, map of ghost nodes and
+                           /// correponding ghost nds index w.r.t given std nodal dofset
+        const CORE::Nodes::Node* node,  /// node
+        const int nds_new  /// dofset of node used for finding the surrounding ghost dofs
     );
 
     /// copy dofs from old vectors to new vector for all row vectors
-    void copy_dofs(const DRT::Node* node,         /// drt node
-        const int nds_new,                        /// nodal dofset at t^(n+1)
-        const int nds_old,                        /// nodal dofset at t^n
-        const INPAR::XFEM::XFluidTimeInt method,  /// reconstruction method
+    void copy_dofs(const CORE::Nodes::Node* node,  /// drt node
+        const int nds_new,                         /// nodal dofset at t^(n+1)
+        const int nds_old,                         /// nodal dofset at t^n
+        const INPAR::XFEM::XFluidTimeInt method,   /// reconstruction method
         const std::vector<Teuchos::RCP<Epetra_Vector>>&
             newRowStateVectors,  /// row map based state vectors at t^(n+1)
         const std::vector<Teuchos::RCP<const Epetra_Vector>>&
@@ -178,8 +183,8 @@ namespace XFEM
     );
 
     /// mark nodal dofs of vector w.r.t new interface position for reconstruction
-    void mark_dofs(const DRT::Node* node,  /// drt node
-        const int nds_new,                 /// nodal dofset at t^(n+1)
+    void mark_dofs(const CORE::Nodes::Node* node,  /// drt node
+        const int nds_new,                         /// nodal dofset at t^(n+1)
         const std::vector<Teuchos::RCP<Epetra_Vector>>&
             newRowStateVectors,                   /// row map based state vectors at t^(n+1)
         const INPAR::XFEM::XFluidTimeInt method,  /// reconstruction method
@@ -195,9 +200,9 @@ namespace XFEM
     );
 
     /// set the reconstruction method for current nodal dofset, return if set
-    bool set_reconstr_method(const DRT::Node* node,  /// drt node
-        const int nds_new,                           /// nodal dofset at t^(n+1)
-        const INPAR::XFEM::XFluidTimeInt method      /// which type of reconstruction method
+    bool set_reconstr_method(const CORE::Nodes::Node* node,  /// drt node
+        const int nds_new,                                   /// nodal dofset at t^(n+1)
+        const INPAR::XFEM::XFluidTimeInt method              /// which type of reconstruction method
     );
 
     /// identify cellsets at time t^n with cellsets at time t^(n+1)

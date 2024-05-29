@@ -45,7 +45,7 @@ namespace DRT
             CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
         CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-            DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+            CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
        private:
         static Wall1NurbsType instance_;

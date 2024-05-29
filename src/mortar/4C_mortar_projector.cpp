@@ -632,7 +632,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint2D(
     CORE::LINALG::Matrix<ns_, 1> val;
     CORE::LINALG::Matrix<ndim_, ns_> coord;
 
-    DRT::Node** mynodes = gpele.Nodes();
+    CORE::Nodes::Node** mynodes = gpele.Nodes();
     if (!mynodes) FOUR_C_THROW("ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
@@ -722,7 +722,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::check_projection4_auxpla
   }
 
   int nnode = ele.num_node();
-  DRT::Node** mynodes = ele.Nodes();
+  CORE::Nodes::Node** mynodes = ele.Nodes();
   if (!mynodes) FOUR_C_THROW("Project: Null pointer!");
 
   // compute base-vectors
@@ -877,8 +877,8 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
     CORE::LINALG::Matrix<ndim_, ns_> coord;
     coord.Clear();
 
-    DRT::Node** mypoints = gpele.Points();
-    DRT::Node** mynodes = gpele.Nodes();
+    CORE::Nodes::Node** mypoints = gpele.Points();
+    CORE::Nodes::Node** mynodes = gpele.Nodes();
     if (!mypoints) FOUR_C_THROW("ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
@@ -1612,7 +1612,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(MOR
   int linsize = 0;
   for (int i = 0; i < n_; ++i)
   {
-    DRT::Node* node = mele.Nodes()[i];
+    CORE::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
     linsize += mnode->GetLinsize();
@@ -1635,7 +1635,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(MOR
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    DRT::Node* node = mele.Nodes()[i];
+    CORE::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     Node* mnode = dynamic_cast<Node*>(node);
 
@@ -1647,7 +1647,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(MOR
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    DRT::Node* node = mele.Nodes()[i];
+    CORE::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -1704,7 +1704,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(MOR
   for (int k = 0; k < n_; ++k)
   {
     // get master node
-    DRT::Node* node = mele.Nodes()[k];
+    CORE::Nodes::Node* node = mele.Nodes()[k];
     if (!node) FOUR_C_THROW("Cannot find master node");
     CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -1928,7 +1928,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(MOR
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    DRT::Node* node = mele.Nodes()[i];
+    CORE::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     Node* mnode = dynamic_cast<Node*>(node);
 
@@ -1944,7 +1944,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(MOR
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    DRT::Node* node = mele.Nodes()[i];
+    CORE::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -2000,7 +2000,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(MOR
   for (int k = 0; k < n_; ++k)
   {
     // get master node
-    DRT::Node* node = mele.Nodes()[k];
+    CORE::Nodes::Node* node = mele.Nodes()[k];
     if (!node) FOUR_C_THROW("Cannot find master node");
     CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -2355,7 +2355,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(MORTAR::N
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    DRT::Node* node = mele.Nodes()[i];
+    CORE::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     Node* mnode = dynamic_cast<Node*>(node);
 
@@ -2373,7 +2373,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(MORTAR::N
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    DRT::Node* node = mele.Nodes()[i];
+    CORE::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     Node* mnode = dynamic_cast<Node*>(node);
 
@@ -2464,7 +2464,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(MORTAR::N
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    DRT::Node* node = mele.Nodes()[i];
+    CORE::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     Node* mnode = dynamic_cast<Node*>(node);
 
@@ -2663,7 +2663,7 @@ double MORTAR::ProjectorCalc<distype>::evaluate_f_element_normal(
   double fval = 0.0;
 
   // collect necessary data (slave side)
-  DRT::Node** mynodes = ele.Nodes();
+  CORE::Nodes::Node** mynodes = ele.Nodes();
   if (!mynodes) FOUR_C_THROW("evaluate_f_element_normal: Null pointer!");
 
   CORE::LINALG::Matrix<n_, 1> val;
@@ -2740,7 +2740,7 @@ double MORTAR::ProjectorCalc<distype>::evaluate_grad_f_element_normal(
   CORE::LINALG::Matrix<ndim_ - 1, n_> deriv;
   CORE::LINALG::Matrix<ndim_, n_> coord;
 
-  DRT::Node** mynodes = ele.Nodes();
+  CORE::Nodes::Node** mynodes = ele.Nodes();
   if (!mynodes) FOUR_C_THROW("evaluate_grad_f_element_normal: Null pointer!");
 
   // get shape function values and derivatives at gpeta

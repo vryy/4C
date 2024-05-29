@@ -231,7 +231,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
       // loop over all local nodes of thermal discretisation
       for (int lnodeid = 0; lnodeid < (ThermoField()->discretization()->NumMyRowNodes()); lnodeid++)
       {
-        DRT::Node* thermnode = ThermoField()->discretization()->lRowNode(lnodeid);
+        CORE::Nodes::Node* thermnode = ThermoField()->discretization()->lRowNode(lnodeid);
         std::vector<int> thermnodedofs_1 = ThermoField()->discretization()->Dof(1, thermnode);
 
         // now we transfer displacment dofs only
@@ -282,7 +282,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
       for (int lnodeid = 0; lnodeid < (structure_field()->discretization()->NumMyRowNodes());
            lnodeid++)
       {
-        DRT::Node* structnode = structure_field()->discretization()->lRowNode(lnodeid);
+        CORE::Nodes::Node* structnode = structure_field()->discretization()->lRowNode(lnodeid);
         std::vector<int> structdofs = structure_field()->discretization()->Dof(1, structnode);
 
         // global and processor's local structure dof ID
@@ -330,7 +330,7 @@ void TSI::Algorithm::output_deformation_in_thr(
     // structural node!
 
     // get the processor's local structural node with the same lnodeid
-    DRT::Node* structlnode = structdis->lRowNode(lnodeid);
+    CORE::Nodes::Node* structlnode = structdis->lRowNode(lnodeid);
     // get the degrees of freedom associated with this structural node
     std::vector<int> structnodedofs = structdis->Dof(0, structlnode);
     // determine number of space dimensions

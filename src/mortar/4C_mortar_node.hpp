@@ -12,7 +12,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_utils_pairedvector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -278,12 +278,12 @@ namespace MORTAR
   };  // class NodeDataContainer
 
   /*!
-   \brief A class for a mortar node derived from DRT::Node
+   \brief A class for a mortar node derived from CORE::Nodes::Node
 
    This class represents a finite element node capable of mortar coupling.
 
    */
-  class Node : public DRT::Node
+  class Node : public CORE::Nodes::Node
   {
    public:
     //! @name Enums and Friends

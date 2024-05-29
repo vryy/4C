@@ -74,7 +74,7 @@ void XFEM::MeshProjector::set_source_position_vector(Teuchos::RCP<const Epetra_V
   // for all nodes of an element on each proc
   for (int lid = 0; lid < sourcedis_->NumMyColNodes(); ++lid)
   {
-    const DRT::Node* node = sourcedis_->lColNode(lid);
+    const CORE::Nodes::Node* node = sourcedis_->lColNode(lid);
     std::vector<int> src_dofs(4);
     std::vector<double> mydisp(3, 0.0);
 
@@ -93,7 +93,7 @@ template <CORE::FE::CellType distype>
 void XFEM::MeshProjector::find_search_radius()
 {
   CORE::Elements::Element* actele = sourcedis_->lRowElement(0);
-  const DRT::Node* const* nodes = actele->Nodes();
+  const CORE::Nodes::Node* const* nodes = actele->Nodes();
 
   // problem dimension
   const unsigned int dim = CORE::FE::dim<distype>;
@@ -220,7 +220,7 @@ void XFEM::MeshProjector::Project(std::map<int, std::set<int>>& projection_nodeT
   for (std::map<int, std::set<int>>::const_iterator i = projection_nodeToDof.begin();
        i != projection_nodeToDof.end(); ++i)
   {
-    const DRT::Node* node = targetdis_->gNode(i->first);
+    const CORE::Nodes::Node* node = targetdis_->gNode(i->first);
 
     std::vector<int> tar_dofs(4);
     std::vector<double> mydisp(4, 0.0);
@@ -261,7 +261,7 @@ void XFEM::MeshProjector::Project(std::map<int, std::set<int>>& projection_nodeT
   for (unsigned ni = 0; ni < projection_targetnodes.size(); ++ni)
   {
     const int node_id = projection_targetnodes[ni];
-    const DRT::Node* node = targetdis_->gNode(node_id);
+    const CORE::Nodes::Node* node = targetdis_->gNode(node_id);
 
     if (!have_values.at(ni))
     {
@@ -313,7 +313,7 @@ void XFEM::MeshProjector::project_in_full_target_discretization(
   std::map<int, std::set<int>> projection_nodeToDof;
   for (int ni = 0; ni < targetdis_->NumMyRowNodes(); ++ni)
   {
-    const DRT::Node* node = targetdis_->lRowNode(ni);
+    const CORE::Nodes::Node* node = targetdis_->lRowNode(ni);
     // set of dofset indices
     std::set<int> dofsets;
     dofsets.insert(0);
@@ -361,7 +361,7 @@ bool XFEM::MeshProjector::check_position_and_project(const CORE::Elements::Eleme
     // extract state values and interpolate
     for (int in = 0; in < src_ele->num_node(); ++in)
     {
-      const DRT::Node* node = src_ele->Nodes()[in];
+      const CORE::Nodes::Node* node = src_ele->Nodes()[in];
       const unsigned numdofpernode = src_ele->NumDofPerNode(*node);
 
       std::vector<double> myval(numdofpernode);
@@ -619,7 +619,7 @@ void XFEM::MeshProjector::GmshOutput(int step, Teuchos::RCP<const Epetra_Vector>
     std::vector<double> mydisp(3, 0.0);
     for (int i = 0; i < targetdis_->NumMyColNodes(); ++i)
     {
-      const DRT::Node* actnode = targetdis_->lColNode(i);
+      const CORE::Nodes::Node* actnode = targetdis_->lColNode(i);
       CORE::LINALG::Matrix<3, 1> pos(actnode->X().data(), false);
       if (targetdisp != Teuchos::null)
       {

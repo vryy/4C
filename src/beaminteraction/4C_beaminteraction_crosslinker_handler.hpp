@@ -21,14 +21,17 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace DRT
 {
-  class Exporter;
   class Discretization;
-  class Node;
 }  // namespace DRT
 
 namespace CORE::Elements
 {
   class Element;
+}
+
+namespace CORE::Nodes
+{
+  class Node;
 }
 
 namespace IO
@@ -83,14 +86,14 @@ namespace BEAMINTERACTION
     virtual Teuchos::RCP<std::list<int>> TransferLinker(bool const fill_using_ghosting = true);
 
     /// node is placed into the correct row bin or put into the list of homeless linker
-    virtual bool PlaceNodeCorrectly(Teuchos::RCP<DRT::Node> node,  ///< node to be placed
-        const double* currpos,                              ///< current position of this node
-        std::list<Teuchos::RCP<DRT::Node>>& homelesslinker  ///< list of homeless linker
+    virtual bool PlaceNodeCorrectly(Teuchos::RCP<CORE::Nodes::Node> node,  ///< node to be placed
+        const double* currpos,  ///< current position of this node
+        std::list<Teuchos::RCP<CORE::Nodes::Node>>& homelesslinker  ///< list of homeless linker
     );
 
     /// round robin loop to fill linker into its correct bin on according proc
     virtual void fill_linker_into_bins_round_robin(
-        std::list<Teuchos::RCP<DRT::Node>>& homelesslinker  ///< list of homeless linker
+        std::list<Teuchos::RCP<CORE::Nodes::Node>>& homelesslinker  ///< list of homeless linker
     );
 
     /// get neighbouring bins of linker containing boundary row bins
@@ -100,19 +103,19 @@ namespace BEAMINTERACTION
    protected:
     /// fill linker into their correct bin on according proc using remote id list
     virtual Teuchos::RCP<std::list<int>> fill_linker_into_bins_remote_id_list(
-        std::list<Teuchos::RCP<DRT::Node>>& homelesslinker  ///< set of homeless linker
+        std::list<Teuchos::RCP<CORE::Nodes::Node>>& homelesslinker  ///< set of homeless linker
     );
 
     /// fill linker into their correct bin on according proc using one layer ghosting
     /// note, this is faster than the other two method as there is no communication required
     /// to find new owner ( complete one layer bin ghosting is required though)
     virtual Teuchos::RCP<std::list<int>> fill_linker_into_bins_using_ghosting(
-        std::list<Teuchos::RCP<DRT::Node>>& homelesslinker  ///< set of homeless linker
+        std::list<Teuchos::RCP<CORE::Nodes::Node>>& homelesslinker  ///< set of homeless linker
     );
 
     /// receive linker and fill them in correct bin
     virtual void receive_linker_and_fill_them_in_bins(int const numrec,
-        CORE::COMM::Exporter& exporter, std::list<Teuchos::RCP<DRT::Node>>& homelesslinker);
+        CORE::COMM::Exporter& exporter, std::list<Teuchos::RCP<CORE::Nodes::Node>>& homelesslinker);
 
    private:
     /// binning strategy

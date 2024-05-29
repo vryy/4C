@@ -78,7 +78,7 @@ FSI::SlidingMonolithicFluidSplit::SlidingMonolithicFluidSplit(
     //
     //      // do only nodes that I have in my discretization
     //      if (!fluid_field()->discretization()->NodeColMap()->MyGID(gid)) continue;
-    //      DRT::Node* node = fluid_field()->discretization()->gNode(gid);
+    //      CORE::Nodes::Node* node = fluid_field()->discretization()->gNode(gid);
     //      if (!node) FOUR_C_THROW("Cannot find node with gid %",gid);
     //
     //      std::vector<int> nodedofs = fluid_field()->discretization()->Dof(node);
@@ -2014,9 +2014,11 @@ void FSI::SlidingMonolithicFluidSplit::create_system_matrix()
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::SlidingMonolithicFluidSplit::create_node_owner_relationship(std::map<int, int>* nodeOwner,
-    std::map<int, std::list<int>>* inverseNodeOwner, std::map<int, DRT::Node*>* fluidnodesPtr,
-    std::map<int, DRT::Node*>* structuregnodesPtr, Teuchos::RCP<DRT::Discretization> structuredis,
-    Teuchos::RCP<DRT::Discretization> fluiddis, const INPAR::FSI::Redistribute domain)
+    std::map<int, std::list<int>>* inverseNodeOwner,
+    std::map<int, CORE::Nodes::Node*>* fluidnodesPtr,
+    std::map<int, CORE::Nodes::Node*>* structuregnodesPtr,
+    Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
+    const INPAR::FSI::Redistribute domain)
 {
   /*******************************************/
   /* distribute masternodes to future owners */

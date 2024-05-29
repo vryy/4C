@@ -14,8 +14,8 @@ performed afterwards
 #include "4C_binstrategy_utils.hpp"
 #include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_lib_discret_faces.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -159,11 +159,11 @@ void FBI::FBIBinningGeometryCoupler::compute_current_positions(DRT::Discretizati
   for (std::set<CORE::Elements::Element*>::iterator element = beam_element_list.begin();
        element != beam_element_list.end(); element++)
   {
-    DRT::Node** node_list = (*element)->Nodes();
+    CORE::Nodes::Node** node_list = (*element)->Nodes();
     unsigned int numnode = (*element)->num_node();
     for (unsigned int i = 0; i < numnode; i++)
     {
-      const DRT::Node* node = node_list[i];
+      const CORE::Nodes::Node* node = node_list[i];
       if (disp != Teuchos::null)
       {
         // get the DOF numbers of the current node

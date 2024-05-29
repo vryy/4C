@@ -330,7 +330,7 @@ void CONSTRAINTS::SpringDashpot::evaluate_force(Epetra_Vector& fint,
     if (actdisc_->NodeRowMap()->MyGID(node_gid))
     {
       int gid = node_gid;
-      DRT::Node* node = actdisc_->gNode(gid);
+      CORE::Nodes::Node* node = actdisc_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find global node %d", gid);
 
       // get nodal values
@@ -451,7 +451,7 @@ void CONSTRAINTS::SpringDashpot::evaluate_force_stiff(CORE::LINALG::SparseMatrix
     // nodes owned by processor
     if (actdisc_->NodeRowMap()->MyGID(node_gid))
     {
-      DRT::Node* node = actdisc_->gNode(node_gid);
+      CORE::Nodes::Node* node = actdisc_->gNode(node_gid);
       if (!node) FOUR_C_THROW("Cannot find global node %d", node_gid);
 
       // get nodal values
@@ -609,7 +609,7 @@ void CONSTRAINTS::SpringDashpot::ResetPrestress(Teuchos::RCP<const Epetra_Vector
       // nodes owned by processor
       if (actdisc_->NodeRowMap()->MyGID(node_gid))
       {
-        DRT::Node* node = actdisc_->gNode(node_gid);
+        CORE::Nodes::Node* node = actdisc_->gNode(node_gid);
         if (!node) FOUR_C_THROW("Cannot find global node %d", node_gid);
 
         const int numdof = actdisc_->NumDof(0, node);
@@ -644,7 +644,7 @@ void CONSTRAINTS::SpringDashpot::SetRestartOld(Teuchos::RCP<Epetra_MultiVector> 
     // nodes owned by processor
     if (actdisc_->NodeRowMap()->MyGID(node_gid))
     {
-      DRT::Node* node = actdisc_->gNode(node_gid);
+      CORE::Nodes::Node* node = actdisc_->gNode(node_gid);
       if (!node) FOUR_C_THROW("Cannot find global node %d", node_gid);
 
       [[maybe_unused]] const int numdof = actdisc_->NumDof(0, node);
@@ -919,7 +919,7 @@ void CONSTRAINTS::SpringDashpot::initialize_prestr_offset()
   {
     if (actdisc_->NodeRowMap()->MyGID(node_gid))
     {
-      DRT::Node* node = actdisc_->gNode(node_gid);
+      CORE::Nodes::Node* node = actdisc_->gNode(node_gid);
       if (!node) FOUR_C_THROW("Cannot find global node %d", node_gid);
 
       int numdof = actdisc_->NumDof(0, node);

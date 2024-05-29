@@ -160,7 +160,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
       // allocate node vectors
       unsigned int nnode = connectivity[iele].size();  // this number changes for pyramids or wedges
       std::vector<int> nodeids(nnode);
-      std::vector<DRT::Node*> nodes(nnode);
+      std::vector<CORE::Nodes::Node*> nodes(nnode);
 
       // get connectivity info
       for (unsigned int inode = 0; inode < nnode; inode++)
@@ -191,7 +191,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
         std::vector<int> localtrafomap;
 
         // get the face's nodes sorted w.r.t local coordinate system of the parent's face element
-        const std::vector<DRT::Node*> nodes_face_master = surf_it->second.GetNodes();
+        const std::vector<CORE::Nodes::Node*> nodes_face_master = surf_it->second.GetNodes();
         if (nodes_face_master.size() != nnode)
           FOUR_C_THROW(
               "the number of the face w.r.t parent element and slave element are not the same. "
@@ -748,7 +748,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
           int counter = 0;
           for (std::size_t kk = 0; kk < mymasternodeids.size(); kk++)
           {
-            std::vector<DRT::Node*>::iterator nofool;
+            std::vector<CORE::Nodes::Node*>::iterator nofool;
             for (nofool = noderowptr_.begin(); nofool != noderowptr_.end(); ++nofool)
             {
               if ((*nofool)->Id() == mymasternodeids[kk]) counter++;
@@ -756,7 +756,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
           }
           for (std::size_t kk = 0; kk < myfurthermasternodeids.size(); kk++)
           {
-            std::vector<DRT::Node*>::iterator nofool;
+            std::vector<CORE::Nodes::Node*>::iterator nofool;
             for (nofool = noderowptr_.begin(); nofool != noderowptr_.end(); ++nofool)
             {
               if ((*nofool)->Id() == myfurthermasternodeids[kk]) counter++;
@@ -802,12 +802,12 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
 
             // get the face's nodes sorted w.r.t local coordinate system of the parent's face
             // element
-            const std::vector<DRT::Node*> nodes_face_master = face_it->second.GetNodes();
+            const std::vector<CORE::Nodes::Node*> nodes_face_master = face_it->second.GetNodes();
             // get number of nodes
             unsigned int nnode = nodes_face_master.size();
 
             // get slave nodes
-            std::vector<DRT::Node*> slave_nodes = pbc_surf_it->second.GetNodes();
+            std::vector<CORE::Nodes::Node*> slave_nodes = pbc_surf_it->second.GetNodes();
 
             // find the nodes given with the master element node numbering also for the slave
             // element to define a connectivity map between the local face's coordinate systems
@@ -871,11 +871,12 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
       FOUR_C_ASSERT(slave_peid == -1 || slave_peid == parent_slave->Id(), "Internal error");
 
       // get the unsorted nodes
-      std::vector<DRT::Node*> nodes = face_it->second.GetNodes();
+      std::vector<CORE::Nodes::Node*> nodes = face_it->second.GetNodes();
 
       // get corresponding nodeids
       std::vector<int> nodeids(nodes.size());
-      std::transform(nodes.begin(), nodes.end(), nodeids.begin(), std::mem_fn(&DRT::Node::Id));
+      std::transform(
+          nodes.begin(), nodes.end(), nodeids.begin(), std::mem_fn(&CORE::Nodes::Node::Id));
 
       // create the internal face element
       Teuchos::RCP<CORE::Elements::FaceElement> surf =

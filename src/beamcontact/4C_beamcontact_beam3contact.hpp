@@ -1008,7 +1008,7 @@ namespace CONTACT
     then transfers these dofs to their actual GIDs in the underlying
     problem discretization by applying the pre-computed dofoffset_.
     */
-    std::vector<int> get_global_dofs(const DRT::Node* node);
+    std::vector<int> get_global_dofs(const CORE::Nodes::Node* node);
 
     /*!
       \brief Get jacobi factor of beam element

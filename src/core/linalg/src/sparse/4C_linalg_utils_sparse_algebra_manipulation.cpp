@@ -593,7 +593,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::ComputeDofMapFromNodeMap(
 
   for (int nlid = 0; nlid < my_num_nodes; ++nlid)
   {
-    const DRT::Node* node = discret.gNode(my_ngids[nlid]);
+    const CORE::Nodes::Node* node = discret.gNode(my_ngids[nlid]);
 
     const int numdofs = discret.NumDof(dofset_id, node);
     for (int d = 0; d < numdofs; ++d) dof_set.insert(discret.Dof(dofset_id, node, d));

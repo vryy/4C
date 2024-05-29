@@ -85,9 +85,9 @@ bool MORTAR::Coupling2d::Project()
   if (!orient) return false;
 
   // get slave and master element nodes
-  DRT::Node** mysnodes = SlaveElement().Nodes();
+  CORE::Nodes::Node** mysnodes = SlaveElement().Nodes();
   if (!mysnodes) FOUR_C_THROW("IntegrateOverlap: Null pointer for mysnodes!");
-  DRT::Node** mymnodes = MasterElement().Nodes();
+  CORE::Nodes::Node** mymnodes = MasterElement().Nodes();
   if (!mymnodes) FOUR_C_THROW("IntegrateOverlap: Null pointer for mymnodes!");
 
   // project slave nodes onto master element
@@ -827,7 +827,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
   // (hassegment_ of a slave node is true if ANY segment/cell
   // is integrated that contributes to this slave node)
   int nnodes = SlaveElement().num_node();
-  DRT::Node** mynodes = SlaveElement().Nodes();
+  CORE::Nodes::Node** mynodes = SlaveElement().Nodes();
   if (!mynodes) FOUR_C_THROW("Null pointer!");
   for (int k = 0; k < nnodes; ++k)
   {

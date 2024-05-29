@@ -97,7 +97,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::Element& sele
   FOUR_C_ASSERT(Dim() == 3, "ERROR: 3D integration method called for non-3D problem");
 
   // get slave element nodes themselves for normal evaluation
-  DRT::Node** mynodes = sele.Nodes();
+  CORE::Nodes::Node** mynodes = sele.Nodes();
   if (!mynodes) FOUR_C_THROW("IntegrateDerivCell3D: Null pointer!");
 
   // check input data
@@ -227,7 +227,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::Element& sele
   if (Dim() != 2) FOUR_C_THROW("2D integration method called for non-2D problem");
 
   // get slave element nodes themselves
-  DRT::Node** mynodes = sele.Nodes();
+  CORE::Nodes::Node** mynodes = sele.Nodes();
   if (!mynodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   // check input data
@@ -968,7 +968,7 @@ int CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_lin
     MORTAR::Element& sele) const
 {
   int linsize = 0;
-  const DRT::Node* const* mynodes = sele.Nodes();
+  const CORE::Nodes::Node* const* mynodes = sele.Nodes();
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
     const Node& cnode = static_cast<const Node&>(*mynodes[i]);

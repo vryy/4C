@@ -272,7 +272,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
     FOUR_C_THROW("transfer_dofs_to_new_map: not equal number of old and new vectors");
 
   // get the node
-  DRT::Node* node = dis_->gNode(gid);
+  CORE::Nodes::Node* node = dis_->gNode(gid);
 
   // get cut nodes with respect to cut wizards at t^n and t^(n+1)
   CORE::GEO::CUT::Node* n_new = wizard_new_->GetNode(gid);
@@ -864,7 +864,7 @@ std::map<int, std::set<int>>& XFEM::XFluidTimeInt::get_node_to_dof_map_for_recon
 // all surrounding elements non-intersected ?
 // -------------------------------------------------------------------
 bool XFEM::XFluidTimeInt::non_intersected_elements(
-    DRT::Node* n, const Teuchos::RCP<CORE::GEO::CutWizard> wizard)
+    CORE::Nodes::Node* n, const Teuchos::RCP<CORE::GEO::CutWizard> wizard)
 {
   const int numele = n->NumElement();
 
@@ -900,10 +900,10 @@ bool XFEM::XFluidTimeInt::non_intersected_elements(
 // -------------------------------------------------------------------
 void XFEM::XFluidTimeInt::find_surrounding_ghost_dofsets(
     std::map<int, std::set<int>>&
-        ghostDofsets,       /// surrounding ghost dofsets to be filled, map of ghost nodes and
-                            /// correponding ghost nds index w.r.t given std nodal dofset
-    const DRT::Node* node,  /// node
-    const int nds_new       /// dofset of node used for finding the surrounding ghost dofs
+        ghostDofsets,  /// surrounding ghost dofsets to be filled, map of ghost nodes and
+                       /// correponding ghost nds index w.r.t given std nodal dofset
+    const CORE::Nodes::Node* node,  /// node
+    const int nds_new               /// dofset of node used for finding the surrounding ghost dofs
 )
 {
   if (nds_new != 0)
@@ -939,14 +939,14 @@ void XFEM::XFluidTimeInt::find_surrounding_ghost_dofsets(
     // get the element, ask the first vc
     int peid = (*vcs.begin())->parent_element()->GetParentId();
     CORE::Elements::Element* ele = dis_->gElement(peid);
-    DRT::Node** nodes = ele->Nodes();
+    CORE::Nodes::Node** nodes = ele->Nodes();
 
     const std::vector<int>& nds = (*vcs.begin())->NodalDofSet();
 
     // which dofset is the corresponding to the current vc-connection and is a ghost dofset?
     for (int n_it = 0; n_it < ele->num_node(); n_it++)
     {
-      const DRT::Node* ghost_node = nodes[n_it];
+      const CORE::Nodes::Node* ghost_node = nodes[n_it];
       const int ghost_nid = ghost_node->Id();
 
       CORE::GEO::CUT::Node* ghost_node_cut = wizard_new_->GetNode(ghost_nid);
@@ -982,10 +982,10 @@ void XFEM::XFluidTimeInt::find_surrounding_ghost_dofsets(
 // -------------------------------------------------------------------
 // copy dofs from old vectors to new vector for all row vectors
 // -------------------------------------------------------------------
-void XFEM::XFluidTimeInt::copy_dofs(const DRT::Node* node,  /// drt node
-    const int nds_new,                                      /// nodal dofset at t^(n+1)
-    const int nds_old,                                      /// nodal dofset at t^n
-    const INPAR::XFEM::XFluidTimeInt method,                /// reconstruction method
+void XFEM::XFluidTimeInt::copy_dofs(const CORE::Nodes::Node* node,  /// drt node
+    const int nds_new,                                              /// nodal dofset at t^(n+1)
+    const int nds_old,                                              /// nodal dofset at t^n
+    const INPAR::XFEM::XFluidTimeInt method,                        /// reconstruction method
     const std::vector<Teuchos::RCP<Epetra_Vector>>&
         newRowStateVectors,  /// row map based state vectors at t^(n+1)
     const std::vector<Teuchos::RCP<const Epetra_Vector>>&
@@ -1080,8 +1080,8 @@ void XFEM::XFluidTimeInt::copy_dofs(const DRT::Node* node,  /// drt node
 // -------------------------------------------------------------------
 // mark nodal dofs of vector w.r.t new interface position for reconstruction
 // -------------------------------------------------------------------
-void XFEM::XFluidTimeInt::mark_dofs(const DRT::Node* node,  /// drt node
-    const int nds_new,                                      /// nodal dofset at t^(n+1)
+void XFEM::XFluidTimeInt::mark_dofs(const CORE::Nodes::Node* node,  /// drt node
+    const int nds_new,                                              /// nodal dofset at t^(n+1)
     const std::vector<Teuchos::RCP<Epetra_Vector>>&
         newRowStateVectors,                   /// row map based state vectors at t^(n+1)
     const INPAR::XFEM::XFluidTimeInt method,  /// reconstruction method
@@ -1124,7 +1124,7 @@ void XFEM::XFluidTimeInt::mark_dofs(const DRT::Node* node,  /// drt node
         // SL-standard nodes
         if (dis_->NodeRowMap()->LID(nid) != -1)  // is row node on this proc
         {
-          DRT::Node* n = dis_->gNode(nid);
+          CORE::Nodes::Node* n = dis_->gNode(nid);
           mark_dofs(n, dofset, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP, dbcgids);
         }
         else
@@ -1219,7 +1219,7 @@ void XFEM::XFluidTimeInt::mark_dofs_for_export(const int nid,  /// node id
 // -------------------------------------------------------------------
 // set the reconstruction method for current nodal dofset, return if set
 // -------------------------------------------------------------------
-bool XFEM::XFluidTimeInt::set_reconstr_method(const DRT::Node* node,  /// drt node
+bool XFEM::XFluidTimeInt::set_reconstr_method(const CORE::Nodes::Node* node,  /// drt node
     const int nds_new,                       /// nodal dofset w.r.t new interface position
     const INPAR::XFEM::XFluidTimeInt method  /// which type of reconstruction method
 )
@@ -1888,7 +1888,7 @@ bool XFEM::XFluidTimeInt::within_space_time_side(
   CORE::LINALG::Matrix<3, numnode_space_time> xyze_st;
 
   const int numnode = side->num_node();
-  DRT::Node** nodes = side->Nodes();
+  CORE::Nodes::Node** nodes = side->Nodes();
 
 
   CORE::LINALG::SerialDenseMatrix xyze_old(3, numnode);
@@ -1896,7 +1896,7 @@ bool XFEM::XFluidTimeInt::within_space_time_side(
 
   for (int i = 0; i < numnode; ++i)
   {
-    DRT::Node& node = *nodes[i];
+    CORE::Nodes::Node& node = *nodes[i];
 
     CORE::LINALG::Matrix<3, 1> x_old(node.X().data());
     CORE::LINALG::Matrix<3, 1> x_new(node.X().data());
@@ -2183,7 +2183,7 @@ void XFEM::XFluidTimeInt::export_methods(
         if (lid == -1) continue;  // this is not a row node on this proc
 
         // get the node
-        DRT::Node* node = dis_->gNode(nid);
+        CORE::Nodes::Node* node = dis_->gNode(nid);
 
         for (std::map<int, int>::iterator it = dofset_map.begin(); it != dofset_map.end(); it++)
         {
@@ -2268,7 +2268,7 @@ void XFEM::XFluidTimeInt::Output()
 
     for (int i = 0; i < dis_->NumMyRowNodes(); ++i)
     {
-      const DRT::Node* actnode = dis_->lRowNode(i);
+      const CORE::Nodes::Node* actnode = dis_->lRowNode(i);
       const CORE::LINALG::Matrix<3, 1> pos(actnode->X().data());
 
       std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt>>::const_iterator it =

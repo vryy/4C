@@ -192,7 +192,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
       int gid = elelist()[i];
       CORE::Elements::Element* element = discret().gElement(gid);
       if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
-      DRT::Node** nodes = element->Points();
+      CORE::Nodes::Node** nodes = element->Points();
 
       // vector of values of Hesse-Normalform of nodes of elements
       CORE::LINALG::SerialDenseVector axbycz;

@@ -17,7 +17,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -35,7 +35,7 @@ namespace MAT
 namespace CROSSLINKING
 {
   /*!
-  \brief A class for a crosslinker derived from DRT::Node
+  \brief A class for a crosslinker derived from CORE::Nodes::Node
   */
   class CrosslinkerNodeType : public CORE::COMM::ParObjectType
   {
@@ -150,7 +150,7 @@ namespace CROSSLINKING
   // class CrosslinkerNodeDataContainer
 
   /*!
-   \brief A class for a crosslinker node derived from DRT::Node
+   \brief A class for a crosslinker node derived from CORE::Nodes::Node
 
   This class represents a single crosslinker involved in a biopolymer network simulation.
   * note:
@@ -161,7 +161,7 @@ namespace CROSSLINKING
   \author eichinger
    */
 
-  class CrosslinkerNode : public DRT::Node
+  class CrosslinkerNode : public CORE::Nodes::Node
   {
    public:
     //! @name Enums and Friends

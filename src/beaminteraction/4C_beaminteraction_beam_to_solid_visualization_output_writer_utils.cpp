@@ -41,7 +41,7 @@ void BEAMINTERACTION::AddBeamInteractionNodalForces(
   for (int i_lid = 0; i_lid < discret_ptr->NumMyRowNodes(); i_lid++)
   {
     gid_node.clear();
-    DRT::Node* current_node = discret_ptr->lRowNode(i_lid);
+    CORE::Nodes::Node* current_node = discret_ptr->lRowNode(i_lid);
     discret_ptr->Dof(current_node, gid_node);
     if (BEAMINTERACTION::UTILS::IsBeamNode(*current_node))
       for (unsigned int dim = 0; dim < 3; ++dim) gid_beam_dof.push_back(gid_node[dim]);
@@ -159,7 +159,7 @@ void BEAMINTERACTION::GetGlobalCouplingForceResultants(const DRT::Discretization
   for (int i_lid = 0; i_lid < discret.NumMyRowNodes(); i_lid++)
   {
     gid_node.clear();
-    DRT::Node* current_node = discret.lRowNode(i_lid);
+    CORE::Nodes::Node* current_node = discret.lRowNode(i_lid);
     discret.Dof(current_node, gid_node);
 
     // Get the local force and displacement values.

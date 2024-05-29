@@ -26,7 +26,7 @@ DRT::ELEMENTS::Vele3LineType& DRT::ELEMENTS::Vele3LineType::Instance() { return 
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Vele3Line::Vele3Line(int id, int owner, int nnode, const int* nodeids,
-    DRT::Node** nodes, CORE::Elements::Element* parent, const int lline)
+    CORE::Nodes::Node** nodes, CORE::Elements::Element* parent, const int lline)
     : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);

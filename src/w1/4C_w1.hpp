@@ -18,11 +18,11 @@
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_so3_base.hpp"
@@ -60,7 +60,7 @@ namespace DRT
           CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, int const numdof, int const dimnsp) override;
+          CORE::Nodes::Node& node, const double* x0, int const numdof, int const dimnsp) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
@@ -204,7 +204,7 @@ namespace DRT
       /// As this may vary along a simulation, the element can redecide the
       /// number of degrees of freedom per node along the way for each of it's nodes
       /// separately.
-      int NumDofPerNode(const DRT::Node& node) const override { return Wall1::noddof_; }
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return Wall1::noddof_; }
 
       /// Get number of degrees of freedom per element
       /// (implements pure virtual CORE::Elements::Element)
@@ -714,7 +714,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& actnode, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& actnode, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented!");
@@ -748,7 +748,8 @@ namespace DRT
           int owner,           ///< Processor owning this line
           int nnode,           ///< Number of nodes attached to this element
           const int* nodeids,  ///< global ids of nodes attached to this element
-          DRT::Node** nodes,   ///<  the discretizations map of nodes to build ptrs to nodes from
+          CORE::Nodes::Node**
+              nodes,  ///<  the discretizations map of nodes to build ptrs to nodes from
           DRT::ELEMENTS::Wall1* parent,  ///< The parent wall element of this line
           const int lline  ///< the local line number of this line w.r.t. the parent element
       );
@@ -802,7 +803,7 @@ namespace DRT
       /// As this may vary along a simulation, the element can redecide the
       /// number of degrees of freedom per node along the way for each of it's nodes
       /// separately.
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         return ParentMasterElement()->NumDofPerNode(node);
       }

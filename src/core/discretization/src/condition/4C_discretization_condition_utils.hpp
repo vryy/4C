@@ -33,8 +33,12 @@ namespace CORE::LINALG
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
+
+namespace CORE::Nodes
+{
+  class Node;
+}
 
 namespace CORE::Elements
 {
@@ -69,7 +73,7 @@ namespace CORE::Conditions
 
   /// find all local nodes from discretization marked with condition
   void FindConditionedNodes(const DRT::Discretization& dis, const std::string& condname,
-      std::map<int, DRT::Node*>& nodes);
+      std::map<int, CORE::Nodes::Node*>& nodes);
 
   /// find all local nodes from discretization marked with condition
   void FindConditionedNodes(
@@ -90,13 +94,14 @@ namespace CORE::Conditions
 
   /// find all local nodes from discretization marked with condition
   void FindConditionedNodes(const DRT::Discretization& dis,
-      const std::vector<CORE::Conditions::Condition*>& conds, std::map<int, DRT::Node*>& nodes);
+      const std::vector<CORE::Conditions::Condition*>& conds,
+      std::map<int, CORE::Nodes::Node*>& nodes);
 
   /// find all local nodes from discretization marked with condition and
   /// put them into a map indexed by Id of the condition
   void FindConditionedNodes(const DRT::Discretization& dis,
       const std::vector<CORE::Conditions::Condition*>& conds,
-      std::map<int, std::map<int, DRT::Node*>>& nodes);
+      std::map<int, std::map<int, CORE::Nodes::Node*>>& nodes);
 
   /// find all local nodes from discretization marked with condition and
   /// put them into a vector indexed by Id of the condition
@@ -116,7 +121,8 @@ namespace CORE::Conditions
     \param elements unique map of elements
     \param condname name of condition
    */
-  void FindConditionObjects(const DRT::Discretization& dis, std::map<int, DRT::Node*>& nodes,
+  void FindConditionObjects(const DRT::Discretization& dis,
+      std::map<int, CORE::Nodes::Node*>& nodes,
       std::map<int, Teuchos::RCP<CORE::Elements::Element>>& elements, const std::string& condname);
 
   /// collect all nodes (in- and excluding 'ghosts') and
@@ -128,8 +134,8 @@ namespace CORE::Conditions
     \param elements overlapping map of elements
     \param condname name of condition
    */
-  void FindConditionObjects(const DRT::Discretization& dis, std::map<int, DRT::Node*>& nodes,
-      std::map<int, DRT::Node*>& gnodes,
+  void FindConditionObjects(const DRT::Discretization& dis,
+      std::map<int, CORE::Nodes::Node*>& nodes, std::map<int, CORE::Nodes::Node*>& gnodes,
       std::map<int, Teuchos::RCP<CORE::Elements::Element>>& elements,
       const std::vector<CORE::Conditions::Condition*>& conds);
 
@@ -150,8 +156,8 @@ namespace CORE::Conditions
     \param elements overlapping map of elements
     \param condname name of condition
    */
-  void FindConditionObjects(const DRT::Discretization& dis, std::map<int, DRT::Node*>& nodes,
-      std::map<int, DRT::Node*>& gnodes,
+  void FindConditionObjects(const DRT::Discretization& dis,
+      std::map<int, CORE::Nodes::Node*>& nodes, std::map<int, CORE::Nodes::Node*>& gnodes,
       std::map<int, Teuchos::RCP<CORE::Elements::Element>>& elements, const std::string& condname);
 
   /// collect all nodes (in- and excluding 'ghosts') and
@@ -164,8 +170,8 @@ namespace CORE::Conditions
     \param condname name of condition
    */
   void FindConditionObjects(const DRT::Discretization& dis,
-      std::map<int, std::map<int, DRT::Node*>>& nodes,
-      std::map<int, std::map<int, DRT::Node*>>& gnodes,
+      std::map<int, std::map<int, CORE::Nodes::Node*>>& nodes,
+      std::map<int, std::map<int, CORE::Nodes::Node*>>& gnodes,
       std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>>& elements,
       const std::string& condname);
 

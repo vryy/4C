@@ -378,13 +378,13 @@ void CORE::GEO::CutWizard::add_mesh_cutting_side(
     CORE::Elements::Element* element = cutterdis->lColElement(lid);
 
     const int numnode = element->num_node();
-    DRT::Node** nodes = element->Nodes();
+    CORE::Nodes::Node** nodes = element->Nodes();
 
     CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
 
     for (int i = 0; i < numnode; ++i)
     {
-      DRT::Node& node = *nodes[i];
+      CORE::Nodes::Node& node = *nodes[i];
 
       lm.clear();
       mydisp.clear();
@@ -487,12 +487,12 @@ void CORE::GEO::CutWizard::get_physical_nodal_coordinates(
   std::vector<double> mydisp;
 
   const int numnode = element->num_node();
-  const DRT::Node* const* nodes = element->Nodes();
+  const CORE::Nodes::Node* const* nodes = element->Nodes();
 
   xyze.shape(3, numnode);
   for (int i = 0; i < numnode; ++i)
   {
-    const DRT::Node& node = *nodes[i];
+    const CORE::Nodes::Node& node = *nodes[i];
 
     CORE::LINALG::Matrix<3, 1> x(node.X().data());
 
@@ -857,14 +857,14 @@ void CORE::GEO::CutWizard::update_boundary_cell_coords(Teuchos::RCP<DRT::Discret
     CORE::Elements::Element* element = cutterdis->lColElement(lid);
 
     const int numnode = element->num_node();
-    DRT::Node** nodes = element->Nodes();
+    CORE::Nodes::Node** nodes = element->Nodes();
 
     CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
     std::vector<int> dofs;
 
     for (int i = 0; i < numnode; ++i)
     {
-      DRT::Node& node = *nodes[i];
+      CORE::Nodes::Node& node = *nodes[i];
 
       lm.clear();
       mydisp.clear();

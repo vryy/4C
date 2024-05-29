@@ -285,7 +285,7 @@ void LUBRICATION::TimIntImpl::set_height_field_pure_lub(const int nds)
   for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
   {
     // get the processor local node
-    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+    CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
     // get dofs associated with current node
     std::vector<int> nodedofs = discret_->Dof(nds, lnode);
@@ -329,7 +329,7 @@ void LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
   for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
   {
     // get the processor local node
-    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+    CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
     // get dofs associated with current node
     std::vector<int> nodedofs = discret_->Dof(nds, lnode);
@@ -1005,7 +1005,7 @@ void LUBRICATION::TimIntImpl::output_state()
         Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(), nsd_, true));
     for (int inode = 0; inode < discret_->NumMyRowNodes(); ++inode)
     {
-      DRT::Node* node = discret_->lRowNode(inode);
+      CORE::Nodes::Node* node = discret_->lRowNode(inode);
       for (int idim = 0; idim < nsd_; ++idim)
         (*dispnp_multi)[idim][discret_->NodeRowMap()->LID(node->Id())] =
             (*dispnp)[dispnp->Map().LID(discret_->Dof(nds_disp_, node, idim))];

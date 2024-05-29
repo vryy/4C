@@ -95,7 +95,7 @@ namespace CORE::Dofsets
 
    protected:
     /// get number of nodal dofs for this element at this node
-    int NumDofPerNode(const DRT::Node& node) const override
+    int NumDofPerNode(const CORE::Nodes::Node& node) const override
     {
       if (slavenodeids_->count(node.Id()) == 0)
       {

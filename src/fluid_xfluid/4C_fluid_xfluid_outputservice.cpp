@@ -72,7 +72,7 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
   for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
   {
     // get row node via local id
-    const DRT::Node* xfemnode = discret_->lRowNode(i);
+    const CORE::Nodes::Node* xfemnode = discret_->lRowNode(i);
 
     // the initial dofset contains the original dofs for each row node
     const std::vector<int> gdofs_original(dofset_out_->Dof(xfemnode));
@@ -1176,7 +1176,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
     CORE::GEO::CUT::SideHandle* s = wizard->GetMeshCuttingSide(sid, 0);
 
     const int numnodes = side->num_node();
-    DRT::Node** nodes = side->Nodes();
+    CORE::Nodes::Node** nodes = side->Nodes();
     CORE::LINALG::SerialDenseMatrix side_xyze(3, numnodes);
     for (int i = 0; i < numnodes; ++i)
     {

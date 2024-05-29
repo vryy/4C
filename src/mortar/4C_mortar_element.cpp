@@ -49,7 +49,7 @@ void MORTAR::ElementType::nodal_block_information(
 }
 
 CORE::LINALG::SerialDenseMatrix MORTAR::ElementType::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
   FOUR_C_THROW("method ComputeNullSpace not implemented!");
@@ -301,7 +301,7 @@ void MORTAR::Element::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  number of dofs per node (public)                         mwgee 10/07|
  *----------------------------------------------------------------------*/
-int MORTAR::Element::NumDofPerNode(const DRT::Node& node) const
+int MORTAR::Element::NumDofPerNode(const CORE::Nodes::Node& node) const
 {
   const MORTAR::Node* mnode = dynamic_cast<const MORTAR::Node*>(&node);
   if (!mnode) FOUR_C_THROW("Node is not a Node");
@@ -720,7 +720,7 @@ void MORTAR::Element::DerivUnitNormalAtXi(
 {
   // initialize variables
   const int nnodes = num_node();
-  DRT::Node** mynodes = Nodes();
+  CORE::Nodes::Node** mynodes = Nodes();
   if (!mynodes) FOUR_C_THROW("DerivUnitNormalAtXi: Null pointer!");
 
   CORE::LINALG::SerialDenseVector val(nnodes);
@@ -831,7 +831,7 @@ void MORTAR::Element::DerivUnitNormalAtXi(
 void MORTAR::Element::GetNodalCoords(CORE::LINALG::SerialDenseMatrix& coord)
 {
   const int nnodes = NumPoint();
-  DRT::Node** mynodes = Points();
+  CORE::Nodes::Node** mynodes = Points();
   if (!mynodes) FOUR_C_THROW("GetNodalCoords: Null pointer!");
   if (coord.numRows() != 3 || coord.numCols() != nnodes)
     FOUR_C_THROW("GetNodalCoords: Dimensions!");
@@ -854,7 +854,7 @@ void MORTAR::Element::GetNodalCoords(CORE::LINALG::SerialDenseMatrix& coord)
 void MORTAR::Element::GetNodalCoordsOld(CORE::LINALG::SerialDenseMatrix& coord, bool isinit)
 {
   const int nnodes = NumPoint();
-  DRT::Node** mynodes = Points();
+  CORE::Nodes::Node** mynodes = Points();
   if (!mynodes) FOUR_C_THROW("GetNodalCoordsOld: Null pointer!");
   if (coord.numRows() != 3 || coord.numCols() != nnodes)
     FOUR_C_THROW("GetNodalCoordsOld: Dimensions!");
@@ -878,7 +878,7 @@ void MORTAR::Element::GetNodalCoordsOld(CORE::LINALG::SerialDenseMatrix& coord, 
 void MORTAR::Element::GetNodalLagMult(CORE::LINALG::SerialDenseMatrix& lagmult, bool isinit)
 {
   int nnodes = num_node();
-  DRT::Node** mynodes = Nodes();
+  CORE::Nodes::Node** mynodes = Nodes();
   if (!mynodes) FOUR_C_THROW("GetNodalLagMult: Null pointer!");
   if (lagmult.numRows() != 3 || lagmult.numCols() != nnodes)
     FOUR_C_THROW("GetNodalLagMult: Dimensions!");
@@ -1025,7 +1025,7 @@ void MORTAR::Element::DerivJacobian(
   // get element nodes
   int nnodes = num_node();
 
-  DRT::Node** mynodes = nullptr;  // Nodes();
+  CORE::Nodes::Node** mynodes = nullptr;  // Nodes();
   mynodes = Nodes();
 
   if (!mynodes) FOUR_C_THROW("DerivJacobian: Null pointer!");
@@ -1304,7 +1304,7 @@ bool MORTAR::Element::LocalToGlobal(const double* xi, double* globcoord, int int
   // collect fundamental data
   const int nnodes = num_node();
 
-  DRT::Node** mynodes = Nodes();
+  CORE::Nodes::Node** mynodes = Nodes();
   if (!mynodes) FOUR_C_THROW("LocalToGlobal: Null pointer!");
   CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
   CORE::LINALG::SerialDenseVector val(nnodes);

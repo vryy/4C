@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_so3_hex8.hpp"
 
 FOUR_C_NAMESPACE_OPEN

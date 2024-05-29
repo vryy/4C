@@ -53,7 +53,7 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    bool IsBeamNode(DRT::Node const& node)
+    bool IsBeamNode(CORE::Nodes::Node const& node)
     {
       bool beameles = false;
       bool othereles = false;
@@ -76,7 +76,7 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    bool IsBeamCenterlineNode(DRT::Node const& node)
+    bool IsBeamCenterlineNode(CORE::Nodes::Node const& node)
     {
       bool beamclnode = false;
 
@@ -93,7 +93,7 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    bool IsRigidSphereNode(DRT::Node const& node)
+    bool IsRigidSphereNode(CORE::Nodes::Node const& node)
     {
       bool sphereele = false;
       bool othereles = false;
@@ -131,7 +131,7 @@ namespace BEAMINTERACTION
         X.Clear();
 
         // get a pointer at i-th row node
-        DRT::Node* node = discret->lRowNode(i);
+        CORE::Nodes::Node* node = discret->lRowNode(i);
 
         /* Hermite Interpolation: Check whether node is a beam node which is NOT
          * used for centerline interpolation if so, we simply skip it because
@@ -352,7 +352,7 @@ namespace BEAMINTERACTION
           if (discret->NodeRowMap()->LID(requirednodes[i]) < 0) continue;
 
           // insert element cloud of current node
-          DRT::Node* currnode = discret->gNode(requirednodes[i]);
+          CORE::Nodes::Node* currnode = discret->gNode(requirednodes[i]);
           for (int j = 0; j < currnode->NumElement(); ++j)
             sdata.insert(currnode->Elements()[j]->Id());
         }
@@ -419,7 +419,7 @@ namespace BEAMINTERACTION
       for (int nodei = 0; nodei < static_cast<int>(nodeids->size()); ++nodei)
       {
         // insert element cloud of current node
-        DRT::Node* node = discret->gNode((*nodeids)[nodei]);
+        CORE::Nodes::Node* node = discret->gNode((*nodeids)[nodei]);
         for (int j = 0; j < node->NumElement(); ++j)
         {
           // only if element has not yet been added to the filaments elements

@@ -273,7 +273,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
   CORE::LINALG::Matrix<nen_, nsd_> xrefe;  // reference coord. of element
   CORE::LINALG::Matrix<nen_, nsd_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < nen_; ++i)
   {
     const auto& x = nodes[i]->X();

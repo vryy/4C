@@ -17,6 +17,7 @@
 #include "4C_cut_boundingbox.hpp"
 #include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_discretization_fem_general_immersed_node.hpp"
 #include "4C_discretization_fem_general_utils_boundary_integration.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
@@ -25,7 +26,6 @@
 #include "4C_fluid_ele_immersed_base.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fluid.hpp"
-#include "4C_lib_immersed_node.hpp"
 #include "4C_mortar_calc_utils.hpp"
 #include "4C_mortar_element.hpp"
 
@@ -1273,7 +1273,7 @@ namespace IMMERSED
 
     if (doCommunication == false) numproc = 1;
 
-    DRT::Node** fluidnode = fluidele.Nodes();
+    CORE::Nodes::Node** fluidnode = fluidele.Nodes();
     double char_fld_ele_length = sqrt(pow(fluidnode[1]->X()[0] - fluidnode[7]->X()[0], 2) +
                                       pow(fluidnode[1]->X()[1] - fluidnode[7]->X()[1], 2) +
                                       pow(fluidnode[1]->X()[2] - fluidnode[7]->X()[2], 2));
@@ -1374,14 +1374,14 @@ namespace IMMERSED
               CORE::Elements::Element* structele = surfIter->getRawPtr();
 
               // pointer to nodes of current surface element
-              DRT::Node** NodesPtr = surfIter->getRawPtr()->Nodes();
+              CORE::Nodes::Node** NodesPtr = surfIter->getRawPtr()->Nodes();
 
               int numfsinodes = 0;
 
               // loop over all nodes of current surface element
               for (int surfnode = 0; surfnode < structele->num_node(); ++surfnode)
               {
-                DRT::Node* checkNode = NodesPtr[surfnode];
+                CORE::Nodes::Node* checkNode = NodesPtr[surfnode];
                 // check whether a IMMERSEDCoupling condition is active on this node
                 if (checkNode->GetCondition("IMMERSEDCoupling") != nullptr) ++numfsinodes;
               }

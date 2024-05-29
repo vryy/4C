@@ -81,7 +81,7 @@ void DRT::ELEMENTS::ThermoType::nodal_block_information(
  | ctor (public)                                             dano 08/12 |
  *----------------------------------------------------------------------*/
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ThermoType::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
   FOUR_C_THROW("method ComputeNullSpace not implemented!");
@@ -329,7 +329,7 @@ bool DRT::ELEMENTS::Thermo::VisData(const std::string& name, std::vector<double>
  | ctor (public)                                             dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(int id, int owner, int nnode, const int* nodeids,
-    DRT::Node** nodes, DRT::ELEMENTS::Thermo* parent, const int lsurface)
+    CORE::Nodes::Node** nodes, DRT::ELEMENTS::Thermo* parent, const int lsurface)
     : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);

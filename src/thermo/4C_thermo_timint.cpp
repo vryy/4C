@@ -881,7 +881,7 @@ void THR::TimInt::SetInitialField(const INPAR::THR::InitialField init, const int
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        DRT::Node* lnode = discret_->lRowNode(lnodeid);
+        CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->Dof(0, lnode);
 

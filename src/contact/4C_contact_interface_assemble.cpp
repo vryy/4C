@@ -29,7 +29,7 @@ void CONTACT::Interface::AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod)
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -65,7 +65,7 @@ void CONTACT::Interface::assemble_reg_normal_forces(
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -204,7 +204,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -560,7 +560,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -917,7 +917,7 @@ void CONTACT::Interface::AssembleLinZ(CORE::LINALG::SparseMatrix& linzglobal)
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -978,7 +978,7 @@ void CONTACT::Interface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tgl
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* cnode = dynamic_cast<Node*>(node);
     const int numdof = cnode->NumDof();
@@ -1119,7 +1119,7 @@ void CONTACT::Interface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* cnode = dynamic_cast<Node*>(node);
 
@@ -1163,7 +1163,7 @@ void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1312,7 +1312,7 @@ void CONTACT::Interface::AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, bo
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     int dim = cnode->NumDof();
@@ -1338,7 +1338,7 @@ void CONTACT::Interface::AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, bo
       int sgid = scurr->first;
       ++scurr;
 
-      DRT::Node* snode = idiscret_->gNode(sgid);
+      CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
       if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
       Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -1400,7 +1400,7 @@ void CONTACT::Interface::AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, bo
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     int dim = cnode->NumDof();
@@ -1426,7 +1426,7 @@ void CONTACT::Interface::AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, bo
       int mgid = mcurr->first;
       ++mcurr;
 
-      DRT::Node* mnode = idiscret_->gNode(mgid);
+      CORE::Nodes::Node* mnode = idiscret_->gNode(mgid);
       if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
       Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -1494,7 +1494,7 @@ void CONTACT::Interface::AssembleG(Epetra_Vector& gglobal)
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1592,7 +1592,7 @@ void CONTACT::Interface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
   for (int i = 0; i < inactivenodes->NumMyElements(); ++i)
   {
     int gid = inactivenodes->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1640,7 +1640,7 @@ void CONTACT::Interface::AssembleTangrhs(Epetra_Vector& tangrhs)
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1765,7 +1765,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
   for (int i = 0; i < sticknodes->NumMyElements(); ++i)
   {
     int gid = sticknodes->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -2585,7 +2585,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
     for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
     {
       int gid = slipnodes_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid);
+      CORE::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -3617,7 +3617,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
     for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
     {
       int gid = slipnodes_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid);
+      CORE::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -3863,7 +3863,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
         {
           int gid = *mcurr;
-          DRT::Node* mnode = idiscret_->gNode(gid);
+          CORE::Nodes::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
@@ -3918,7 +3918,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
         {
           int gid = *mcurr;
-          DRT::Node* mnode = idiscret_->gNode(gid);
+          CORE::Nodes::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
@@ -4075,7 +4075,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         for (dmcurr = dmmap.begin(); dmcurr != dmmap.end(); ++dmcurr)
         {
           int gid = dmcurr->first;
-          DRT::Node* mnode = idiscret_->gNode(gid);
+          CORE::Nodes::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
           double* mxi = cmnode->xspatial();
@@ -4200,7 +4200,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         for (dmcurr = dmmap.begin(); dmcurr != dmmap.end(); ++dmcurr)
         {
           int gid = dmcurr->first;
-          DRT::Node* mnode = idiscret_->gNode(gid);
+          CORE::Nodes::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
           double* mxi = cmnode->xspatial();
@@ -4254,7 +4254,7 @@ void CONTACT::Interface::assemble_normal_contact_regularization(
 
   for (int i = 0; i < ActiveNodes()->NumMyElements(); ++i)
   {
-    DRT::Node* node = Discret().gNode(ActiveNodes()->GID(i));
+    CORE::Nodes::Node* node = Discret().gNode(ActiveNodes()->GID(i));
     if (!node) FOUR_C_THROW("node not found");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) FOUR_C_THROW("not a contact node");
@@ -4345,7 +4345,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
     for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
     {
       int gid = slipnodes_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid);
+      CORE::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -5132,7 +5132,7 @@ void CONTACT::Interface::AssembleNCoup(Epetra_Vector& gglobal)
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* mrtnode = dynamic_cast<Node*>(node);
 
@@ -5183,7 +5183,7 @@ void CONTACT::Interface::AssembleNCoupLin(
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -5245,7 +5245,7 @@ void CONTACT::Interface::AssembleCoupLinD(
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -5263,7 +5263,7 @@ void CONTACT::Interface::AssembleCoupLinD(
       int sgid = scurr->first;
       ++scurr;
 
-      DRT::Node* snode = idiscret_->gNode(sgid);
+      CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
       if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
       Node* csnode = dynamic_cast<Node*>(snode);  // current slave node
 
@@ -5324,7 +5324,7 @@ void CONTACT::Interface::AssembleCoupLinM(
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -5342,7 +5342,7 @@ void CONTACT::Interface::AssembleCoupLinM(
       int mgid = mcurr->first;
       ++mcurr;
 
-      DRT::Node* mnode = idiscret_->gNode(mgid);
+      CORE::Nodes::Node* mnode = idiscret_->gNode(mgid);
       if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
       Node* cmnode = dynamic_cast<Node*>(mnode);
 

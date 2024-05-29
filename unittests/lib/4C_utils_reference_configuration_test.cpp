@@ -39,7 +39,7 @@ namespace
           {1.00, 0.00, 1.90}, {1.20, 0.99, 1.50}, {-0.11, -0.20, 1.66}};
       for (int i = 0; i < 8; ++i)
       {
-        testdis_->AddNode(Teuchos::rcp(new DRT::Node(nodeidshex8[i], coordshex8[i], 0)));
+        testdis_->AddNode(Teuchos::rcp(new CORE::Nodes::Node(nodeidshex8[i], coordshex8[i], 0)));
       }
       Teuchos::RCP<DRT::ELEMENTS::SoHex8> testhex8ele =
           Teuchos::rcp(new DRT::ELEMENTS::SoHex8(0, 0));
@@ -58,7 +58,7 @@ namespace
           {2.5, -0.5, 0.0}, {1.0, -1.1, 0.1}, {1.1, 0.11, 0.15}, {1.5, -0.5, 2.0}};
       for (int j = 0; j < 4; ++j)
       {
-        testdis_->AddNode(Teuchos::rcp(new DRT::Node(nodeidstet4[j], coordstet4[j], 0)));
+        testdis_->AddNode(Teuchos::rcp(new CORE::Nodes::Node(nodeidstet4[j], coordstet4[j], 0)));
       }
       Teuchos::RCP<DRT::ELEMENTS::SoTet4> testtet4ele =
           Teuchos::rcp(new DRT::ELEMENTS::SoTet4(2, 0));

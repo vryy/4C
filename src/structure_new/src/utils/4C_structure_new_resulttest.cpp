@@ -213,7 +213,7 @@ void STR::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test
   {
     if (strudisc_->HaveGlobalNode(node))
     {
-      const DRT::Node* actnode = strudisc_->gNode(node);
+      const CORE::Nodes::Node* actnode = strudisc_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != strudisc_->Comm().MyPID()) return;

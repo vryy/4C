@@ -252,7 +252,7 @@ void FPSI::Utils::setup_local_interface_facing_element_map(DRT::Discretization& 
     // do for every interface slave node
     for (int nodenum = 0; nodenum < curr->second->num_node(); nodenum++)
     {
-      const DRT::Node* const* currslavenode = curr->second->Nodes();
+      const CORE::Nodes::Node* const* currslavenode = curr->second->Nodes();
 
       std::vector<double> temploc;
       temploc.assign(3, 0.0);
@@ -349,7 +349,7 @@ void FPSI::Utils::setup_local_interface_facing_element_map(DRT::Discretization& 
 
         for (int nodenum = 0; nodenum < numnode; nodenum++)
         {
-          const DRT::Node* const* currmasternode = curr->second->Nodes();
+          const CORE::Nodes::Node* const* currmasternode = curr->second->Nodes();
 
           std::vector<double> temploc;
           temploc.assign(3, 0.0);

@@ -92,7 +92,7 @@ namespace STR::UTILS::SHELL
    *  rotational (around x,y,z) nullspace contribution for given node
    */
   Teuchos::SerialDenseMatrix<int, double> ComputeShellNullSpace(
-      DRT::Node& node, const double* x0, const CORE::LINALG::Matrix<3, 1>& dir);
+      CORE::Nodes::Node& node, const double* x0, const CORE::LINALG::Matrix<3, 1>& dir);
 
   void NodalBlockInformationShell(
       CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np);

@@ -103,7 +103,7 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vect
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -541,7 +541,7 @@ void CONTACT::PenaltyStrategy::InitializeUzawa(
     for (int j = 0; j < interface_[i]->SlaveColNodesBound()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->SlaveColNodesBound()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 

@@ -10,9 +10,9 @@
 
 #include "4C_truss3.hpp"
 
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_so3_nullspace.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 
@@ -59,7 +59,7 @@ void DRT::ELEMENTS::Truss3Type::nodal_block_information(
 }
 
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Truss3Type::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
@@ -354,7 +354,7 @@ void DRT::ELEMENTS::Truss3::LocationVector(
     const Discretization& dis, LocationArray& la, bool doDirichlet) const
 {
   const int numnode = num_node();
-  const DRT::Node* const* nodes = Nodes();
+  const CORE::Nodes::Node* const* nodes = Nodes();
 
   la.Clear();
 
@@ -371,7 +371,7 @@ void DRT::ELEMENTS::Truss3::LocationVector(
     {
       for (int i = 0; i < numnode; ++i)
       {
-        const DRT::Node* node = nodes[i];
+        const CORE::Nodes::Node* node = nodes[i];
 
         const int owner = node->Owner();
         std::vector<int> dof;

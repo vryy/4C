@@ -263,7 +263,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     // calculate bounding box
     for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
     {
-      DRT::Node* node = discret_->lRowNode(i);
+      CORE::Nodes::Node* node = discret_->lRowNode(i);
 
       if (inflowchannel_ and node->X()[0] > inflowmax_ + NODETOL) continue;
 
@@ -454,7 +454,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
     {
       CORE::Elements::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
-      DRT::Node** nodes = actele->Nodes();
+      CORE::Nodes::Node** nodes = actele->Nodes();
 
       // get gid, location in the patch
       int gid = actele->Id();
@@ -1409,7 +1409,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
       // activate toggles for in plane dofs
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        DRT::Node* node = discret_->lRowNode(nn);
+        CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
         // if we have an inflow channel problem, the nodes outside the inflow discretization are
         // not in the bounding box -> we don't consider them for averaging
@@ -1541,7 +1541,7 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(const Teuchos::RCP<const Epe
       // activate toggles for in plane dofs
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        DRT::Node* node = discret_->lRowNode(nn);
+        CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
         // if we have an inflow channel problem, the nodes outside the inflow discretization are
         // not in the bounding box -> we don't consider them for averaging
@@ -1594,7 +1594,7 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(const Teuchos::RCP<const Epe
       // activate toggles for in plane dofs
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        DRT::Node* node = discret_->lRowNode(nn);
+        CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
         // if we have an inflow channel problem, the nodes outside the inflow discretization are
         // not in the bounding box -> we don't consider them for averaging
@@ -1699,7 +1699,7 @@ void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(const Teuchos::RCP<const E
       // activate toggles for in plane dofs
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        DRT::Node* node = discret_->lRowNode(nn);
+        CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
         // if we have an inflow channel problem, the nodes outside the inflow discretization are
         // not in the bounding box -> we don't consider them for averaging
@@ -1752,7 +1752,7 @@ void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(const Teuchos::RCP<const E
       // activate toggles for in plane dofs
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        DRT::Node* node = discret_->lRowNode(nn);
+        CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
         // if we have an inflow channel problem, the nodes outside the inflow discretization are
         // not in the bounding box -> we don't consider them for averaging
@@ -2510,7 +2510,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
-      DRT::Node* node = discret_->lRowNode(nn);
+      CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
       // if we have an inflow channel problem, the nodes outside the inflow discretization are
       // not in the bounding box -> we don't consider them for averaging

@@ -345,7 +345,7 @@ void ELCH::MovingBoundaryAlgorithm::compute_interface_vectors(
     // local (and global) ID as its corresponding fluid node!
 
     // get the processor's local fluid node with the same lnodeid
-    DRT::Node* fluidlnode = fluiddis->lRowNode(lnodeid);
+    CORE::Nodes::Node* fluidlnode = fluiddis->lRowNode(lnodeid);
     // get the degrees of freedom associated with this fluid node
     std::vector<int> fluidnodedofs = fluiddis->Dof(0, fluidlnode);
 

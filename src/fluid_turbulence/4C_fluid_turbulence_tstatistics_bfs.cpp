@@ -105,7 +105,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
   // and assume no change in discretization behind the step
   for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
   {
-    DRT::Node* node = discret_->lRowNode(i);
+    CORE::Nodes::Node* node = discret_->lRowNode(i);
 
     if (inflowchannel_ == true)
     {
@@ -631,7 +631,7 @@ void FLD::TurbulenceStatisticsBfs::DoTimeSample(
 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        DRT::Node* node = discret_->lRowNode(nn);
+        CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
         // this is the wall node
         if ((node->X()[0] < (*x1line + 2e-9) and node->X()[0] > (*x1line - 2e-9)) and
@@ -733,7 +733,7 @@ void FLD::TurbulenceStatisticsBfs::DoTimeSample(
 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        DRT::Node* node = discret_->lRowNode(nn);
+        CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
         // this is the node
         if ((node->X()[0] < (x1c + 2e-5) and node->X()[0] > (x1c - 2e-5)) and
@@ -877,7 +877,7 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        DRT::Node* node = discret_->lRowNode(nn);
+        CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
         // this is the wall node
         if ((node->X()[0] < (*x1line + 2e-9) and node->X()[0] > (*x1line - 2e-9)) and
@@ -983,7 +983,7 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        DRT::Node* node = discret_->lRowNode(nn);
+        CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
         // this is the node
         if ((node->X()[0] < (x1c + 2e-5) and node->X()[0] > (x1c - 2e-5)) and
@@ -1179,7 +1179,7 @@ void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        DRT::Node* node = discret_->lRowNode(nn);
+        CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
         // this is the wall node
         if ((node->X()[0] < (*x1line + 2e-9) and node->X()[0] > (*x1line - 2e-9)) and
@@ -1278,7 +1278,7 @@ void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        DRT::Node* node = discret_->lRowNode(nn);
+        CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
         // this is the node
         if ((node->X()[0] < (x1c + 2e-5) and node->X()[0] > (x1c - 2e-5)) and

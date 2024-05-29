@@ -70,7 +70,7 @@ void DRT::ELEMENTS::Beam3ebType::nodal_block_information(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   if (numdof != 6)
     FOUR_C_THROW(
@@ -97,8 +97,8 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
   // Note: Tangent vector is the same at both nodes due to straight initial configuration.
   CORE::LINALG::Matrix<spacedim, 1> tangent(true);
   {
-    const DRT::Node* firstnode = beam3eb->Nodes()[0];
-    const DRT::Node* secondnode = beam3eb->Nodes()[1];
+    const CORE::Nodes::Node* firstnode = beam3eb->Nodes()[0];
+    const CORE::Nodes::Node* secondnode = beam3eb->Nodes()[1];
     const auto& xfirst = firstnode->X();
     const auto& xsecond = secondnode->X();
 

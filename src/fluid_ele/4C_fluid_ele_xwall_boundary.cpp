@@ -37,7 +37,7 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidXWallBoundaryType::Cre
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidXWallBoundary::FluidXWallBoundary(int id, int owner, int nnode,
-    const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface)
+    const int* nodeids, CORE::Nodes::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface)
     : FluidBoundary(id, owner, nnode, nodeids, nodes, parent, lsurface)
 {
   return;
@@ -102,7 +102,7 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
     default:
       // standard case: element assembles into its own dofs only
       const int numnode = num_node();
-      const DRT::Node* const* nodes = Nodes();
+      const CORE::Nodes::Node* const* nodes = Nodes();
 
       la.Clear();
 
@@ -119,7 +119,7 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
         {
           for (int i = 0; i < numnode; ++i)
           {
-            const DRT::Node* node = nodes[i];
+            const CORE::Nodes::Node* node = nodes[i];
 
             const int owner = node->Owner();
             std::vector<int> dofx;

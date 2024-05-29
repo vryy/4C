@@ -51,7 +51,7 @@ namespace DRT
 
       /// Null space computation
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       /// Element definition
       void setup_element_definition(
@@ -114,7 +114,7 @@ namespace DRT
           CORE::Elements::Element* parent_slave,  //!< parent slave element
           int nnode,                              //!< number of surface nodes
           const int* nodeids,                     //!< node ids of surface element
-          DRT::Node** nodes,                      //!< nodes of surface element
+          CORE::Nodes::Node** nodes,              //!< nodes of surface element
           const int lsurface_master,  //!< local surface number w.r.t master parent element
           const int lsurface_slave,   //!< local surface number w.r.t slave parent element
           const std::vector<int>& localtrafomap  //! local trafo map
@@ -192,8 +192,8 @@ namespace DRT
       \param parent: The parent elemag element of this surface
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
-      ElemagDiffBoundary(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
-          DRT::ELEMENTS::ElemagDiff* parent, const int lsurface);
+      ElemagDiffBoundary(int id, int owner, int nnode, const int* nodeids,
+          CORE::Nodes::Node** nodes, DRT::ELEMENTS::ElemagDiff* parent, const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -253,7 +253,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         return parent_element()->NumDofPerNode(node);
       }
@@ -361,7 +361,7 @@ namespace DRT
 
       /// Null space
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
@@ -396,7 +396,7 @@ namespace DRT
       of the face w.r.t the master parent element's face's coordinate system and the slave element's
       face's coordinate system
       */
-      ElemagDiffIntFace(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
+      ElemagDiffIntFace(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
           DRT::ELEMENTS::ElemagDiff* parent_master, DRT::ELEMENTS::ElemagDiff* parent_slave,
           const int lsurface_master, const int lsurface_slave,
           const std::vector<int> localtrafomap);

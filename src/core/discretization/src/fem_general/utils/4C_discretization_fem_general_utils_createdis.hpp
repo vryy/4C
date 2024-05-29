@@ -18,9 +18,9 @@
 
 #include "4C_comm_utils_factory.hpp"
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_fem_general_immersed_node.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_immersed_node.hpp"
 #include "4C_material_base.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_nurbs_discret.hpp"
@@ -151,7 +151,7 @@ namespace CORE::FE
         std::vector<int> nids;
         nids.reserve(sourceele->num_node());
         transform(sourceele->Nodes(), sourceele->Nodes() + sourceele->num_node(),
-            back_inserter(nids), std::mem_fn(&DRT::Node::Id));
+            back_inserter(nids), std::mem_fn(&CORE::Nodes::Node::Id));
 
         // check if element has nodes which are not in col map on this proc.
         // this should not be the case since each proc should have all nodes of
@@ -200,8 +200,8 @@ namespace CORE::FE
         const int gid = sourcenoderowmap->GID(i);
         if (rownodeset_.find(gid) != rownodeset_.end())
         {
-          const DRT::Node* sourcenode = sourcedis.lRowNode(i);
-          targetdis->AddNode(Teuchos::rcp(new DRT::Node(gid, sourcenode->X(), myrank)));
+          const CORE::Nodes::Node* sourcenode = sourcedis.lRowNode(i);
+          targetdis->AddNode(Teuchos::rcp(new CORE::Nodes::Node(gid, sourcenode->X(), myrank)));
         }
       }
 
@@ -362,8 +362,8 @@ namespace CORE::FE
       bool isnurbsdis(nurbsdis != nullptr);
 
       // try to cast source node to immersed node
-      DRT::ImmersedNode* inode =
-          dynamic_cast<DRT::ImmersedNode*>(sourcedis->gNode(sourcedis->NodeRowMap()->GID(0)));
+      CORE::Nodes::ImmersedNode* inode = dynamic_cast<CORE::Nodes::ImmersedNode*>(
+          sourcedis->gNode(sourcedis->NodeRowMap()->GID(0)));
       bool buildimmersednode(inode != nullptr);
 
       // check and analyze source discretization
@@ -454,8 +454,8 @@ namespace CORE::FE
       bool isnurbsdis(nurbsdis_ptr != nullptr);
 
       // try to cast source node to immersed node
-      DRT::ImmersedNode* inode =
-          dynamic_cast<DRT::ImmersedNode*>(sourcedis.gNode(sourcedis.NodeRowMap()->GID(0)));
+      CORE::Nodes::ImmersedNode* inode =
+          dynamic_cast<CORE::Nodes::ImmersedNode*>(sourcedis.gNode(sourcedis.NodeRowMap()->GID(0)));
       bool buildimmersednode(inode != nullptr);
 
       analyze_conditioned_source_dis(
@@ -561,7 +561,7 @@ namespace CORE::FE
           std::vector<int> nids;
           nids.reserve(actele->num_node());
           transform(actele->Nodes(), actele->Nodes() + actele->num_node(), back_inserter(nids),
-              std::mem_fn(&DRT::Node::Id));
+              std::mem_fn(&CORE::Nodes::Node::Id));
 
           // check if element has nodes, which are not in col map on this proc.
           // this should not be, since each proc should have all nodes of all
@@ -654,7 +654,7 @@ namespace CORE::FE
         std::vector<int> nids;
         nids.reserve(sourceele->num_node());
         transform(sourceele->Nodes(), sourceele->Nodes() + sourceele->num_node(),
-            back_inserter(nids), std::mem_fn(&DRT::Node::Id));
+            back_inserter(nids), std::mem_fn(&CORE::Nodes::Node::Id));
 
         // set the same global node ids to the new element
         newele->SetNodeIds(nids.size(), nids.data());
@@ -768,7 +768,7 @@ namespace CORE::FE
         std::vector<int> nids;
         nids.reserve(sourceele->num_node());
         transform(sourceele->Nodes(), sourceele->Nodes() + sourceele->num_node(),
-            back_inserter(nids), std::mem_fn(&DRT::Node::Id));
+            back_inserter(nids), std::mem_fn(&CORE::Nodes::Node::Id));
 
         // set the same global node ids to the new element
         newele->SetNodeIds(nids.size(), nids.data());

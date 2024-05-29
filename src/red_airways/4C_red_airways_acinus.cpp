@@ -215,7 +215,7 @@ void DRT::ELEMENTS::RedAcinus::Print(std::ostream& os) const
 std::vector<double> DRT::ELEMENTS::RedAcinus::element_center_refe_coords()
 {
   //  // update element geometry
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
 
   CORE::LINALG::SerialDenseMatrix mat(num_node(), 3, false);
   for (int i = 0; i < num_node(); ++i)

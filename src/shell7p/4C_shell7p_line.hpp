@@ -12,8 +12,8 @@
 
 #include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_element_integration_select.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_gausspoints.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_shell7p_ele.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -35,7 +35,7 @@ namespace DRT::ELEMENTS
     }
 
     CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-        DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+        CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
     {
       Teuchos::SerialDenseMatrix<int, double> nullspace;
       FOUR_C_THROW("method ComputeNullSpace not implemented!");
@@ -74,7 +74,7 @@ namespace DRT::ELEMENTS
     @param parent (in) : The parent shell element of this line
     @param lline (in) : the local line number of this line w.r.t. the parent element
     */
-    Shell7pLine(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
+    Shell7pLine(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
         CORE::Elements::Element* parent, const int lline);
 
     ///! copy constructor
@@ -106,7 +106,10 @@ namespace DRT::ELEMENTS
     //! @{
     [[nodiscard]] CORE::FE::CellType Shape() const override;
 
-    [[nodiscard]] int NumDofPerNode(const DRT::Node& node) const override { return node_dof_; }
+    [[nodiscard]] int NumDofPerNode(const CORE::Nodes::Node& node) const override
+    {
+      return node_dof_;
+    }
 
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 

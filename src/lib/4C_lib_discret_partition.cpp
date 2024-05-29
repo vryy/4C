@@ -28,7 +28,7 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs
 
   // destroy all ghosted nodes
   const int myrank = Comm().MyPID();
-  std::map<int, Teuchos::RCP<DRT::Node>>::iterator curr;
+  std::map<int, Teuchos::RCP<CORE::Nodes::Node>>::iterator curr;
   for (curr = node_.begin(); curr != node_.end();)
   {
     if (curr->second->Owner() != myrank)
@@ -60,7 +60,7 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap, bool killd
 {
   // destroy all ghosted nodes
   const int myrank = Comm().MyPID();
-  std::map<int, Teuchos::RCP<DRT::Node>>::iterator curr;
+  std::map<int, Teuchos::RCP<CORE::Nodes::Node>>::iterator curr;
   for (curr = node_.begin(); curr != node_.end();)
   {
     if (curr->second->Owner() != myrank)
@@ -225,7 +225,7 @@ void DRT::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
     {
       // proc 0 does not send to itself
       if (pidlist[i] == myrank || pidlist[i] == -1) continue;
-      Node* node = gNode(oldmap.MyGlobalElements()[i]);
+      CORE::Nodes::Node* node = gNode(oldmap.MyGlobalElements()[i]);
       if (!node) FOUR_C_THROW("Proc 0 cannot find global node %d", oldmap.MyGlobalElements()[i]);
       node->Pack(sendpb[pidlist[i]]);
     }
@@ -236,7 +236,7 @@ void DRT::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
     {
       // proc 0 does not send to itself
       if (pidlist[i] == myrank || pidlist[i] == -1) continue;
-      Node* node = gNode(oldmap.MyGlobalElements()[i]);
+      CORE::Nodes::Node* node = gNode(oldmap.MyGlobalElements()[i]);
       node->Pack(sendpb[pidlist[i]]);
       node_.erase(node->Id());
     }
@@ -297,10 +297,10 @@ void DRT::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
       std::vector<char> data;
       CORE::COMM::ParObject::ExtractfromPack(index, recvdata, data);
       CORE::COMM::ParObject* object = CORE::COMM::Factory(data);
-      DRT::Node* node = dynamic_cast<DRT::Node*>(object);
+      CORE::Nodes::Node* node = dynamic_cast<CORE::Nodes::Node*>(object);
       if (!node) FOUR_C_THROW("Received object is not a node");
       node->SetOwner(myrank);
-      Teuchos::RCP<DRT::Node> rcpnode = Teuchos::rcp(node);
+      Teuchos::RCP<CORE::Nodes::Node> rcpnode = Teuchos::rcp(node);
       AddNode(rcpnode);
     }
   }
@@ -836,7 +836,8 @@ void DRT::Discretization::SetupGhosting(
   gids.reserve(localgraph.size());
   entriesperrow.reserve(localgraph.size());
 
-  for (std::map<int, Teuchos::RCP<DRT::Node>>::iterator i = node_.begin(); i != node_.end(); ++i)
+  for (std::map<int, Teuchos::RCP<CORE::Nodes::Node>>::iterator i = node_.begin(); i != node_.end();
+       ++i)
   {
     gids.push_back(i->first);
     entriesperrow.push_back(localgraph[i->first].size());

@@ -81,7 +81,7 @@ void CONTACT::TSIInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstic
   for (int i = 0; i < sticknodes->NumMyElements(); ++i)
   {
     int gid = sticknodes->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -205,7 +205,7 @@ void CONTACT::TSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipL
   for (int i = 0; i < slipnodes->NumMyElements(); ++i)
   {
     int gid = slipnodes->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -319,7 +319,7 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* conode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -340,7 +340,7 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
 
         for (colcurr = dualMassmap.begin(); colcurr != dualMassmap.end(); ++colcurr)
         {
-          DRT::Node* knode = Discret().gNode(colcurr->first);
+          CORE::Nodes::Node* knode = Discret().gNode(colcurr->first);
           if (!knode) FOUR_C_THROW("node not found");
           Node* kcnode = dynamic_cast<Node*>(knode);
           if (!kcnode) FOUR_C_THROW("node not found");
@@ -354,7 +354,7 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
            a != derivDualMass.end(); ++a)
       {
         int sgid = a->first;
-        DRT::Node* snode = idiscret_->gNode(sgid);
+        CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
         if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
         Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -403,7 +403,7 @@ void CONTACT::TSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X,
   for (int j = 0; j < node_rowmap->NumMyElements(); ++j)
   {
     int gid = node_rowmap->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -465,7 +465,7 @@ void CONTACT::TSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X,
         int sgid = scurr->first;
         ++scurr;
 
-        DRT::Node* snode = idiscret_->gNode(sgid);
+        CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
         if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
         Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -510,7 +510,7 @@ void CONTACT::TSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X,
         int mgid = mcurr->first;
         ++mcurr;
 
-        DRT::Node* mnode = idiscret_->gNode(mgid);
+        CORE::Nodes::Node* mnode = idiscret_->gNode(mgid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -570,7 +570,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
   for (int j = 0; j < activenodes_->NumMyElements(); ++j)
   {
     int gid = activenodes_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     FriNode* fnode = dynamic_cast<FriNode*>(cnode);
@@ -628,7 +628,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
         if ((cnode->MoData().GetD()).size() > 0)
           for (_cip k = cnode->MoData().GetD().begin(); k != cnode->MoData().GetD().end(); ++k)
           {
-            DRT::Node* knode = Discret().gNode(k->first);
+            CORE::Nodes::Node* knode = Discret().gNode(k->first);
             if (!knode) FOUR_C_THROW("node not found");
             CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
             for (_cim currDeriv = derivDiss.begin(); currDeriv != derivDiss.end(); ++currDeriv)
@@ -640,7 +640,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
         if ((cnode->MoData().GetM()).size() > 0)
           for (_cim k = cnode->MoData().GetM().begin(); k != cnode->MoData().GetM().end(); ++k)
           {
-            DRT::Node* knode = Discret().gNode(k->first);
+            CORE::Nodes::Node* knode = Discret().gNode(k->first);
             if (!knode) FOUR_C_THROW("node not found");
             CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
             for (_cim currDeriv = derivDiss.begin(); currDeriv != derivDiss.end(); ++currDeriv)
@@ -656,7 +656,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
       if ((cnode->MoData().GetD()).size() > 0)
         for (_cip k = cnode->MoData().GetD().begin(); k != cnode->MoData().GetD().end(); ++k)
         {
-          DRT::Node* knode = Discret().gNode(k->first);
+          CORE::Nodes::Node* knode = Discret().gNode(k->first);
           if (!knode) FOUR_C_THROW("node not found");
           CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
           for (int d = 0; d < 3; ++d)
@@ -669,7 +669,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
       if ((cnode->MoData().GetM()).size() > 0)
         for (_cim k = cnode->MoData().GetM().begin(); k != cnode->MoData().GetM().end(); ++k)
         {
-          DRT::Node* knode = Discret().gNode(k->first);
+          CORE::Nodes::Node* knode = Discret().gNode(k->first);
           if (!knode) FOUR_C_THROW("node not found");
           CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
           for (int d = 0; d < 3; ++d)
@@ -693,7 +693,7 @@ void CONTACT::TSIInterface::assemble_lin_l_mn_dm_temp(
   for (int j = 0; j < activenodes_->NumMyElements(); ++j)
   {
     int gid = activenodes_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -703,7 +703,7 @@ void CONTACT::TSIInterface::assemble_lin_l_mn_dm_temp(
 
     for (_cimm k = cnode->Data().GetDerivD().begin(); k != cnode->Data().GetDerivD().end(); ++k)
     {
-      DRT::Node* knode = Discret().gNode(k->first);
+      CORE::Nodes::Node* knode = Discret().gNode(k->first);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", gid);
       double temp_k = dynamic_cast<Node*>(knode)->TSIData().Temp();
       for (_cim l = k->second.begin(); l != k->second.end(); ++l)
@@ -712,7 +712,7 @@ void CONTACT::TSIInterface::assemble_lin_l_mn_dm_temp(
     }
     for (_cimm k = cnode->Data().GetDerivM().begin(); k != cnode->Data().GetDerivM().end(); ++k)
     {
-      DRT::Node* knode = Discret().gNode(k->first);
+      CORE::Nodes::Node* knode = Discret().gNode(k->first);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", gid);
       double temp_k = dynamic_cast<Node*>(knode)->TSIData().Temp();
       for (_cim l = k->second.begin(); l != k->second.end(); ++l)
@@ -722,7 +722,7 @@ void CONTACT::TSIInterface::assemble_lin_l_mn_dm_temp(
 
     for (_cip k = cnode->MoData().GetD().begin(); k != cnode->MoData().GetD().end(); ++k)
     {
-      DRT::Node* knode = Discret().gNode(k->first);
+      CORE::Nodes::Node* knode = Discret().gNode(k->first);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnodek = dynamic_cast<Node*>(knode);
       double temp_k = cnodek->TSIData().Temp();
@@ -739,7 +739,7 @@ void CONTACT::TSIInterface::assemble_lin_l_mn_dm_temp(
 
     for (_cim k = cnode->MoData().GetM().begin(); k != cnode->MoData().GetM().end(); ++k)
     {
-      DRT::Node* knode = Discret().gNode(k->first);
+      CORE::Nodes::Node* knode = Discret().gNode(k->first);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnodek = dynamic_cast<Node*>(knode);
       double temp_k = cnodek->TSIData().Temp();
@@ -770,7 +770,7 @@ void CONTACT::TSIInterface::AssembleDM_LMn(const double fac, CORE::LINALG::Spars
   for (int j = 0; j < activenodes_->NumMyElements(); ++j)
   {
     int gid = activenodes_->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -781,7 +781,7 @@ void CONTACT::TSIInterface::AssembleDM_LMn(const double fac, CORE::LINALG::Spars
     for (_cip k = cnode->MoData().GetD().begin(); k != cnode->MoData().GetD().end(); ++k)
       if (abs(k->second) > 1.e-12)
       {
-        DRT::Node* knode = Discret().gNode(k->first);
+        CORE::Nodes::Node* knode = Discret().gNode(k->first);
         if (!knode) FOUR_C_THROW("node not found");
         CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
         DM_LMn->FEAssemble(fac * lm_n * k->second, cnode->Dofs()[0], kcnode->Dofs()[0]);
@@ -790,7 +790,7 @@ void CONTACT::TSIInterface::AssembleDM_LMn(const double fac, CORE::LINALG::Spars
     for (_cim k = cnode->MoData().GetM().begin(); k != cnode->MoData().GetM().end(); ++k)
       if (abs(k->second) > 1.e-12)
       {
-        DRT::Node* knode = Discret().gNode(k->first);
+        CORE::Nodes::Node* knode = Discret().gNode(k->first);
         if (!knode) FOUR_C_THROW("node not found");
         CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
         DM_LMn->FEAssemble(-fac * lm_n * k->second, cnode->Dofs()[0], kcnode->Dofs()[0]);
@@ -813,7 +813,7 @@ void CONTACT::TSIInterface::AssembleInactive(CORE::LINALG::SparseMatrix* linCond
   for (int j = 0; j < inactivenodes->NumMyElements(); ++j)
   {
     int gid = inactivenodes->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 

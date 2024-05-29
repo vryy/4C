@@ -65,7 +65,7 @@ void FLD::FluidResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int&
   {
     if (fluiddis_->HaveGlobalNode(node))
     {
-      const DRT::Node* actnode = fluiddis_->gNode(node);
+      const CORE::Nodes::Node* actnode = fluiddis_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != fluiddis_->Comm().MyPID()) return;

@@ -54,7 +54,7 @@ namespace DRT
         return (zero_size);
       }
       // you are still here? So get the node weights for the nurbs element as well
-      const DRT::Node* const* nodes = ele->Nodes();
+      const CORE::Nodes::Node* const* nodes = ele->Nodes();
       const int nen = ele->num_node();
       for (int inode = 0; inode < nen; inode++)
       {
@@ -127,7 +127,7 @@ namespace DRT
         return (zero_size);
       }
       // you are still here? So get the node weights as well
-      const DRT::Node* const* nodes = boundaryele->Nodes();
+      const CORE::Nodes::Node* const* nodes = boundaryele->Nodes();
       const int boundarynen = boundaryele->num_node();
       for (int inode = 0; inode < boundarynen; inode++)
       {
@@ -181,7 +181,7 @@ namespace DRT
         return (zero_size);
       }
       // you are still here? So get the node weights as well
-      DRT::Node** nodes = boundaryele->Nodes();
+      CORE::Nodes::Node** nodes = boundaryele->Nodes();
       const int boundarynen = boundaryele->num_node();
       for (int inode = 0; inode < boundarynen; inode++)
       {
@@ -189,7 +189,7 @@ namespace DRT
         weights(inode) = cp->W();
       }
 
-      DRT::Node** pnodes = parentele->Nodes();
+      CORE::Nodes::Node** pnodes = parentele->Nodes();
       const int pnen = parentele->num_node();
       for (int inode = 0; inode < pnen; inode++)
       {

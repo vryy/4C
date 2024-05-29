@@ -6,18 +6,18 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#ifndef FOUR_C_LIB_IMMERSED_NODE_HPP
-#define FOUR_C_LIB_IMMERSED_NODE_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_IMMERSED_NODE_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_IMMERSED_NODE_HPP
 
 
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace CORE::Nodes
 {
   class Node;
 
@@ -39,7 +39,7 @@ namespace DRT
   \brief A virtual class all nodes that are used in DRT have to implement
 
   */
-  class ImmersedNode : public DRT::Node
+  class ImmersedNode : public Node
   {
    public:
     //! @name Enums and Friends
@@ -68,13 +68,13 @@ namespace DRT
     Makes a deep copy of a Node
 
     */
-    ImmersedNode(const DRT::ImmersedNode& old);
+    ImmersedNode(const ImmersedNode& old);
 
     /*!
     \brief Deep copy the derived class and return pointer to it
 
     */
-    DRT::ImmersedNode* Clone() const override;
+    ImmersedNode* Clone() const override;
 
 
     /*!
@@ -160,10 +160,10 @@ namespace DRT
     //@}
 
   };  // class ImmersedNode
-}  // namespace DRT
+}  // namespace CORE::Nodes
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const DRT::ImmersedNode& immersednode);
+std::ostream& operator<<(std::ostream& os, const CORE::Nodes::ImmersedNode& immersednode);
 
 
 

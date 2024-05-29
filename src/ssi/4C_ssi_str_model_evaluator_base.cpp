@@ -70,7 +70,7 @@ void STR::MODELEVALUATOR::BaseSSI::determine_stress_strain()
     const int nodegid = nodegids->GID(i);
 
     // extract lid of node as multi-vector is sorted according to the node ids
-    const DRT::Node* const node = discret().gNode(nodegid);
+    const CORE::Nodes::Node* const node = discret().gNode(nodegid);
     const int nodelid = discret().NodeRowMap()->LID(nodegid);
 
     // extract dof lid of first degree of freedom associated with current node in second nodeset

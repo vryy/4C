@@ -35,7 +35,7 @@ bool CONTACT::Integrator::AssembleG(
     const Epetra_Comm& comm, MORTAR::Element& sele, CORE::LINALG::SerialDenseVector& gseg)
 {
   // get adjacent slave nodes to assemble to
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
   if (!snodes) FOUR_C_THROW("AssembleG: Null pointer for snodes!");
 
   // loop over all slave nodes
@@ -73,7 +73,7 @@ bool CONTACT::Integrator::AssembleG(
     const Epetra_Comm& comm, MORTAR::IntElement& sintele, CORE::LINALG::SerialDenseVector& gseg)
 {
   // get adjacent slave int nodes to assemble to
-  DRT::Node** snodes = sintele.Nodes();
+  CORE::Nodes::Node** snodes = sintele.Nodes();
   if (!snodes) FOUR_C_THROW("AssembleG: Null pointer for sintnodes!");
 
   // loop over all slave nodes

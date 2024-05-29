@@ -154,16 +154,16 @@ void DRT::ELEMENTS::NStet5Type::pre_evaluate(DRT::Discretization& dis, Teuchos::
   Teuchos::RCP<const Epetra_Vector> disp = dis.GetState("displacement");
 
   //================================================== do nodal stiffness
-  std::map<int, DRT::Node*>::iterator node;
+  std::map<int, CORE::Nodes::Node*>::iterator node;
   for (node = noderids_.begin(); node != noderids_.end(); ++node)
   {
-    DRT::Node* nodeL = node->second;  // row node
+    CORE::Nodes::Node* nodeL = node->second;  // row node
     const int nodeLid = nodeL->Id();
 
     // standard quantities for all nodes
     std::vector<DRT::ELEMENTS::NStet5*>& adjele = adjele_[nodeLid];
     std::map<int, std::vector<int>>& adjsubele = adjsubele_[nodeLid];
-    std::map<int, DRT::Node*>& adjnode = adjnode_[nodeLid];
+    std::map<int, CORE::Nodes::Node*>& adjnode = adjnode_[nodeLid];
     std::vector<int>& lm = adjlm_[nodeLid];
     std::vector<std::vector<std::vector<int>>>& lmlm = lmlm_[nodeLid];
     const auto ndofperpatch = (int)lm.size();
@@ -389,7 +389,7 @@ void DRT::ELEMENTS::NStet5Type::pre_evaluate(DRT::Discretization& dis, Teuchos::
  |  do nodal integration (public)                              gee 03/12|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatrix* stiff,
-    CORE::LINALG::SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
+    CORE::LINALG::SerialDenseVector* force, std::map<int, CORE::Nodes::Node*>& adjnode,
     std::vector<DRT::ELEMENTS::NStet5*>& adjele, std::map<int, std::vector<int>>& adjsubele,
     std::vector<int>& lm, std::vector<std::vector<std::vector<int>>>& lmlm,
     const Epetra_Vector& disp, DRT::Discretization& dis, std::vector<double>* nodalstress,

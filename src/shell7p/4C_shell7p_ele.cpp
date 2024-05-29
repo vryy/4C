@@ -49,7 +49,7 @@ void DRT::ELEMENTS::Shell7pType::nodal_block_information(
 }
 
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Shell7pType::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   auto* shell = dynamic_cast<DRT::ELEMENTS::Shell7p*>(node.Elements()[0]);
   if (!shell) FOUR_C_THROW("Cannot cast to Shell7p");

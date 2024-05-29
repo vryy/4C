@@ -119,7 +119,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int
       field_error(node);
 
     // pointer to my actual node
-    const DRT::Node* mynode = mydiscrete->gNode(node);
+    const CORE::Nodes::Node* mynode = mydiscrete->gNode(node);
 
     // global nodal dof numbers
     gdof = mydiscrete->Dof(mynode);
@@ -284,7 +284,7 @@ void MonWriter::write_mon_str_file(const std::string& filename, PostProblem& pro
       field_error(node);
 
     // pointer to my actual node
-    const DRT::Node* mynode = mydiscrete->gNode(node);
+    const CORE::Nodes::Node* mynode = mydiscrete->gNode(node);
 
     // global nodal dof numbers
     gdof = mydiscrete->Dof(mynode);
@@ -429,7 +429,7 @@ void MonWriter::write_mon_thr_file(const std::string& filename, PostProblem& pro
       field_error(node);
 
     // pointer to my actual node
-    const DRT::Node* mynode = mydiscrete->gNode(node);
+    const CORE::Nodes::Node* mynode = mydiscrete->gNode(node);
 
     // global nodal dof numbers
     gdof = mydiscrete->Dof(mynode);
@@ -1554,7 +1554,7 @@ void ThermoMonWriter::write_thr_result(std::ofstream& outfile, PostField*& field
   // average heatfluxes/temperature gradients and print to file
   if (nodeowner_)
   {
-    const DRT::Node* lnode = dis->gNode(node);
+    const CORE::Nodes::Node* lnode = dis->gNode(node);
     const std::vector<int> lnodedofs = dis->Dof(lnode);
     const int adjele = lnode->NumElement();
 

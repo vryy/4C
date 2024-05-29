@@ -15,7 +15,7 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_element.hpp"
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -126,10 +126,10 @@ namespace CORE::FE
   /*  \author schott
    *  \date 12/16
    */
-  void ExtractMyNodeBasedValues(const DRT::Node* node,  ///< pointer to current element
-      CORE::LINALG::SerialDenseVector& local,           ///< local vector on node-level
-      const Teuchos::RCP<Epetra_MultiVector>& global,   ///< global vector
-      const int nsd                                     ///< number of space dimensions
+  void ExtractMyNodeBasedValues(const CORE::Nodes::Node* node,  ///< pointer to current element
+      CORE::LINALG::SerialDenseVector& local,                   ///< local vector on node-level
+      const Teuchos::RCP<Epetra_MultiVector>& global,           ///< global vector
+      const int nsd                                             ///< number of space dimensions
   );
 
 

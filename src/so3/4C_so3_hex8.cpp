@@ -81,7 +81,7 @@ void DRT::ELEMENTS::SoHex8Type::nodal_block_information(
 }
 
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoHex8Type::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
@@ -384,7 +384,7 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SoHex8::Lines(
 std::vector<double> DRT::ELEMENTS::SoHex8::element_center_refe_coords()
 {
   // update element geometry
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {

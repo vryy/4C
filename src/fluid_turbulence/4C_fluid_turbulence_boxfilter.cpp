@@ -323,10 +323,10 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
     double alpha2_hat = filterparams.get<double>("alpha2_hat");
 
     // loop all nodes of this element, add values to the global vectors
-    DRT::Node** elenodes = ele->Nodes();
+    CORE::Nodes::Node** elenodes = ele->Nodes();
     for (int nn = 0; nn < ele->num_node(); ++nn)
     {
-      DRT::Node* node = (elenodes[nn]);
+      CORE::Nodes::Node* node = (elenodes[nn]);
 
       // we are interested only in  row nodes
       if (node->Owner() == discret_->Comm().MyPID())
@@ -595,7 +595,7 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
     for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
     {
       // get the processor local node
-      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+      CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
       // the set of degrees of freedom associated with the node
       std::vector<int> nodedofset = discret_->Dof(lnode);
@@ -856,7 +856,7 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
     for (int nid = 0; nid < discret_->NumMyRowNodes(); ++nid)
     {
       // get the node
-      DRT::Node* node = discret_->lRowNode(nid);
+      CORE::Nodes::Node* node = discret_->lRowNode(nid);
       // get global ids of all dofs of the node
       std::vector<int> dofs = discret_->Dof(node);
       // we only loop over all velocity dofs
@@ -1063,10 +1063,10 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
     if (phi2_) phi2_hat = filterparams.get<double>("phi2_hat");
     if (phiexpression_) phiexpression_hat = filterparams.get<double>("phiexpression_hat");
     // loop all nodes of this element, add values to the global vectors
-    DRT::Node** elenodes = ele->Nodes();
+    CORE::Nodes::Node** elenodes = ele->Nodes();
     for (int nn = 0; nn < ele->num_node(); ++nn)
     {
-      DRT::Node* node = (elenodes[nn]);
+      CORE::Nodes::Node* node = (elenodes[nn]);
 
       // we are interested only in  row nodes
       if (node->Owner() == scatradiscret_->Comm().MyPID())
@@ -1297,10 +1297,10 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
     for (int lnodeid = 0; lnodeid < scatradiscret_->NumMyRowNodes(); ++lnodeid)
     {
       // get the processor local node
-      DRT::Node* lnode = scatradiscret_->lRowNode(lnodeid);
+      CORE::Nodes::Node* lnode = scatradiscret_->lRowNode(lnodeid);
       std::vector<int> nodedofs = scatradiscret_->Dof(ndsvel, lnode);
       // get the corresponding porcessor local fluid node
-      DRT::Node* fluidlnode = discret_->lRowNode(lnodeid);
+      CORE::Nodes::Node* fluidlnode = discret_->lRowNode(lnodeid);
 
       // do we have a dirichlet boundary conditions in the fluid
       std::vector<CORE::Conditions::Condition*> dbccond;

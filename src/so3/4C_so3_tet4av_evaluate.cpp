@@ -242,7 +242,7 @@ int DRT::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params,
 
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xrefe;
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOTET4av; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -308,7 +308,7 @@ int DRT::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params,
 void DRT::ELEMENTS::SoTet4av::init_jacobian_mapping()
 {
   CORE::LINALG::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xrefe;
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOTET4av; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -362,7 +362,7 @@ void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location ma
   // current  displacements of element
   CORE::LINALG::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xrefe;
   CORE::LINALG::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xcurr;
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   CORE::LINALG::Matrix<NUMNOD_SOTET4av, 1> nodalVol;
   for (int i = 0; i < NUMNOD_SOTET4av; ++i)
   {

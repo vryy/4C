@@ -47,7 +47,7 @@ int CORE::Dofsets::TransparentIndependentDofSet::assign_degrees_of_freedom(
   return count;
 }
 
-int CORE::Dofsets::TransparentIndependentDofSet::NumDofPerNode(const DRT::Node& node) const
+int CORE::Dofsets::TransparentIndependentDofSet::NumDofPerNode(const CORE::Nodes::Node& node) const
 {
   return DofSet::NumDofPerNode(node);
 }

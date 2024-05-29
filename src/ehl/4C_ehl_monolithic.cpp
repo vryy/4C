@@ -1905,7 +1905,7 @@ void EHL::Monolithic::LinCouetteForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatri
       Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->dof_row_map(1)));
   for (int i = 0; i < lub_dis.NodeRowMap()->NumMyElements(); ++i)
   {
-    DRT::Node* lnode = lub_dis.lRowNode(i);
+    CORE::Nodes::Node* lnode = lub_dis.lRowNode(i);
     if (!lnode) FOUR_C_THROW("node not found");
     const double p = lubrication_->LubricationField()->Prenp()->operator[](
         lubrication_->LubricationField()->Prenp()->Map().LID(lub_dis.Dof(0, lnode, 0)));
@@ -2066,7 +2066,7 @@ void EHL::Monolithic::LinCouetteForcePres(Teuchos::RCP<CORE::LINALG::SparseMatri
 
   for (int i = 0; i < lub_dis.NodeRowMap()->NumMyElements(); ++i)
   {
-    DRT::Node* lnode = lub_dis.lRowNode(i);
+    CORE::Nodes::Node* lnode = lub_dis.lRowNode(i);
     if (!lnode) FOUR_C_THROW("node not found");
     const double p = lubrication_->LubricationField()->Prenp()->operator[](
         lubrication_->LubricationField()->Prenp()->Map().LID(lub_dis.Dof(0, lnode, 0)));

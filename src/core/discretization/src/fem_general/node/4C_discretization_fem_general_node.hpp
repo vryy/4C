@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_NODE_HPP
-#define FOUR_C_LIB_NODE_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_NODE_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_NODE_HPP
 
 
 #include "4C_config.hpp"
@@ -32,7 +32,10 @@ namespace DRT
 {
   // forward declarations
   class Discretization;
+}  // namespace DRT
 
+namespace CORE::Nodes
+{
   class NodeType : public CORE::COMM::ParObjectType
   {
    public:
@@ -79,15 +82,15 @@ namespace DRT
     Makes a deep copy of a Node
 
     */
-    Node(const DRT::Node& old);
+    Node(const Node& old);
 
-    Node& operator=(const DRT::Node&) = default;
+    Node& operator=(const Node&) = default;
 
     /*!
     \brief Deep copy the derived class and return pointer to it
 
     */
-    virtual DRT::Node* Clone() const;
+    virtual Node* Clone() const;
 
 
     /*!
@@ -301,7 +304,6 @@ namespace DRT
      */
     virtual bool VisData(const std::string& name, std::vector<double>& data);
 
-   protected:
     /*!
     \brief Clear vector of pointers to my elements
 
@@ -335,11 +337,11 @@ namespace DRT
     std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>> condition_;
 
   };  // class Node
-}  // namespace DRT
+}  // namespace CORE::Nodes
 
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const DRT::Node& node);
+std::ostream& operator<<(std::ostream& os, const CORE::Nodes::Node& node);
 
 
 

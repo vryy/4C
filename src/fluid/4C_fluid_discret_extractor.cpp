@@ -174,9 +174,9 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     for (std::set<int>::iterator id = sepcondelenodes_row.begin(); id != sepcondelenodes_row.end();
          ++id)
     {
-      DRT::Node* actnode = parentdiscret_->gNode(*id);
+      CORE::Nodes::Node* actnode = parentdiscret_->gNode(*id);
 
-      Teuchos::RCP<DRT::Node> sepcondnode = Teuchos::rcp(actnode->Clone());
+      Teuchos::RCP<CORE::Nodes::Node> sepcondnode = Teuchos::rcp(actnode->Clone());
 
       childdiscret_->AddNode(sepcondnode);
     }
@@ -500,7 +500,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         // loop nodeids, check if a separation condition is active
         for (int rr = 0; rr < numnode; ++rr)
         {
-          DRT::Node* node = childdiscret_->gNode(nodeids[rr]);
+          CORE::Nodes::Node* node = childdiscret_->gNode(nodeids[rr]);
           std::vector<int> nodedofset = childdiscret_->Dof(node);
 
           for (unsigned index = 0; index < nodedofset.size(); ++index)

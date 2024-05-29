@@ -33,12 +33,16 @@ namespace CORE::LINALG
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
 
 namespace CORE::Elements
 {
   class Element;
+}
+
+namespace CORE::Nodes
+{
+  class Node;
 }
 
 namespace MORTAR
@@ -110,8 +114,10 @@ feel free to write your own tailored Setup() method.
         const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
         const Teuchos::RCP<DRT::Discretization>& slavedis,   ///< slave discretization
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
-        const std::map<int, DRT::Node*>& mastergnodes,  ///< master nodes, including ghosted nodes
-        const std::map<int, DRT::Node*>& slavegnodes,   ///< slave nodes, including ghosted nodes
+        const std::map<int, CORE::Nodes::Node*>&
+            mastergnodes,  ///< master nodes, including ghosted nodes
+        const std::map<int, CORE::Nodes::Node*>&
+            slavegnodes,  ///< slave nodes, including ghosted nodes
         const std::map<int, Teuchos::RCP<CORE::Elements::Element>>&
             masterelements,  ///< master elements
         const std::map<int, Teuchos::RCP<CORE::Elements::Element>>&

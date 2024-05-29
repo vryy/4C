@@ -13,8 +13,8 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -36,7 +36,7 @@ namespace CORE::GEO
   {
     const int numnode = ele->num_node();
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const CORE::Nodes::Node* const* nodes = ele->Nodes();
     FOUR_C_ASSERT(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
@@ -66,7 +66,7 @@ namespace CORE::GEO
     FOUR_C_ASSERT(distype == ele->Shape(), "mismatch in distype");
     const int numnode = CORE::FE::num_nodes<distype>;
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const CORE::Nodes::Node* const* nodes = ele->Nodes();
     FOUR_C_ASSERT(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
@@ -97,7 +97,7 @@ namespace CORE::GEO
     FOUR_C_ASSERT(distype == ele->Shape(), "mismatch in distype");
     const int numnode = CORE::FE::num_nodes<distype>;
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const CORE::Nodes::Node* const* nodes = ele->Nodes();
     FOUR_C_ASSERT(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 

@@ -705,7 +705,7 @@ void FLD::XFluid::extract_node_vectors(Teuchos::RCP<DRT::DiscretizationXFEM> dis
 
   for (int lid = 0; lid < dis->NumMyColNodes(); ++lid)
   {
-    const DRT::Node* node = dis->lColNode(lid);
+    const CORE::Nodes::Node* node = dis->lColNode(lid);
     std::vector<int> lm;
     dis->InitialDof(node, lm);  // initial dofs!
     std::vector<double> mydisp;
@@ -4444,7 +4444,7 @@ void FLD::XFluid::SetInitialFlowField(
     for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
     {
       // get the processor local node
-      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+      CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
       const std::vector<int> nodedofset = discret_->Dof(0, lnode);
 
@@ -4493,7 +4493,7 @@ void FLD::XFluid::SetInitialFlowField(
     for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
     {
       // get the processor local node
-      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+      CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
       // the set of degrees of freedom associated with the node
       std::vector<int> nodedofset = discret_->Dof(0, lnode);
@@ -4576,7 +4576,7 @@ void FLD::XFluid::SetInitialFlowField(
     // get material parameters
     //------------------------
     // arbitrarily take first node on this proc
-    DRT::Node* lnode = discret_->lRowNode(0);
+    CORE::Nodes::Node* lnode = discret_->lRowNode(0);
     // get list of adjacent elements of the first node
     CORE::Elements::Element** elelist = lnode->Elements();
     CORE::Elements::Element* ele = elelist[0];  // (arbitrary!) first element
@@ -4640,7 +4640,7 @@ void FLD::XFluid::SetInitialFlowField(
     for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
     {
       // get the processor local node
-      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+      CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
       // get node coordinates
       for (int idim = 0; idim < nsd; idim++) xyz(idim) = lnode->X()[idim];

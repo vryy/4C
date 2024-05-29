@@ -11,7 +11,7 @@
 
 #include "4C_scatra_ele_hdg_boundary_calc.hpp"
 
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_ele_hdg.hpp"
 #include "4C_utils_parameter_list.hpp"

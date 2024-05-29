@@ -33,7 +33,7 @@ DRT::FIBER::FiberNode::FiberNode(int id, const std::vector<double>& coords,
     std::map<FIBER::CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections,
     std::vector<std::array<double, 3>> fibers, std::map<FIBER::AngleType, double> angles,
     const int owner)
-    : DRT::Node(id, coords, owner),
+    : CORE::Nodes::Node(id, coords, owner),
       coordinateSystemDirections_(std::move(coordinateSystemDirections)),
       fibers_(std::move(fibers)),
       angles_(std::move(angles))
@@ -63,9 +63,9 @@ void DRT::FIBER::FiberNode::Pack(CORE::COMM::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  DRT::Node::AddtoPack(data, type);
+  CORE::Nodes::Node::AddtoPack(data, type);
   // add base class of fiber node
-  DRT::Node::Pack(data);
+  CORE::Nodes::Node::Pack(data);
 
   // Add fiber data
   CORE::COMM::ParObject::AddtoPack(data, fibers_);
@@ -87,7 +87,7 @@ void DRT::FIBER::FiberNode::Unpack(const std::vector<char>& data)
   // extract base class Node
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::Node::Unpack(basedata);
+  CORE::Nodes::Node::Unpack(basedata);
 
   // extract fiber data
   CORE::COMM::ParObject::ExtractfromPack(position, data, fibers_);
@@ -101,7 +101,7 @@ void DRT::FIBER::FiberNode::Unpack(const std::vector<char>& data)
 void DRT::FIBER::FiberNode::Print(std::ostream& os) const
 {
   os << "Fiber Node :";
-  DRT::Node::Print(os);
+  CORE::Nodes::Node::Print(os);
   os << "(" << fibers_.size() << " fibers, " << angles_.size() << " angles)";
 }
 

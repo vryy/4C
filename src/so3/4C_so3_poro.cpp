@@ -290,7 +290,7 @@ CORE::Elements::ElementType& DRT::ELEMENTS::So3Poro<so3_ele, distype>::ElementTy
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-inline DRT::Node** DRT::ELEMENTS::So3Poro<so3_ele, distype>::Nodes()
+inline CORE::Nodes::Node** DRT::ELEMENTS::So3Poro<so3_ele, distype>::Nodes()
 {
   return so3_ele::Nodes();
 }

@@ -483,7 +483,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
   // dealing with the classical finite element evaluation. Thus, it is
   // very important that we apply the nodal relocation to BOTH the
   // MORTAR::Node(s) in the meshtying interface discretization AND to the
-  // DRT::Node(s) in the underlying problem discretization. However, the
+  // CORE::Nodes::Node(s) in the underlying problem discretization. However, the
   // second aspect needs to be done by the respective control routine,
   // i.e. in the case of 4C in strtimint.cpp and NOT here.
   //**********************************************************************
@@ -502,7 +502,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
       int gid = interface_[i]->SlaveColNodes()->GID(j);
 
       // get the mortar node
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       MORTAR::Node* mtnode = dynamic_cast<MORTAR::Node*>(node);
 
@@ -647,7 +647,7 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(MORTAR::StrategyBase::Q
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       MORTAR::Node* mtnode = dynamic_cast<MORTAR::Node*>(node);
 
@@ -719,7 +719,7 @@ void CONTACT::MtAbstractStrategy::store_dirichlet_status(
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       MORTAR::Node* mtnode = dynamic_cast<MORTAR::Node*>(node);
 
@@ -855,7 +855,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       MORTAR::Node* mtnode = dynamic_cast<MORTAR::Node*>(node);
 
@@ -896,7 +896,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
     for (int j = 0; j < interface_[i]->MasterRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->MasterRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       MORTAR::Node* mtnode = dynamic_cast<MORTAR::Node*>(node);
 
@@ -951,7 +951,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       MORTAR::Node* mtnode = dynamic_cast<MORTAR::Node*>(node);
 
@@ -1108,7 +1108,7 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet() const
     {
       // gid of current node
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
       // cast to MORTAR::Node
@@ -1244,7 +1244,7 @@ void CONTACT::MtAbstractStrategy::assemble_coords(
 
     // find this node in interface discretizations
     bool found = false;
-    DRT::Node* node = nullptr;
+    CORE::Nodes::Node* node = nullptr;
     for (int k = 0; k < (int)interface_.size(); ++k)
     {
       found = interface_[k]->Discret().HaveGlobalNode(gid);

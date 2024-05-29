@@ -156,7 +156,7 @@ void PARTICLEWALL::WallHandlerBase::check_wall_nodes_located_in_bounding_box() c
   for (int rowlidofnode = 0; rowlidofnode < walldiscretization_->NumMyRowNodes(); ++rowlidofnode)
   {
     // get pointer to current row wall node
-    DRT::Node* node = walldiscretization_->lRowNode(rowlidofnode);
+    CORE::Nodes::Node* node = walldiscretization_->lRowNode(rowlidofnode);
 
     // init current position of node
     CORE::LINALG::Matrix<3, 1> currpos;
@@ -386,7 +386,7 @@ void PARTICLEWALL::WallHandlerBase::determine_col_wall_ele_nodal_pos(
 #endif
 
   // get pointer to nodes of current column wall element
-  DRT::Node** nodes = ele->Nodes();
+  CORE::Nodes::Node** nodes = ele->Nodes();
   const int numnodes = ele->num_node();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -560,8 +560,8 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
     const int mat = currcondition[0]->parameters().Get<int>("MAT");
 
     // initialize maps for particle wall conditions
-    std::map<int, DRT::Node*> nodes;
-    std::map<int, DRT::Node*> colnodes;
+    std::map<int, CORE::Nodes::Node*> nodes;
+    std::map<int, CORE::Nodes::Node*> colnodes;
     std::map<int, Teuchos::RCP<CORE::Elements::Element>> colelements;
 
     // get structure objects in wall condition
@@ -572,11 +572,11 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
     for (auto& nodeit : colnodes)
     {
       // get current node
-      DRT::Node* currnode = nodeit.second;
+      CORE::Nodes::Node* currnode = nodeit.second;
 
       // add current node to wall discretization
       walldiscretization_->AddNode(
-          Teuchos::rcp(new DRT::Node(currnode->Id(), currnode->X(), currnode->Owner())));
+          Teuchos::rcp(new CORE::Nodes::Node(currnode->Id(), currnode->X(), currnode->Owner())));
     }
 
     // iterate over column wall elements
@@ -682,7 +682,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::init_wall_discretization()
     for (auto& nodepos : nodepositions)
     {
       // add corner node to wall discretization
-      walldiscretization_->AddNode(Teuchos::rcp(new DRT::Node(nodeid, nodepos, myrank_)));
+      walldiscretization_->AddNode(Teuchos::rcp(new CORE::Nodes::Node(nodeid, nodepos, myrank_)));
 
       // add node id
       nodeids.push_back(nodeid++);

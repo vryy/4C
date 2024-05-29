@@ -124,7 +124,7 @@ namespace CORE::COMM
       // allocate node vectors
       unsigned int nnode = connectivity[iele].size();  // this number changes for pyramids or wedges
       std::vector<int> nodeids(nnode);
-      std::vector<DRT::Node*> nodes(nnode);
+      std::vector<CORE::Nodes::Node*> nodes(nnode);
 
       // get connectivity infos
       for (unsigned int inode = 0; inode < nnode; inode++)
@@ -165,7 +165,7 @@ namespace CORE::COMM
       int owner,                  ///< owner (= owner of parent element with smallest gid)
       int nnode,                  ///< number of nodes
       const int* nodeids,         ///< node ids
-      DRT::Node** nodes,          ///< nodes of surface
+      CORE::Nodes::Node** nodes,  ///< nodes of surface
       ParentEle* master_ele,      ///< pointer on the master parent element
       ParentEle* slave_ele,       ///< pointer on the slave parent element
       const int lsurface_master,  ///< local surface index with respect to master parent element

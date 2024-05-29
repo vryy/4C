@@ -119,7 +119,7 @@ void STR::Integrator::set_initial_displacement(
       for (int lnodeid = 0; lnodeid < global_state().GetDiscret()->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        const DRT::Node* lnode = global_state().GetDiscret()->lRowNode(lnodeid);
+        const CORE::Nodes::Node* lnode = global_state().GetDiscret()->lRowNode(lnodeid);
 
         // the set of degrees of freedom associated with the node
         const std::vector<int> nodedofset = global_state().GetDiscret()->Dof(0, lnode);

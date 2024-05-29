@@ -57,7 +57,7 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization
         Teuchos::rcp(new Epetra_Vector(*walldiscretization_->NodeColMap(), true));
     for (int inode = 0; inode < walldiscretization_->NumMyColNodes(); ++inode)
     {
-      const DRT::Node* node = walldiscretization_->lColNode(inode);
+      const CORE::Nodes::Node* node = walldiscretization_->lColNode(inode);
       (*nodeowner)[inode] = node->Owner();
     }
     runtime_vtuwriter_->append_node_based_result_data_vector(nodeowner, 1, "owner");

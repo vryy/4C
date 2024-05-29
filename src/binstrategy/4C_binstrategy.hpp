@@ -35,12 +35,16 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
 
 namespace CORE::Elements
 {
   class Element;
+}
+
+namespace CORE::Nodes
+{
+  class Node;
 }
 
 namespace CORE::GEO
@@ -579,7 +583,7 @@ namespace BINSTRATEGY
      * \param[out] ijk requested ijk
      */
     void getijk_of_single_node_in_current_position(Teuchos::RCP<DRT::Discretization> const& discret,
-        DRT::Node const* const node, Teuchos::RCP<const Epetra_Vector> const& disnp,
+        CORE::Nodes::Node const* const node, Teuchos::RCP<const Epetra_Vector> const& disnp,
         int ijk[3]) const;
 
     /*!
@@ -872,7 +876,7 @@ namespace BINSTRATEGY
   };  // namespace BINSTRATEGY
 
   /*!
-   *\brief Class for comparing Teuchos::RCP<DRT::Node> in a std::set
+   *\brief Class for comparing Teuchos::RCP<CORE::Nodes::Node> in a std::set
    */
   class Less
   {

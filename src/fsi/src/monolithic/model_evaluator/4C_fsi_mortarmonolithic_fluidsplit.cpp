@@ -79,7 +79,7 @@ FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(
     //
     //      // do only nodes that I have in my discretization
     //      if (!fluid_field()->discretization()->NodeColMap()->MyGID(gid)) continue;
-    //      DRT::Node* node = fluid_field()->discretization()->gNode(gid);
+    //      CORE::Nodes::Node* node = fluid_field()->discretization()->gNode(gid);
     //      if (!node) FOUR_C_THROW("Cannot find node with gid %",gid);
     //
     //      std::vector<int> nodedofs = fluid_field()->discretization()->Dof(node);
@@ -1989,7 +1989,8 @@ void FSI::MortarMonolithicFluidSplit::create_system_matrix()
 /*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::create_interface_mapping(
     Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
-    std::map<int, DRT::Node*>* fluidnodesPtr, std::map<int, DRT::Node*>* structuregnodesPtr,
+    std::map<int, CORE::Nodes::Node*>* fluidnodesPtr,
+    std::map<int, CORE::Nodes::Node*>* structuregnodesPtr,
     std::map<int, std::vector<int>>& fluidToStructureMap,
     std::map<int, std::vector<int>>& structureToFluidMap)
 {
@@ -2212,9 +2213,11 @@ void FSI::MortarMonolithicFluidSplit::create_interface_mapping(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::create_node_owner_relationship(std::map<int, int>* nodeOwner,
-    std::map<int, std::list<int>>* inverseNodeOwner, std::map<int, DRT::Node*>* fluidnodesPtr,
-    std::map<int, DRT::Node*>* structuregnodesPtr, Teuchos::RCP<DRT::Discretization> structuredis,
-    Teuchos::RCP<DRT::Discretization> fluiddis, const INPAR::FSI::Redistribute domain)
+    std::map<int, std::list<int>>* inverseNodeOwner,
+    std::map<int, CORE::Nodes::Node*>* fluidnodesPtr,
+    std::map<int, CORE::Nodes::Node*>* structuregnodesPtr,
+    Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
+    const INPAR::FSI::Redistribute domain)
 {
   /*******************************************/
   /* distribute masternodes to future owners */

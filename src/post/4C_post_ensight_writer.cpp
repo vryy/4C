@@ -422,7 +422,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::
       CORE::Elements::Element* const actele = dis->gElement(elementmap->GID(iele));
       if (actele->Shape() == distypeiter)
       {
-        DRT::Node** const nodes = actele->Nodes();
+        CORE::Nodes::Node** const nodes = actele->Nodes();
         switch (actele->Shape())
         {
           case CORE::FE::CellType::point1:
@@ -1587,7 +1587,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
     {
       for (int inode = 0; inode < mynumnp; inode++)
       {
-        DRT::Node* n = dis->lRowNode(inode);
+        CORE::Nodes::Node* n = dis->lRowNode(inode);
 
         const double dofgid = (double)dis->Dof(n, frompid + idf) + offset;
         if (dofgid > -1.0)
@@ -2356,7 +2356,7 @@ void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstrea
   for (int inode = 0; inode < numnp; inode++)
   {
     int gid = nodemap->GID(inode);
-    const DRT::Node* actnode = dis->gNode(gid);
+    const CORE::Nodes::Node* actnode = dis->gNode(gid);
     for (int isd = 0; isd < NSD; ++isd)
     {
       double val = ((actnode->X())[isd]);

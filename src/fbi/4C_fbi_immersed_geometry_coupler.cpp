@@ -13,12 +13,12 @@ The current implementation does not scale at all!
 #include "4C_binstrategy_utils.hpp"
 #include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_geometry_searchtree.hpp"
 #include "4C_discretization_geometry_searchtree_service.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_lib_discret_faces.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_rebalance_binning_based.hpp"
@@ -99,7 +99,7 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::Search(
     for (std::map<int, std::set<int>>::const_iterator closefluideles = closeeles.begin();
          closefluideles != closeeles.end(); closefluideles++)
     {
-      const DRT::Node* const beamnode = discretizations[0]->gNode(beamnodeiterator->first);
+      const CORE::Nodes::Node* const beamnode = discretizations[0]->gNode(beamnodeiterator->first);
       const CORE::Elements::Element* const* beamelements = beamnode->Elements();
 
       // loop over the set of beam elements adjacent to the current beam node (this leads to
@@ -279,7 +279,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
     for (int i = 0; i < nodecolmap->NumMyElements(); ++i)
     {
       int gid = nodecolmap->GID(i);
-      DRT::Node* node = discretizations[1]->gNode(gid);
+      CORE::Nodes::Node* node = discretizations[1]->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       node_recvdata.push_back(gid);
     }
@@ -309,7 +309,7 @@ void FBI::FBIGeometryCoupler::compute_fixed_positions(DRT::Discretization& dis,
   positions->clear();
   for (int lid = 0; lid < dis.NumMyColNodes(); ++lid)
   {
-    const DRT::Node* node = dis.lColNode(lid);
+    const CORE::Nodes::Node* node = dis.lColNode(lid);
 
     for (int d = 0; d < 3; ++d) (*positions)[node->Id()](d) = node->X()[d];
   }
@@ -327,7 +327,7 @@ void FBI::FBIGeometryCoupler::compute_current_positions(DRT::Discretization& dis
 
   for (int lid = 0; lid < dis.NumMyColNodes(); ++lid)
   {
-    const DRT::Node* node = dis.lColNode(lid);
+    const CORE::Nodes::Node* node = dis.lColNode(lid);
     if (disp != Teuchos::null)
     {
       // get the DOF numbers of the current node

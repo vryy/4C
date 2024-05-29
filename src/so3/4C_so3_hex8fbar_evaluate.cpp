@@ -374,7 +374,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;
 
-      DRT::Node** nodes = Nodes();
+      CORE::Nodes::Node** nodes = Nodes();
       for (int i = 0; i < NUMNOD_SOH8; ++i)
       {
         xrefe(i, 0) = nodes[i]->X()[0];
@@ -673,7 +673,7 @@ int DRT::ELEMENTS::SoHex8fbar::evaluate_neumann(Teuchos::ParameterList& params,
 
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -761,7 +761,7 @@ void DRT::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // location 
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -1608,7 +1608,7 @@ void DRT::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
     CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
     CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
     CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;
-    DRT::Node** nodes = Nodes();
+    CORE::Nodes::Node** nodes = Nodes();
     for (int i = 0; i < NUMNOD_SOH8; ++i)
     {
       const auto& x = nodes[i]->X();

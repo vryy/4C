@@ -16,7 +16,7 @@
 #include "4C_binstrategy_meshfree_bin.hpp"
 #include "4C_binstrategy_utils.hpp"
 #include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -58,7 +58,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented!");
@@ -158,7 +158,7 @@ namespace DRT
       /*!
       \brief Get number of degrees of freedom of a certain node
       */
-      int NumDofPerNode(const DRT::Node& node) const override { return 3; }
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 3; }
 
       /*------------------------------------------------------------------------*/
       /*!

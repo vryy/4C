@@ -87,7 +87,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::Setup()
   std::vector<int> my_nodes_gid;
   for (int i_node = 0; i_node < discretization_structure_->NodeRowMap()->NumMyElements(); i_node++)
   {
-    DRT::Node const& node = *(discretization_structure_->lRowNode(i_node));
+    CORE::Nodes::Node const& node = *(discretization_structure_->lRowNode(i_node));
     if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node)) my_nodes_gid.push_back(node.Id());
   }
 
@@ -203,7 +203,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetGlobalMaps()
 
   for (int i_node = 0; i_node < discretization_structure_->NodeRowMap()->NumMyElements(); i_node++)
   {
-    const DRT::Node* node = discretization_structure_->lRowNode(i_node);
+    const CORE::Nodes::Node* node = discretization_structure_->lRowNode(i_node);
     if (BEAMINTERACTION::UTILS::IsBeamNode(*node))
       discretization_structure_->Dof(node, field_dofs[0]);
     else
@@ -211,7 +211,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetGlobalMaps()
   }
   for (int i_node = 0; i_node < discretization_fluid_->NodeRowMap()->NumMyElements(); i_node++)
   {
-    const DRT::Node* node = discretization_fluid_->lRowNode(i_node);
+    const CORE::Nodes::Node* node = discretization_fluid_->lRowNode(i_node);
     discretization_fluid_->Dof(node, field_dofs[1]);
   }
 
@@ -356,7 +356,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::LocationVector(
   {
     for (int i_node = 0; i_node < contact_pair->Element1()->num_node(); i_node++)
     {
-      const DRT::Node& node = *(contact_pair->Element1()->Nodes()[i_node]);
+      const CORE::Nodes::Node& node = *(contact_pair->Element1()->Nodes()[i_node]);
       if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node))
       {
         // Get the global id of the node.

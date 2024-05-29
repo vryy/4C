@@ -750,7 +750,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::add_connectivity(
         {
           // get id of masternode and the node itself
           masterid = iter->first;
-          DRT::Node* actnode = discret_->gNode(masterid);
+          CORE::Nodes::Node* actnode = discret_->gNode(masterid);
 
           // get all periodic boundary conditions on this node
           std::vector<CORE::Conditions::Condition*> thiscond;
@@ -1013,7 +1013,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
             // erase the coupled nodes from the map --- they are redundant
             allcoupledrownodes_->erase(*idtodel);
 
-            DRT::Node* actnode = discret_->gNode(*idtodel);
+            CORE::Nodes::Node* actnode = discret_->gNode(*idtodel);
 
             // check for row nodesactnodes ??????????????????
             if (actnode->Owner() != discret_->Comm().MyPID())
@@ -1377,7 +1377,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::balance_load()
     for (int node_lid = 0; node_lid < noderowmap->NumMyElements(); ++node_lid)
     {
       const int node_gid = noderowmap->GID(node_lid);
-      DRT::Node* node = discret_->gNode(node_gid);
+      CORE::Nodes::Node* node = discret_->gNode(node_gid);
       if (!node) FOUR_C_THROW("cant find node");
       double weight = 0.0;
 
@@ -1396,7 +1396,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::balance_load()
     {
       const int master_gid = masterslavepair.first;
       // get masternode
-      DRT::Node* master = discret_->gNode(master_gid);
+      CORE::Nodes::Node* master = discret_->gNode(master_gid);
 
       if (master->Owner() != discret_->Comm().MyPID()) continue;
 
@@ -1540,14 +1540,14 @@ void CORE::Conditions::PeriodicBoundaryConditions::balance_load()
       for (const auto& masterslavepair : *allcoupledcolnodes_)
       {
         // get masternode
-        DRT::Node* master = discret_->gNode(masterslavepair.first);
+        CORE::Nodes::Node* master = discret_->gNode(masterslavepair.first);
 
         if (master->Owner() != myrank) continue;
 
         // loop slavenodes
         for (int slave_gids : masterslavepair.second)
         {
-          DRT::Node* slave = discret_->gNode(slave_gids);
+          CORE::Nodes::Node* slave = discret_->gNode(slave_gids);
 
           // -------------------------------------------------------------
           // connections between master and slavenodes are very strong

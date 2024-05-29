@@ -74,7 +74,7 @@ FSI::MortarMonolithicStructureSplit::MortarMonolithicStructureSplit(
     //
     //      // do only nodes that I have in my discretization
     //      if (!structure_field()->discretization()->NodeColMap()->MyGID(gid)) continue;
-    //      DRT::Node* node = structure_field()->discretization()->gNode(gid);
+    //      CORE::Nodes::Node* node = structure_field()->discretization()->gNode(gid);
     //      if (!node) FOUR_C_THROW("Cannot find node with gid %",gid);
     //
     //      std::vector<int> nodedofs = structure_field()->discretization()->Dof(node);
@@ -1799,7 +1799,8 @@ void FSI::MortarMonolithicStructureSplit::create_system_matrix()
 /*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicStructureSplit::create_node_owner_relationship(
     std::map<int, int>* nodeOwner, std::map<int, std::list<int>>* inverseNodeOwner,
-    std::map<int, DRT::Node*>* structurenodesPtr, std::map<int, DRT::Node*>* fluidgnodesPtr,
+    std::map<int, CORE::Nodes::Node*>* structurenodesPtr,
+    std::map<int, CORE::Nodes::Node*>* fluidgnodesPtr,
     Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
     const INPAR::FSI::Redistribute domain)
 {

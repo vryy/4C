@@ -33,7 +33,7 @@ namespace ADAPTER
   class Coupling;
 }
 
-namespace DRT
+namespace CORE::Nodes
 {
   class Node;
 }
@@ -1155,7 +1155,7 @@ namespace CONTACT
     @param node Node that is queried
     */
     void GetForceOfNode(CORE::LINALG::Matrix<3, 1>& nodal_force, const Epetra_Vector& force,
-        const DRT::Node& node) const;
+        const CORE::Nodes::Node& node) const;
 
     /*!
     \brief Visualize contact stuff with gmsh

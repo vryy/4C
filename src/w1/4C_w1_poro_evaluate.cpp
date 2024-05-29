@@ -545,7 +545,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::nonlinear_stiffness_poroelast(
   CORE::LINALG::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -589,7 +589,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::nonlinear_stiffness_poroelast_pressure_b
   CORE::LINALG::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -1237,7 +1237,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::coupling_poroelast(std::vector<int>& lm,
   CORE::LINALG::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -1271,7 +1271,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::coupling_poroelast_pressure_based(
   CORE::LINALG::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -1740,7 +1740,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::coupling_stress_poroelast(
   CORE::LINALG::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -1816,7 +1816,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::InitElement()
   CORE::LINALG::Matrix<numnod_, numdim_> xrefe;
   for (int i = 0; i < numnod_; ++i)
   {
-    Node** nodes = Nodes();
+    CORE::Nodes::Node** nodes = Nodes();
     if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
     for (int j = 0; j < numdim_; ++j) xrefe(i, j) = Nodes()[i]->X()[j];
   }
@@ -2025,7 +2025,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::compute_shape_functions_and_derivatives(
     CORE::LINALG::Matrix<numnod_, numdim_> xrefe;
     for (int i = 0; i < numnod_; ++i)
     {
-      Node** nodes = Nodes();
+      CORE::Nodes::Node** nodes = Nodes();
       if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
       xrefe(i, 0) = Nodes()[i]->X()[0];
       xrefe(i, 1) = Nodes()[i]->X()[1];

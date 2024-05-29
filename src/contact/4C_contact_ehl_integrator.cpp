@@ -122,7 +122,7 @@ void CONTACT::IntegratorEhl::gp_weighted_surf_grad_and_deriv(MORTAR::Element& se
 
   for (int a = 0; a < sele.num_node(); ++a)
   {
-    DRT::Node* node = sele.Nodes()[a];
+    CORE::Nodes::Node* node = sele.Nodes()[a];
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) FOUR_C_THROW("this is not a contact node");
 

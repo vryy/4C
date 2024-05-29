@@ -889,7 +889,7 @@ bool STR::TimIntGenAlpha::SolelyBeam3Elements(Teuchos::RCP<DRT::Discretization> 
   for (int i = 0; i < actdis->NumMyRowElements(); i++)
   {
     CORE::Elements::Element* element = actdis->lColElement(i);
-    DRT::Node* node = (element->Nodes())[0];
+    CORE::Nodes::Node* node = (element->Nodes())[0];
     int numdof = actdis->NumDof(node);
 
     // So far we simply check, if we have at least 6 DoFs per node, which is only true for beam

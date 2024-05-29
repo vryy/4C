@@ -221,7 +221,7 @@ void FSI::FSIResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& t
   {
     if (slavedisc_->HaveGlobalNode(node))
     {
-      const DRT::Node* actnode = slavedisc_->gNode(node);
+      const CORE::Nodes::Node* actnode = slavedisc_->gNode(node);
 
       // Strange! It seems we might actually have a global node around
       // even if it does not belong to us. But here we are just

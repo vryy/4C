@@ -403,7 +403,7 @@ void ELEMAG::ElemagTimeInt::set_initial_electric_field(
       int numscatranode = scatraele->num_node();
       (*nodevals_phi).resize(numscatranode);
       // fill nodevals with node coords and nodebased solution values
-      DRT::Node **scatranodes = scatraele->Nodes();
+      CORE::Nodes::Node **scatranodes = scatraele->Nodes();
       for (int i = 0; i < numscatranode; ++i)
       {
         int dof = scatradis->Dof(0, scatranodes[i], 0);
@@ -883,7 +883,7 @@ namespace
       for (int i = 0; i < ele->num_node(); ++i)
       {
         // Get the i-th node of the element
-        DRT::Node *node = ele->Nodes()[i];
+        CORE::Nodes::Node *node = ele->Nodes()[i];
         // Get the local ID starting from the node's global id
         const int localIndex = dis.NodeRowMap()->LID(node->Id());
         ////If the local index is less than zero skip the for loop

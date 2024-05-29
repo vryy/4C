@@ -31,7 +31,7 @@ void DRT::ELEMENTS::NStet5::init_element()
   CORE::LINALG::Matrix<4, 3 + 1> J;
   {
     // compute element volume and center node coordinate
-    DRT::Node** nodes = Nodes();  // outer nodes only
+    CORE::Nodes::Node** nodes = Nodes();  // outer nodes only
     for (double& i : midX_) i = 0.0;
     for (int i = 0; i < 4; ++i)
     {

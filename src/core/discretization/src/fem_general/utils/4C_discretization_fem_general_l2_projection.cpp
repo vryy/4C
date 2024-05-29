@@ -72,7 +72,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::evaluate_and_solve_nodal_l2_projectio
     lm.resize(numnode);
     lmowner.resize(numnode);
 
-    DRT::Node** nodes = actele->Nodes();
+    CORE::Nodes::Node** nodes = actele->Nodes();
     for (int n = 0; n < numnode; ++n)
     {
       const int nodeid = nodes[n]->Id();

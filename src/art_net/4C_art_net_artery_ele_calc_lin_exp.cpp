@@ -290,7 +290,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Initial(Artery* ele,
   Teuchos::RCP<Epetra_Vector> wfo = params.get<Teuchos::RCP<Epetra_Vector>>("wfo");
   Teuchos::RCP<Epetra_Vector> wbo = params.get<Teuchos::RCP<Epetra_Vector>>("wbo");
 
-  DRT::Node** nodes = ele->Nodes();
+  CORE::Nodes::Node** nodes = ele->Nodes();
 
   int myrank = discretization.Comm().MyPID();
   if (material->MaterialType() == CORE::Materials::m_cnst_art)
@@ -407,7 +407,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
   // set element data
   const int numnode = my::iel_;
   // get node coordinates and number of elements per node
-  DRT::Node** nodes = ele->Nodes();
+  CORE::Nodes::Node** nodes = ele->Nodes();
   CORE::LINALG::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < numnode; inode++)
   {
@@ -866,7 +866,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraSysmat(Artery* ele,
     double dt)
 {
   // get the nodal coordinates of the element
-  DRT::Node** nodes = ele->Nodes();
+  CORE::Nodes::Node** nodes = ele->Nodes();
   CORE::LINALG::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < my::iel_; inode++)
   {
@@ -1007,7 +1007,7 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
   }
 
   // get the nodal coordinates of the element
-  DRT::Node** nodes = ele->Nodes();
+  CORE::Nodes::Node** nodes = ele->Nodes();
   CORE::LINALG::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < my::iel_; inode++)
   {
@@ -1805,7 +1805,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* ele,
   }
 
   // get the nodal coordinates of the element
-  DRT::Node** nodes = ele->Nodes();
+  CORE::Nodes::Node** nodes = ele->Nodes();
   CORE::LINALG::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < my::iel_; inode++)
   {
@@ -1903,7 +1903,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::solve_scatra_analytically(Arte
 
   // Get length of the element
   // get node coordinates and number of elements per node
-  DRT::Node** nodes = ele->Nodes();
+  CORE::Nodes::Node** nodes = ele->Nodes();
   CORE::LINALG::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < numnode; inode++)
   {

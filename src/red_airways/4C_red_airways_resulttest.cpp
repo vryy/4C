@@ -60,7 +60,7 @@ void AIRWAY::RedAirwayResultTest::test_node(INPUT::LineDefinition& res, int& ner
   {
     if (dis_->HaveGlobalNode(node))
     {
-      DRT::Node* actnode = dis_->gNode(node);
+      CORE::Nodes::Node* actnode = dis_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != dis_->Comm().MyPID()) return;

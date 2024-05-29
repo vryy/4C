@@ -16,6 +16,7 @@ interaction.
 #include "4C_beaminteraction_contact_pair.hpp"
 #include "4C_binstrategy.hpp"
 #include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_fbi_adapter_constraintbridge.hpp"
 #include "4C_fbi_adapter_constraintbridge_penalty.hpp"
 #include "4C_fbi_beam_to_fluid_meshtying_output_params.hpp"
@@ -28,7 +29,6 @@ interaction.
 #include "4C_inpar_fluid.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_discret_faces.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_mapextractor.hpp"
@@ -296,7 +296,7 @@ void ADAPTER::FBIConstraintenforcer::extract_current_element_dofs(
   // extract the current positions and velocities of the fluid element todo only valid for fixed
   // grid, not for ALE
   fluid_dofvec.clear();
-  const DRT::Node* const* fluidnodes = elements[1]->Nodes();
+  const CORE::Nodes::Node* const* fluidnodes = elements[1]->Nodes();
   for (int lid = 0; lid < elements[1]->num_node(); ++lid)
   {
     for (int dim = 0; dim < 3; dim++)
