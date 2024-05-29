@@ -26,7 +26,7 @@
 #include "4C_ale_utils_mapextractor.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_discretization_fem_general_utils_createdis.hpp"
-#include "4C_discretization_geometry_update_material_config.hpp"
+#include "4C_discretization_geometry_update_reference_config.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fs3i_biofilm_fsi_utils.hpp"
 #include "4C_fsi_monolithicfluidsplit.hpp"
@@ -764,13 +764,13 @@ void FS3I::BiofilmFSI::FluidAleSolve()
   Teuchos::RCP<Epetra_Vector> fluiddisp =
       ale_to_fluid_field(fsi_->ale_field()->WriteAccessDispnp());
   Teuchos::RCP<DRT::Discretization> fluiddis = fsi_->fluid_field()->discretization();
-  CORE::GEO::UpdateMaterialConfigWithDispVector(fluiddis, fluiddisp);
+  CORE::GEO::update_reference_config_with_disp(fluiddis, fluiddisp);
 
 
 
   // change nodes reference position also for the fluid ale field
   Teuchos::RCP<Epetra_Vector> fluidaledisp = fsi_->ale_field()->WriteAccessDispnp();
-  CORE::GEO::UpdateMaterialConfigWithDispVector(fluidaledis, fluidaledisp);
+  CORE::GEO::update_reference_config_with_disp(fluidaledis, fluidaledisp);
 
   // change nodes reference position also for scatra fluid field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[0];
@@ -812,11 +812,11 @@ void FS3I::BiofilmFSI::StructAleSolve()
   // change nodes reference position of the structure field
   Teuchos::RCP<Epetra_Vector> structdisp = AleToStructField(ale_->WriteAccessDispnp());
   Teuchos::RCP<DRT::Discretization> structdis = fsi_->structure_field()->discretization();
-  CORE::GEO::UpdateMaterialConfigWithDispVector(structdis, structdisp);
+  CORE::GEO::update_reference_config_with_disp(structdis, structdisp);
   structdis->fill_complete(false, true, true);
 
   // change nodes reference position also for the struct ale field
-  CORE::GEO::UpdateMaterialConfigWithDispVector(structaledis, ale_->WriteAccessDispnp());
+  CORE::GEO::update_reference_config_with_disp(structaledis, ale_->WriteAccessDispnp());
 
   // change nodes reference position also for scatra structure field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> struscatra = scatravec_[1];

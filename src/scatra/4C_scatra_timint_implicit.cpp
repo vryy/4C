@@ -19,6 +19,7 @@
 /*----------------------------------------------------------------------*/
 #include "4C_scatra_timint_implicit.hpp"
 
+#include "4C_comm_utils_gid_vector.hpp"
 #include "4C_contact_nitsche_strategy_ssi.hpp"
 #include "4C_discretization_condition_periodic.hpp"
 #include "4C_discretization_condition_selector.hpp"
@@ -30,7 +31,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_utils_gid_vector.hpp"
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_linear_solver_method_parameters.hpp"
@@ -3761,9 +3761,9 @@ void SCATRA::ScaTraTimIntImpl::calc_mean_micro_concentration()
         for (int inode = 0; inode < ele->num_node(); ++inode)
         {
           if (num_dof_element == 3)
-            DRT::UTILS::AddOwnedNodeGID(*discretization(), nodes[inode]->Id(), multiscale_nodes);
+            CORE::COMM::AddOwnedNodeGID(*discretization(), nodes[inode]->Id(), multiscale_nodes);
           else if (num_dof_element == 2)
-            DRT::UTILS::AddOwnedNodeGID(*discretization(), nodes[inode]->Id(), other_nodes);
+            CORE::COMM::AddOwnedNodeGID(*discretization(), nodes[inode]->Id(), other_nodes);
           else
             FOUR_C_THROW("Only 2 or 3 dofs per element supported");
         }

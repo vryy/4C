@@ -9,13 +9,13 @@
 #include "4C_scatra_timint_elch_scl.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
+#include "4C_comm_utils_gid_vector.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_utils_gid_vector.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -440,7 +440,7 @@ void SCATRA::ScaTraTimIntElchSCL::write_coupling_to_csv(
         const int macro_node_gid = glob_micro_macro_coupled_node_gid.first;
         const int mirco_node_gid = glob_micro_macro_coupled_node_gid.second;
 
-        if (DRT::UTILS::IsNodeGIDOnThisProc(*discret_, macro_node_gid))
+        if (CORE::COMM::IsNodeGIDOnThisProc(*discret_, macro_node_gid))
         {
           const auto& macro_coords = discret_->gNode(macro_node_gid)->X();
 
@@ -452,7 +452,7 @@ void SCATRA::ScaTraTimIntElchSCL::write_coupling_to_csv(
           file.close();
         }
 
-        if (DRT::UTILS::IsNodeGIDOnThisProc(*MicroScaTraField()->discretization(), mirco_node_gid))
+        if (CORE::COMM::IsNodeGIDOnThisProc(*MicroScaTraField()->discretization(), mirco_node_gid))
         {
           const auto& micro_coords =
               MicroScaTraField()->discretization()->gNode(mirco_node_gid)->X();
@@ -606,7 +606,7 @@ void SCATRA::ScaTraTimIntElchSCL::setup_coupling()
     for (const int coupling_node_gid : *coupling_condition->GetNodes())
     {
       // is this node owned by this proc?
-      if (!DRT::UTILS::IsNodeGIDOnThisProc(*discret_, coupling_node_gid)) continue;
+      if (!CORE::COMM::IsNodeGIDOnThisProc(*discret_, coupling_node_gid)) continue;
 
       switch (coupling_condition->parameters().Get<int>("interface side"))
       {
@@ -649,7 +649,7 @@ void SCATRA::ScaTraTimIntElchSCL::setup_coupling()
   }
   // distribute all maps to all procs
   const auto glob_macro_slave_node_master_dof_gids =
-      DRT::UTILS::BroadcastMap(my_macro_slave_node_master_dof_gids, comm);
+      CORE::COMM::BroadcastMap(my_macro_slave_node_master_dof_gids, comm);
 
   // get master node (this proc) to slave node (any proc)
   std::map<int, int> my_macro_slave_node_master_node_gids;
@@ -672,7 +672,7 @@ void SCATRA::ScaTraTimIntElchSCL::setup_coupling()
   }
   // distribute all maps to all procs
   const auto glob_macro_slave_node_master_node_gids =
-      DRT::UTILS::BroadcastMap(my_macro_slave_node_master_node_gids, comm);
+      CORE::COMM::BroadcastMap(my_macro_slave_node_master_node_gids, comm);
 
   // we use Dirchlet conditions on micro side to achieve coupling by adapting the DBC value
   std::vector<CORE::Conditions::Condition*> micro_coupling_conditions;
@@ -690,7 +690,7 @@ void SCATRA::ScaTraTimIntElchSCL::setup_coupling()
     for (const int micro_node_gid : *micro_coupling_condition->GetNodes())
     {
       // is this node owned by this proc?
-      if (DRT::UTILS::IsNodeGIDOnThisProc(*microdis, micro_node_gid))
+      if (CORE::COMM::IsNodeGIDOnThisProc(*microdis, micro_node_gid))
         my_micro_node_gids.emplace_back(micro_node_gid);
     }
   }
@@ -726,7 +726,7 @@ void SCATRA::ScaTraTimIntElchSCL::setup_coupling()
     my_micro_problem_counter++;
   }
   const auto glob_macro_micro_coupled_node_gids =
-      DRT::UTILS::BroadcastMap(my_macro_micro_coupled_node_gids, comm);
+      CORE::COMM::BroadcastMap(my_macro_micro_coupled_node_gids, comm);
 
   // setup macro nodes on this proc and coupled micro nodes (can be other proc)
   std::vector<int> my_micro_permuted_node_gids;
@@ -736,7 +736,7 @@ void SCATRA::ScaTraTimIntElchSCL::setup_coupling()
     const int macro_node_gid = glob_macro_micro_coupled_node_gid.first;
     const int mirco_node_gid = glob_macro_micro_coupled_node_gid.second;
 
-    if (!DRT::UTILS::IsNodeGIDOnThisProc(*discret_, macro_node_gid)) continue;
+    if (!CORE::COMM::IsNodeGIDOnThisProc(*discret_, macro_node_gid)) continue;
 
     my_macro_node_gids.emplace_back(macro_node_gid);
     my_micro_permuted_node_gids.emplace_back(mirco_node_gid);
@@ -782,7 +782,7 @@ void SCATRA::ScaTraTimIntElchSCL::setup_coupling()
     }
   }
 
-  const std::vector<int> glob_slave_dofs = DRT::UTILS::BroadcastVector(my_slave_dofs, comm);
+  const std::vector<int> glob_slave_dofs = CORE::COMM::BroadcastVector(my_slave_dofs, comm);
 
   std::vector<int> my_master_dofs;
   std::vector<int> my_perm_slave_dofs;
@@ -831,7 +831,7 @@ void SCATRA::ScaTraTimIntElchSCL::setup_coupling()
   }
 
   const auto glob_micro_coupling_nodes =
-      DRT::UTILS::BroadcastSet(my_micro_coupling_nodes, discret_->Comm());
+      CORE::COMM::BroadcastSet(my_micro_coupling_nodes, discret_->Comm());
 
   // by definition, the last node of a micro sub problem is coupled with the macro. Here, all nodes
   // in the sub problem are linked to the coupled node, by looping backwards through all nodes and
@@ -888,7 +888,7 @@ void SCATRA::ScaTraTimIntElchSCL::scale_micro_problem()
   }
 
   const auto glob_nodal_size_micro =
-      DRT::UTILS::BroadcastMap(my_nodal_size_micro, discret_->Comm());
+      CORE::COMM::BroadcastMap(my_nodal_size_micro, discret_->Comm());
 
   auto micro_scale = CORE::LINALG::CreateVector(*MicroScaTraField()->dof_row_map(), true);
   for (int lid_micro = MicroScaTraField()->dof_row_map()->NumMyElements() - 1; lid_micro >= 0;

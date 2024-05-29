@@ -11,7 +11,7 @@
 
 #include "4C_contact_element.hpp"
 #include "4C_contact_node.hpp"
-#include "4C_discretization_geometry_reference_configuration_utils.hpp"
+#include "4C_discretization_geometry_reference_config_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 

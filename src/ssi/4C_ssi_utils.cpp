@@ -11,13 +11,13 @@
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_adapter_str_ssiwrapper.hpp"
+#include "4C_comm_utils_gid_vector.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_coupling_matchingoctree.hpp"
 #include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_s2i.hpp"
-#include "4C_lib_utils_gid_vector.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_scatra_timint_implicit.hpp"
@@ -992,8 +992,8 @@ void SSI::UTILS::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<DRT::Discr
             num_created_adapters == iadapter)
         {
           const int slave_gid = pair.first;
-          DRT::UTILS::AddOwnedNodeGID(*dis, master_gid, inodegidvec_master);
-          DRT::UTILS::AddOwnedNodeGID(*dis, slave_gid, inodegidvec_slave);
+          CORE::COMM::AddOwnedNodeGID(*dis, master_gid, inodegidvec_master);
+          CORE::COMM::AddOwnedNodeGID(*dis, slave_gid, inodegidvec_slave);
 
           pair.second = -1;  // do not consider this pair in next iteration
           created_adapters[master_gid] = num_created_adapters + 1;
@@ -1035,7 +1035,7 @@ void SSI::UTILS::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<DRT::Discr
 
       std::vector<int> my_coupled_original_slave_gids;
       for (const int& slave_gid : all_coupled_original_slave_gids)
-        DRT::UTILS::AddOwnedNodeGID(*dis, slave_gid, my_coupled_original_slave_gids);
+        CORE::COMM::AddOwnedNodeGID(*dis, slave_gid, my_coupled_original_slave_gids);
 
       slave_slave_transformation->setup_coupling(*dis, *dis, inodegidvec_slave,
           my_coupled_original_slave_gids, GLOBAL::Problem::Instance()->NDim(), true, 1.0e-8);
@@ -1110,7 +1110,7 @@ void SSI::UTILS::SSIMeshTying::find_matching_node_pairs(Teuchos::RCP<DRT::Discre
 
     // nodes of meshtying_condition_a owned by this proc
     std::vector<int> inodegidvec_a;
-    DRT::UTILS::AddOwnedNodeGIDFromList(*dis, *meshtying_condition_a->GetNodes(), inodegidvec_a);
+    CORE::COMM::AddOwnedNodeGIDFromList(*dis, *meshtying_condition_a->GetNodes(), inodegidvec_a);
 
     // init node matching octree with nodes from condition a
     auto tree = CORE::COUPLING::NodeMatchingOctree();
@@ -1124,7 +1124,7 @@ void SSI::UTILS::SSIMeshTying::find_matching_node_pairs(Teuchos::RCP<DRT::Discre
 
       // nodes of meshtying_condition_b owned by this proc
       std::vector<int> inodegidvec_b;
-      DRT::UTILS::AddOwnedNodeGIDFromList(*dis, *meshtying_condition_b->GetNodes(), inodegidvec_b);
+      CORE::COMM::AddOwnedNodeGIDFromList(*dis, *meshtying_condition_b->GetNodes(), inodegidvec_b);
 
       // key: master node gid, value: slave node gid and distance
       std::map<int, std::pair<int, double>> coupled_gid_nodes;
@@ -1146,7 +1146,7 @@ void SSI::UTILS::SSIMeshTying::find_matching_node_pairs(Teuchos::RCP<DRT::Discre
   }
 
   // communicate to all other procs
-  const auto all_coupling_pairs = DRT::UTILS::BroadcastPairVector(my_coupling_pairs, comm_);
+  const auto all_coupling_pairs = CORE::COMM::BroadcastPairVector(my_coupling_pairs, comm_);
 
   // remove duplicates (slave node = master node)
   for (const auto& pair : all_coupling_pairs)
@@ -1316,8 +1316,8 @@ void SSI::UTILS::SSIMeshTying::define_master_slave_pairing(Teuchos::RCP<DRT::Dis
       if (node != new_master_gid) my_slave_master_pair.insert(std::make_pair(node, new_master_gid));
   }
 
-  master_gids = DRT::UTILS::BroadcastVector(my_master_gids, comm_);
-  slave_master_pair = DRT::UTILS::BroadcastMap(my_slave_master_pair, comm_);
+  master_gids = CORE::COMM::BroadcastVector(my_master_gids, comm_);
+  slave_master_pair = CORE::COMM::BroadcastMap(my_slave_master_pair, comm_);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // check if everything worked fine
@@ -1343,7 +1343,7 @@ void SSI::UTILS::SSIMeshTying::find_slave_slave_transformation_nodes(
   {
     if (meshtying_conditon->parameters().Get<int>("interface side") == INPAR::S2I::side_slave)
     {
-      DRT::UTILS::AddOwnedNodeGIDFromList(
+      CORE::COMM::AddOwnedNodeGIDFromList(
           *dis, *meshtying_conditon->GetNodes(), original_slave_gids);
     }
   }
@@ -1365,7 +1365,7 @@ void SSI::UTILS::SSIMeshTying::find_slave_slave_transformation_nodes(
 
   // distribute gids from original slave nodes to all procs (matching might be on different proc)
   all_coupled_original_slave_gids =
-      DRT::UTILS::BroadcastVector(my_coupled_original_slave_gids, comm_);
+      CORE::COMM::BroadcastVector(my_coupled_original_slave_gids, comm_);
 }
 
 /*---------------------------------------------------------------------------------*

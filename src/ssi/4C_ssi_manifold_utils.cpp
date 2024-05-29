@@ -10,6 +10,7 @@
 #include "4C_ssi_manifold_utils.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
+#include "4C_comm_utils_gid_vector.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_discretization_condition_utils.hpp"
@@ -18,7 +19,6 @@
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_ssi.hpp"
 #include "4C_io_runtime_csv_writer.hpp"
-#include "4C_lib_utils_gid_vector.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -48,11 +48,11 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
       size_matrix_graph_()
 {
   std::vector<int> inodegidvec_manifold;
-  DRT::UTILS::AddOwnedNodeGIDFromList(
+  CORE::COMM::AddOwnedNodeGIDFromList(
       *manifolddis, *condition_manifold->GetNodes(), inodegidvec_manifold);
 
   std::vector<int> inodegidvec_scatra;
-  DRT::UTILS::AddOwnedNodeGIDFromList(
+  CORE::COMM::AddOwnedNodeGIDFromList(
       *scatradis, *condition_kinetics->GetNodes(), inodegidvec_scatra);
 
   coupling_adapter_->setup_coupling(*scatradis, *manifolddis, inodegidvec_scatra,

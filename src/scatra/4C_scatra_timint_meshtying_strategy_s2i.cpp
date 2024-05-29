@@ -9,6 +9,7 @@
 *----------------------------------------------------------------------*/
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
 
+#include "4C_comm_utils_gid_vector.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
@@ -22,7 +23,6 @@
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_utils_gid_vector.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_multiply.hpp"
@@ -2056,14 +2056,14 @@ void SCATRA::MeshtyingStrategyS2I::setup_meshtying()
           if (kinetics_condition->parameters().Get<int>("kinetic model") !=
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
-            DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
+            CORE::COMM::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
                 *kinetics_condition->GetNodes(), islavenodegidvec);
 
             auto mastercondition = master_conditions_.find(kineticsID);
             if (mastercondition == master_conditions_.end())
               FOUR_C_THROW("Could not find master condition");
 
-            DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
+            CORE::COMM::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
                 *mastercondition->second->GetNodes(), imasternodegidvec);
 
             islavenodegidvec_cond.push_back(islavenodegidvec);
@@ -2095,14 +2095,14 @@ void SCATRA::MeshtyingStrategyS2I::setup_meshtying()
           if (kinetics_condition->parameters().Get<int>("kinetic model") !=
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
-            DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
+            CORE::COMM::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
                 *kinetics_condition->GetNodes(), islavenodegidset);
 
             auto mastercondition = master_conditions_.find(kineticsID);
             if (mastercondition == master_conditions_.end())
               FOUR_C_THROW("Could not find master condition");
             else
-              DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
+              CORE::COMM::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
                   *mastercondition->second->GetNodes(), imasternodegidset);
           }
         }

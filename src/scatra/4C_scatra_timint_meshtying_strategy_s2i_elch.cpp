@@ -9,10 +9,10 @@
 *----------------------------------------------------------------------*/
 #include "4C_scatra_timint_meshtying_strategy_s2i_elch.hpp"
 
+#include "4C_comm_utils_gid_vector.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_utils_gid_vector.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -1224,13 +1224,13 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::setup_meshtying()
     {
       case INPAR::S2I::side_slave:
       {
-        DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
+        CORE::COMM::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
             *s2imeshtying_condition->GetNodes(), islavenodegidset);
         break;
       }
       case INPAR::S2I::side_master:
       {
-        DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
+        CORE::COMM::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
             *s2imeshtying_condition->GetNodes(), imasternodegidset);
         break;
       }

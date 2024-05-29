@@ -10,7 +10,7 @@
 #include <gtest/gtest.h>
 
 #include "4C_contact_element.hpp"
-#include "4C_dicretization_geometry_reference_configuration_utils.hpp"
+#include "4C_discretization_geometry_reference_config_utils.hpp"
 #include "4C_so3_hex8.hpp"
 #include "4C_so3_tet4.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
