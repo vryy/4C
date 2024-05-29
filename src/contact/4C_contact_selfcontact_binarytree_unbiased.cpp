@@ -11,8 +11,8 @@
 
 #include "4C_contact_element.hpp"
 #include "4C_contact_node.hpp"
+#include "4C_discretization_geometry_reference_configuration_utils.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_utils_reference_configuration.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -356,27 +356,27 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
     case CORE::FE::CellType::tri3:
     {
       xicele1.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri3>(
+      CORE::GEO::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri3>(
           ele1, xicele1, ele1coords);
-      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::tri3>(
+      CORE::GEO::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::tri3>(
           ele1, xicele1, ele1normal);
     }
     break;
     case CORE::FE::CellType::tri6:
     {
       xicele1.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri6>(
+      CORE::GEO::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri6>(
           ele1, xicele1, ele1coords);
-      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::tri6>(
+      CORE::GEO::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::tri6>(
           ele1, xicele1, ele1normal);
     }
     break;
     case CORE::FE::CellType::quad4:
     {
       xicele1.PutScalar(0.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::quad4>(
+      CORE::GEO::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::quad4>(
           ele1, xicele1, ele1coords);
-      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::quad4>(
+      CORE::GEO::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::quad4>(
           ele1, xicele1, ele1normal);
     }
     break;
@@ -392,21 +392,21 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
     case CORE::FE::CellType::tri3:
     {
       xicele2.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri3>(
+      CORE::GEO::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri3>(
           ele2, xicele2, ele2coords);
     }
     break;
     case CORE::FE::CellType::tri6:
     {
       xicele2.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri6>(
+      CORE::GEO::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri6>(
           ele2, xicele2, ele2coords);
     }
     break;
     case CORE::FE::CellType::quad4:
     {
       xicele2.PutScalar(0.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::quad4>(
+      CORE::GEO::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::quad4>(
           ele2, xicele2, ele2coords);
     }
     break;

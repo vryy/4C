@@ -1,1 +1,2 @@
 add_subdirectory(geometric_search)
+add_subdirectory(geometry)

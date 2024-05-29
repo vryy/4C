@@ -5,7 +5,6 @@ set(SOURCE_LIST
     4C_demangle_test.cpp
     4C_inputreader_test.cpp
     4C_linedefinition_test.cpp
-    4C_utils_reference_configuration_test.cpp
     )
 
 four_c_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
