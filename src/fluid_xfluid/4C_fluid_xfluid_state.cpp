@@ -16,10 +16,10 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_discret_xfem.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_xfem_condition_manager.hpp"
+#include "4C_xfem_discretization.hpp"
 #include "4C_xfem_dofset.hpp"
 #include "4C_xfem_xfield_state_utils.hpp"
 
@@ -280,7 +280,7 @@ void FLD::XFluidState::init_coupling_matrices_and_rhs()
 /*----------------------------------------------------------------------*
  |  Initialize ALE state vectors                           schott 12/14 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidState::InitALEStateVectors(const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,
+void FLD::XFluidState::InitALEStateVectors(const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,
     Teuchos::RCP<const Epetra_Vector> dispnp_initmap,
     Teuchos::RCP<const Epetra_Vector> gridvnp_initmap)
 {

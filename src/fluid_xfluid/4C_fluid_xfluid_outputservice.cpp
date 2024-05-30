@@ -23,17 +23,17 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"
-#include "4C_lib_discret_xfem.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_utils_parameter_list.hpp"
 #include "4C_xfem_condition_manager.hpp"
+#include "4C_xfem_discretization.hpp"
 #include "4C_xfem_discretization_utils.hpp"
 #include "4C_xfem_edgestab.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-FLD::XFluidOutputService::XFluidOutputService(const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
+FLD::XFluidOutputService::XFluidOutputService(const Teuchos::RCP<XFEM::DiscretizationXFEM>& discret,
     const Teuchos::RCP<XFEM::ConditionManager>& cond_manager)
     : discret_(discret), cond_manager_(cond_manager), firstoutputofrun_(true), restart_count_(0)
 {
@@ -250,7 +250,7 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
 }
 
 FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(Teuchos::ParameterList& params_xfem,
-    const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
+    const Teuchos::RCP<XFEM::DiscretizationXFEM>& discret,
     const Teuchos::RCP<XFEM::ConditionManager>& cond_manager, const bool include_inner)
     : XFluidOutputService(discret, cond_manager),
       gmsh_sol_out_((bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_SOL_OUT")),

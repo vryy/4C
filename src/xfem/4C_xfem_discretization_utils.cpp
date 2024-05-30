@@ -14,11 +14,11 @@
 #include "4C_discretization_dofset_fixed_size.hpp"
 #include "4C_io_gmsh.hpp"
 #include "4C_lib_discret_faces.hpp"
-#include "4C_lib_discret_xfem.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_graph_based.hpp"
 #include "4C_rebalance_print.hpp"
+#include "4C_xfem_discretization.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -162,8 +162,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
     const Teuchos::ParameterList& xgen_params, Teuchos::RCP<DRT::Discretization> dis,
     int numdof) const
 {
-  Teuchos::RCP<DRT::DiscretizationXFEM> xdis =
-      Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(dis, false);
+  Teuchos::RCP<XFEM::DiscretizationXFEM> xdis =
+      Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(dis, false);
   //
   if (xdis == Teuchos::null)
   {
@@ -210,8 +210,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
 {
   if (!embedded_dis->Filled()) embedded_dis->fill_complete();
 
-  Teuchos::RCP<DRT::DiscretizationXFEM> xdis =
-      Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(dis, true);
+  Teuchos::RCP<XFEM::DiscretizationXFEM> xdis =
+      Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(dis, true);
   if (!xdis->Filled()) xdis->fill_complete();
 
   // get fluid mesh conditions: hereby we specify standalone embedded discretizations
@@ -253,9 +253,9 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
   split_discretization_by_boundary_condition(
       src_dis, target_dis, boundary_conds, conditions_to_copy);
 
-  if (!Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(src_dis).is_null())
+  if (!Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(src_dis).is_null())
     setup_xfem_discretization(xgen_params, src_dis, num_dof_per_node);
-  if (!Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(target_dis).is_null())
+  if (!Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(target_dis).is_null())
     setup_xfem_discretization(xgen_params, target_dis, num_dof_per_node);
 
   CORE::REBALANCE::UTILS::print_parallel_distribution(*src_dis);

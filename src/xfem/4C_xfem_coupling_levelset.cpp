@@ -22,11 +22,11 @@ bridge between the xfluid class and the cut-library
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret_xfem.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_utils_function.hpp"
+#include "4C_xfem_discretization.hpp"
 #include "4C_xfem_interface_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -450,7 +450,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       // To get phi nodal values into pressure dofs in the fluid discretization!!! - any idea for
       // nice implementation?
       const Epetra_Map* modphinp_dofrowmap =
-          Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(cutter_dis_)->InitialDofRowMap();
+          Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)->InitialDofRowMap();
       Teuchos::RCP<Epetra_Vector> modphinp =
           Teuchos::rcp(new Epetra_Vector(*modphinp_dofrowmap, true));
 
@@ -465,7 +465,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
         if (lsnode == nullptr) FOUR_C_THROW("Returned node is null-pointer.");
 
         std::vector<int> initialdof =
-            Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(cutter_dis_)->InitialDof(lsnode);
+            Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)->InitialDof(lsnode);
 
         if (initialdof.size() != 4)
           FOUR_C_THROW("Initial Dof Size is not 4! Size: %d", initialdof.size());
@@ -480,12 +480,13 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       // SAFETY check
       // dependent on the desired projection, just remove this line
       if (not modphinp->Map().SameAs(
-              *Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(cutter_dis_)->InitialDofRowMap()))
+              *Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)
+                   ->InitialDofRowMap()))
         FOUR_C_THROW("input map is not a dof row map of the fluid");
 
       // set given state for element evaluation
       cutter_dis_->ClearState();
-      Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(cutter_dis_)
+      Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)
           ->SetInitialState(0, "pres", modphinp);
 
       // Lives on NodeRow-map!!!

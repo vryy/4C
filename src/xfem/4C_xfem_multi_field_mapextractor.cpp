@@ -17,10 +17,10 @@
 #include "4C_comm_parobject.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_lib_discret_xfem.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_xfem_discretization.hpp"
 #include "4C_xfem_xfield_field_coupling.hpp"
 #include "4C_xfem_xfield_field_coupling_dofset.hpp"
 
@@ -132,7 +132,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   int d = 0;
   for (cit_dis = sl_dis_vec().begin(); cit_dis != sl_dis_vec().end(); ++cit_dis)
   {
-    if (Teuchos::rcp_dynamic_cast<const DRT::DiscretizationXFEM>(*cit_dis).is_null())
+    if (Teuchos::rcp_dynamic_cast<const XFEM::DiscretizationXFEM>(*cit_dis).is_null())
       xfem_dis_ids_.insert(d++);
   }
 

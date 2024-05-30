@@ -19,7 +19,7 @@ surface meshes
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_discret_xfem.hpp"
+#include "4C_xfem_discretization.hpp"
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -499,8 +499,8 @@ void CORE::GEO::CutWizard::get_physical_nodal_coordinates(
     if (back_mesh_->IsBackDisp())
     {
       // castt to DiscretizationXFEM
-      Teuchos::RCP<DRT::DiscretizationXFEM> xbackdis =
-          Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(back_mesh_->GetPtr(), true);
+      Teuchos::RCP<XFEM::DiscretizationXFEM> xbackdis =
+          Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(back_mesh_->GetPtr(), true);
 
       lm.clear();
       mydisp.clear();

@@ -59,12 +59,12 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_fbi.hpp"
 #include "4C_inpar_fsi.hpp"
-#include "4C_lib_discret_xfem.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_poroelast_utils_clonestrategy.hpp"
 #include "4C_poroelast_utils_setup.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_utils_result_test.hpp"
+#include "4C_xfem_discretization.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
