@@ -125,18 +125,6 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
           this, params, discretization, elevec1, lm, mat);
     }
     break;
-    case solve_scatra:
-    {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->SolveScatra(
-          this, params, discretization, elevec1, elevec2, lm, mat);
-    }
-    break;
-    case solve_junction_scatra:
-    {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->solve_scatra_bifurcations(
-          this, params, discretization, elevec1, elevec2, lm, mat);
-    }
-    break;
     case calc_cfl:
     {
       DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->CalcCFL(
@@ -152,12 +140,6 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
     {
       DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->eval_nodal_essential_values(
           this, params, discretization, elevec1, elevec2, elevec3, lm, mat);
-    }
-    break;
-    case eval_PO2_from_concentration:
-    {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->EvalPO2FromScatra(
-          this, params, discretization, lm, mat);
     }
     break;
     case update_scatra:

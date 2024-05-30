@@ -1417,74 +1417,6 @@ namespace DRT
 
       //@}
 
-      //! @name Evaluation
-
-      /*!
-      \brief Evaluate an element
-
-      Evaluate inter acinar dependency element stiffness, mass, internal forces etc
-
-      \param params (in/out): ParameterList for communication between control routine
-                              and elements
-      \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
-                              this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
-                              this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If nullptr on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If nullptr on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \return 0 if successful, negative otherwise
-      */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
-
-      /*!
-      \brief Evaluate a Neumann boundary condition
-
-      An element derived from this class uses the evaluate_neumann method to receive commands
-      and parameters from some control routine in params and evaluates a Neumann boundary condition
-      given in condition
-
-      \note This class implements a dummy of this method that prints a warning and
-            returns false.
-
-      \param params (in/out)    : ParameterList for communication between control routine
-                                  and elements
-      \param discretization (in): A reference to the underlying discretization
-      \param condition (in)     : The condition to be evaluated
-      \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : Force vector to be filled by element
-
-      \return 0 if successful, negative otherwise
-      */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
-
-      /*!
-      \brief Evaluate a Neumann boundary condition
-
-      this method evaluates a line Neumann condition on the acinus element
-
-      \return 0 if successful, negative otherwise
-      */
-      virtual int evaluate_dirichlet(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1);
-
-
       //@}
 
 
@@ -1545,18 +1477,6 @@ namespace DRT
 
       // don't want = operator
       RedAirBloodScatra& operator=(const RedAirBloodScatra& old);
-
-
-      /// set number of gauss points to element shape default
-      CORE::FE::GaussRule1D get_optimal_gaussrule(const CORE::FE::CellType& distype);
-
-      /*!
-       * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
-       * necessary \return boolean indicating higher order status
-       */
-      bool is_higher_order_element(const CORE::FE::CellType distype  ///< discretization type
-      ) const;
-
     };  // class RedAirBloodScatra
 
 

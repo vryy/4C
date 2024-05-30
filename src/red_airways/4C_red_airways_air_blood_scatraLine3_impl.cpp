@@ -17,8 +17,6 @@
 #include "4C_discretization_fem_general_utils_gder2.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_mat_air_0d_O2_saturation.hpp"
-#include "4C_mat_hemoglobin_0d_O2_saturation.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_par_bundle.hpp"

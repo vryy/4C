@@ -75,25 +75,11 @@ namespace DRT
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& volumeMix_np,
           std::vector<int>& lm, Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
-      virtual void SolveScatra(RedAcinus* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatra_np,
-          CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> material) = 0;
-
-      virtual void solve_scatra_bifurcations(RedAcinus* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatranp,
-          CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> material) = 0;
-
       virtual void update_scatra(RedAcinus* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
       virtual void UpdateElem12Scatra(RedAcinus* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> material) = 0;
-
-      virtual void EvalPO2FromScatra(RedAcinus* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
@@ -194,28 +180,11 @@ namespace DRT
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& volumeMix_np,
           std::vector<int>& lm, Teuchos::RCP<CORE::MAT::Material> material) override;
 
-      /*!
-        \Essential functions to solve the forward scatra flow
-      */
-      void SolveScatra(RedAcinus* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatranp,
-          CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> material) override;
-
-      void solve_scatra_bifurcations(RedAcinus* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatranp,
-          CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> material) override;
-
       void update_scatra(RedAcinus* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) override;
 
       void UpdateElem12Scatra(RedAcinus* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> material) override;
-
-      void EvalPO2FromScatra(RedAcinus* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) override;
 

@@ -20,7 +20,6 @@
 #include "4C_lib_discret.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_newtonianfluid.hpp"
-#include "4C_mat_scatra_aniso.hpp"
 #include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
@@ -57,59 +56,6 @@ DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::ScaTraEleCalcAniso(
   // get diffusion manager for anisotropic diffusivity / diffusivities (in case of systems)
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerAniso<nsd_>(my::numscal_));
 }
-
-
-
-/*----------------------------------------------------------------------*
- |  evaluate single material  (protected)                    ehrl 11/13 |
- *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::materials(
-    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
-    double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,  //!< density at t_(n+alpha_M)
-    double& visc,    //!< fluid viscosity
-    const int iquad  //!< id of current gauss point
-)
-{
-  if (material->MaterialType() == CORE::Materials::m_scatra_aniso)
-    mat_sca_tra_aniso(material, k, densn, densnp, densam, visc, iquad);
-  else
-    FOUR_C_THROW("Material type is not supported");
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Material ScaTra                                          ehrl 11/13 |
- *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::mat_sca_tra_aniso(
-    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
-    double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,  //!< density at t_(n+alpha_M)
-    double& visc,    //!< fluid viscosity
-    const int iquad  //!< id of current gauss point (default = -1)
-)
-{
-  const Teuchos::RCP<const MAT::ScatraMatAniso>& actmat =
-      Teuchos::rcp_dynamic_cast<const MAT::ScatraMatAniso>(material);
-
-  // get constant diffusivity
-  CORE::LINALG::Matrix<nsd_, nsd_> difftensor(true);
-  CORE::LINALG::Matrix<3, 1> diff = actmat->Diffusivity();
-
-  for (unsigned i = 0; i < nsd_; i++) difftensor(i, i) = diff(i);
-
-  diff_manager()->SetAnisotropicDiff(difftensor, k);
-
-  return;
-}  // ScaTraEleCalcAniso<distype>::MatScaTra
 
 
 /*-------------------------------------------------------------------- *

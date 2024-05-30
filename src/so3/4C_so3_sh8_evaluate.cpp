@@ -15,7 +15,6 @@
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
-#include "4C_mat_aaaraghavanvorp_damage.hpp"
 #include "4C_mat_elasthyper.hpp"
 #include "4C_mat_micromaterial.hpp"
 #include "4C_mat_viscoanisotropic.hpp"

@@ -10,29 +10,19 @@
 #include "4C_mat_material_factory.hpp"
 
 #include "4C_global_data.hpp"
-#include "4C_mat_aaa_mixedeffects.hpp"
-#include "4C_mat_aaagasser.hpp"
 #include "4C_mat_aaaneohooke.hpp"
-#include "4C_mat_aaaneohooke_stopro.hpp"
-#include "4C_mat_aaaraghavanvorp_damage.hpp"
-#include "4C_mat_air_0d_O2_saturation.hpp"
-#include "4C_mat_arrhenius_pv.hpp"
-#include "4C_mat_arrhenius_spec.hpp"
-#include "4C_mat_arrhenius_temp.hpp"
 #include "4C_mat_beam3r_plasticity.hpp"
 #include "4C_mat_beam_elasthyper_parameter.hpp"
 #include "4C_mat_carreauyasuda.hpp"
 #include "4C_mat_cnst_1d_art.hpp"
 #include "4C_mat_constraintmixture.hpp"
 #include "4C_mat_crosslinkermat.hpp"
-#include "4C_mat_crystal_plasticity.hpp"
 #include "4C_mat_damage.hpp"
 #include "4C_mat_elasthyper.hpp"
 #include "4C_mat_elchmat.hpp"
 #include "4C_mat_elchphase.hpp"
 #include "4C_mat_electrode.hpp"
 #include "4C_mat_electromagnetic.hpp"
-#include "4C_mat_ferech_pv.hpp"
 #include "4C_mat_fluid_linear_density_viscosity.hpp"
 #include "4C_mat_fluid_murnaghantait.hpp"
 #include "4C_mat_fluid_weakly_compressible.hpp"
@@ -48,7 +38,6 @@
 #include "4C_mat_fourieriso.hpp"
 #include "4C_mat_growth.hpp"
 #include "4C_mat_growthremodel_elasthyper.hpp"
-#include "4C_mat_hemoglobin_0d_O2_saturation.hpp"
 #include "4C_mat_herschelbulkley.hpp"
 #include "4C_mat_ion.hpp"
 #include "4C_mat_lin_elast_1D.hpp"
@@ -66,7 +55,6 @@
 #include "4C_mat_membrane_active_strain.hpp"
 #include "4C_mat_membrane_elasthyper.hpp"
 #include "4C_mat_micromaterial.hpp"
-#include "4C_mat_mixfrac.hpp"
 #include "4C_mat_mixture.hpp"
 #include "4C_mat_modpowerlaw.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
@@ -82,7 +70,6 @@
 #include "4C_mat_particle_sph_boundary.hpp"
 #include "4C_mat_particle_sph_fluid.hpp"
 #include "4C_mat_particle_wall_dem.hpp"
-#include "4C_mat_permeablefluid.hpp"
 #include "4C_mat_plastic_VarConstUpdate.hpp"
 #include "4C_mat_plasticdruckerprager.hpp"
 #include "4C_mat_plasticelasthyper.hpp"
@@ -93,7 +80,6 @@
 #include "4C_mat_robinson.hpp"
 #include "4C_mat_scalardepinterp.hpp"
 #include "4C_mat_scatra.hpp"
-#include "4C_mat_scatra_aniso.hpp"
 #include "4C_mat_scatra_chemotaxis.hpp"
 #include "4C_mat_scatra_multiporo.hpp"
 #include "4C_mat_scatra_multiscale.hpp"
@@ -108,7 +94,6 @@
 #include "4C_mat_stvenantkirchhoff.hpp"
 #include "4C_mat_superelastic_sma.hpp"
 #include "4C_mat_sutherland.hpp"
-#include "4C_mat_tempdepwater.hpp"
 #include "4C_mat_thermoplastichyperelast.hpp"
 #include "4C_mat_thermoplasticlinelast.hpp"
 #include "4C_mat_thermostvenantkirchhoff.hpp"
@@ -116,7 +101,6 @@
 #include "4C_mat_viscoelasthyper.hpp"
 #include "4C_mat_visconeohooke.hpp"
 #include "4C_mat_viscoplastic_no_yield_surface.hpp"
-#include "4C_mat_yoghurt.hpp"
 #include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -237,22 +221,6 @@ Teuchos::RCP<CORE::MAT::Material> MAT::Factory(int matnum)
     {
       return set_parameter_and_create<MAT::PAR::AAAneohooke>(curmat);
     }
-    case CORE::Materials::m_aaaneohooke_stopro:
-    {
-      return set_parameter_and_create<MAT::PAR::AaAneohookeStopro>(curmat);
-    }
-    case CORE::Materials::m_aaagasser:
-    {
-      return set_parameter_and_create<MAT::PAR::AAAgasser>(curmat);
-    }
-    case CORE::Materials::m_aaaraghavanvorp_damage:
-    {
-      return set_parameter_and_create<MAT::PAR::AaAraghavanvorpDamage>(curmat);
-    }
-    case CORE::Materials::m_aaa_mixedeffects:
-    {
-      return set_parameter_and_create<MAT::PAR::AaaMixedeffects>(curmat);
-    }
     case CORE::Materials::m_lubrication:
     {
       return set_parameter_and_create<MAT::PAR::LubricationMat>(curmat);
@@ -305,10 +273,6 @@ Teuchos::RCP<CORE::MAT::Material> MAT::Factory(int matnum)
     {
       return set_parameter_and_create<MAT::PAR::ScatraChemotaxisMat>(curmat);
     }
-    case CORE::Materials::m_scatra_aniso:
-    {
-      return set_parameter_and_create<MAT::PAR::ScatraMatAniso>(curmat);
-    }
     case CORE::Materials::m_muscle_combo:
     {
       return set_parameter_and_create<MAT::PAR::MuscleCombo>(curmat);
@@ -325,33 +289,9 @@ Teuchos::RCP<CORE::MAT::Material> MAT::Factory(int matnum)
     {
       return set_parameter_and_create<MAT::PAR::Myocard>(curmat);
     }
-    case CORE::Materials::m_mixfrac:
-    {
-      return set_parameter_and_create<MAT::PAR::MixFrac>(curmat);
-    }
     case CORE::Materials::m_sutherland:
     {
       return set_parameter_and_create<MAT::PAR::Sutherland>(curmat);
-    }
-    case CORE::Materials::m_tempdepwater:
-    {
-      return set_parameter_and_create<MAT::PAR::TempDepWater>(curmat);
-    }
-    case CORE::Materials::m_arrhenius_spec:
-    {
-      return set_parameter_and_create<MAT::PAR::ArrheniusSpec>(curmat);
-    }
-    case CORE::Materials::m_arrhenius_temp:
-    {
-      return set_parameter_and_create<MAT::PAR::ArrheniusTemp>(curmat);
-    }
-    case CORE::Materials::m_arrhenius_pv:
-    {
-      return set_parameter_and_create<MAT::PAR::ArrheniusPV>(curmat);
-    }
-    case CORE::Materials::m_ferech_pv:
-    {
-      return set_parameter_and_create<MAT::PAR::FerEchPV>(curmat);
     }
     case CORE::Materials::m_carreauyasuda:
     {
@@ -364,14 +304,6 @@ Teuchos::RCP<CORE::MAT::Material> MAT::Factory(int matnum)
     case CORE::Materials::m_herschelbulkley:
     {
       return set_parameter_and_create<MAT::PAR::HerschelBulkley>(curmat);
-    }
-    case CORE::Materials::m_yoghurt:
-    {
-      return set_parameter_and_create<MAT::PAR::Yoghurt>(curmat);
-    }
-    case CORE::Materials::m_permeable_fluid:
-    {
-      return set_parameter_and_create<MAT::PAR::PermeableFluid>(curmat);
     }
     case CORE::Materials::m_fluidporo:
     {
@@ -595,7 +527,6 @@ Teuchos::RCP<CORE::MAT::Material> MAT::Factory(int matnum)
     case CORE::Materials::mes_structuraltensorstratgy:
     case CORE::Materials::mes_coupvarga:
     case CORE::Materials::mes_isovarga:
-    case CORE::Materials::mes_isovolaaagasser:
     case CORE::Materials::mes_isotestmaterial:
     case CORE::Materials::mes_coupmyocard:
     case CORE::Materials::mes_isoratedep:
@@ -667,14 +598,6 @@ Teuchos::RCP<CORE::MAT::Material> MAT::Factory(int matnum)
     case CORE::Materials::m_0d_maxwell_acinus_ogden:
     {
       return set_parameter_and_create<MAT::PAR::Maxwell0dAcinusOgden>(curmat);
-    }
-    case CORE::Materials::m_0d_o2_hemoglobin_saturation:
-    {
-      return set_parameter_and_create<MAT::PAR::Hemoglobin0dO2Saturation>(curmat);
-    }
-    case CORE::Materials::m_0d_o2_air_saturation:
-    {
-      return set_parameter_and_create<MAT::PAR::Air0dO2Saturation>(curmat);
     }
     case CORE::Materials::m_th_fourier_iso:
     {
@@ -778,10 +701,6 @@ Teuchos::RCP<CORE::MAT::Material> MAT::Factory(int matnum)
     case CORE::Materials::m_superelast:
     {
       return set_parameter_and_create<MAT::PAR::SuperElasticSMA>(curmat);
-    }
-    case CORE::Materials::m_crystplast:
-    {
-      return set_parameter_and_create<MAT::PAR::CrystalPlasticity>(curmat);
     }
     case CORE::Materials::m_linelast1D:
     {

@@ -27,10 +27,6 @@ std::string_view CORE::Materials::to_string(CORE::Materials::MaterialType materi
       return "MAT_modpowerlaw";
     case m_herschelbulkley:
       return "MAT_herschelbulkley";
-    case m_yoghurt:
-      return "MAT_yoghurt";
-    case m_permeable_fluid:
-      return "MAT_permeable";
     case m_lubrication:
       return "MAT_lubrication";
     case m_lubrication_law_constant:
@@ -55,8 +51,6 @@ std::string_view CORE::Materials::to_string(CORE::Materials::MaterialType materi
       return "MAT_scatra_multiporo_temperature";
     case m_scatra_chemotaxis:
       return "MAT_scatra_chemotaxis";
-    case m_scatra_aniso:
-      return "MAT_scatra_aniso";
     case m_scatra_multiscale:
       return "MAT_scatra_multiscale";
     case m_muscle_weickenmeier:
@@ -67,20 +61,8 @@ std::string_view CORE::Materials::to_string(CORE::Materials::MaterialType materi
       return "MAT_Muscle_Giantesio";
     case m_myocard:
       return "MAT_myocard";
-    case m_mixfrac:
-      return "MAT_mixfrac";
     case m_sutherland:
       return "MAT_sutherland";
-    case m_tempdepwater:
-      return "MAT_tempdepwater";
-    case m_arrhenius_spec:
-      return "MAT_arrhenius_spec";
-    case m_arrhenius_temp:
-      return "MAT_arrhenius_temp";
-    case m_arrhenius_pv:
-      return "MAT_arrhenius_pv";
-    case m_ferech_pv:
-      return "MAT_ferech_pv";
     case m_ion:
       return "MAT_ion";
     case m_newman:
@@ -127,14 +109,6 @@ std::string_view CORE::Materials::to_string(CORE::Materials::MaterialType materi
       return "MAT_Struct_Damage";
     case m_aaaneohooke:
       return "MAT_Struct_AAANeoHooke";
-    case m_aaaneohooke_stopro:
-      return "MAT_Struct_AAANeoHookeStopro";
-    case m_aaagasser:
-      return "MAT_Struct_AAAGasser";
-    case m_aaaraghavanvorp_damage:
-      return "MAT_Raghavan_Damage";
-    case m_aaa_mixedeffects:
-      return "MAT_Struct_AAA_MixedEffects";
     case m_visconeohooke:
       return "MAT_VISCONEOHOOKE";
     case m_viscoanisotropic:
@@ -169,8 +143,6 @@ std::string_view CORE::Materials::to_string(CORE::Materials::MaterialType materi
       return "ELAST_IsoNeoHooke";
     case mes_isoogden:
       return "ELAST_IsoOgden";
-    case mes_isovolaaagasser:
-      return "ELAST_IsoVolAAAGasser";
     case mes_isoyeoh:
       return "ELAST_IsoYeoh";
     case mes_iso1pow:
@@ -381,10 +353,6 @@ std::string_view CORE::Materials::to_string(CORE::Materials::MaterialType materi
       return "MAT_0D_MAXWELL_ACINUS_DOUBLEEXPONENTIAL";
     case m_0d_maxwell_acinus_ogden:
       return "MAT_0D_MAXWELL_ACINUS_OGDEN";
-    case m_0d_o2_hemoglobin_saturation:
-      return "MAT_0D_O2_HEMOGLOBIN_SATURATION";
-    case m_0d_o2_air_saturation:
-      return "MAT_0D_O2_AIR_SATURATION";
     case m_particle_sph_fluid:
       return "MAT_ParticleSPHFluid";
     case m_particle_sph_boundary:

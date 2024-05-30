@@ -126,12 +126,8 @@ void FS3I::PartFS3I2Wc::initial_calculations()
   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
       ->set_initial_therm_pressure();
 
-  // energy conservation: compute initial time derivative of therm. pressure
   // mass conservation: compute initial mass (initial time deriv. assumed zero)
-  if (consthermpress_ == "No_energy")
-    Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
-        ->compute_initial_therm_pressure_deriv();
-  else if (consthermpress_ == "No_mass")
+  if (consthermpress_ == "No_mass")
     Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
         ->ComputeInitialMass();
 

@@ -76,16 +76,6 @@ namespace DRT
           const int iquad = -1  //!< id of current gauss point (default = -1)
           ) override;
 
-      //! material mixfrac
-      void mat_mix_frac(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,  //!< density at t_(n+alpha_M)
-          double& visc     //!< fluid viscosity
-      );
-
       //! material Sutherland
       void mat_sutherland(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
@@ -96,68 +86,8 @@ namespace DRT
           double& visc     //!< fluid viscosity
       );
 
-      //! material temperature-dependent water
-      void mat_temp_dep_water(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,  //!< density at t_(n+alpha_M)
-          double& visc     //!< fluid viscosity
-      );
-
-      //! material Arrhenius PV
-      void mat_arrhenius_pv(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,  //!< density at t_(n+alpha_M)
-          double& visc     //!< fluid viscosity
-      );
-
-      //! material Arrhenius Spec
-      void mat_arrhenius_spec(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,  //!< density at t_(n+alpha_M)
-          double& visc     //!< fluid viscosity
-      );
-
-      //! material Arrhenius Temp
-      void mat_arrhenius_temp(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,  //!< density at t_(n+alpha_M)
-          double& visc     //!< fluid viscosity
-      );
-
-      //! material Ferech PV
-      void mat_ferech_pv(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,  //!< density at t_(n+alpha_M)
-          double& visc     //!< fluid viscosity
-      );
-
       //! material thermo St. Venant Kirchhoff
       void mat_thermo_st_venant_kirchhoff(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,  //!< density at t_(n+alpha_M)
-          double& visc     //!< fluid viscosity
-      );
-
-      //! material Yoghurt
-      void mat_yoghurt(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)

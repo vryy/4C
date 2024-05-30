@@ -43,7 +43,6 @@
 #include "4C_matelast_isoogden.hpp"
 #include "4C_matelast_isotestmaterial.hpp"
 #include "4C_matelast_isovarga.hpp"
-#include "4C_matelast_isovolaaagasser.hpp"
 #include "4C_matelast_isoyeoh.hpp"
 #include "4C_matelast_remodelfiber.hpp"
 #include "4C_matelast_visco_coupmyocard.hpp"
@@ -356,13 +355,6 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
         curmat->set_parameter(new MAT::ELASTIC::PAR::IsoVarga(curmat));
       auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoVarga*>(curmat->Parameter());
       return Teuchos::rcp(new IsoVarga(params));
-    }
-    case CORE::Materials::mes_isovolaaagasser:
-    {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::IsoVolAAAGasser(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoVolAAAGasser*>(curmat->Parameter());
-      return Teuchos::rcp(new IsoVolAAAGasser(params));
     }
     case CORE::Materials::mes_isoyeoh:
     {

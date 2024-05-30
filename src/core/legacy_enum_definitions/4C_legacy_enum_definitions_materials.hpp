@@ -28,19 +28,7 @@ namespace CORE::Materials
     m_0d_maxwell_acinus_exponential,        ///< 0D acinar Maxwell Exponential material
     m_0d_maxwell_acinus_neohookean,         ///< 0D acinar Maxwell NeoHookean material
     m_0d_maxwell_acinus_ogden,              ///< 0D acinar Maxwell Ogden material
-    m_0d_o2_air_saturation,                 ///< 0D air o2 saturation material
-    m_0d_o2_hemoglobin_saturation,          ///< 0D hemoglobin o2 saturation material
-    m_aaa_mixedeffects,        ///< two parametric material for aaa wall according to mixed effects
-                               ///< model
-    m_aaagasser,               ///< ogden-like Gasser material for aaa thrombus
-    m_aaaneohooke,             ///< quasi Neo-Hooke material for aneurysmatic artery wall
-    m_aaaneohooke_stopro,      ///< quasi Neo-Hooke material for aneurysmatic artery wall, with
-                               ///< stochastic mat params
-    m_aaaraghavanvorp_damage,  ///< quasi Neo-Hooke material for aneurysmatic artery wall with
-                               ///< damage
-    m_arrhenius_pv,    ///< material with Arrhenius-type chemical kinetics (progress variable)
-    m_arrhenius_spec,  ///< material with Arrhenius-type chemical kinetics (species)
-    m_arrhenius_temp,  ///< material with Arrhenius-type chemical kinetics (temperature)
+    m_aaaneohooke,                ///< quasi Neo-Hooke material for aneurysmatic artery wall
     m_beam_elast_hyper_generic,   ///< material law for a beam: hyperelastic stored energy function
     m_beam_reissner_elast_hyper,  ///< material parameters for a Simo-Reissner beam: hyperelastic
                                   ///< stored energy function
@@ -72,10 +60,7 @@ namespace CORE::Materials
     m_electrode,           ///< electrode material
     m_electromagneticmat,  ///< electromagnetic material
     m_elpldamage,          ///< elasto-plastic material with von Mises plasticity and damage
-    m_ferech_pv,  ///< material with simplified chemical kinetics due to Ferziger and Echekki
-                  ///< (1993) with a modification by Poinsot and Veynante (2005) (progress
-                  ///< variable)
-    m_fluid,      ///< fluid
+    m_fluid,               ///< fluid
     m_fluid_linear_density_viscosity,  ///< linear law (pressure-dependent) for the density and
                                        ///< the viscosity
     m_fluid_murnaghantait,             ///< weakly compressible fluid according to Murnaghan-Tait
@@ -143,7 +128,6 @@ namespace CORE::Materials
                            ///< elements)
     m_matlist_chemoreac,   ///< collection of single materials (used for scalar transport problems)
                            ///< and collection of chemotactic pairs AND reactions
-    m_mixfrac,             ///< material according to mixture-fraction approach
     m_mixture,             ///< material for solid mixtures with homogenized stress response
     m_modpowerlaw,         ///< fluid with nonlinear viscosity according to a modified power law
     m_multiplicative_split_defgrad_elasthyper,  ///< deformation gradient is split
@@ -160,7 +144,6 @@ namespace CORE::Materials
     m_particle_sph_boundary,  ///< particle material for SPH boundary
     m_particle_dem,           ///< particle material for DEM
     m_particle_wall_dem,      ///< particle wall material for DEM
-    m_permeable_fluid,        ///< permeable fluid
     m_pldruckprag,       ///< Plastic linear elastic St.Venant Kirchhoff / Drucker Prager plasticity
     m_plelasthyper,      ///< general hyperelastic material for finite strain von-Mises plasticity
                          ///< using a semi-smooth Newton strategy (only in combination with such
@@ -187,7 +170,6 @@ namespace CORE::Materials
                                  ///< (species in solid)
     m_scatra_multiporo_temperature,  ///< scalar transport material for multiphase porous flow
                                      ///< (temperature)
-    m_scatra_aniso,                  ///< anisotropic scalar transport material
     m_scatra_multiscale,             ///< scalar transport material for multi-scale approach
     m_scatra_reaction_poroECM,       ///< reaction definition and parameters for reaction model in
                                      ///< porous ECM
@@ -204,7 +186,6 @@ namespace CORE::Materials
     m_superelast,             ///< Superelastic material behaviour of shape memory alloys
     m_stvenant,               ///< St.Venant Kirchhoff material
     m_sutherland,             ///< material with temperature dependence according to Sutherland law
-    m_tempdepwater,           ///< temperature-dependent water
     m_th_fourier_iso,         ///< isotropic (linear) Fourier's law of heat conduction
     m_thermoplhyperelast,     ///< Temperature-dependent hyperelasticity and von Mises plasticity
     m_thermopllinelast,       ///< Temperature-dependent Hooke elasticity and von Mises plasticity
@@ -214,8 +195,6 @@ namespace CORE::Materials
     m_visconeohooke,          ///< Viscous NeoHookean Material
     m_vp_no_yield_surface,    ///< visco-plastic finite strain material law without yield surface
     m_vp_robinson,            ///< Robinson's visco-plastic material
-    m_yoghurt,  ///< "yoghurt-type" fluid with nonlinear viscosity according to a power law and
-                ///< extended by an Arrhenius-type term to account for temperature dependence
     mes_anisoactivestress_evolution,  ///< anisotropic single fiber summand with active stress
                                       ///< computed through a simplified Bestel-Clement-Sorine
                                       ///< model
@@ -260,8 +239,6 @@ namespace CORE::Materials
     mes_isoratedep,        ///< isotropic isochoric frequency dependent viscous potential summand
     mes_isotestmaterial,   ///< material to test the elasthyper-toolbox
     mes_isovarga,          ///< isotropic isochoric Varga material
-    mes_isovolaaagasser,   ///< isochoric and volumetric summands for thrombus material (variable
-                           ///< stiffness)
     mes_isoyeoh,           ///< isochoric Yeoh hyperelastic potential summand
     mes_remodelfiber,      ///< general fiber material for remodeling
     mes_vologden,          ///< Ogden volumetric part of the  hyperelastic potential summand

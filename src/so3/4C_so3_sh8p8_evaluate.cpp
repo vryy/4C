@@ -19,7 +19,6 @@
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_mat_aaaneohooke.hpp"
-#include "4C_mat_aaaraghavanvorp_damage.hpp"
 #include "4C_mat_elasthyper.hpp"
 #include "4C_mat_micromaterial.hpp"
 #include "4C_mat_service.hpp"
@@ -2255,12 +2254,6 @@ double DRT::ELEMENTS::SoSh8p8::shear_mod() const
     {
       auto* aaaneo = dynamic_cast<MAT::AAAneohooke*>(mat.get());
       return aaaneo->shear_mod();
-      break;
-    }
-    case CORE::Materials::m_aaaraghavanvorp_damage: /*-AAA RaghavanVorp Material with damage*/
-    {
-      auto* aaadam = dynamic_cast<MAT::AaAraghavanvorpDamage*>(mat.get());
-      return aaadam->shear_mod();
       break;
     }
     case CORE::Materials::m_viscoanisotropic: /*-----------Anisotropic Viscous Material */

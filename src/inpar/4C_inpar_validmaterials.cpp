@@ -173,40 +173,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
   }
 
   /*----------------------------------------------------------------------*/
-  // "yoghurt-type" fluid with nonlinear viscosity according to a power law
-  // and extended by an Arrhenius-type term to account for temperature dependence
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_yoghurt", "yoghurt-type fluid with nonlinear viscosity", CORE::Materials::m_yoghurt));
-
-    AddNamedReal(m, "SHC", "specific heat capacity at constant pressure (J/(kg*K))");
-    AddNamedReal(m, "DENSITY", "density");
-    AddNamedReal(m, "THERMCOND", "thermal conductivity (J/(m*K*s))");
-    AddNamedReal(m, "STRAINRATEEXP", "exponent of strain-rate term");
-    AddNamedReal(m, "PREEXCON", "pre-exponential constant (1/s)");
-    AddNamedReal(m, "ACTENERGY", "activation energy (J/kg)");
-    AddNamedReal(m, "GASCON", "specific gas constant R (J/(kg*K))");
-    AddNamedReal(m, "DELTA", "safety factor");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // fluid flow in a permeable material
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_permeable",
-        "permeability for flow in porous media", CORE::Materials::m_permeable_fluid));
-
-    AddNamedString(m, "TYPE", "Problem type: Darcy, Darcy-Stokes (default)", "Darcy-Stokes");
-    AddNamedReal(m, "DYNVISCOSITY", "dynamic viscosity");
-    AddNamedReal(m, "DENSITY", "density");
-    AddNamedReal(m, "PERMEABILITY", "permeability of medium");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-
-  /*----------------------------------------------------------------------*/
   // lubrication material
   {
     auto m = Teuchos::rcp(new MaterialDefinition(
@@ -410,19 +376,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
     AddNamedInt(m, "NUMSCAL", "number of chemotactic pairs for these elements");
     AddNamedIntVector(m, "PAIR", "chemotaxis pairing", "NUMSCAL");
     AddNamedReal(m, "CHEMOCOEFF", "chemotaxis coefficient");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // anisotropic scalar transport material (with potential reaction coefficient)
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_scatra_aniso",
-        "anisotropic scalar transport material", CORE::Materials::m_scatra_aniso));
-
-    AddNamedReal(m, "DIFF1", "kinematic diffusivity component 1");
-    AddNamedReal(m, "DIFF2", "kinematic diffusivity component 2");
-    AddNamedReal(m, "DIFF3", "kinematic diffusivity component 3");
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -634,20 +587,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
   }
 
   /*----------------------------------------------------------------------*/
-  // material according to mixture-fraction approach
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_mixfrac",
-        "material according to mixture-fraction approach", CORE::Materials::m_mixfrac));
-
-    AddNamedReal(m, "KINVISC", "kinematic viscosity");
-    AddNamedReal(m, "KINDIFF", "kinematic diffusivity");
-    AddNamedReal(m, "EOSFACA", "equation-of-state factor a");
-    AddNamedReal(m, "EOSFACB", "equation-of-state factor b");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
   // material according to Sutherland law
   {
     auto m = Teuchos::rcp(new MaterialDefinition(
@@ -664,109 +603,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
     AppendMaterialDefinition(matlist, m);
   }
 
-  /*----------------------------------------------------------------------*/
-  // material for temperature-dependent water according to VDI Waermeatlas
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_tempdepwater",
-        "material for temperature-dependent water", CORE::Materials::m_tempdepwater));
-
-    AddNamedReal(m, "CRITDENS", "critical density (kg/m^3)");
-    AddNamedReal(m, "CRITTEMP", "critical temperature (K)");
-    AddNamedReal(m, "SHC", "specific heat capacity at constant pressure (J/(kg*K))");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // material according to Sutherland law with Arrhenius-type chemical
-  // kinetics (species)
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_arrhenius_spec",
-        "Arrhenius-type chemical kinetics (species)", CORE::Materials::m_arrhenius_spec));
-
-    AddNamedReal(m, "REFVISC", "reference dynamic viscosity (kg/(m*s))");
-    AddNamedReal(m, "REFTEMP", "reference temperature (K)");
-    AddNamedReal(m, "SUTHTEMP", "Sutherland temperature (K)");
-    AddNamedReal(m, "SCHNUM", "Schmidt number");
-    AddNamedReal(m, "PREEXCON", "pre-exponential constant (1/s)");
-    AddNamedReal(m, "TEMPEXP", "exponent of temperature dependence");
-    AddNamedReal(m, "ACTEMP", "activation temperature (K)");
-    AddNamedReal(m, "GASCON", "specific gas constant R (J/(kg*K))");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // material according to Sutherland law with Arrhenius-type chemical
-  // kinetics (temperature)
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_arrhenius_temp",
-        "Arrhenius-type chemical kinetics (temperature)", CORE::Materials::m_arrhenius_temp));
-
-    AddNamedReal(m, "REFVISC", "reference dynamic viscosity (kg/(m*s))");
-    AddNamedReal(m, "REFTEMP", "reference temperature (K)");
-    AddNamedReal(m, "SUTHTEMP", "Sutherland temperature (K)");
-    AddNamedReal(m, "SHC", "specific heat capacity at constant pressure (J/(kg*K))");
-    AddNamedReal(m, "PRANUM", "Prandtl number");
-    AddNamedReal(m, "REAHEAT", "heat of reaction per unit mass (J/kg)");
-    AddNamedReal(m, "PREEXCON", "pre-exponential constant (1/s)");
-    AddNamedReal(m, "TEMPEXP", "exponent of temperature dependence");
-    AddNamedReal(m, "ACTEMP", "activation temperature (K)");
-    AddNamedReal(m, "GASCON", "specific gas constant R (J/(kg*K))");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // material according to Sutherland law with Arrhenius-type chemical
-  // kinetics (progress variable)
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_arrhenius_pv",
-        "material with Arrhenius-type chemical kinetics (progress variable)",
-        CORE::Materials::m_arrhenius_pv));
-
-    AddNamedReal(m, "REFVISC", "reference dynamic viscosity (kg/(m*s))");
-    AddNamedReal(m, "REFTEMP", "reference temperature (K)");
-    AddNamedReal(m, "SUTHTEMP", "Sutherland temperature (K)");
-    AddNamedReal(m, "PRANUM", "Prandtl number");
-    AddNamedReal(m, "PREEXCON", "pre-exponential constant (1/s)");
-    AddNamedReal(m, "TEMPEXP", "exponent of temperature dependence");
-    AddNamedReal(m, "ACTEMP", "activation temperature (K)");
-    AddNamedReal(m, "UNBSHC", "specific heat capacity of unburnt phase (J/(kg*K))");
-    AddNamedReal(m, "BURSHC", "specific heat capacity of burnt phase (J/(kg*K))");
-    AddNamedReal(m, "UNBTEMP", "temperature of unburnt phase (K)");
-    AddNamedReal(m, "BURTEMP", "temperature of burnt phase (K)");
-    AddNamedReal(m, "UNBDENS", "density of unburnt phase (kg/m^3)");
-    AddNamedReal(m, "BURDENS", "density of burnt phase (kg/m^3)");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // material according to Sutherland law with simplified chemical
-  // kinetics due to Ferziger and Echekki (1993) (original version and
-  // modification by Poinsot and Veynante (2005)) (progress variable)
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_ferech_pv",
-        "material with Ferziger-Echekki (1993) chemical kinetics (progress variable)",
-        CORE::Materials::m_ferech_pv));
-
-    AddNamedReal(m, "REFVISC", "reference dynamic viscosity (kg/(m*s))");
-    AddNamedReal(m, "REFTEMP", "reference temperature (K)");
-    AddNamedReal(m, "SUTHTEMP", "Sutherland temperature (K)");
-    AddNamedReal(m, "PRANUM", "Prandtl number");
-    AddNamedReal(m, "REACRATECON", "reaction-rate constant (1/s)");
-    AddNamedReal(m, "PVCRIT", "critical value of progress variable");
-    AddNamedReal(m, "UNBSHC", "specific heat capacity of unburnt phase (J/(kg*K))");
-    AddNamedReal(m, "BURSHC", "specific heat capacity of burnt phase (J/(kg*K))");
-    AddNamedReal(m, "UNBTEMP", "temperature of unburnt phase (K)");
-    AddNamedReal(m, "BURTEMP", "temperature of burnt phase (K)");
-    AddNamedReal(m, "UNBDENS", "density of unburnt phase (kg/m^3)");
-    AddNamedReal(m, "BURDENS", "density of burnt phase (kg/m^3)");
-    AddNamedReal(m, "MOD", "modification factor (0.0=original, 1.0=modified)");
-
-    AppendMaterialDefinition(matlist, m);
-  }
 
   /*----------------------------------------------------------------------*/
   // material parameters for ion species in electrolyte solution (gjb 07/08)
@@ -1411,83 +1247,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
     AppendMaterialDefinition(matlist, m);
   }
 
-  /*--------------------------------------------------------------------*/
-  // aneurysm wall material according to Raghavan and Vorp [2000]
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_AAANeoHookeStopro",
-        "aneurysm wall material according to Raghavan and Vorp [2000] with stochastic "
-        "modelling of beta",
-        CORE::Materials::m_aaaneohooke_stopro));
-
-    AddNamedReal(m, "YOUNG", "Young's modulus");
-    AddNamedReal(m, "BETA", "2nd parameter");
-    AddNamedReal(m, "NUE", "Poisson's ratio");
-    AddNamedReal(m, "DENS", "mass density");
-    // Stochastic properties are set via randomfield class
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*--------------------------------------------------------------------*/
-  // AAA thrombus material according to GASSER et. al. [2008]
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_AAAGasser",
-        "AAA thrombus material according to GASSER [2008]", CORE::Materials::m_aaagasser));
-
-    AddNamedReal(m, "DENS", "mass density");
-    AddNamedString(
-        m, "VOL", "Type of volumetric Strain Energy Density: OSM (default),SuBa,SiTa", "OSM");
-    AddNamedReal(m, "NUE", "Poisson's ratio (0.49)");
-    AddNamedReal(m, "BETA", "empiric constant for OSM (-2.0)");
-    AddNamedReal(m, "CLUM", "luminal stiffness parameter (2.62e3)");
-    AddNamedReal(m, "CMED", "medial stiffness parameter (2.62e3)");
-    AddNamedReal(m, "CABLUM", "abluminal stiffness parameter (2.62e3)");
-
-    /*
-     AddNamedReal(m,"DENS","mass density");
-     AddNamedReal(m,"KAPPA","dilatation modulus");
-     AddNamedReal(m,"BETA","empiric constant");
-     AddNamedReal(m,"CLUM","luminal stiffness parameter");
-     AddNamedReal(m,"CMED","medial stiffness parameter");
-     AddNamedReal(m,"CABLUM","abluminal stiffness parameter");
-     */
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*--------------------------------------------------------------------*/
-  // aneurysm wall material according to Raghavan and Vorp [2000] with damage Simo
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Raghavan_Damage",
-        "aneurysm wall material according to Raghavan and Vorp [2000] with damage",
-        CORE::Materials::m_aaaraghavanvorp_damage));
-
-    AddNamedReal(m, "BULK", "Bulk's modulus");
-    AddNamedReal(m, "ALPHA", "1nd parameter,alpha");
-    AddNamedReal(m, "BETA", "2nd parameter,beta");
-    AddNamedReal(m, "EQSTRMIN", "equivalent strain initial damage");
-    AddNamedReal(m, "A", "1st parameter, a");
-    AddNamedReal(m, "B", "2nd parameter, b");
-    AddNamedReal(m, "DENS", "mass density");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*--------------------------------------------------------------------*/
-  // aneurysm wall material SEF according  to Raghavan and Vorp [2000],
-  // parameters according to mixed effects model
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_AAA_MixedEffects",
-        "aneurysm wall material according to Mixed Effects Model",
-        CORE::Materials::m_aaa_mixedeffects));
-
-    AddNamedReal(m, "AGE", "age");
-    AddNamedReal(m, "REFDIA", "subrenal diameter");
-    AddNamedReal(m, "NUE", "Poisson's ratio");
-    AddNamedReal(m, "DENS", "mass density");
-
-    AppendMaterialDefinition(matlist, m);
-  }
 
   /*----------------------------------------------------------------------*/
   // Visco-elastic Neo-Hookean material law
@@ -1794,34 +1553,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
 
     AddNamedReal(m, "MUE", "Shear modulus");
     AddNamedReal(m, "ALPHA", "Nonlinearity parameter");
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*--------------------------------------------------------------------*/
-  // isochoric and volumetric contribution of AAAGasser
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoVolAAAGasser",
-        "isochoric and volumetric part of AAAGasser material (thrombus)",
-        CORE::Materials::mes_isovolaaagasser));
-
-    AddNamedReal(m, "CLUM", "luminal stiffness parameter (2.62e3)");
-    AddNamedReal(m, "CMED", "medial stiffness parameter (2.62e3)");
-    AddNamedReal(m, "CABLUM", "abluminal stiffness parameter (2.62e3)");
-    AddNamedReal(m, "NUE", "");
-    AddNamedReal(m, "BETA", "");
-    // optional parameters for uncertainty quantification
-    AddNamedReal(
-        m, "MULUM", "mu for luminal pdf, irrelevant for deterministic analysis", 0.0, true);
-    AddNamedReal(m, "MUMED", "mu for medial pdf, irrelevant for deterministic analysis", 0.0, true);
-    AddNamedReal(
-        m, "MUABLUM", "mu for abluminal pdf, irrelevant for deterministic analysis", 0.0, true);
-    AddNamedReal(
-        m, "SIGMALUM", "std for luminal pdf, irrelevant for deterministic analysis", 0.0, true);
-    AddNamedReal(
-        m, "SIGMAMED", "std for medial pdf, irrelevant for deterministic analysis", 0.0, true);
-    AddNamedReal(
-        m, "SIGMAABLUM", "std for abluminal pdf, irrelevant for deterministic analysis", 0.0, true);
-
     AppendMaterialDefinition(matlist, m);
   }
 
@@ -3752,33 +3483,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
     AppendMaterialDefinition(matlist, m);
   }
 
-  /*--------------------------------------------------------------------*/
-  // O2 hemoglobin saturation material
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_0D_O2_HEMOGLOBIN_SATURATION",
-        "0D O2 hemoglobin saturation material", CORE::Materials::m_0d_o2_hemoglobin_saturation));
-
-    AddNamedReal(m, "PerVolumeBlood", "how much of blood satisfies this rule (usually 100ml)");
-    AddNamedReal(m, "O2SaturationPerVolBlood",
-        "O2 saturation per volume blood (In healthy blood 21.36ml/100ml of blood)");
-    AddNamedReal(m, "PressureHalf", "PO2 of 50\% saturated O2 (In healthy blood 26mmHg)");
-    AddNamedReal(m, "Power", "Power of the Sigmoidal saturation curve (2.5)");
-    AddNamedReal(m, "NumberOfO2PerVO2", "Number of O2 moles per unit volume of O2");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*--------------------------------------------------------------------*/
-  // O2 air saturation material
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_0D_O2_AIR_SATURATION",
-        "0D O2 air saturation material", CORE::Materials::m_0d_o2_air_saturation));
-
-    AddNamedReal(m, "AtmosphericPressure", "The atmospheric pressure");
-    AddNamedReal(m, "NumberOfO2PerVO2", "Number of O2 moles per unit volume of O2");
-
-    AppendMaterialDefinition(matlist, m);
-  }
 
   /*----------------------------------------------------------------------*/
   // particle material sph fluid
