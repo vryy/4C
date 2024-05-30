@@ -27,16 +27,15 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_scatra_timint_elch.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
+#include "4C_ssi_contact_strategy.hpp"
 #include "4C_ssi_coupling.hpp"
 #include "4C_ssi_manifold_utils.hpp"
 #include "4C_ssi_monolithic_assemble_strategy.hpp"
-#include "4C_ssi_monolithic_contact_strategy.hpp"
 #include "4C_ssi_monolithic_convcheck_strategies.hpp"
 #include "4C_ssi_monolithic_dbc_handler.hpp"
 #include "4C_ssi_monolithic_evaluate_OffDiag.hpp"
 #include "4C_ssi_monolithic_meshtying_strategy.hpp"
 #include "4C_ssi_utils.hpp"
-#include "4C_structure_new_model_evaluator_contact.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -476,31 +475,6 @@ const Teuchos::RCP<const Epetra_Map>& SSI::SsiMono::dof_row_map() const
   return MapsSubProblems()->FullMap();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::SsiMono::setup_contact_strategy()
-{
-  // get the contact solution strategy
-  auto contact_solution_type = CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-      GLOBAL::Problem::Instance()->contact_dynamic_params(), "STRATEGY");
-
-  if (contact_solution_type == INPAR::CONTACT::solution_nitsche)
-  {
-    if (CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(
-            GLOBAL::Problem::Instance()->structural_dynamic_params(), "INT_STRATEGY") !=
-        INPAR::STR::int_standard)
-      FOUR_C_THROW("ssi contact only with new structural time integration");
-
-    // get the contact model evaluator and store a pointer to the strategy
-    auto& model_evaluator_contact = dynamic_cast<STR::MODELEVALUATOR::Contact&>(
-        structure_field()->ModelEvaluator(INPAR::STR::model_contact));
-    contact_strategy_nitsche_ = Teuchos::rcp_dynamic_cast<CONTACT::NitscheStrategySsi>(
-        model_evaluator_contact.StrategyPtr(), true);
-  }
-  else
-    FOUR_C_THROW("Only Nitsche contact implemented for SSI problems at the moment!");
-}
-
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void SSI::SsiMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
@@ -819,24 +793,6 @@ void SSI::SsiMono::SetupSystem()
   // instantiate Dirichlet boundary condition handler class
   dbc_handler_ = SSI::BuildDBCHandler(is_sca_tra_manifold(), matrixtype_, ScaTraField(),
       is_sca_tra_manifold() ? ScaTraManifold() : Teuchos::null, ssi_maps_, structure_field());
-}
-
-/*---------------------------------------------------------------------------------*
- *---------------------------------------------------------------------------------*/
-void SSI::SsiMono::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const
-{
-  // call base class
-  SSIBase::SetScatraSolution(phi);
-
-  // set state for contact evaluation
-  if (contact_strategy_nitsche_ != Teuchos::null) set_ssi_contact_states(phi);
-}
-
-/*---------------------------------------------------------------------------------*
- *---------------------------------------------------------------------------------*/
-void SSI::SsiMono::set_ssi_contact_states(Teuchos::RCP<const Epetra_Vector> phi) const
-{
-  contact_strategy_nitsche_->set_state(MORTAR::state_scalar, *phi);
 }
 
 /*---------------------------------------------------------------------------------*

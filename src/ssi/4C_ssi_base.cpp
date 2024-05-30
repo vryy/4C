@@ -13,6 +13,7 @@
 #include "4C_adapter_str_factory.hpp"
 #include "4C_adapter_str_ssiwrapper.hpp"
 #include "4C_adapter_str_structure_new.hpp"
+#include "4C_contact_nitsche_strategy_ssi.hpp"
 #include "4C_coupling_volmortar.hpp"
 #include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
@@ -33,6 +34,7 @@
 #include "4C_ssi_resulttest.hpp"
 #include "4C_ssi_str_model_evaluator_partitioned.hpp"
 #include "4C_ssi_utils.hpp"
+#include "4C_structure_new_model_evaluator_contact.hpp"
 #include "4C_utils_function_of_time.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -516,6 +518,16 @@ void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
   check_is_setup();
 
   ssicoupling_->SetScalarField(*structure_field()->discretization(), phi, 1);
+
+  // set state for contact evaluation
+  if (contact_strategy_nitsche_ != Teuchos::null) set_ssi_contact_states(phi);
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::SSIBase::set_ssi_contact_states(Teuchos::RCP<const Epetra_Vector> phi) const
+{
+  contact_strategy_nitsche_->set_state(MORTAR::state_scalar, *phi);
 }
 
 /*----------------------------------------------------------------------*/
@@ -911,6 +923,31 @@ void SSI::SSIBase::setup_model_evaluator()
     structure_base_algorithm()->register_model_evaluator(
         "Basic Coupling Model", modelevaluator_ssi_base_);
   }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::SSIBase::setup_contact_strategy()
+{
+  // get the contact solution strategy
+  auto contact_solution_type = CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+      GLOBAL::Problem::Instance()->contact_dynamic_params(), "STRATEGY");
+
+  if (contact_solution_type == INPAR::CONTACT::solution_nitsche)
+  {
+    if (CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(
+            GLOBAL::Problem::Instance()->structural_dynamic_params(), "INT_STRATEGY") !=
+        INPAR::STR::int_standard)
+      FOUR_C_THROW("ssi contact only with new structural time integration");
+
+    // get the contact model evaluator and store a pointer to the strategy
+    auto& model_evaluator_contact = dynamic_cast<STR::MODELEVALUATOR::Contact&>(
+        structure_field()->ModelEvaluator(INPAR::STR::model_contact));
+    contact_strategy_nitsche_ = Teuchos::rcp_dynamic_cast<CONTACT::NitscheStrategySsi>(
+        model_evaluator_contact.StrategyPtr(), true);
+  }
+  else
+    FOUR_C_THROW("Only Nitsche contact implemented for SSI problems at the moment!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -31,6 +31,11 @@ namespace ADAPTER
   class StructureBaseAlgorithmNew;
 }  // namespace ADAPTER
 
+namespace CONTACT
+{
+  class NitscheStrategySsi;
+}
+
 namespace INPAR::SSI
 {
   enum class FieldCoupling;
@@ -208,6 +213,13 @@ namespace SSI
     /// set scatra solution on other fields
     virtual void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const;
 
+    /*!
+     * @brief set contact states needed for evaluation of ssi contact
+     *
+     * @param[in] phi  scatra state to be set to contact nitsche strategy
+     */
+    void set_ssi_contact_states(Teuchos::RCP<const Epetra_Vector> phi) const;
+
     /// set micro scatra solution on other fields
     virtual void set_micro_scatra_solution(Teuchos::RCP<const Epetra_Vector> phi) const;
 
@@ -241,10 +253,19 @@ namespace SSI
     //! get bool indicating if we have at least one ssi interface contact condition
     bool SSIInterfaceContact() const { return ssiinterfacecontact_; }
 
+    //! set up a pointer to the contact strategy of the structural field and store it
+    void setup_contact_strategy();
+
     //! SSI structure meshtying object containing coupling adapters, converters and maps
     Teuchos::RCP<SSI::UTILS::SSIMeshTying> ssi_structure_mesh_tying() const
     {
       return ssi_structure_meshtying_;
+    }
+
+    //! return contact nitsche strategy for ssi problems
+    Teuchos::RCP<CONTACT::NitscheStrategySsi> nitsche_strategy_ssi() const
+    {
+      return contact_strategy_nitsche_;
     }
 
    protected:
@@ -296,6 +317,9 @@ namespace SSI
 
     //! different time step size between scatra field and structure field
     bool diff_time_step_size() const { return diff_time_step_size_; }
+
+    //! store contact nitsche strategy for ssi problems
+    Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_strategy_nitsche_;
 
    private:
     /*!

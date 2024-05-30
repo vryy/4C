@@ -1,13 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Application of contact contributions strategy for monolithic SSI
+\brief Application of contact contributions strategy for monolithic/partitioning SSI
 
 \level 2
 
  */
 /*----------------------------------------------------------------------*/
-#ifndef FOUR_C_SSI_MONOLITHIC_CONTACT_STRATEGY_HPP
-#define FOUR_C_SSI_MONOLITHIC_CONTACT_STRATEGY_HPP
+
+#ifndef FOUR_C_SSI_CONTACT_STRATEGY_HPP
+#define FOUR_C_SSI_CONTACT_STRATEGY_HPP
 
 #include "4C_config.hpp"
 
@@ -78,7 +79,8 @@ namespace SSI
     //! store contact nitsche strategy for ssi problems
     Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_strategy_nitsche_;
 
-    //! this object holds all maps relevant to monolithic scalar transport - structure interaction
+    //! this object holds all maps relevant to monolithic/partitioning scalar transport - structure
+    //! interaction
     Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps_;
   };
 
@@ -125,6 +127,7 @@ namespace SSI
       Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
       Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, CORE::LINALG::MatrixType matrixtype_scatra);
 }  // namespace SSI
+
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

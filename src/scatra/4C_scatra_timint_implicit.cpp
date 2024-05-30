@@ -19,6 +19,7 @@
 /*----------------------------------------------------------------------*/
 #include "4C_scatra_timint_implicit.hpp"
 
+#include "4C_contact_nitsche_strategy_ssi.hpp"
 #include "4C_discretization_condition_periodic.hpp"
 #include "4C_discretization_condition_selector.hpp"
 #include "4C_discretization_fem_general_assemblestrategy.hpp"
@@ -52,6 +53,7 @@
 #include "4C_scatra_turbulence_hit_initial_scalar_field.hpp"
 #include "4C_scatra_turbulence_hit_scalar_forcing.hpp"
 #include "4C_scatra_utils.hpp"
+#include "4C_ssi_contact_strategy.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -2508,6 +2510,18 @@ void SCATRA::ScaTraTimIntImpl::evaluate_solution_depending_conditions(
   // evaluate meshtying
   // this needs to be done as final step for consistency
   strategy_->EvaluateMeshtying();
+
+  //----------------------------------------------------------------------
+  // apply contact terms...
+  // account for partitioning algorithm. The dofs in contact discretization must be frozen
+  // before calling this function
+  //----------------------------------------------------------------------
+  if (contact_strategy_nitsche_ != Teuchos::null)
+  {
+    const auto fint_scatra =
+        contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::scatra);
+    if (residual_->Update(1.0, *fint_scatra, 1.0)) FOUR_C_THROW("update failed");
+  }
 
   // evaluate macro-micro coupling on micro scale in multi-scale scalar transport problems
   if (micro_scale_) evaluate_macro_micro_coupling();

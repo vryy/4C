@@ -20,11 +20,6 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CONTACT
-{
-  class NitscheStrategySsi;
-}
-
 namespace INPAR::SSI
 {
   enum class ScaTraTimIntType;
@@ -84,12 +79,6 @@ namespace SSI
     void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
-
-    //! return contact nitsche strategy for ssi problems
-    Teuchos::RCP<CONTACT::NitscheStrategySsi> nitsche_strategy_ssi() const
-    {
-      return contact_strategy_nitsche_;
-    }
 
     //! return global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> MapsSubProblems() const;
@@ -220,20 +209,8 @@ namespace SSI
     //! print time step size, time, and number of time step
     void print_time_step_info();
 
-    //! set up a pointer to the contact strategy of the structural field and store it
-    void setup_contact_strategy();
-
     //! set scatra manifold solution on scatra field
     void set_scatra_manifold_solution(Teuchos::RCP<const Epetra_Vector> phi);
-
-    void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const override;
-
-    /*!
-     * @brief set contact states needed for evaluation of ssi contact
-     *
-     * @param[in] phi  scatra state to be set to contact nitsche strategy
-     */
-    void set_ssi_contact_states(Teuchos::RCP<const Epetra_Vector> phi) const;
 
     //! evaluate time step using Newton-Raphson iteration
     void newton_loop();
@@ -245,9 +222,6 @@ namespace SSI
 
     //! update structure state within Newton iteration
     void update_iter_structure();
-
-    //! store contact nitsche strategy for ssi problems
-    Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_strategy_nitsche_;
 
     //! Dirichlet boundary condition handler
     Teuchos::RCP<SSI::DBCHandlerBase> dbc_handler_;

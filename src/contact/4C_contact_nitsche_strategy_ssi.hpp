@@ -53,7 +53,11 @@ namespace CONTACT
         Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor) override
     {
-      FOUR_C_THROW("not implemented");
+      if (kt != Teuchos::null && f != Teuchos::null)
+      {
+        NitscheStrategy::ApplyForceStiffCmt(dis, kt, f, step, iter, predictor);
+      }
+      curr_state_eval_ = true;
     }
 
     /*!

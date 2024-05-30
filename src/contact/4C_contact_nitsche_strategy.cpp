@@ -281,7 +281,10 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::create_rhs_block_ptr(
 Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategy::GetRhsBlockPtr(
     const enum CONTACT::VecBlockType& bt) const
 {
-  if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
+  if (!curr_state_eval_)
+    FOUR_C_THROW("you didn't evaluate this contact state for %s first",
+        CONTACT::VecBlockTypeToStr(bt).c_str());
+
   switch (bt)
   {
     case CONTACT::VecBlockType::displ:
