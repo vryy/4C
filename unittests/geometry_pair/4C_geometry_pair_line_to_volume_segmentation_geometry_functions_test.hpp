@@ -555,12 +555,12 @@ namespace
     weights[25] = 0.707107;
     weights[26] = 1.0;
     int nodes[27];
-    std::map<int, Teuchos::RCP<DRT::Node>> nodes_map;
+    std::map<int, Teuchos::RCP<CORE::Nodes::Node>> nodes_map;
     for (unsigned int i_node = 0; i_node < 27; i_node++)
     {
       nodes[i_node] = (int)i_node;
       std::vector<double> dummycoord = {0., 0., 0., 0., 0., 0.};
-      Teuchos::RCP<DRT::Node> new_node =
+      Teuchos::RCP<CORE::Nodes::Node> new_node =
           Teuchos::rcp(new DRT::NURBS::ControlPoint(i_node, dummycoord, weights[i_node], 0));
       structdis->AddNode(new_node);
       nodes_map[i_node] = new_node;

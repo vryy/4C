@@ -26,9 +26,9 @@
 #include "4C_beam3_base.hpp"
 #include "4C_beam3_spatial_discretization_utils.hpp"
 #include "4C_discretization_fem_general_largerotations.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_fad.hpp"
@@ -79,8 +79,8 @@ namespace DRT
       void nodal_block_information(
           CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& actnode, const double* x0, const int numdof, const int dimnsp) override;
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(CORE::Nodes::Node& actnode, const double* x0,
+          const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
@@ -205,7 +205,7 @@ namespace DRT
        *
        *  \author grill
        *  \date 10/16 */
-      inline bool IsCenterlineNode(const DRT::Node& node) const override
+      inline bool IsCenterlineNode(const CORE::Nodes::Node& node) const override
       {
         if (!centerline_hermite_ or node.Id() == this->Nodes()[0]->Id() or
             node.Id() == this->Nodes()[1]->Id())
@@ -217,7 +217,7 @@ namespace DRT
       /*!
       \brief Get number of degrees of freedom of a single node
       */
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         /* note: this is not necessarily the number of DOF assigned to this node by the
          * discretization finally, but only the number of DOF requested for this node by this
@@ -555,7 +555,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       inline void PositionDofIndices(
-          std::vector<int>& posdofs, const DRT::Node& node) const override
+          std::vector<int>& posdofs, const CORE::Nodes::Node& node) const override
       {
         if ((not centerline_hermite_) or
             (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()))
@@ -573,7 +573,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       inline void TangentDofIndices(
-          std::vector<int>& tangdofs, const DRT::Node& node) const override
+          std::vector<int>& tangdofs, const CORE::Nodes::Node& node) const override
       {
         if (centerline_hermite_ and
             (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()))
@@ -591,7 +591,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       inline void rotation_vec_dof_indices(
-          std::vector<int>& rotvecdofs, const DRT::Node& node) const override
+          std::vector<int>& rotvecdofs, const CORE::Nodes::Node& node) const override
       {
         if ((not centerline_hermite_) or
             (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()))
@@ -616,7 +616,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       inline void rotation1_d_dof_indices(
-          std::vector<int>& twistdofs, const DRT::Node& node) const override
+          std::vector<int>& twistdofs, const CORE::Nodes::Node& node) const override
       {
         return;
       }
@@ -627,7 +627,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       inline void tangent_length_dof_indices(
-          std::vector<int>& tangnormdofs, const DRT::Node& node) const override
+          std::vector<int>& tangnormdofs, const CORE::Nodes::Node& node) const override
       {
         return;
       }

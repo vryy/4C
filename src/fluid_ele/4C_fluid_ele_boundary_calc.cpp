@@ -945,7 +945,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::element_mean_curvature(
     // get the number of elements adjacent to this node. Find out how many
     // will contribute to the interpolated mean curvature value.
     int contr_elements = 0;
-    DRT::Node* thisNode = (ele->Nodes())[inode];
+    CORE::Nodes::Node* thisNode = (ele->Nodes())[inode];
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (thisNode == nullptr) FOUR_C_THROW("No node!\n");
 #endif
@@ -964,13 +964,13 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::element_mean_curvature(
       for (unsigned int surf = 0; surf < surfaces.size(); ++surf)
       {
         Teuchos::RCP<CORE::Elements::Element> surface = surfaces[surf];
-        DRT::Node** NodesPtr = surface->Nodes();
+        CORE::Nodes::Node** NodesPtr = surface->Nodes();
         int numfsnodes = 0;
         bool hasthisnode = false;
 
         for (int surfnode = 0; surfnode < surface->num_node(); ++surfnode)
         {
-          DRT::Node* checkNode = NodesPtr[surfnode];
+          CORE::Nodes::Node* checkNode = NodesPtr[surfnode];
           // check whether a free surface condition is active on this node
           if (checkNode->GetCondition("FREESURFCoupling") != nullptr)
           {

@@ -523,7 +523,7 @@ void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
 
   // get node coordinates of element
   CORE::LINALG::Matrix<dim + 1, nen> xyze;
-  DRT::Node** nodes = actele->Nodes();
+  CORE::Nodes::Node** nodes = actele->Nodes();
 
   for (int inode = 0; inode < nen; inode++)
   {
@@ -664,7 +664,7 @@ void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
 
   // get node coordinates of element
   CORE::LINALG::Matrix<dim, nen> xyze;
-  DRT::Node** nodes = actele->Nodes();
+  CORE::Nodes::Node** nodes = actele->Nodes();
 
   for (int inode = 0; inode < nen; inode++)
   {

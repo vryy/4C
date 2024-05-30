@@ -124,7 +124,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override { return 4; }
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 4; }
 
       /*!
       \brief Print this element

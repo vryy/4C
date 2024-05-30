@@ -37,14 +37,12 @@ class PostResult;
 namespace DRT
 {
   class Discretization;
-  class Node;
 
   namespace NURBS
   {
     class NurbsDiscretization;
   }
 }  // namespace DRT
-
 
 //! defines how 2 line2 elements are constructed from a line3
 const int sublinemap[2][2] = {{0, 2}, {2, 1}};

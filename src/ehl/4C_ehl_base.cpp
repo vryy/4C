@@ -388,7 +388,7 @@ void EHL::Base::add_couette_force(
       Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->dof_row_map(1)));
   for (int i = 0; i < lub_dis.NodeRowMap()->NumMyElements(); ++i)
   {
-    DRT::Node* lnode = lub_dis.lRowNode(i);
+    CORE::Nodes::Node* lnode = lub_dis.lRowNode(i);
     if (!lnode) FOUR_C_THROW("node not found");
     const double p = lubrication_->LubricationField()->Prenp()->operator[](
         lubrication_->LubricationField()->Prenp()->Map().LID(lub_dis.Dof(0, lnode, 0)));
@@ -521,7 +521,7 @@ void EHL::Base::setup_unprojectable_dbc()
       Teuchos::rcp(new Epetra_FEVector(*mortaradapter_->SlaveDofMap(), true));
   for (int i = 0; i < mortaradapter_->Interface()->SlaveRowNodes()->NumMyElements(); ++i)
   {
-    DRT::Node* node = mortaradapter_->Interface()->Discret().gNode(
+    CORE::Nodes::Node* node = mortaradapter_->Interface()->Discret().gNode(
         mortaradapter_->Interface()->SlaveRowNodes()->GID(i));
     if (!node) FOUR_C_THROW("gnode returned nullptr");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
@@ -668,7 +668,7 @@ void EHL::Base::setup_field_coupling(
   for (int i = 0; i < mortaradapter_->Interface()->SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = mortaradapter_->Interface()->SlaveRowNodes()->GID(i);
-    DRT::Node* node = structdis->gNode(gid);
+    CORE::Nodes::Node* node = structdis->gNode(gid);
     std::vector<int> dofs = structdis->Dof(0, node);
     // slavemaptransform_->Assemble(1.0,dofs[0],gid);
     for (unsigned int idim = 0; idim < dofs.size(); idim++)
@@ -684,7 +684,7 @@ void EHL::Base::setup_field_coupling(
       new CORE::LINALG::SparseMatrix(*(lubricationdis->dof_row_map(1)), 81, false, false));
   for (int inode = 0; inode < lubricationdis->NumMyRowNodes(); ++inode)
   {
-    DRT::Node* node = lubricationdis->lRowNode(inode);
+    CORE::Nodes::Node* node = lubricationdis->lRowNode(inode);
     std::vector<int> nodepredof = lubricationdis->Dof(0, node);
     std::vector<int> nodedispdofs = lubricationdis->Dof(1, node);
     for (unsigned int idim = 0; idim < nodedispdofs.size(); idim++)
@@ -804,7 +804,7 @@ void EHL::Base::output(bool forced_writerestart)
     for (int i = 0;
          i < lubrication_->LubricationField()->discretization()->NodeRowMap()->NumMyElements(); ++i)
     {
-      DRT::Node* lnode = lubrication_->LubricationField()->discretization()->lRowNode(i);
+      CORE::Nodes::Node* lnode = lubrication_->LubricationField()->discretization()->lRowNode(i);
       if (!lnode) FOUR_C_THROW("node not found");
       const double p = lubrication_->LubricationField()->Prenp()->operator[](
           lubrication_->LubricationField()->Prenp()->Map().LID(

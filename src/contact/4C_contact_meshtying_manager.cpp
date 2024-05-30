@@ -206,7 +206,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
         if (!discret.NodeColMap()->MyGID(gid)) continue;
-        DRT::Node* node = discret.gNode(gid);
+        CORE::Nodes::Node* node = discret.gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // create Node object

@@ -77,7 +77,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingCondition::BuildIdSets(
   for (auto node_id : node_ids)
   {
     i++;
-    DRT::Node* node = discretization->gNode(node_id);
+    CORE::Nodes::Node* node = discretization->gNode(node_id);
     // This means that the node is not in the column map of this proc and the element pair will thus
     // be created on a different processor
     if (node == nullptr) return;

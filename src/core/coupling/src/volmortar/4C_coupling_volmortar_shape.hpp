@@ -465,7 +465,7 @@ namespace CORE::VOLMORTAR
           CORE::LINALG::Matrix<nn, ndim> xrefe;
           for (int i = 0; i < nn; ++i)
           {
-            const DRT::Node* const* nodes = ele.Nodes();
+            const CORE::Nodes::Node* const* nodes = ele.Nodes();
             if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
 
             xrefe(i, 0) = nodes[i]->X()[0];
@@ -571,7 +571,7 @@ namespace CORE::VOLMORTAR
           CORE::LINALG::Matrix<nn, ndim> xrefe;
           for (int i = 0; i < nn; ++i)
           {
-            const DRT::Node* const* nodes = ele.Nodes();
+            const CORE::Nodes::Node* const* nodes = ele.Nodes();
             if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
 
             xrefe(i, 0) = nodes[i]->X()[0];
@@ -1818,7 +1818,7 @@ namespace CORE::VOLMORTAR
       static constexpr int n = CORE::FE::num_nodes<distype>;
       static constexpr int ndim = CORE::FE::dim<distype>;
 
-      const DRT::Node* const* mynodes = ele.Nodes();
+      const CORE::Nodes::Node* const* mynodes = ele.Nodes();
       if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
       for (int i = 0; i < ndim; ++i) globcoord[i] = 0.0;

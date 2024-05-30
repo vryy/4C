@@ -38,7 +38,7 @@
 #include "4C_config.hpp"
 
 #include "4C_beam3_base.hpp"
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 
 // #define SIMPLECALC ;          // simplified residuum and stiffness calculation for the small
 //  tension case Default: Off
@@ -119,7 +119,7 @@ namespace DRT::ELEMENTS
         CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
     CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-        DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+        CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
     void setup_element_definition(
         std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions) override;
@@ -209,7 +209,7 @@ namespace DRT::ELEMENTS
     inline int NumCenterlineNodes() const override { return 2; }
 
     //! \brief find out whether given node is used for centerline interpolation
-    inline bool IsCenterlineNode(const DRT::Node& node) const override { return true; }
+    inline bool IsCenterlineNode(const CORE::Nodes::Node& node) const override { return true; }
 
     //! \brief Get jacobian this element
     const double& get_jacobi() const { return jacobi_; }
@@ -286,7 +286,7 @@ namespace DRT::ELEMENTS
     std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
 
     //! \brief Get number of degrees of freedom of a single node
-    int NumDofPerNode(const DRT::Node& node) const override
+    int NumDofPerNode(const CORE::Nodes::Node& node) const override
     {
 /*note: this is not necessarily the number of DOF assigned to this node by the discretization
  *finally, but only the number of DOF requested for this node by this element; the discretization
@@ -432,7 +432,8 @@ namespace DRT::ELEMENTS
     int how_many_random_numbers_i_need() const override;
 
     //! \brief add indices of those DOFs of a given node that are positions
-    inline void PositionDofIndices(std::vector<int>& posdofs, const DRT::Node& node) const override
+    inline void PositionDofIndices(
+        std::vector<int>& posdofs, const CORE::Nodes::Node& node) const override
     {
       posdofs.push_back(0);
       posdofs.push_back(1);
@@ -442,7 +443,8 @@ namespace DRT::ELEMENTS
     /** \brief add indices of those DOFs of a given node that are tangents (in the case of Hermite
      * interpolation)
      */
-    inline void TangentDofIndices(std::vector<int>& tangdofs, const DRT::Node& node) const override
+    inline void TangentDofIndices(
+        std::vector<int>& tangdofs, const CORE::Nodes::Node& node) const override
     {
       tangdofs.push_back(3);
       tangdofs.push_back(4);
@@ -453,7 +455,7 @@ namespace DRT::ELEMENTS
      * rotation vectors)
      */
     inline void rotation_vec_dof_indices(
-        std::vector<int>& rotvecdofs, const DRT::Node& node) const override
+        std::vector<int>& rotvecdofs, const CORE::Nodes::Node& node) const override
     {
     }
 
@@ -462,7 +464,7 @@ namespace DRT::ELEMENTS
      *          rotvec=false)
      */
     inline void rotation1_d_dof_indices(
-        std::vector<int>& twistdofs, const DRT::Node& node) const override
+        std::vector<int>& twistdofs, const CORE::Nodes::Node& node) const override
     {
     }
 
@@ -470,7 +472,7 @@ namespace DRT::ELEMENTS
      *         (additive, e.g. in case of beam3k with rotvec=true)
      */
     inline void tangent_length_dof_indices(
-        std::vector<int>& tangnormdofs, const DRT::Node& node) const override
+        std::vector<int>& tangnormdofs, const CORE::Nodes::Node& node) const override
     {
     }
 

@@ -184,11 +184,11 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
   std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>> structelements;
   std::map<int, Teuchos::RCP<CORE::Elements::Element>> structmelements;
   std::map<int, Teuchos::RCP<CORE::Elements::Element>> structdelements;
-  std::map<int, DRT::Node*> dummy1;                 // dummy map
-  std::map<int, std::map<int, DRT::Node*>> dummy2;  // dummy map
-  std::map<int, DRT::Node*> structmnodes;           // partial map of sticking structure nodes
-  std::map<int, DRT::Node*> structdnodes;           // partial map of centerdisp structure nodes
-  std::map<int, std::map<int, DRT::Node*>> structgnodes;  // complete map of strucutre nodes
+  std::map<int, CORE::Nodes::Node*> dummy1;                 // dummy map
+  std::map<int, std::map<int, CORE::Nodes::Node*>> dummy2;  // dummy map
+  std::map<int, CORE::Nodes::Node*> structmnodes;  // partial map of sticking structure nodes
+  std::map<int, CORE::Nodes::Node*> structdnodes;  // partial map of centerdisp structure nodes
+  std::map<int, std::map<int, CORE::Nodes::Node*>> structgnodes;  // complete map of strucutre nodes
 
   // initialize struct objects in interface
   CORE::Conditions::FindConditionObjects(
@@ -235,8 +235,8 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
   // declare fluid objects in interface
   std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>> fluidelements;
   std::map<int, Teuchos::RCP<CORE::Elements::Element>> fluidmelements;
-  std::map<int, std::map<int, DRT::Node*>> fluidnodes;  // complete map of fluid nodes
-  std::map<int, DRT::Node*> fluidmnodes;                // partial map of sticking fluid nodes
+  std::map<int, std::map<int, CORE::Nodes::Node*>> fluidnodes;  // complete map of fluid nodes
+  std::map<int, CORE::Nodes::Node*> fluidmnodes;  // partial map of sticking fluid nodes
 
   // initialize struct objects in interface
   CORE::Conditions::FindConditionObjects(
@@ -255,8 +255,8 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
     if (!err) FOUR_C_THROW("Non sliding interface has to be a subset of FSI-interface or empty");
   }
 
-  std::map<int, DRT::Node*>::iterator nit;
-  std::map<int, std::map<int, DRT::Node*>>::iterator mnit;
+  std::map<int, CORE::Nodes::Node*>::iterator nit;
+  std::map<int, std::map<int, CORE::Nodes::Node*>>::iterator mnit;
   for (nit = ifluidconfnodes_.begin(); nit != ifluidconfnodes_.end(); nit++)
   {
     int err = 0;
@@ -319,10 +319,10 @@ void FSI::UTILS::SlideAleUtils::Remeshing(ADAPTER::FSIStructureWrapper& structur
 
   // For the NON sliding ALE Nodes, use standard ALE displacements
 
-  std::map<int, DRT::Node*>::const_iterator nodeiter;
+  std::map<int, CORE::Nodes::Node*>::const_iterator nodeiter;
   for (nodeiter = ifluidconfnodes_.begin(); nodeiter != ifluidconfnodes_.end(); ++nodeiter)
   {
-    DRT::Node* node = nodeiter->second;
+    CORE::Nodes::Node* node = nodeiter->second;
     std::vector<int> lids(dim);
     for (int p = 0; p < dim; p++)
       // lids of gids of node
@@ -505,7 +505,7 @@ std::map<int, CORE::LINALG::Matrix<3, 1>> FSI::UTILS::SlideAleUtils::current_str
       for (int j = 0; j < tmpele->num_node(); j++)
       {
         const int gid = n[j];
-        const DRT::Node* node = interfacedis.gNode(gid);
+        const CORE::Nodes::Node* node = interfacedis.gNode(gid);
         std::vector<int> lm;
         lm.reserve(3);
         // extract global dof ids
@@ -566,11 +566,11 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
   }
 
 
-  std::map<int, std::map<int, DRT::Node*>>::iterator mnit;
+  std::map<int, std::map<int, CORE::Nodes::Node*>>::iterator mnit;
   for (mnit = ifluidslidnodes_.begin(); mnit != ifluidslidnodes_.end(); ++mnit)
   {
     // translation + projection
-    std::map<int, DRT::Node*>::const_iterator nodeiter;
+    std::map<int, CORE::Nodes::Node*>::const_iterator nodeiter;
     for (nodeiter = mnit->second.begin(); nodeiter != mnit->second.end(); ++nodeiter)
     {
       // Project fluid nodes onto the struct interface
@@ -589,7 +589,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
         FOUR_C_THROW("wrong dimension");
 
 
-      DRT::Node* node = nodeiter->second;
+      CORE::Nodes::Node* node = nodeiter->second;
       std::vector<int> lids(dim);
       for (int p = 0; p < dim; p++)
         // lids of gids of node

@@ -80,7 +80,7 @@ void DRT::ELEMENTS::ElemagDiffType::nodal_block_information(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ElemagDiffType::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
   FOUR_C_THROW("method ComputeNullSpace not implemented right now!");
@@ -192,7 +192,7 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagDiff::CreateFaceEleme
     CORE::Elements::Element* parent_slave,  //!< parent slave fluid3 element
     int nnode,                              //!< number of surface nodes
     const int* nodeids,                     //!< node ids of surface element
-    DRT::Node** nodes,                      //!< nodes of surface element
+    CORE::Nodes::Node** nodes,              //!< nodes of surface element
     const int lsurface_master,              //!< local surface number w.r.t master parent element
     const int lsurface_slave,               //!< local surface number w.r.t slave parent element
     const std::vector<int>& localtrafomap   //! local trafo map
@@ -241,7 +241,8 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagDiffBoundaryType::Cre
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ElemagDiffBoundary::ElemagDiffBoundary(int id, int owner, int nnode,
-    const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::ElemagDiff* parent, const int lsurface)
+    const int* nodeids, CORE::Nodes::Node** nodes, DRT::ELEMENTS::ElemagDiff* parent,
+    const int lsurface)
     : ElemagBoundary(id, owner, nnode, nodeids, nodes, parent, lsurface)
 {
   //  set_parent_master_element(parent,lsurface);
@@ -371,10 +372,10 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagDiffIntFaceType::Crea
  |  ctor (public)                                       berardocco 03/19|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ElemagDiffIntFace::ElemagDiffIntFace(int id,  ///< element id
-    int owner,           ///< owner (= owner of parent element with smallest gid)
-    int nnode,           ///< number of nodes
-    const int* nodeids,  ///< node ids
-    DRT::Node** nodes,   ///< nodes of surface
+    int owner,                  ///< owner (= owner of parent element with smallest gid)
+    int nnode,                  ///< number of nodes
+    const int* nodeids,         ///< node ids
+    CORE::Nodes::Node** nodes,  ///< nodes of surface
     DRT::ELEMENTS::ElemagDiff* parent_master,  ///< master parent element
     DRT::ELEMENTS::ElemagDiff* parent_slave,   ///< slave parent element
     const int lsurface_master,  ///< local surface index with respect to master parent element
@@ -437,7 +438,7 @@ void DRT::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int m_numnode = ParentMasterElement()->num_node();
-  DRT::Node** m_nodes = ParentMasterElement()->Nodes();
+  CORE::Nodes::Node** m_nodes = ParentMasterElement()->Nodes();
 
   if (m_numnode != static_cast<int>(nds_master.size()))
   {
@@ -446,7 +447,7 @@ void DRT::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int s_numnode = ParentSlaveElement()->num_node();
-  DRT::Node** s_nodes = ParentSlaveElement()->Nodes();
+  CORE::Nodes::Node** s_nodes = ParentSlaveElement()->Nodes();
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
   {
@@ -455,7 +456,7 @@ void DRT::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int f_numnode = num_node();
-  DRT::Node** f_nodes = Nodes();
+  CORE::Nodes::Node** f_nodes = Nodes();
 
   //-----------------------------------------------------------------------
   // create the patch local map and additional local maps between elements lm and patch lm
@@ -486,7 +487,7 @@ void DRT::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
   // fill patch lm with master's nodes
   for (int k = 0; k < m_numnode; ++k)
   {
-    DRT::Node* node = m_nodes[k];
+    CORE::Nodes::Node* node = m_nodes[k];
     std::vector<int> dof = discretization.Dof(dofset, node);
 
     // get maximum of numdof per node with the help of master and/or slave element (returns 4 in 3D
@@ -522,7 +523,7 @@ void DRT::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
 
   for (int k = 0; k < s_numnode; ++k)
   {
-    DRT::Node* node = s_nodes[k];
+    CORE::Nodes::Node* node = s_nodes[k];
 
     // slave node already contained?
     std::map<int, int>::iterator m_offset;
@@ -582,7 +583,7 @@ void DRT::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
   // extract face's lm from patch_lm
   for (int k = 0; k < f_numnode; ++k)
   {
-    DRT::Node* node = f_nodes[k];
+    CORE::Nodes::Node* node = f_nodes[k];
 
     // face node must be contained
     std::map<int, int>::iterator m_offset;

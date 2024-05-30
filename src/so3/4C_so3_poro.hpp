@@ -687,7 +687,7 @@ namespace DRT
       std::vector<std::vector<double>> anisotropic_permeability_nodal_coeffs_;
 
       //! get nodes of element
-      DRT::Node** Nodes() override;
+      CORE::Nodes::Node** Nodes() override;
 
       //! get material of element
       Teuchos::RCP<CORE::MAT::Material> material() const;

@@ -12,7 +12,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace CORE::Nodes
 {
   class Node;
 }
@@ -27,7 +27,7 @@ namespace FLD
     \param dimnsp (in):  dimension of the nullspace
                          */
   CORE::LINALG::SerialDenseMatrix ComputeFluidNullSpace(
-      const DRT::Node& node, const int numdof, const int dimnsp);
+      const CORE::Nodes::Node& node, const int numdof, const int dimnsp);
 }  // namespace FLD
 
 FOUR_C_NAMESPACE_CLOSE

@@ -32,8 +32,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
+
+namespace CORE::Nodes
+{
+  class Node;
+}
 
 namespace CORE::Elements
 {
@@ -182,7 +186,7 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 10/16 */
-    DRT::Node* gINode(const int& gid) const;
+    CORE::Nodes::Node* gINode(const int& gid) const;
 
     /// access the interface node row map
     const Epetra_Map* INodeRowMap() const;
@@ -196,17 +200,17 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 10/16 */
-    int INumDof(const DRT::Node* inode) const;
+    int INumDof(const CORE::Nodes::Node* inode) const;
 
     /// get the number of standard DoF's of the discretization
     int INumStandardDof() const;
 
 
-    int IDof(const DRT::Node* inode, int dof) const;
+    int IDof(const CORE::Nodes::Node* inode, int dof) const;
 
-    void IDof(const DRT::Node* inode, std::vector<int>& dofs) const;
+    void IDof(const CORE::Nodes::Node* inode, std::vector<int>& dofs) const;
 
-    void IDof(std::vector<int>& dof, DRT::Node* inode, unsigned nodaldofset_id,
+    void IDof(std::vector<int>& dof, CORE::Nodes::Node* inode, unsigned nodaldofset_id,
         const CORE::Elements::Element* element) const;
 
     /// @}

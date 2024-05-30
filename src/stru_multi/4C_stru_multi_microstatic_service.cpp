@@ -37,7 +37,7 @@ void STRUMULTI::MicroStatic::DetermineToggle()
     {
       // do only nodes in my row map
       if (!discret_->NodeRowMap()->MyGID(i)) continue;
-      DRT::Node* actnode = discret_->gNode(i);
+      CORE::Nodes::Node* actnode = discret_->gNode(i);
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", i);
       std::vector<int> dofs = discret_->Dof(actnode);
       const unsigned numdf = dofs.size();
@@ -113,7 +113,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
     {
       // do only nodes in my row map
       if (!discret_->NodeRowMap()->MyGID(i)) continue;
-      DRT::Node* actnode = discret_->gNode(i);
+      CORE::Nodes::Node* actnode = discret_->gNode(i);
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", i);
 
       // nodal coordinates

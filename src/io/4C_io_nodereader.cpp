@@ -10,10 +10,10 @@
 
 #include "4C_io_nodereader.hpp"
 
+#include "4C_discretization_fem_general_immersed_node.hpp"
 #include "4C_fiber_node.hpp"
 #include "4C_io_elementdefinition.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_immersed_node.hpp"
 #include "4C_nurbs_discret_control_point.hpp"
 
 #include <istream>
@@ -103,7 +103,8 @@ void IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_s
           for (const auto& di : dis)
           {
             // create node and add to discretization
-            Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(nodeid, coords, myrank));
+            Teuchos::RCP<CORE::Nodes::Node> node =
+                Teuchos::rcp(new CORE::Nodes::Node(nodeid, coords, myrank));
             di->AddNode(node);
           }
 
@@ -131,8 +132,8 @@ void IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_s
           for (const auto& dis : diss)
           {
             // create node and add to discretization
-            Teuchos::RCP<DRT::Node> node =
-                Teuchos::rcp(new DRT::ImmersedNode(nodeid, coords, myrank));
+            Teuchos::RCP<CORE::Nodes::Node> node =
+                Teuchos::rcp(new CORE::Nodes::ImmersedNode(nodeid, coords, myrank));
             dis->AddNode(node);
           }
 

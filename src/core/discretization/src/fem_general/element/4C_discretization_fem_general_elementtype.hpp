@@ -103,7 +103,7 @@ namespace CORE::Elements
 
     /// do the null space computation
     virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-        DRT::Node& node, const double* x0, const int numdof, const int dimnsp) = 0;
+        CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) = 0;
   };
 
 }  // namespace CORE::Elements

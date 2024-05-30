@@ -119,7 +119,7 @@ CORE::REBALANCE::BuildWeights(const DRT::Discretization& dis)
   for (int i = 0; i < dis.ElementRowMap()->NumMyElements(); ++i)
   {
     CORE::Elements::Element* ele = dis.lRowElement(i);
-    DRT::Node** nodes = ele->Nodes();
+    CORE::Nodes::Node** nodes = ele->Nodes();
     const int numnode = ele->num_node();
     std::vector<int> lm(numnode);
     std::vector<int> lmrowowner(numnode);

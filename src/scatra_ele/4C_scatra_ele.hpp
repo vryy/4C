@@ -53,7 +53,7 @@ namespace DRT
           CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
@@ -204,7 +204,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         if (numdofpernode_ < 1) FOUR_C_THROW("NumDofPerNode is < 1");
         return numdofpernode_;
@@ -399,7 +399,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented!");
@@ -434,7 +434,7 @@ namespace DRT
       \param parent: The parent fluid element of this surface
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
-      TransportBoundary(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
+      TransportBoundary(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
           DRT::ELEMENTS::Transport* parent, const int lsurface);
 
       /*!
@@ -522,7 +522,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         return parent_element()->NumDofPerNode(node);
       }

@@ -66,7 +66,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
 
   for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
   {
-    DRT::Node* node = discret_->lRowNode(i);
+    CORE::Nodes::Node* node = discret_->lRowNode(i);
 
     if (node->X()[1] < 85.008 + 2e-9 && node->X()[1] > 85.008 - 2e-9)
       x1avcoords.insert(node->X()[0]);
@@ -303,7 +303,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
 
     for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
     {
-      DRT::Node* node = discret_->lRowNode(i);
+      CORE::Nodes::Node* node = discret_->lRowNode(i);
       if (node->X()[2] < +2e-9 && node->X()[2] > -2e-9 &&
           node->X()[0] < x1statlocations_(x1stat, 0) + 2e-9 &&
           node->X()[0] > x1statlocations_(x1stat, 0) - 2e-9)
@@ -529,7 +529,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        DRT::Node* node = discret_->lRowNode(nn);
+        CORE::Nodes::Node* node = discret_->lRowNode(nn);
         // this is the wall node
         if (node->X()[0] < (x1cwall + 2e-9) and node->X()[0] > (x1cwall - 2e-9) and
             node->X()[1] < (x2cwall + 2e-9) and node->X()[1] > (x2cwall - 2e-9))
@@ -574,7 +574,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        DRT::Node* node = discret_->lRowNode(nn);
+        CORE::Nodes::Node* node = discret_->lRowNode(nn);
         // this is the wall node
         if (node->X()[0] < (x1cwall + 2e-9) and node->X()[0] > (x1cwall - 2e-9) and
             node->X()[1] < (x2cwall_plw + 2e-9) and node->X()[1] > (x2cwall_plw - 2e-9))
@@ -619,7 +619,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        DRT::Node* node = discret_->lRowNode(nn);
+        CORE::Nodes::Node* node = discret_->lRowNode(nn);
         // this is the wall node
         if (node->X()[0] < (x1cwall + 2e-9) and node->X()[0] > (x1cwall - 2e-9) and
             node->X()[1] < (x2cwall_puw + 2e-9) and node->X()[1] > (x2cwall_puw - 2e-9))
@@ -676,7 +676,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
-      DRT::Node* node = discret_->lRowNode(nn);
+      CORE::Nodes::Node* node = discret_->lRowNode(nn);
       // this is the wall node
       if (node->X()[0] < (x1cwall + 2e-9) and node->X()[0] > (x1cwall - 2e-9) and
           node->X()[1] < (x2cwall + 2e-9) and node->X()[1] > (x2cwall - 2e-9))
@@ -745,7 +745,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        DRT::Node* node = discret_->lRowNode(nn);
+        CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
         // this is the node
         if (node->X()[0] < x1statlocations_(x1nodnum, 0) + 2e-5 &&

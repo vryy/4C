@@ -1717,7 +1717,7 @@ void CONTACT::AbstractStrategy::store_nodal_quantities(MORTAR::StrategyBase::Qua
     for (int j = 0; j < snodemap->NumMyElements(); ++j)
     {
       int gid = snodemap->GID(j);
-      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1804,7 +1804,7 @@ void CONTACT::AbstractStrategy::compute_contact_stresses()
     for (int j = 0; j < interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interfaces()[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1867,7 +1867,7 @@ void CONTACT::AbstractStrategy::store_dirichlet_status(
     for (int j = 0; j < interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interfaces()[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2026,7 +2026,7 @@ void CONTACT::AbstractStrategy::DoWriteRestart(
     for (int j = 0; j < interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interfaces()[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
       int dof = (activetoggle->Map()).LID(gid);
@@ -2125,7 +2125,7 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
 
       if ((*activetoggle)[dof] == 1)
       {
-        DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
+        CORE::Nodes::Node* node = interfaces()[i]->Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2289,7 +2289,7 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
     for (int j = 0; j < interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interfaces()[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2330,7 +2330,7 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
     for (int j = 0; j < interfaces()[i]->MasterRowNodes()->NumMyElements(); ++j)
     {
       int gid = interfaces()[i]->MasterRowNodes()->GID(j);
-      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2385,7 +2385,7 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
     for (int j = 0; j < interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interfaces()[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2558,7 +2558,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
     {
       // gid of current node
       int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = Interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
       //--------------------------------------------------------------------
@@ -2843,7 +2843,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
     for (int j = 0; j < interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interfaces()[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interfaces()[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interfaces()[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
       // increase active counters

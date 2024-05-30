@@ -509,7 +509,7 @@ void STR::TIMINT::BaseDataGlobalState::setup_rot_vec_map_extractor(
 
   for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
   {
-    DRT::Node* nodeptr = discret_->lRowNode(i);
+    CORE::Nodes::Node* nodeptr = discret_->lRowNode(i);
 
     const DRT::ELEMENTS::Beam3Base* beameleptr =
         dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(nodeptr->Elements()[0]);

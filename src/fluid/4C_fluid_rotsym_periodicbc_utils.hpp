@@ -27,8 +27,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
+
+namespace CORE::Nodes
+{
+  class Node;
+}
 
 namespace FLD
 {
@@ -40,8 +44,8 @@ namespace FLD
   );
 
   //! Is given node a slave node of rotationally symmetric periodic boundary conditions?
-  bool IsSlaveNodeOfRotSymPBC(const DRT::Node* node,  ///< the node
-      double& rotangle                                ///< the angle of slave plane rotation (RAD)
+  bool IsSlaveNodeOfRotSymPBC(const CORE::Nodes::Node* node,  ///< the node
+      double& rotangle  ///< the angle of slave plane rotation (RAD)
   );
 
   //! Access angle of rotation and convert it to RAD

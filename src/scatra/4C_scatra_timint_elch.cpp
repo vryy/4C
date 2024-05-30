@@ -1099,7 +1099,7 @@ SCATRA::ScaTraTimIntElch::evaluate_single_electrode_info_point(
     condparams.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", condition);
 
     // get node
-    DRT::Node* node = discret_->gNode(nodeid);
+    CORE::Nodes::Node* node = discret_->gNode(nodeid);
 
     // safety checks
     if (node == nullptr)
@@ -1532,7 +1532,7 @@ void SCATRA::ScaTraTimIntElch::evaluate_cell_voltage()
         if (discret_->NodeRowMap()->MyGID(nodeid))
         {
           // extract node
-          DRT::Node* node = discret_->gNode(nodeid);
+          CORE::Nodes::Node* node = discret_->gNode(nodeid);
           if (node == nullptr)
             FOUR_C_THROW(
                 "Cannot extract node with global ID %d from scalar transport discretization!",
@@ -1836,7 +1836,7 @@ void SCATRA::ScaTraTimIntElch::init_nernst_bc()
           if (discret_->NodeRowMap()->MyGID((*nodegids)[ii]))
           {
             // get node with global node id (*nodegids)[ii]
-            DRT::Node* node = discret_->gNode((*nodegids)[ii]);
+            CORE::Nodes::Node* node = discret_->gNode((*nodegids)[ii]);
 
             // get global dof ids of all dof's with global node id (*nodegids)[ii]
             std::vector<int> nodedofs = discret_->Dof(0, node);
@@ -2684,7 +2684,7 @@ void SCATRA::ScaTraTimIntElch::evaluate_electrode_boundary_kinetics_point_condit
       condparams.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", condition);
 
       // get node
-      DRT::Node* node = discret_->gNode(nodeid);
+      CORE::Nodes::Node* node = discret_->gNode(nodeid);
 
       // safety checks
       if (node == nullptr)
@@ -2807,7 +2807,7 @@ void SCATRA::ScaTraTimIntElch::check_concentration_values(Teuchos::RCP<Epetra_Ve
   std::vector<int> numfound(NumScal(), 0);
   for (int i = 0; i < discret_->NumMyRowNodes(); i++)
   {
-    DRT::Node* lnode = discret_->lRowNode(i);
+    CORE::Nodes::Node* lnode = discret_->lRowNode(i);
     std::vector<int> dofs;
     dofs = discret_->Dof(0, lnode);
 

@@ -706,7 +706,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
   std::vector<std::vector<CORE::Conditions::Condition*>> ccond_grps(0);
   CONTACT::UTILS::GetContactConditionGroups(ccond_grps, discret());
 
-  std::set<const DRT::Node*> dbc_slave_nodes;
+  std::set<const CORE::Nodes::Node*> dbc_slave_nodes;
   std::set<const CORE::Elements::Element*> dbc_slave_eles;
   CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
       discret(), ccond_grps, dbc_slave_nodes, dbc_slave_eles);
@@ -905,7 +905,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       {
         // do only nodes that I have in my discretization
         if (!discret().HaveGlobalNode(gid)) continue;
-        DRT::Node* node = discret().gNode(gid);
+        CORE::Nodes::Node* node = discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         if (node->NumElement() == 0)

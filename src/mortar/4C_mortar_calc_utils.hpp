@@ -48,7 +48,7 @@ namespace MORTAR
       static constexpr int n = CORE::FE::num_nodes<distype>;
       static constexpr int ndim = CORE::FE::dim<distype> + 1;
 
-      DRT::Node** mynodes = ele.Points();
+      CORE::Nodes::Node** mynodes = ele.Points();
       if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
       std::fill(globcoord, globcoord + ndim, 0.0);
@@ -310,7 +310,7 @@ namespace MORTAR
       static constexpr int n = CORE::FE::num_nodes<distype>;
       static constexpr int ndim = CORE::FE::dim<distype> + 1;
 
-      DRT::Node** mynodes = ele.Nodes();
+      CORE::Nodes::Node** mynodes = ele.Nodes();
       if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
       for (int i = 0; i < ndim; ++i) globcoord[i] = 0.0;
@@ -367,7 +367,7 @@ namespace MORTAR
         FOUR_C_THROW("ERROR: vector of element displacements has wrong dimension (%d != %d)",
             n * globdim, edisp.size());
 
-      DRT::Node** mynodes = ele.Nodes();
+      CORE::Nodes::Node** mynodes = ele.Nodes();
       if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
       for (int i = 0; i < globdim; ++i) globcoord[i] = 0.0;

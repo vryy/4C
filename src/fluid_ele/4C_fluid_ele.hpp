@@ -66,7 +66,7 @@ namespace DRT
           CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
@@ -178,7 +178,7 @@ namespace DRT
           CORE::Elements::Element* parent_slave,  //!< parent slave fluid3 element
           int nnode,                              //!< number of surface nodes
           const int* nodeids,                     //!< node ids of surface element
-          DRT::Node** nodes,                      //!< nodes of surface element
+          CORE::Nodes::Node** nodes,              //!< nodes of surface element
           const int lsurface_master,  //!< local surface number w.r.t master parent element
           const int lsurface_slave,   //!< local surface number w.r.t slave parent element
           const std::vector<int>& localtrafomap  //! local trafo map
@@ -225,7 +225,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         // number of Dof's is fluid-specific.
         const int nsd = CORE::FE::getDimension(distype_);
@@ -424,7 +424,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented!");
@@ -458,8 +458,8 @@ namespace DRT
       \param parent: The parent fluid element of this surface
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
-      explicit FluidBoundary(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
-          DRT::ELEMENTS::Fluid* parent, const int lsurface);
+      explicit FluidBoundary(int id, int owner, int nnode, const int* nodeids,
+          CORE::Nodes::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -549,7 +549,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override { return numdofpernode_; }
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return numdofpernode_; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -722,7 +722,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented!");
@@ -765,7 +765,7 @@ namespace DRT
       of the face w.r.t the master parent element's face's coordinate system and the slave element's
       face's coordinate system
       */
-      FluidIntFace(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
+      FluidIntFace(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
           DRT::ELEMENTS::Fluid* parent_master, DRT::ELEMENTS::Fluid* parent_slave,
           const int lsurface_master, const int lsurface_slave,
           const std::vector<int> localtrafomap);
@@ -855,7 +855,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         return std::max(
             ParentMasterElement()->NumDofPerNode(node), ParentSlaveElement()->NumDofPerNode(node));

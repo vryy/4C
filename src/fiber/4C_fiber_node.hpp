@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -55,7 +55,7 @@ namespace DRT
     \brief Node with additional fiber information
 
     */
-    class FiberNode : public DRT::Node
+    class FiberNode : public CORE::Nodes::Node
     {
      public:
       //! @name Enums and Friends

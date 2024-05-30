@@ -104,7 +104,7 @@ namespace DRT
     \param nds (in)       : number of dofset
     \param node (in)      : the node
     */
-    virtual std::vector<int> InitialDof(unsigned nds, const Node* node) const
+    virtual std::vector<int> InitialDof(unsigned nds, const CORE::Nodes::Node* node) const
     {
       FOUR_C_ASSERT(nds < initialdofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(initialized_, "no initial dofs assigned");
@@ -120,7 +120,7 @@ namespace DRT
     - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param node (in)      : the node
     */
-    virtual std::vector<int> InitialDof(const Node* node) const
+    virtual std::vector<int> InitialDof(const CORE::Nodes::Node* node) const
     {
       FOUR_C_ASSERT(initialdofsets_.size() == 1, "expect just one dof set");
       FOUR_C_ASSERT(initialized_, "no initial dofs assigned");
@@ -139,7 +139,7 @@ namespace DRT
     \param lm (in/out)    : lm vector the dofs are appended to
     */
 
-    virtual void InitialDof(unsigned nds, const Node* node, std::vector<int>& lm) const
+    virtual void InitialDof(unsigned nds, const CORE::Nodes::Node* node, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(nds < initialdofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(initialized_, "no initial dofs assigned");
@@ -156,7 +156,7 @@ namespace DRT
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void InitialDof(const Node* node, std::vector<int>& lm) const
+    virtual void InitialDof(const CORE::Nodes::Node* node, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(initialdofsets_.size() == 1, "expect just one dof set");
       FOUR_C_ASSERT(initialized_, "no initial dofs assigned");
@@ -235,7 +235,7 @@ namespace DRT
      *  \param node (in) : the node those number of dofs are requested
      *
      *  \author hiermeier \date 10/16 */
-    int NumStandardDof(const unsigned& nds, const Node* node) const override
+    int NumStandardDof(const unsigned& nds, const CORE::Nodes::Node* node) const override
     {
       std::vector<int> dofs(0);
       // get the first dofs of the node (not enriched)

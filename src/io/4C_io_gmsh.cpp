@@ -41,7 +41,7 @@ void IO::GMSH::ScalarFieldToGmsh(const Teuchos::RCP<DRT::Discretization> discret
 
     CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const CORE::Nodes::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
     {
       xyze(0, inode) = nodes[inode]->X()[0];
@@ -91,7 +91,7 @@ void IO::GMSH::ScalarFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
 
     CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const CORE::Nodes::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
     {
       xyze(0, inode) = nodes[inode]->X()[0];
@@ -165,7 +165,7 @@ void IO::GMSH::ScalarElementFieldToGmsh(const Teuchos::RCP<DRT::Discretization> 
 
     CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const CORE::Nodes::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
     {
       xyze(0, inode) = nodes[inode]->X()[0];
@@ -213,7 +213,7 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
 
     CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const CORE::Nodes::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
     {
       for (int idim = 0; idim < nsd; ++idim) xyze(idim, inode) = nodes[inode]->X()[idim];
@@ -278,7 +278,7 @@ void IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
 
     CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const CORE::Nodes::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
     {
       for (int idim = 0; idim < nsd; ++idim)
@@ -338,7 +338,7 @@ void IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discreti
 
     CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const CORE::Nodes::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
     {
       int nid = nodes[inode]->Id();
@@ -399,7 +399,7 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
 
     CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const CORE::Nodes::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
     {
       for (int idim = 0; idim < nsd; ++idim) xyze(idim, inode) = nodes[inode]->X()[idim];
@@ -491,7 +491,7 @@ void IO::GMSH::VectorFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
 
     CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const CORE::Nodes::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
     {
       for (int idim = 0; idim < nsd; ++idim) xyze(idim, inode) = nodes[inode]->X()[idim];
@@ -539,7 +539,7 @@ void IO::GMSH::ScalarFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
 
     CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const CORE::Nodes::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
     {
       xyze(0, inode) = nodes[inode]->X()[0];
@@ -605,7 +605,7 @@ void IO::GMSH::VectorToStream(const CORE::LINALG::Matrix<3, 1>& pointXYZ,  ///< 
 void IO::GMSH::elementAtInitialPositionToStream(
     const double scalar, const CORE::Elements::Element* ele, std::ostream& s)
 {
-  const DRT::Node* const* nodes = ele->Nodes();
+  const CORE::Nodes::Node* const* nodes = ele->Nodes();
 
   const CORE::FE::CellType distype = ele->Shape();
   const int numnode = distypeToGmshNumNode(distype);
@@ -616,7 +616,7 @@ void IO::GMSH::elementAtInitialPositionToStream(
   s << "S" << distypeToGmshElementHeader(distype) << "(";
   for (int i = 0; i < numnode; ++i)
   {
-    const DRT::Node* node = nodes[i];
+    const CORE::Nodes::Node* node = nodes[i];
     const auto& x = node->X();
     s << x[0] << ",";
     s << x[1] << ",";

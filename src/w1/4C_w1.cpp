@@ -61,7 +61,7 @@ void DRT::ELEMENTS::Wall1Type::nodal_block_information(
 }
 
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Wall1Type::ComputeNullSpace(
-    DRT::Node& node, const double* x0, int const numdof, int const dimnsp)
+    CORE::Nodes::Node& node, const double* x0, int const numdof, int const dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);
 }

@@ -55,7 +55,7 @@ namespace DRT
           CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
@@ -184,7 +184,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override { return 2; }
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 2; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -491,7 +491,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented!");
@@ -522,7 +522,7 @@ namespace DRT
       \param parent: The parent ale element of this line
       \param lline: the local line number of this line w.r.t. the parent element
       */
-      Ale2Line(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
+      Ale2Line(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
           DRT::ELEMENTS::Ale2* parent, const int lline);
 
       /*!
@@ -589,7 +589,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override { return 2; }
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 2; }
 
       /*!
       \brief Get number of degrees of freedom per element

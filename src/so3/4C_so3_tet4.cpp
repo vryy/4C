@@ -78,7 +78,7 @@ void DRT::ELEMENTS::SoTet4Type::nodal_block_information(
 
 //------------------------------------------------------------------------
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoTet4Type::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
@@ -289,7 +289,7 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SoTet4::Surfac
 std::vector<double> DRT::ELEMENTS::SoTet4::element_center_refe_coords()
 {
   // update element geometry
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_SOTET4; ++i)
   {

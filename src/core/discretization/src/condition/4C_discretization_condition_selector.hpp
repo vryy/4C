@@ -34,8 +34,12 @@ namespace CORE::LINALG
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
+
+namespace CORE::Nodes
+{
+  class Node;
+}
 
 namespace CORE::Conditions
 {
@@ -77,7 +81,7 @@ namespace CORE::Conditions
     virtual ~ConditionSelector() = default;
 
     /// select all matching dofs of the node and put them into conddofset
-    virtual bool SelectDofs(DRT::Node* node, std::set<int>& conddofset);
+    virtual bool SelectDofs(CORE::Nodes::Node* node, std::set<int>& conddofset);
 
     /// tell if the node gid is known by any condition of the given name
     virtual bool ContainsNode(int ngid);

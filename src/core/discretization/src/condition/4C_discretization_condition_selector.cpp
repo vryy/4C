@@ -46,7 +46,8 @@ CORE::Conditions::ConditionSelector::ConditionSelector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool CORE::Conditions::ConditionSelector::SelectDofs(DRT::Node* node, std::set<int>& conddofset)
+bool CORE::Conditions::ConditionSelector::SelectDofs(
+    CORE::Nodes::Node* node, std::set<int>& conddofset)
 {
   bool found = false;
 
@@ -135,7 +136,7 @@ void CORE::Conditions::MultiConditionSelector::setup_cond_dof_sets(const DRT::Di
   int numrownodes = dis.NumMyRowNodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    DRT::Node* node = dis.lRowNode(i);
+    CORE::Nodes::Node* node = dis.lRowNode(i);
 
     // test each selector
     for (unsigned j = 0; j < selectors_.size(); ++j)

@@ -130,7 +130,7 @@ DRT::ELEMENTS::Beam3Base::brownian_dyn_params_interface_ptr() const
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 std::vector<int> DRT::ELEMENTS::Beam3Base::GetAdditiveDofGIDs(
-    const DRT::Discretization& discret, const DRT::Node& node) const
+    const DRT::Discretization& discret, const CORE::Nodes::Node& node) const
 {
   std::vector<int> dofgids;
   std::vector<int> dofindices;
@@ -152,7 +152,7 @@ std::vector<int> DRT::ELEMENTS::Beam3Base::GetAdditiveDofGIDs(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::vector<int> DRT::ELEMENTS::Beam3Base::GetRotVecDofGIDs(
-    const DRT::Discretization& discret, const DRT::Node& node) const
+    const DRT::Discretization& discret, const CORE::Nodes::Node& node) const
 {
   std::vector<int> dofgids;
   std::vector<int> dofindices;

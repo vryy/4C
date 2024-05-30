@@ -59,7 +59,7 @@ ADAPTER::CouplingEhlMortar::CouplingEhlMortar(int spatial_dimension,
 void ADAPTER::CouplingEhlMortar::read_mortar_condition(Teuchos::RCP<DRT::Discretization> masterdis,
     Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
     const std::string& couplingcond, Teuchos::ParameterList& input,
-    std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
+    std::map<int, CORE::Nodes::Node*>& mastergnodes, std::map<int, CORE::Nodes::Node*>& slavegnodes,
     std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
     std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements)
 {
@@ -575,7 +575,7 @@ void ADAPTER::CouplingEhlMortar::EvaluateRelMov()
 {
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
-    DRT::Node* node = Interface()->Discret().lRowNode(i);
+    CORE::Nodes::Node* node = Interface()->Discret().lRowNode(i);
     if (!node) FOUR_C_THROW("node not found");
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
     if (!cnode) FOUR_C_THROW("not a contact node");
@@ -654,7 +654,7 @@ void ADAPTER::CouplingEhlMortar::store_dirichlet_status(
   for (int j = 0; j < interface_->SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->SlaveRowNodes()->GID(j);
-    DRT::Node* node = interface_->Discret().gNode(gid);
+    CORE::Nodes::Node* node = interface_->Discret().gNode(gid);
     if (!node) FOUR_C_THROW("ERROR: Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -740,7 +740,7 @@ void ADAPTER::CouplingEhlMortar::assemble_normals()
 
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
-    DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
+    CORE::Nodes::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) FOUR_C_THROW("node not found");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) FOUR_C_THROW("not a contact node");
@@ -756,7 +756,7 @@ void ADAPTER::CouplingEhlMortar::assemble_normals_deriv()
   Nderiv_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 81, false, false));
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
-    DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
+    CORE::Nodes::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) FOUR_C_THROW("node not found");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) FOUR_C_THROW("not a contact node");
@@ -775,7 +775,7 @@ void ADAPTER::CouplingEhlMortar::assemble_real_gap()
 
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
-    DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
+    CORE::Nodes::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) FOUR_C_THROW("node not found");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) FOUR_C_THROW("not a contact node");
@@ -809,7 +809,7 @@ void ADAPTER::CouplingEhlMortar::assemble_real_gap_deriv()
 
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
-    DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
+    CORE::Nodes::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) FOUR_C_THROW("node not found");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) FOUR_C_THROW("not a contact node");
@@ -867,7 +867,7 @@ void ADAPTER::CouplingEhlMortar::assemble_interface_velocities(const double dt)
 
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
-    DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
+    CORE::Nodes::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) FOUR_C_THROW("node not found");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) FOUR_C_THROW("not a contact node");
@@ -953,7 +953,7 @@ void ADAPTER::CouplingEhlMortar::assemble_surf_grad()
 
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
-    DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
+    CORE::Nodes::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) FOUR_C_THROW("ERROR: Cannot find node");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) FOUR_C_THROW("this is not a contact node");
@@ -993,7 +993,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::CouplingEhlMortar::assemble_su
 
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
-    DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
+    CORE::Nodes::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) FOUR_C_THROW("ERROR: Cannot find node");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) FOUR_C_THROW("this is not a contact node");

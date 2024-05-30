@@ -74,7 +74,7 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(
     //
     //      // do only nodes that I have in my discretization
     //      if (!fluid_field()->discretization()->NodeColMap()->MyGID(gid)) continue;
-    //      DRT::Node* node = fluid_field()->discretization()->gNode(gid);
+    //      CORE::Nodes::Node* node = fluid_field()->discretization()->gNode(gid);
     //      if (!node) FOUR_C_THROW("Cannot find node with gid %",gid);
     //
     //      std::vector<int> nodedofs = fluid_field()->discretization()->Dof(node);

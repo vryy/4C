@@ -34,7 +34,7 @@ CORE::COMM::ParObject* DRT::NURBS::ControlPointType::Create(const std::vector<ch
  */
 DRT::NURBS::ControlPoint::ControlPoint(
     int id, const std::vector<double>& coords, const double weight, const int owner)
-    : DRT::Node(id, coords, owner), w_(weight)
+    : CORE::Nodes::Node(id, coords, owner), w_(weight)
 {
   return;
 }
@@ -46,7 +46,7 @@ DRT::NURBS::ControlPoint::ControlPoint(
 
 */
 DRT::NURBS::ControlPoint::ControlPoint(const DRT::NURBS::ControlPoint& old)
-    : DRT::Node(old), w_(old.W())
+    : CORE::Nodes::Node(old), w_(old.W())
 {
   return;
 }
@@ -76,11 +76,11 @@ void DRT::NURBS::ControlPoint::Pack(CORE::COMM::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  DRT::Node::AddtoPack(data, type);
+  CORE::Nodes::Node::AddtoPack(data, type);
   // add base class of control point
-  DRT::Node::Pack(data);
+  CORE::Nodes::Node::Pack(data);
   // add weight
-  DRT::Node::AddtoPack(data, &w_, sizeof(double));
+  CORE::Nodes::Node::AddtoPack(data, &w_, sizeof(double));
 
   return;
 }
@@ -99,9 +99,9 @@ void DRT::NURBS::ControlPoint::Unpack(const std::vector<char>& data)
   // extract base class Node
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::Node::Unpack(basedata);
+  CORE::Nodes::Node::Unpack(basedata);
   // extract weight
-  DRT::Node::ExtractfromPack(position, data, w_);
+  CORE::Nodes::Node::ExtractfromPack(position, data, w_);
 
   return;
 }
@@ -112,7 +112,7 @@ void DRT::NURBS::ControlPoint::Unpack(const std::vector<char>& data)
 void DRT::NURBS::ControlPoint::Print(std::ostream& os) const
 {
   os << "Control Point :";
-  DRT::Node::Print(os);
+  CORE::Nodes::Node::Print(os);
   os << "\n+ additional weight ";
   os << w_ << "\n";
   return;

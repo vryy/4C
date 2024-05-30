@@ -34,7 +34,7 @@ namespace
       std::vector<std::vector<double>> xrefe{{-0.05, 0.05, 0.3}, {0.45, -0.05, 0.1}};
 
       for (int lid = 0; lid < 2; ++lid)
-        testdis_->AddNode(Teuchos::rcp(new DRT::Node(lid, xrefe[lid], 0)));
+        testdis_->AddNode(Teuchos::rcp(new CORE::Nodes::Node(lid, xrefe[lid], 0)));
 
       testele_ = Teuchos::rcp(new DRT::ELEMENTS::Beam3k(0, 0));
       std::array<int, 2> node_ids{0, 1};

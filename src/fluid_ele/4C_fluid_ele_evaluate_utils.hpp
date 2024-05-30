@@ -111,7 +111,7 @@ namespace FLD
 
     // get node coordinates of element
     CORE::LINALG::Matrix<3, iel> xyze;
-    DRT::Node** nodes = ele->Nodes();
+    CORE::Nodes::Node** nodes = ele->Nodes();
     for (int inode = 0; inode < iel; inode++)
     {
       const auto& x = nodes[inode]->X();
@@ -512,7 +512,7 @@ namespace FLD
 
     // get node coordinates of element
     CORE::LINALG::Matrix<3, iel> xyze;
-    DRT::Node** nodes = ele->Nodes();
+    CORE::Nodes::Node** nodes = ele->Nodes();
     for (int inode = 0; inode < iel; inode++)
     {
       const auto& x = nodes[inode]->X();
@@ -3118,7 +3118,7 @@ namespace FLD
 
     /*
     // get node coordinates
-    DRT::Node** nodes = Nodes();
+    CORE::Nodes::Node** nodes = Nodes();
     for (int inode=0; inode<iel; inode++)
     {
       const auto& x = nodes[inode]->X();

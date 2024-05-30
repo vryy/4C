@@ -122,7 +122,7 @@ void PostVtuWriter::write_geo()
       celltypes.push_back(IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).first);
       const std::vector<int>& numbering =
           IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
-      const DRT::Node* const* nodes = ele->Nodes();
+      const CORE::Nodes::Node* const* nodes = ele->Nodes();
       for (int n = 0; n < ele->num_node(); ++n)
         for (int d = 0; d < 3; ++d) coordinates.push_back(nodes[numbering[n]]->X()[d]);
       outNodeId += ele->num_node();
@@ -596,7 +596,7 @@ void PostVtuWriter::write_geo_nurbs_ele(const CORE::Elements::Element* ele,
   celltypes.push_back(IO::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).first);
 
   CORE::LINALG::Matrix<NUMNODES, 1> weights;
-  const DRT::Node* const* nodes = ele->Nodes();
+  const CORE::Nodes::Node* const* nodes = ele->Nodes();
   for (unsigned inode = 0; inode < NUMNODES; inode++)
   {
     const DRT::NURBS::ControlPoint* cp =
@@ -764,7 +764,7 @@ void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const CORE::Elements::Elemen
       IO::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).second;
 
   CORE::LINALG::Matrix<NUMNODES, 1> weights;
-  const DRT::Node* const* nodes = ele->Nodes();
+  const CORE::Nodes::Node* const* nodes = ele->Nodes();
   for (unsigned inode = 0; inode < NUMNODES; inode++)
   {
     const DRT::NURBS::ControlPoint* cp =
@@ -952,7 +952,7 @@ void PostVtuWriter::write_nodal_result_step_nurbs_ele(const CORE::Elements::Elem
       IO::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).second;
 
   CORE::LINALG::Matrix<NUMNODES, 1> weights;
-  const DRT::Node* const* nodes = ele->Nodes();
+  const CORE::Nodes::Node* const* nodes = ele->Nodes();
   for (unsigned inode = 0; inode < NUMNODES; inode++)
   {
     const DRT::NURBS::ControlPoint* cp =

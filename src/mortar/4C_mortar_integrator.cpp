@@ -725,7 +725,7 @@ void MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(MORTAR::Ele
   static CORE::LINALG::Matrix<ns_, 1> lmval;
 
   // get slave element nodes themselves
-  DRT::Node** mynodes = sele.Nodes();
+  CORE::Nodes::Node** mynodes = sele.Nodes();
   if (!mynodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   // decide whether boundary modification has to be considered or not
@@ -785,7 +785,7 @@ void MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(MORTAR::Ele
     for (int nummaster = 0; nummaster < (int)meles.size(); ++nummaster)
     {
       // get Master element nodes themselves
-      DRT::Node** mnodes = meles[nummaster]->Nodes();
+      CORE::Nodes::Node** mnodes = meles[nummaster]->Nodes();
       if (!mnodes) FOUR_C_THROW("EleBased_Integration: Null pointer!");
 
       // project Gauss point onto master element
@@ -865,7 +865,7 @@ void MORTAR::IntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(MORTAR::Elem
   static CORE::LINALG::Matrix<ns_, 1> lmval;
 
   // get slave element nodes themselves
-  DRT::Node** mynodes = sele.Nodes();
+  CORE::Nodes::Node** mynodes = sele.Nodes();
   if (!mynodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   // decide whether boundary modification has to be considered or not
@@ -985,9 +985,9 @@ void inline MORTAR::IntegratorCalc<distypeS, distypeM>::gp_dm(MORTAR::Element& s
     bool& bound, const Epetra_Comm& comm)
 {
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
   if (!snodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
   if (!mnodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   // BOUNDARY NODE MODIFICATION **********************************
@@ -1118,11 +1118,11 @@ void inline MORTAR::IntegratorCalc<distypeS, distypeM>::gp_3_d_dm_quad(MORTAR::E
     int& ncol, int& ndof, bool& bound)
 {
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
   if (!snodes) FOUR_C_THROW("Null pointer!");
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
   if (!mnodes) FOUR_C_THROW("Null pointer!");
-  DRT::Node** sintnodes = sintele.Nodes();
+  CORE::Nodes::Node** sintnodes = sintele.Nodes();
   if (!sintnodes) FOUR_C_THROW("Null pointer for sintnodes!");
 
   // CASES 1/2: standard LM shape functions and quadratic or linear interpolation
@@ -1737,7 +1737,7 @@ void MORTAR::IntegratorCalc<distypeS, distypeM>::integrate_cell3_d_aux_plane_qua
   CORE::LINALG::SerialDenseMatrix lmintderiv(nintrow, 2, true);
 
   // get slave element nodes themselves
-  DRT::Node** mynodes = sele.Nodes();
+  CORE::Nodes::Node** mynodes = sele.Nodes();
   if (!mynodes) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_quad: Null pointer!");
 
   // decide whether boundary modification has to be considered or not

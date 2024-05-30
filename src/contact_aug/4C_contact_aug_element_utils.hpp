@@ -164,7 +164,7 @@ namespace CONTACT
     template <typename T>
     void GetNurbsWeights(const MORTAR::Element& ele, T& weights)
     {
-      const DRT::Node* const* nodes = ele.Nodes();
+      const CORE::Nodes::Node* const* nodes = ele.Nodes();
       FOUR_C_ASSERT(static_cast<int>(weights.M()) == ele.num_node(), "Size mismatch!");
 
       for (unsigned nlid = 0; nlid < static_cast<unsigned>(weights.M()); ++nlid)

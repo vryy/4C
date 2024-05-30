@@ -1730,7 +1730,7 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_line()
   linsize_ = 0;
   for (int i = 0; i < nnodes; ++i)
   {
-    DRT::Node* node = idiscret_.gNode(line_element()->NodeIds()[i]);
+    CORE::Nodes::Node* node = idiscret_.gNode(line_element()->NodeIds()[i]);
     if (!node) FOUR_C_THROW("Cannot find slave element with gid %", line_element()->NodeIds()[i]);
     Node* mycnode = dynamic_cast<Node*>(node);
     if (!mycnode) FOUR_C_THROW("project_slave: Null pointer!");
@@ -1757,7 +1757,7 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_line()
   // average nodal normals of line element
   for (int i = 0; i < nnodes; ++i)
   {
-    DRT::Node* node = idiscret_.gNode(line_element()->NodeIds()[i]);
+    CORE::Nodes::Node* node = idiscret_.gNode(line_element()->NodeIds()[i]);
     if (!node) FOUR_C_THROW("Cannot find slave element with gid %", line_element()->NodeIds()[i]);
     Node* mycnode = dynamic_cast<Node*>(node);
     if (!mycnode) FOUR_C_THROW("project_slave: Null pointer!");
@@ -1786,7 +1786,7 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_line()
 
   // create tangent of line element
   std::array<double, 3> tangent = {0.0, 0.0, 0.0};
-  DRT::Node* node = idiscret_.gNode(line_element()->NodeIds()[0]);
+  CORE::Nodes::Node* node = idiscret_.gNode(line_element()->NodeIds()[0]);
   if (!node) FOUR_C_THROW("Cannot find slave element with gid %", line_element()->NodeIds()[0]);
   Node* mycnode = dynamic_cast<Node*>(node);
   if (!mycnode) FOUR_C_THROW("project_slave: Null pointer!");
@@ -1795,7 +1795,7 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_line()
   tangent[1] += mycnode->xspatial()[1];
   tangent[2] += mycnode->xspatial()[2];
 
-  DRT::Node* node2 = idiscret_.gNode(line_element()->NodeIds()[1]);
+  CORE::Nodes::Node* node2 = idiscret_.gNode(line_element()->NodeIds()[1]);
   if (!node2) FOUR_C_THROW("Cannot find slave element with gid %", line_element()->NodeIds()[1]);
   Node* mycnode2 = dynamic_cast<Node*>(node2);
   if (!mycnode2) FOUR_C_THROW("project_slave: Null pointer!");
@@ -1956,7 +1956,7 @@ bool CONTACT::LineToSurfaceCoupling3d::project_slave()
 
   for (int i = 0; i < nnodes; ++i)
   {
-    DRT::Node* node = idiscret_.gNode(line_element()->NodeIds()[i]);
+    CORE::Nodes::Node* node = idiscret_.gNode(line_element()->NodeIds()[i]);
     if (!node) FOUR_C_THROW("Cannot find slave element with gid %", line_element()->NodeIds()[i]);
     Node* mycnode = dynamic_cast<Node*>(node);
     if (!mycnode) FOUR_C_THROW("project_slave: Null pointer!");
@@ -2013,7 +2013,7 @@ void CONTACT::LineToSurfaceCoupling3d::slave_vertex_linearization(
   surface_element().evaluate_shape(scxi, sval, sderiv, nrow);
 
   // we need all participating slave nodes
-  DRT::Node** snodes = surface_element().Nodes();
+  CORE::Nodes::Node** snodes = surface_element().Nodes();
   std::vector<MORTAR::Node*> smrtrnodes(nrow);
 
   for (int i = 0; i < nrow; ++i)
@@ -2140,7 +2140,7 @@ bool CONTACT::LineToSurfaceCoupling3d::project_master()
 {
   // project master nodes onto auxiliary plane
   int nnodes = surface_element().num_node();
-  DRT::Node** mynodes = surface_element().Nodes();
+  CORE::Nodes::Node** mynodes = surface_element().Nodes();
   if (!mynodes) FOUR_C_THROW("project_master: Null pointer!");
 
   // initialize storage for master coords + their ids
@@ -2209,7 +2209,7 @@ void CONTACT::LineToSurfaceCoupling3d::master_vertex_linearization(
   surface_element().evaluate_shape(scxi, sval, sderiv, nrow);
 
   // we need all participating slave nodes
-  DRT::Node** snodes = surface_element().Nodes();
+  CORE::Nodes::Node** snodes = surface_element().Nodes();
   std::vector<MORTAR::Node*> smrtrnodes(nrow);
 
   for (int i = 0; i < nrow; ++i)
@@ -2383,9 +2383,9 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
   if (ftype != INPAR::CONTACT::friction_none) friction = true;
 
   // get slave element nodes themselves for normal evaluation
-  DRT::Node** mynodes = line_slave_element()->Nodes();
+  CORE::Nodes::Node** mynodes = line_slave_element()->Nodes();
   if (!mynodes) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_lts: Null pointer!");
-  DRT::Node** mnodes = line_master_element()->Nodes();
+  CORE::Nodes::Node** mnodes = line_master_element()->Nodes();
   if (!mnodes) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_lts: Null pointer!");
 
   int nnodes = 2;
@@ -2698,7 +2698,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
     for (int i = 0; i < idiscret_.NodeColMap()->NumMyElements(); ++i)
     {
       int gid1 = idiscret_.NodeColMap()->GID(i);
-      DRT::Node* node1 = idiscret_.gNode(gid1);
+      CORE::Nodes::Node* node1 = idiscret_.gNode(gid1);
       if (!node1) FOUR_C_THROW("Cannot find node with gid %", gid1);
       Node* contactnode = dynamic_cast<Node*>(node1);
 
@@ -2726,7 +2726,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
 
     if (oldID > -1)
     {
-      DRT::Node* node1 = idiscret_.gNode(oldID);
+      CORE::Nodes::Node* node1 = idiscret_.gNode(oldID);
       if (!node1) FOUR_C_THROW("Cannot find node with gid %", oldID);
       Node* contactnode = dynamic_cast<Node*>(node1);
 
@@ -2738,7 +2738,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* snode = idiscret_.gNode(gid3);
+          CORE::Nodes::Node* snode = idiscret_.gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2760,7 +2760,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
         {
           // node id
           int gid3 = p->first;
-          DRT::Node* mnode = idiscret_.gNode(gid3);
+          CORE::Nodes::Node* mnode = idiscret_.gNode(gid3);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid");
           Node* cmnode = dynamic_cast<Node*>(mnode);
 

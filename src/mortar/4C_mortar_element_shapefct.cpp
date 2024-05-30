@@ -1877,7 +1877,7 @@ bool MORTAR::Element::evaluate_shape(const double* xi, CORE::LINALG::SerialDense
   if (!xi) FOUR_C_THROW("evaluate_shape called with xi=nullptr");
 
   // get node number and node pointers
-  DRT::Node** mynodes = Nodes();
+  CORE::Nodes::Node** mynodes = Nodes();
   if (!mynodes) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
 
   // check for boundary nodes
@@ -2090,7 +2090,7 @@ bool MORTAR::Element::evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmt
     dual = true;
 
   // get node number and node pointers
-  DRT::Node** mynodes = Nodes();
+  CORE::Nodes::Node** mynodes = Nodes();
   if (!mynodes) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
 
   switch (Shape())
@@ -2542,7 +2542,7 @@ bool MORTAR::Element::evaluate_shape_lag_mult_lin(const INPAR::MORTAR::ShapeFcn&
     dual = true;
 
   // get node number and node pointers
-  DRT::Node** mynodes = Nodes();
+  CORE::Nodes::Node** mynodes = Nodes();
   if (!mynodes) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
 
   // check for boundary nodes
@@ -2888,7 +2888,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
        for (int node=0;node<nnodes;++node)
        {
        // apply FD
-       DRT::Node** mynodes = Nodes();
+       CORE::Nodes::Node** mynodes = Nodes();
        Node* mycnode = dynamic_cast<Node*> (mynodes[node]);
        mycnode->xspatial()[dim] += delta;
 
@@ -3228,7 +3228,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
        for (int node=0;node<nnodes;++node)
        {
        // apply FD
-       DRT::Node** mynodes = Nodes();
+       CORE::Nodes::Node** mynodes = Nodes();
        Node* mycnode = dynamic_cast<Node*> (mynodes[node]);
        mycnode->xspatial()[dim] += delta;
 
@@ -3426,7 +3426,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
        for (int node=0;node<nnodes;++node)
        {
        // apply FD
-       DRT::Node** mynodes = Nodes();
+       CORE::Nodes::Node** mynodes = Nodes();
        Node* mycnode = dynamic_cast<Node*> (mynodes[node]);
        mycnode->xspatial()[dim] += delta;
 
@@ -3617,7 +3617,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
         //        for (int node=0;node<nnodes;++node)
         //        {
         //          // apply FD
-        //          DRT::Node** mynodes = Nodes();
+        //          CORE::Nodes::Node** mynodes = Nodes();
         //          Node* mycnode = dynamic_cast<Node*> (mynodes[node]);
         //          mycnode->xspatial()[dim] += delta;
         //
@@ -3837,7 +3837,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
        CORE::LINALG::SerialDenseMatrix ae1(nnodes-1,nnodes-1);
        ae1.Multiply('N','N',1.0,de1,me1,0.0);
 
-       DRT::Node** mynodes = Nodes();
+       CORE::Nodes::Node** mynodes = Nodes();
        Node* mycnode = dynamic_cast<Node*> (mynodes[node]);
        int col= mycnode->Dofs()[dim];
 
@@ -4026,7 +4026,7 @@ void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType s
        CORE::LINALG::SerialDenseMatrix ae1(nnodes-1,nnodes-1);
        ae1.Multiply('N','N',1.0,de1,me1,0.0);
 
-       DRT::Node** mynodes = Nodes();
+       CORE::Nodes::Node** mynodes = Nodes();
        Node* mycnode = dynamic_cast<Node*> (mynodes[node]);
        int col= mycnode->Dofs()[dim];
 
@@ -4669,7 +4669,7 @@ bool MORTAR::Element::DerivShapeDual(
     CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual)
 {
   // get node number and node pointers
-  DRT::Node** mynodes = Nodes();
+  CORE::Nodes::Node** mynodes = Nodes();
   if (!mynodes) FOUR_C_THROW("DerivShapeDual: Null pointer!");
 
   switch (Shape())

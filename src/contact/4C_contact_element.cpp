@@ -39,7 +39,7 @@ void CONTACT::ElementType::nodal_block_information(
 }
 
 CORE::LINALG::SerialDenseMatrix CONTACT::ElementType::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
   FOUR_C_THROW("method ComputeNullSpace not implemented!");
@@ -139,7 +139,7 @@ void CONTACT::Element::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  number of dofs per node (public)                         mwgee 10/07|
  *----------------------------------------------------------------------*/
-int CONTACT::Element::NumDofPerNode(const DRT::Node& node) const
+int CONTACT::Element::NumDofPerNode(const CORE::Nodes::Node& node) const
 {
   const CONTACT::Node* cnode = dynamic_cast<const CONTACT::Node*>(&node);
   if (!cnode) FOUR_C_THROW("Node is not a Node");
@@ -186,7 +186,7 @@ void CONTACT::Element::deriv_normal_at_xi(double* xi, int& i,
 {
   // initialize variables
   const int nnodes = num_node();
-  DRT::Node** mynodes = Nodes();
+  CORE::Nodes::Node** mynodes = Nodes();
   if (!mynodes) FOUR_C_THROW("deriv_normal_at_xi: Null pointer!");
   CORE::LINALG::SerialDenseVector val(nnodes);
   CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);

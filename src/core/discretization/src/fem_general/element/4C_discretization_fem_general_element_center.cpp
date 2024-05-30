@@ -8,14 +8,14 @@
 #include "4C_discretization_fem_general_element_center.hpp"
 
 #include "4C_discretization_fem_general_element.hpp"
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 std::vector<double> CORE::FE::element_center_refe_coords(const CORE::Elements::Element& ele)
 {
   // get nodes of element
-  const DRT::Node* const* nodes = ele.Nodes();
+  const CORE::Nodes::Node* const* nodes = ele.Nodes();
   const int numnodes = ele.num_node();
   const double invnumnodes = 1.0 / numnodes;
 

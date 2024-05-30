@@ -348,8 +348,8 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
     if (sl_dis_vec()[sl_dis_id_to_copy_from]->NodeRowMap()->MyGID(ngid))
     {
       // clone the node, thus it becomes independent of any redistribution
-      DRT::Node* node = sl_dis_vec()[sl_dis_id_to_copy_from]->gNode(ngid);
-      Teuchos::RCP<DRT::Node> inode = Teuchos::rcp(node->Clone());
+      CORE::Nodes::Node* node = sl_dis_vec()[sl_dis_id_to_copy_from]->gNode(ngid);
+      Teuchos::RCP<CORE::Nodes::Node> inode = Teuchos::rcp(node->Clone());
       idiscret_->AddNode(inode);
       // store the id for the master/slave coupling maps
       for (cit_set = cit_map->second.begin(); cit_set != cit_map->second.end(); ++cit_set)
@@ -487,7 +487,7 @@ void XFEM::MultiFieldMapExtractor::build_slave_dof_map_extractors()
       // ----------------------------------------------------------------------
       if (slave_node_row_map(dis_count, MULTIFIELD::block_interface).MyGID(ngid))
       {
-        const DRT::Node* node = (*cit_dis)->lRowNode(nlid);
+        const CORE::Nodes::Node* node = (*cit_dis)->lRowNode(nlid);
         const unsigned numdof = (*cit_dis)->NumDof(node);
 
         for (unsigned i = 0; i < numdof; ++i)
@@ -498,7 +498,7 @@ void XFEM::MultiFieldMapExtractor::build_slave_dof_map_extractors()
       // ----------------------------------------------------------------------
       else
       {
-        const DRT::Node* node = (*cit_dis)->lRowNode(nlid);
+        const CORE::Nodes::Node* node = (*cit_dis)->lRowNode(nlid);
         const unsigned numdof = (*cit_dis)->NumDof(node);
 
         for (unsigned i = 0; i < numdof; ++i)
@@ -544,7 +544,7 @@ void XFEM::MultiFieldMapExtractor::build_interface_coupling_dof_set()
 
     for (int j = 0; j < nnodes; ++j)
     {
-      const DRT::Node* node = sl_discret(i).gNode(ngids[j]);
+      const CORE::Nodes::Node* node = sl_discret(i).gNode(ngids[j]);
       const int numdof = sl_discret(i).NumDof(node);
       my_num_std_dof = sl_discret(i).NumStandardDof(0, node);
       sl_max_num_dof_per_inode[ngids[j]] = numdof;
@@ -660,7 +660,7 @@ void XFEM::MultiFieldMapExtractor::build_master_dof_map_extractor()
     for (int nlid = 0; nlid < num_my_inodes; ++nlid)
     {
       int ngid = inode_gids[nlid];
-      const DRT::Node* inode = i_discret().gNode(ngid);
+      const CORE::Nodes::Node* inode = i_discret().gNode(ngid);
       const unsigned numdof = i_discret().NumDof(inode);
       for (unsigned j = 0; j < numdof; ++j)
         my_ma_interface_dofs.push_back(i_discret().Dof(inode, j));
@@ -1149,7 +1149,7 @@ const Teuchos::RCP<const Epetra_Map>& XFEM::MultiFieldMapExtractor::FullMap(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::Node* XFEM::MultiFieldMapExtractor::gINode(const int& gid) const
+CORE::Nodes::Node* XFEM::MultiFieldMapExtractor::gINode(const int& gid) const
 {
   return i_discret().gNode(gid);
 }
@@ -1163,7 +1163,7 @@ const Epetra_Map* XFEM::MultiFieldMapExtractor::INodeRowMap() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int XFEM::MultiFieldMapExtractor::INumDof(const DRT::Node* inode) const
+int XFEM::MultiFieldMapExtractor::INumDof(const CORE::Nodes::Node* inode) const
 {
   return i_discret().NumDof(0, inode);
 }
@@ -1177,21 +1177,22 @@ int XFEM::MultiFieldMapExtractor::INumStandardDof() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int XFEM::MultiFieldMapExtractor::IDof(const DRT::Node* inode, int dof) const
+int XFEM::MultiFieldMapExtractor::IDof(const CORE::Nodes::Node* inode, int dof) const
 {
   return i_discret().Dof(0, inode, dof);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::IDof(const DRT::Node* inode, std::vector<int>& dofs) const
+void XFEM::MultiFieldMapExtractor::IDof(
+    const CORE::Nodes::Node* inode, std::vector<int>& dofs) const
 {
   i_discret().Dof(static_cast<unsigned>(0), inode, dofs);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::IDof(std::vector<int>& dof, DRT::Node* inode,
+void XFEM::MultiFieldMapExtractor::IDof(std::vector<int>& dof, CORE::Nodes::Node* inode,
     unsigned nodaldofset_id, const CORE::Elements::Element* element) const
 {
   i_discret().Dof(dof, inode, 0, nodaldofset_id, element);

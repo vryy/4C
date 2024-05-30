@@ -52,7 +52,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
   // Set reference nodal positions (and tangents) for beam element
   for (unsigned int n = 0; n < beam::n_nodes_; ++n)
   {
-    const DRT::Node* node = Element1()->Nodes()[n];
+    const CORE::Nodes::Node* node = Element1()->Nodes()[n];
     for (int d = 0; d < 3; ++d)
       ele1posref_.element_position_(3 * beam::n_val_ * n + d) = node->X()[d];
 

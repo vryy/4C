@@ -40,7 +40,7 @@ namespace DRT
       // assembly process of the nodalNullspace into the actual nullspace
       for (int node = 0; node < dis.NumMyRowNodes(); ++node)
       {
-        DRT::Node* actnode = dis.lRowNode(node);
+        CORE::Nodes::Node* actnode = dis.lRowNode(node);
         std::vector<int> dofs = dis.Dof(0, actnode);
         const int localLength = dofs.size();
 

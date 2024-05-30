@@ -20,7 +20,7 @@ CORE::LINALG::SerialDenseMatrix CORE::GEO::InitialPositionArray(
 {
   const int numnode = ele->num_node();
   CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
-  const DRT::Node* const* nodes = ele->Nodes();
+  const CORE::Nodes::Node* const* nodes = ele->Nodes();
   if (nodes == nullptr)
   {
     FOUR_C_THROW("element has no nodal pointers, so getting a position array doesn't make sense!");
@@ -39,7 +39,7 @@ void CORE::GEO::InitialPositionArray(
 {
   const int numnode = ele->num_node();
   xyze.shape(3, numnode);
-  const DRT::Node* const* nodes = ele->Nodes();
+  const CORE::Nodes::Node* const* nodes = ele->Nodes();
   if (nodes == nullptr)
   {
     FOUR_C_THROW("element has no nodal pointers, so getting a position array doesn't make sense!");

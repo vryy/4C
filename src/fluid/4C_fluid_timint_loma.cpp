@@ -109,7 +109,7 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vect
   for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
   {
     // get the processor's local scatra node
-    DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
+    CORE::Nodes::Node* lscatranode = scatradis->lRowNode(lnodeid);
 
     // find out the global dof id of the last(!) dof at the scatra node
     const int numscatradof = scatradis->NumDof(0, lscatranode);
@@ -118,7 +118,7 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vect
     if (localscatradofid < 0) FOUR_C_THROW("localdofid not found in map for given globaldofid");
 
     // get the processor's local fluid node
-    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+    CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
     // get the global ids of degrees of freedom associated with this node
     nodedofs = discret_->Dof(0, lnode);
     // get global and processor's local pressure dof id (using the map!)

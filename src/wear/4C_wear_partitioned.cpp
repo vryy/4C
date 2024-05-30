@@ -429,7 +429,7 @@ void WEAR::Partitioned::update_spat_conf()
     for (int k = 0; k < structure_field()->discretization()->NumMyRowNodes(); ++k)
     {
       int gid = structure_field()->discretization()->NodeRowMap()->GID(k);
-      DRT::Node* node = structure_field()->discretization()->gNode(gid);
+      CORE::Nodes::Node* node = structure_field()->discretization()->gNode(gid);
       CORE::Elements::Element** ElementPtr = node->Elements();
       int numelement = node->NumElement();
 
@@ -673,7 +673,7 @@ void WEAR::Partitioned::wear_spatial_master_map(
          ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
     {
       int gid = masternodesmat->GID(i);
-      DRT::Node* node = winterface->Discret().gNode(gid);
+      CORE::Nodes::Node* node = winterface->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -746,7 +746,7 @@ void WEAR::Partitioned::wear_spatial_master(Teuchos::RCP<Epetra_Vector>& disinte
     for (int j = 0; j < interfaces_[i]->MasterRowNodes()->NumMyElements(); ++j)
     {
       int gid = interfaces_[i]->MasterRowNodes()->GID(j);
-      DRT::Node* node = interfaces_[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interfaces_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -827,7 +827,7 @@ void WEAR::Partitioned::wear_spatial_slave(Teuchos::RCP<Epetra_Vector>& disinter
     for (int j = 0; j < interfaces_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interfaces_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interfaces_[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interfaces_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -1023,12 +1023,12 @@ void WEAR::Partitioned::wear_pull_back_slave(Teuchos::RCP<Epetra_Vector>& disint
     for (int j = 0; j < winterface->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = winterface->SlaveRowNodes()->GID(j);
-      DRT::Node* node = winterface->Discret().gNode(gid);
+      CORE::Nodes::Node* node = winterface->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
       int gidm = interfacesMat_[m]->SlaveRowNodes()->GID(j);
-      DRT::Node* nodem = interfacesMat_[m]->Discret().gNode(gidm);
+      CORE::Nodes::Node* nodem = interfacesMat_[m]->Discret().gNode(gidm);
       if (!nodem) FOUR_C_THROW("Cannot find node with gid %", gidm);
       CONTACT::FriNode* frinodem = dynamic_cast<CONTACT::FriNode*>(nodem);
 
@@ -1204,12 +1204,12 @@ void WEAR::Partitioned::wear_pull_back_master(Teuchos::RCP<Epetra_Vector>& disin
     for (int j = 0; j < winterface->MasterRowNodes()->NumMyElements(); ++j)
     {
       int gid = winterface->MasterRowNodes()->GID(j);
-      DRT::Node* node = winterface->Discret().gNode(gid);
+      CORE::Nodes::Node* node = winterface->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
       int gidm = interfacesMat_[m]->MasterRowNodes()->GID(j);
-      DRT::Node* nodem = interfacesMat_[m]->Discret().gNode(gidm);
+      CORE::Nodes::Node* nodem = interfacesMat_[m]->Discret().gNode(gidm);
       if (!nodem) FOUR_C_THROW("Cannot find node with gid %", gidm);
       CONTACT::FriNode* frinodem = dynamic_cast<CONTACT::FriNode*>(nodem);
 
@@ -1265,7 +1265,7 @@ void WEAR::Partitioned::wear_pull_back_master(Teuchos::RCP<Epetra_Vector>& disin
          ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
     {
       int gid = masternodes->GID(i);
-      DRT::Node* node = winterface->Discret().gNode(gid);
+      CORE::Nodes::Node* node = winterface->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -1287,7 +1287,7 @@ void WEAR::Partitioned::wear_pull_back_master(Teuchos::RCP<Epetra_Vector>& disin
          ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
     {
       int gid = masternodesmat->GID(i);
-      DRT::Node* node = winterfaceMat->Discret().gNode(gid);
+      CORE::Nodes::Node* node = winterfaceMat->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -1460,7 +1460,7 @@ void WEAR::Partitioned::update_mat_conf()
     for (int k = 0; k < structure_field()->discretization()->NumMyRowNodes(); ++k)
     {
       int gid = structure_field()->discretization()->NodeRowMap()->GID(k);
-      DRT::Node* node = structure_field()->discretization()->gNode(gid);
+      CORE::Nodes::Node* node = structure_field()->discretization()->gNode(gid);
       CORE::Elements::Element** ElementPtr = node->Elements();
       int numelement = node->NumElement();
 

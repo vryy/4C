@@ -37,7 +37,7 @@ namespace DRT
     {
      public:
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -165,7 +165,7 @@ namespace DRT
 
       int num_dof_per_element() const override { return 0; }
 
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         /*note: this is not necessarily the number of DOF assigned to this node by the
          *discretization finally, but only the number of DOF requested for this node by this

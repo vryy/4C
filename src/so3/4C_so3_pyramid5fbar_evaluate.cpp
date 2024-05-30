@@ -355,7 +355,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
       CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xcurr;  // current  coord. of element
       CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xdisp;
-      DRT::Node** nodes = Nodes();
+      CORE::Nodes::Node** nodes = Nodes();
       for (int i = 0; i < NUMNOD_SOP5; ++i)
       {
         const auto& x = nodes[i]->X();
@@ -586,7 +586,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::evaluate_neumann(Teuchos::ParameterList& para
 
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -678,7 +678,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // locat
   CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xcurr;  // current  coord. of element
   CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xdisp;
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
     const auto& x = nodes[i]->X();

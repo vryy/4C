@@ -14,8 +14,8 @@
 
 #include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -41,7 +41,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented!");
@@ -73,7 +73,7 @@ namespace DRT
       \param parent: The parent shell element of this line
       \param lline: the local line number of this line w.r.t. the parent element
       */
-      StructuralLine(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
+      StructuralLine(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
           CORE::Elements::Element* parent, const int lline);
 
       /*!
@@ -138,7 +138,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      inline int NumDofPerNode(const DRT::Node& node) const override { return 3; }
+      inline int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 3; }
 
       /*!
       \brief Get number of degrees of freedom per element

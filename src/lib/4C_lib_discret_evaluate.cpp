@@ -198,7 +198,7 @@ void DRT::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
     {
       // do only nodes in my row map
       if (!NodeRowMap()->MyGID(nodeid)) continue;
-      DRT::Node* actnode = gNode(nodeid);
+      CORE::Nodes::Node* actnode = gNode(nodeid);
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", nodeid);
       // call explicitly the main dofset, nodeid.e. the first column
       std::vector<int> dofs = Dof(0, actnode);
@@ -292,7 +292,7 @@ void DRT::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
       if (!NodeRowMap()->MyGID(nodeid)) continue;
 
       // get global node
-      DRT::Node* actnode = gNode(nodeid);
+      CORE::Nodes::Node* actnode = gNode(nodeid);
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", nodeid);
 
       // get elements attached to global node

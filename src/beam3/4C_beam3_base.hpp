@@ -157,34 +157,36 @@ namespace DRT
        *
        *  \author grill
        *  \date 10/16 */
-      virtual bool IsCenterlineNode(const DRT::Node& node) const = 0;
+      virtual bool IsCenterlineNode(const CORE::Nodes::Node& node) const = 0;
 
       /** \brief return GIDs of all additive DoFs for a given node
        *
        *  \author grill
        *  \date 07/16 */
       std::vector<int> GetAdditiveDofGIDs(
-          const DRT::Discretization& discret, const DRT::Node& node) const;
+          const DRT::Discretization& discret, const CORE::Nodes::Node& node) const;
 
       /** \brief return GIDs of all non-additive, i.e. rotation pseudo vector DoFs for a given node
        *
        *  \author grill
        *  \date 07/16 */
       std::vector<int> GetRotVecDofGIDs(
-          const DRT::Discretization& discret, const DRT::Node& node) const;
+          const DRT::Discretization& discret, const CORE::Nodes::Node& node) const;
 
       /** \brief add indices of those DOFs of a given node that are positions
        *
        *  \author grill
        *  \date 07/16 */
-      virtual void PositionDofIndices(std::vector<int>& posdofs, const DRT::Node& node) const = 0;
+      virtual void PositionDofIndices(
+          std::vector<int>& posdofs, const CORE::Nodes::Node& node) const = 0;
 
       /** \brief add indices of those DOFs of a given node that are tangents (in the case of Hermite
        * interpolation)
        *
        *  \author grill
        *  \date 07/16 */
-      virtual void TangentDofIndices(std::vector<int>& tangdofs, const DRT::Node& node) const = 0;
+      virtual void TangentDofIndices(
+          std::vector<int>& tangdofs, const CORE::Nodes::Node& node) const = 0;
 
       /** \brief add indices of those DOFs of a given node that are rotation DOFs (non-additive
        * rotation vectors)
@@ -192,7 +194,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       virtual void rotation_vec_dof_indices(
-          std::vector<int>& rotvecdofs, const DRT::Node& node) const = 0;
+          std::vector<int>& rotvecdofs, const CORE::Nodes::Node& node) const = 0;
 
       /** \brief add indices of those DOFs of a given node that are 1D rotation DOFs
        *         (planar rotations are additive, e.g. in case of relative twist DOF of beam3k with
@@ -201,7 +203,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       virtual void rotation1_d_dof_indices(
-          std::vector<int>& twistdofs, const DRT::Node& node) const = 0;
+          std::vector<int>& twistdofs, const CORE::Nodes::Node& node) const = 0;
 
       /** \brief add indices of those DOFs of a given node that represent norm of tangent vector
        *         (additive, e.g. in case of beam3k with rotvec=true)
@@ -209,7 +211,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       virtual void tangent_length_dof_indices(
-          std::vector<int>& tangnormdofs, const DRT::Node& node) const = 0;
+          std::vector<int>& tangnormdofs, const CORE::Nodes::Node& node) const = 0;
 
       /** \brief get element local indices of those Dofs that are used for centerline interpolation
        *
@@ -291,7 +293,7 @@ namespace DRT
        *
        *  \author eichinger
        *  \date 08/16 */
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         FOUR_C_THROW("not implemented");
         return -1;

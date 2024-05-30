@@ -72,7 +72,7 @@ namespace DRT
           CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
@@ -84,7 +84,7 @@ namespace DRT
       std::string get_element_type_string() const { return "NSTET5"; }
 
       //! map of row nodes adjacent to NStet5 elements
-      std::map<int, DRT::Node*> noderids_;
+      std::map<int, CORE::Nodes::Node*> noderids_;
 
       //! map of column NStet5 elements
       std::map<int, DRT::ELEMENTS::NStet5*> elecids_;
@@ -95,7 +95,7 @@ namespace DRT
 
       //! map of nodes forming a patch around a node (includes center node)
       // std::map<centernodeid,std::map<nodeid,nodeptr> >
-      std::map<int, std::map<int, DRT::Node*>> adjnode_;
+      std::map<int, std::map<int, CORE::Nodes::Node*>> adjnode_;
 
       //! vector of elements adjacent to each row node
       // std::map<centernodeid,vector of ptrs to elements>
@@ -113,13 +113,14 @@ namespace DRT
       std::map<int, std::vector<std::vector<std::vector<int>>>> lmlm_;
 
       void init_elementsand_maps(std::map<int, DRT::ELEMENTS::NStet5*>& elecids,
-          std::map<int, DRT::Node*>& noderids, const int myrank, const int numproc,
+          std::map<int, CORE::Nodes::Node*>& noderids, const int myrank, const int numproc,
           DRT::Discretization& dis);
 
       void init_adjacency(std::map<int, DRT::ELEMENTS::NStet5*>& elecids,
-          std::map<int, DRT::Node*>& noderids,
+          std::map<int, CORE::Nodes::Node*>& noderids,
           std::map<int, std::vector<DRT::ELEMENTS::NStet5*>>& adjele,
-          std::map<int, std::map<int, DRT::Node*>>& adjnode, std::map<int, std::vector<int>>& adjlm,
+          std::map<int, std::map<int, CORE::Nodes::Node*>>& adjnode,
+          std::map<int, std::vector<int>>& adjlm,
           std::map<int, std::map<int, std::vector<int>>>& adjsubele,
           std::map<int, std::vector<std::vector<std::vector<int>>>>& adjlmlm,
           DRT::Discretization& dis);
@@ -128,7 +129,7 @@ namespace DRT
       void element_deformation_gradient(DRT::Discretization& dis);
 
       void nodal_integration(CORE::LINALG::SerialDenseMatrix* stiff,
-          CORE::LINALG::SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
+          CORE::LINALG::SerialDenseVector* force, std::map<int, CORE::Nodes::Node*>& adjnode,
           std::vector<DRT::ELEMENTS::NStet5*>& adjele, std::map<int, std::vector<int>>& adjsubele,
           std::vector<int>& lm, std::vector<std::vector<std::vector<int>>>& lmlm,
           const Epetra_Vector& disp, DRT::Discretization& dis, std::vector<double>* nodalstress,
@@ -299,7 +300,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      inline int NumDofPerNode(const DRT::Node& node) const override { return 3; }
+      inline int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 3; }
 
       /*!
       \brief The 3 degrees of freedom of the center node

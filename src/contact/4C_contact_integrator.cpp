@@ -103,7 +103,7 @@ bool CONTACT::Integrator::BoundarySegmCheck2D(
 
   double glob_test[3] = {0.0, 0.0, 0.0};
 
-  DRT::Node** mynodes_test = sele.Nodes();
+  CORE::Nodes::Node** mynodes_test = sele.Nodes();
   if (!mynodes_test) FOUR_C_THROW("has_proj_status: Null pointer!");
 
   if (sele.Shape() == CORE::FE::CellType::line2 || sele.Shape() == CORE::FE::CellType::nurbs2)
@@ -642,7 +642,7 @@ void CONTACT::Integrator::integrate_deriv_segment2_d(MORTAR::Element& sele, doub
   int ndof = Dim();
 
   // get slave element nodes themselves
-  DRT::Node** mynodes = sele.Nodes();
+  CORE::Nodes::Node** mynodes = sele.Nodes();
   if (!mynodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   // decide whether boundary modification has to be considered or not
@@ -873,7 +873,7 @@ bool CONTACT::Integrator::BoundarySegmCheck3D(
   double alpha_test = 0.0;
   double glob_test[3] = {0.0, 0.0, 0.0};
   const double tol = 1e-8;
-  DRT::Node** mynodes_test = sele.Nodes();
+  CORE::Nodes::Node** mynodes_test = sele.Nodes();
   if (!mynodes_test) FOUR_C_THROW("has_proj_status: Null pointer!");
 
   CORE::FE::CellType dt_s = sele.Shape();
@@ -1462,7 +1462,7 @@ void CONTACT::Integrator::IntegrateDerivEle3D(MORTAR::Element& sele,
   if (Dim() != 3) FOUR_C_THROW("3D integration method called for non-3D problem");
 
   // get slave element nodes themselves for normal evaluation
-  DRT::Node** mynodes = sele.Nodes();
+  CORE::Nodes::Node** mynodes = sele.Nodes();
   if (!mynodes) FOUR_C_THROW("IntegrateDerivEle3D: Null pointer!");
 
   // check input data
@@ -1666,7 +1666,7 @@ void CONTACT::Integrator::IntegrateDerivEle3D(MORTAR::Element& sele,
       if (is_on_mele == false && *boundary_ele == false)
       {
         std::cout << "*** warning *** Non-boundary element has non-projectable Gauss point \n";
-        DRT::Node** snodes = sele.Nodes();
+        CORE::Nodes::Node** snodes = sele.Nodes();
         for (int e = 0; e < sele.num_node(); ++e)
         {
           Node* cnode = dynamic_cast<Node*>(snodes[e]);
@@ -1735,7 +1735,7 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sel
   int ndof = Dim();
 
   // get slave element nodes themselves for normal evaluation
-  DRT::Node** mynodes = sele.Nodes();
+  CORE::Nodes::Node** mynodes = sele.Nodes();
   if (!mynodes) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane: Null pointer!");
 
   // create empty vectors for shape fct. evaluation
@@ -1976,9 +1976,9 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_stl(MORTAR::Element&
   int ndof = Dim();
 
   // get slave element nodes themselves for normal evaluation
-  DRT::Node** mynodes = sele.Nodes();
+  CORE::Nodes::Node** mynodes = sele.Nodes();
   if (!mynodes) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_lts: Null pointer!");
-  DRT::Node** mnodes = lele.Nodes();
+  CORE::Nodes::Node** mnodes = lele.Nodes();
   if (!mnodes) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_lts: Null pointer!");
 
   // create empty vectors for shape fct. evaluation
@@ -2727,10 +2727,10 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_lts(MORTAR::Element&
   int ndof = Dim();
 
   // get slave element nodes themselves for normal evaluation
-  DRT::Node** mynodes = lsele.Nodes();
+  CORE::Nodes::Node** mynodes = lsele.Nodes();
   if (!mynodes)
     FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_lts: Cannot access slave ndoes. Null pointer!");
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
   if (!mnodes)
     FOUR_C_THROW(
         "integrate_deriv_cell3_d_aux_plane_lts: Cannot access master nodes. Null pointer!");
@@ -3811,9 +3811,9 @@ void CONTACT::Integrator::integrate_deriv_cell3_d_aux_plane_quad(MORTAR::Element
   }
 
   // get slave element nodes themselves for normal evaluation
-  DRT::Node** mynodes = sele.Nodes();
+  CORE::Nodes::Node** mynodes = sele.Nodes();
   if (!mynodes) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_quad: Null pointer!");
-  DRT::Node** myintnodes = sintele.Nodes();
+  CORE::Nodes::Node** myintnodes = sintele.Nodes();
   if (!myintnodes) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_quad: Null pointer!");
 
   // map iterator
@@ -4256,7 +4256,7 @@ void CONTACT::Integrator::IntegrateDerivEle2D(MORTAR::Element& sele,
   int ndof = Dim();
   int nrow = 0;
 
-  DRT::Node** mynodes = nullptr;
+  CORE::Nodes::Node** mynodes = nullptr;
   nrow = sele.num_node();
   mynodes = sele.Nodes();
 
@@ -4472,7 +4472,7 @@ void CONTACT::Integrator::IntegrateD(MORTAR::Element& sele, const Epetra_Comm& c
   int ndof = Dim();
   int nrow = 0;
 
-  DRT::Node** mynodes = nullptr;
+  CORE::Nodes::Node** mynodes = nullptr;
   nrow = sele.num_node();
   mynodes = sele.Nodes();
 
@@ -4674,7 +4674,7 @@ void CONTACT::Integrator::integrate_kappa_penalty_lts(MORTAR::Element& ele)
   CORE::LINALG::SerialDenseMatrix deriv(nrow, 2, true);
 
   // get slave element nodes themselves
-  DRT::Node** mynodes = ele.Nodes();
+  CORE::Nodes::Node** mynodes = ele.Nodes();
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -4738,7 +4738,7 @@ void CONTACT::Integrator::integrate_kappa_penalty(MORTAR::Element& sele, double*
   // typedef std::map<int,double>::const_iterator CI;
 
   // get slave element nodes themselves
-  DRT::Node** mynodes = sele.Nodes();
+  CORE::Nodes::Node** mynodes = sele.Nodes();
   if (!mynodes) FOUR_C_THROW("integrate_kappa_penalty: Null pointer!");
 
   // decide whether boundary modification has to be considered or not
@@ -4879,8 +4879,8 @@ void CONTACT::Integrator::DerivXiAB2D(MORTAR::Element& sele, double& sxia, doubl
   if (Dim() != 2) FOUR_C_THROW("2D integration method called for non-2D problem");
 
   // we need the participating slave and master nodes
-  DRT::Node** snodes = nullptr;
-  DRT::Node** mnodes = nullptr;
+  CORE::Nodes::Node** snodes = nullptr;
+  CORE::Nodes::Node** mnodes = nullptr;
   int numsnode = sele.num_node();
   int nummnode = mele.num_node();
 
@@ -5261,8 +5261,8 @@ void CONTACT::Integrator::deriv_xi_g_p2_d(MORTAR::Element& sele, MORTAR::Element
   if (Dim() != 2) FOUR_C_THROW("2D integration method called for non-2D problem");
 
   // we need the participating slave and master nodes
-  DRT::Node** snodes = nullptr;
-  DRT::Node** mnodes = nullptr;
+  CORE::Nodes::Node** snodes = nullptr;
+  CORE::Nodes::Node** mnodes = nullptr;
   int numsnode = sele.num_node();
   int nummnode = mele.num_node();
 
@@ -5460,8 +5460,8 @@ void CONTACT::Integrator::DerivXiGP3D(MORTAR::Element& sele, MORTAR::Element& me
   if (Dim() != 3) FOUR_C_THROW("3D integration method called for non-3D problem");
 
   // we need the participating slave and master nodes
-  DRT::Node** snodes = sele.Nodes();
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
   std::vector<MORTAR::Node*> smrtrnodes(sele.num_node());
   std::vector<MORTAR::Node*> mmrtrnodes(mele.num_node());
   const int numsnode = sele.num_node();
@@ -5645,7 +5645,7 @@ void CONTACT::Integrator::DerivXiGP3DAuxPlane(MORTAR::Element& ele, double* xigp
   if (Dim() != 3) FOUR_C_THROW("3D integration method called for non-3D problem");
 
   // we need the participating element nodes
-  DRT::Node** nodes = ele.Nodes();
+  CORE::Nodes::Node** nodes = ele.Nodes();
   std::vector<MORTAR::Node*> mrtrnodes(ele.num_node());
   const int numnode = ele.num_node();
 
@@ -6139,8 +6139,8 @@ void CONTACT::Integrator::gp_dm(MORTAR::Element& sele, MORTAR::Element& mele,
   int nrow;
   int ncol;
   // get slave element nodes themselves
-  DRT::Node** snodes = nullptr;
-  DRT::Node** mnodes = nullptr;
+  CORE::Nodes::Node** snodes = nullptr;
+  CORE::Nodes::Node** mnodes = nullptr;
   nrow = sele.num_node();
   snodes = sele.Nodes();
   ncol = mele.num_node();
@@ -6330,11 +6330,11 @@ void inline CONTACT::Integrator::gp_3_d_dm_quad(MORTAR::Element& sele, MORTAR::E
     const int& nintrow, const int& ncol, const int& ndof, bool& bound)
 {
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
   if (!snodes) FOUR_C_THROW("Null pointer!");
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
   if (!mnodes) FOUR_C_THROW("Null pointer!");
-  DRT::Node** sintnodes = sintele.Nodes();
+  CORE::Nodes::Node** sintnodes = sintele.Nodes();
   if (!sintnodes) FOUR_C_THROW("Null pointer for sintnodes!");
 
   // CASE 1/2: Standard LM shape functions and quadratic, linear or constant interpolation
@@ -6484,7 +6484,7 @@ void inline CONTACT::Integrator::gp_2_d_w_gap(MORTAR::Element& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval, double* gap,
     double& jac, double& wgt)
 {
-  DRT::Node** mynodes = nullptr;
+  CORE::Nodes::Node** mynodes = nullptr;
   int nrow = 0;
   nrow = sele.num_node();
   mynodes = sele.Nodes();
@@ -6523,7 +6523,7 @@ void CONTACT::Integrator::gp_3_d_w_gap(MORTAR::Element& sele, CORE::LINALG::Seri
     int nintrow)
 {
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
   if (!snodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   // number of nodes (slave, master)
@@ -6644,8 +6644,8 @@ void CONTACT::Integrator::gap_3_d(MORTAR::Element& sele, MORTAR::Element& mele,
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
   if (!snodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
   if (!mnodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
@@ -6957,8 +6957,8 @@ void CONTACT::Integrator::gap_2_d(MORTAR::Element& sele, MORTAR::Element& mele,
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
 
   // get slave element nodes themselves
-  DRT::Node** snodes = nullptr;
-  DRT::Node** mnodes = nullptr;
+  CORE::Nodes::Node** snodes = nullptr;
+  CORE::Nodes::Node** mnodes = nullptr;
   int nrow = sele.num_node();
   int ncol = mele.num_node();
 
@@ -7192,9 +7192,9 @@ void inline CONTACT::Integrator::gp_3_d_g_quad_pwlin(MORTAR::Element& sele,
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  DRT::Node** sintnodes = sintele.Nodes();
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** sintnodes = sintele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
   if (!snodes) FOUR_C_THROW("Null pointer!");
   if (!sintnodes) FOUR_C_THROW("Null pointer!");
   if (!mnodes) FOUR_C_THROW("Null pointer!");
@@ -7500,7 +7500,7 @@ void inline CONTACT::Integrator::gp_2_d_g_lin(int& iter, MORTAR::Element& sele,
     const CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap)
 {
   // get slave element nodes themselves
-  DRT::Node** snodes = nullptr;
+  CORE::Nodes::Node** snodes = nullptr;
   int nrow = sele.num_node();
   snodes = sele.Nodes();
 
@@ -7573,7 +7573,7 @@ void inline CONTACT::Integrator::gp_2_d_g_lin(int& iter, MORTAR::Element& sele,
   {
     // get master element nodes themselves
     const int ncol = mele.num_node();
-    DRT::Node** mnodes = mele.Nodes();
+    CORE::Nodes::Node** mnodes = mele.Nodes();
 
     std::map<int, double>& dgwmmap = dynamic_cast<CONTACT::Node*>(mymrtrnode)->Data().GetDerivGW();
 
@@ -7615,7 +7615,7 @@ void inline CONTACT::Integrator::gp_3_d_g_quad_pwlin_lin(int& iter, MORTAR::IntE
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
 
   // get slave element nodes themselves
-  DRT::Node** sintnodes = sintele.Nodes();
+  CORE::Nodes::Node** sintnodes = sintele.Nodes();
 
   MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(sintnodes[iter]);
   if (!mymrtrnode) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane: Null pointer!");
@@ -7674,7 +7674,7 @@ void inline CONTACT::Integrator::gp_3_d_g_quad_lin(int& iter, MORTAR::Element& s
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
 
   MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[iter]);
   if (!mymrtrnode) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane: Null pointer!");
@@ -7804,8 +7804,8 @@ void CONTACT::Integrator::gp_g_lin(int& iter, MORTAR::Element& sele, MORTAR::Ele
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
 
   MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(snodes[iter]);
   if (!mymrtrnode) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane: Null pointer!");
@@ -7919,7 +7919,7 @@ void CONTACT::Integrator::gp_3_d_dm_lin_bound(MORTAR::Element& sele, MORTAR::Ele
   const int ncol = mele.num_node();
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
 
   // map iterator
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
@@ -8271,7 +8271,7 @@ void inline CONTACT::Integrator::gp_2_d_dm_lin_bound(MORTAR::Element& sele, MORT
   const int ncol = mele.num_node();
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
 
   // map iterator
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
@@ -8585,8 +8585,8 @@ void inline CONTACT::Integrator::gp_2_d_dm_ele_lin(int& iter, bool& bound, MORTA
     const CORE::GEN::Pairedvector<int, double>& derivjac,
     const CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap)
 {
-  DRT::Node** snodes = nullptr;
-  DRT::Node** mnodes = nullptr;
+  CORE::Nodes::Node** snodes = nullptr;
+  CORE::Nodes::Node** mnodes = nullptr;
 
   int nrow = sele.num_node();
   int ncol = mele.num_node();
@@ -8735,8 +8735,8 @@ void inline CONTACT::Integrator::gp_2_d_dm_lin(int& iter, bool& bound, bool& lin
     const CORE::GEN::Pairedvector<int, double>& derivjac,
     const CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap)
 {
-  DRT::Node** snodes = nullptr;
-  DRT::Node** mnodes = nullptr;
+  CORE::Nodes::Node** snodes = nullptr;
+  CORE::Nodes::Node** mnodes = nullptr;
   int nrow = sele.num_node();
   int ncol = mele.num_node();
   snodes = sele.Nodes();
@@ -9013,7 +9013,7 @@ void inline CONTACT::Integrator::gp_3_d_dm_quad_pwlin_lin(int& iter, MORTAR::Ele
   const int ncol = mele.num_node();
 
   // get slave element nodes themselves
-  DRT::Node** sintnodes = sintele.Nodes();
+  CORE::Nodes::Node** sintnodes = sintele.Nodes();
 
   // map iterator
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
@@ -9120,7 +9120,7 @@ void inline CONTACT::Integrator::gp_3_d_dm_quad_lin(bool& duallin, MORTAR::Eleme
   const int ncol = mele.num_node();
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
 
   std::vector<MORTAR::Node*> smnodes(nrow);
   for (int i = 0; i < nrow; ++i) smnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
@@ -9647,7 +9647,7 @@ void inline CONTACT::Integrator::gp_d2(MORTAR::Element& sele, MORTAR::Element& m
   int ndof = Dim();
 
   // get slave element nodes themselves
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
   if (!mnodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   if (shape_fcn() == INPAR::MORTAR::shape_dual ||
@@ -9714,8 +9714,8 @@ void inline CONTACT::Integrator::gp_2_d_wear(MORTAR::Element& sele, MORTAR::Elem
   const int ndof = Dim();
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
 
   int linsize = 0;
   for (int i = 0; i < sele.num_node(); ++i)
@@ -10047,8 +10047,8 @@ void inline CONTACT::Integrator::gp_3_d_wear(MORTAR::Element& sele, MORTAR::Elem
   const int ndof = Dim();
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
 
   // map iterator
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
@@ -10485,7 +10485,7 @@ void inline CONTACT::Integrator::gp_te(MORTAR::Element& sele,
     double& wgt, double* jumpval)
 {
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
   if (!snodes) FOUR_C_THROW("Null pointer!");
 
   int nrow = sele.num_node();
@@ -10558,11 +10558,11 @@ void inline CONTACT::Integrator::gp_te_master(MORTAR::Element& sele, MORTAR::Ele
   mele.SetAttached() = true;
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
   if (!snodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   // get master element nodes themselves
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
   if (!mnodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   int nrow = mele.num_node();
@@ -10654,11 +10654,11 @@ void inline CONTACT::Integrator::gp_2_d_te_master_lin(int& iter,  // like k
   const int ncol = mele.num_node();
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
   if (!snodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   // get master element nodes themselves
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
   if (!mnodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   // map iterator
@@ -10784,7 +10784,7 @@ void inline CONTACT::Integrator::gp_2_d_te_lin(int& iter, MORTAR::Element& sele,
   const int nrow = sele.num_node();
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
   if (!snodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   // map iterator
@@ -10985,7 +10985,7 @@ void inline CONTACT::Integrator::gp_3_d_te_lin(int& iter, MORTAR::Element& sele,
   const int nrow = sele.num_node();
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
   if (!snodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   // map iterator
@@ -11240,7 +11240,7 @@ void inline CONTACT::Integrator::gp_3_d_te_master_lin(int& iter, MORTAR::Element
   const int nrow = sele.num_node();
 
   // get slave element nodes themselves
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
   if (!mnodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   // map iterator
@@ -11473,8 +11473,8 @@ void inline CONTACT::Integrator::gp_2_d_slip_incr(MORTAR::Element& sele, MORTAR:
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
   if (!snodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
   if (!mnodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
@@ -11644,8 +11644,8 @@ void inline CONTACT::Integrator::gp_3_d_slip_incr(MORTAR::Element& sele, MORTAR:
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
   if (!snodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
   if (!mnodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
@@ -12019,7 +12019,7 @@ void inline CONTACT::Integrator::gp_2_d_slip_incr_lin(int& iter, MORTAR::Element
     const CORE::GEN::Pairedvector<int, double>& derivjac,
     const CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap)
 {
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
 
   const int nrow = sele.num_node();
   double fac = 0.0;
@@ -12073,7 +12073,7 @@ void inline CONTACT::Integrator::gp_3_d_slip_incr_lin(int& iter, MORTAR::Element
     const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxigp,
     const CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap)
 {
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
 
   double nrow = sele.num_node();
 
@@ -12162,7 +12162,7 @@ void inline CONTACT::Integrator::gp_2_d_wear_lin(int& iter, MORTAR::Element& sel
   double facw = 0.0;
   const int nrow = sele.num_node();
 
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
 
   // map iterator
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
@@ -12262,7 +12262,7 @@ void inline CONTACT::Integrator::gp_3_d_wear_lin(int& iter, MORTAR::Element& sel
   double facw = 0.0;
   const int nrow = sele.num_node();
 
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
 
   // map iterator
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
@@ -12377,8 +12377,8 @@ void inline CONTACT::Integrator::gp_ncoup_deriv(MORTAR::Element& sele, MORTAR::E
   typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
   if (!snodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
   if (!mnodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
@@ -12734,8 +12734,8 @@ void inline CONTACT::Integrator::gp_ncoup_lin(int& iter, MORTAR::Element& sele,
   typedef std::map<int, double>::const_iterator CI;
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  // DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
+  // CORE::Nodes::Node** mnodes = mele.Nodes();
 
   CONTACT::Node* mymrtrnode = dynamic_cast<CONTACT::Node*>(snodes[iter]);
   if (!mymrtrnode) FOUR_C_THROW("CONTACT::Integrator::gp_ncoup_lin: mymrtnode: Null pointer!");
@@ -12941,7 +12941,7 @@ double CONTACT::Integrator::t_det_deformation_gradient(
 
   // update element geometry of parent element
   {
-    DRT::Node** nodes = sele.parent_element()->Nodes();
+    CORE::Nodes::Node** nodes = sele.parent_element()->Nodes();
     for (int inode = 0; inode < numnodes; ++inode)
     {
       for (unsigned int idof = 0; idof < dim; ++idof)
@@ -12968,7 +12968,7 @@ double CONTACT::Integrator::t_det_deformation_gradient(
   //  linearization scalars
   xjm.Invert();
   {
-    //    DRT::Node** nodes = sele.parent_element()->Nodes();
+    //    CORE::Nodes::Node** nodes = sele.parent_element()->Nodes();
     for (int inode = 0; inode < numnodes; ++inode)
     {
       for (unsigned int i = 0; i < dim; ++i)

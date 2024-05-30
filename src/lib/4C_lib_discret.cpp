@@ -61,7 +61,7 @@ void DRT::Discretization::CheckFilledGlobally()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::AddNode(Teuchos::RCP<DRT::Node> node)
+void DRT::Discretization::AddNode(Teuchos::RCP<CORE::Nodes::Node> node)
 {
   node_[node->Id()] = node;
   reset();
@@ -69,7 +69,7 @@ void DRT::Discretization::AddNode(Teuchos::RCP<DRT::Node> node)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool DRT::Discretization::DeleteNode(Teuchos::RCP<DRT::Node> node)
+bool DRT::Discretization::DeleteNode(Teuchos::RCP<CORE::Nodes::Node> node)
 {
   auto it_node = node_.find(node->Id());
   if (it_node == node_.end()) return false;
@@ -315,10 +315,10 @@ bool DRT::Discretization::HaveGlobalNode(const int gid) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Node* DRT::Discretization::gNode(int gid) const
+CORE::Nodes::Node* DRT::Discretization::gNode(int gid) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  std::map<int, Teuchos::RCP<DRT::Node>>::const_iterator curr = node_.find(gid);
+  std::map<int, Teuchos::RCP<CORE::Nodes::Node>>::const_iterator curr = node_.find(gid);
   if (curr == node_.end())
     FOUR_C_THROW("Node with global id gid=%d not stored on this proc", gid);
   else
@@ -351,7 +351,7 @@ void DRT::Discretization::Print(std::ostream& os) const
   else
   {
     int nummynodes = 0;
-    std::map<int, Teuchos::RCP<DRT::Node>>::const_iterator ncurr;
+    std::map<int, Teuchos::RCP<CORE::Nodes::Node>>::const_iterator ncurr;
     for (ncurr = node_.begin(); ncurr != node_.end(); ++ncurr)
       if (ncurr->second->Owner() == Comm().MyPID()) nummynodes++;
 
@@ -410,7 +410,7 @@ void DRT::Discretization::Print(std::ostream& os) const
         // print nodes
         {
           os << "-------------------------- Proc " << proc << " :\n";
-          std::map<int, Teuchos::RCP<DRT::Node>>::const_iterator curr;
+          std::map<int, Teuchos::RCP<CORE::Nodes::Node>>::const_iterator curr;
           for (curr = node_.begin(); curr != node_.end(); ++curr)
           {
             os << *(curr->second);
@@ -784,7 +784,7 @@ void DRT::Discretization::UnPackMyNodes(Teuchos::RCP<std::vector<char>> e)
     std::vector<char> data;
     CORE::COMM::ParObject::ExtractfromPack(index, *e, data);
     CORE::COMM::ParObject* o = CORE::COMM::Factory(data);
-    auto* node = dynamic_cast<Node*>(o);
+    auto* node = dynamic_cast<CORE::Nodes::Node*>(o);
     if (node == nullptr)
     {
       FOUR_C_THROW("Failed to build a node from the node data");

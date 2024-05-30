@@ -137,7 +137,7 @@ namespace CORE::Dofsets
 
    protected:
     /// get number of nodal dofs
-    int NumDofPerNode(const DRT::Node& node) const override
+    int NumDofPerNode(const CORE::Nodes::Node& node) const override
     {
       if (numdofpernodenodewise_ == Teuchos::null)
         return numdofpernode_;

@@ -9,22 +9,22 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::NodeType DRT::NodeType::instance_;
+CORE::Nodes::NodeType CORE::Nodes::NodeType::instance_;
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::NodeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* CORE::Nodes::NodeType::Create(const std::vector<char>& data)
 {
   std::vector<double> dummycoord(3, 999.0);
-  auto* object = new DRT::Node(-1, dummycoord, -1);
+  auto* object = new CORE::Nodes::Node(-1, dummycoord, -1);
   object->Unpack(data);
   return object;
 }
@@ -32,7 +32,7 @@ CORE::COMM::ParObject* DRT::NodeType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Node::Node(const int id, const std::vector<double>& coords, const int owner)
+CORE::Nodes::Node::Node(const int id, const std::vector<double>& coords, const int owner)
     : ParObject(), id_(id), lid_(-1), owner_(owner), x_(coords)
 {
 }
@@ -40,7 +40,7 @@ DRT::Node::Node(const int id, const std::vector<double>& coords, const int owner
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Node::Node(const DRT::Node& old)
+CORE::Nodes::Node::Node(const CORE::Nodes::Node& old)
     : ParObject(old),
       id_(old.id_),
       lid_(old.lid_),
@@ -58,15 +58,15 @@ DRT::Node::Node(const DRT::Node& old)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Node* DRT::Node::Clone() const
+CORE::Nodes::Node* CORE::Nodes::Node::Clone() const
 {
-  auto* newnode = new DRT::Node(*this);
+  auto* newnode = new CORE::Nodes::Node(*this);
   return newnode;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const DRT::Node& node)
+std::ostream& operator<<(std::ostream& os, const CORE::Nodes::Node& node)
 {
   node.Print(os);
   return os;
@@ -75,7 +75,7 @@ std::ostream& operator<<(std::ostream& os, const DRT::Node& node)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Node::Print(std::ostream& os) const
+void CORE::Nodes::Node::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Node " << std::setw(12) << Id() << " Owner " << std::setw(4) << Owner() << " Coords "
@@ -86,7 +86,7 @@ void DRT::Node::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Node::Pack(CORE::COMM::PackBuffer& data) const
+void CORE::Nodes::Node::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -107,7 +107,7 @@ void DRT::Node::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Node::Unpack(const std::vector<char>& data)
+void CORE::Nodes::Node::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -127,7 +127,7 @@ void DRT::Node::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Node::GetCondition(
+void CORE::Nodes::Node::GetCondition(
     const std::string& name, std::vector<CORE::Conditions::Condition*>& out) const
 {
   const int num = condition_.count(name);
@@ -143,7 +143,7 @@ void DRT::Node::GetCondition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::Conditions::Condition* DRT::Node::GetCondition(const std::string& name) const
+CORE::Conditions::Condition* CORE::Nodes::Node::GetCondition(const std::string& name) const
 {
   auto curr = condition_.find(name);
   if (curr == condition_.end()) return nullptr;
@@ -154,7 +154,7 @@ CORE::Conditions::Condition* DRT::Node::GetCondition(const std::string& name) co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Node::ChangePos(std::vector<double> nvector)
+void CORE::Nodes::Node::ChangePos(std::vector<double> nvector)
 {
   FOUR_C_ASSERT(x_.size() == nvector.size(),
       "Mismatch in size of the nodal coordinates vector and the vector to change the nodal "
@@ -165,7 +165,7 @@ void DRT::Node::ChangePos(std::vector<double> nvector)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Node::SetPos(std::vector<double> nvector)
+void CORE::Nodes::Node::SetPos(std::vector<double> nvector)
 {
   FOUR_C_ASSERT(x_.size() == nvector.size(),
       "Mismatch in size of the nodal coordinates vector and the vector to set the new nodal "
@@ -176,7 +176,7 @@ void DRT::Node::SetPos(std::vector<double> nvector)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool DRT::Node::VisData(const std::string& name, std::vector<double>& data)
+bool CORE::Nodes::Node::VisData(const std::string& name, std::vector<double>& data)
 {
   if (name == "Nodeowner")
   {

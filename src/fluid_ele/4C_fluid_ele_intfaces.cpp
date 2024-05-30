@@ -38,7 +38,7 @@ DRT::ELEMENTS::FluidIntFace::FluidIntFace(int id,  ///< element id
     int owner,                            ///< owner (= owner of parent element with smallest gid)
     int nnode,                            ///< number of nodes
     const int* nodeids,                   ///< node ids
-    DRT::Node** nodes,                    ///< nodes of surface
+    CORE::Nodes::Node** nodes,            ///< nodes of surface
     DRT::ELEMENTS::Fluid* parent_master,  ///< master parent element
     DRT::ELEMENTS::Fluid* parent_slave,   ///< slave parent element
     const int lsurface_master,  ///< local surface index with respect to master parent element
@@ -133,7 +133,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int m_numnode = ParentMasterElement()->num_node();
-  DRT::Node** m_nodes = ParentMasterElement()->Nodes();
+  CORE::Nodes::Node** m_nodes = ParentMasterElement()->Nodes();
 
   if (m_numnode != static_cast<int>(nds_master.size()))
   {
@@ -142,7 +142,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int s_numnode = ParentSlaveElement()->num_node();
-  DRT::Node** s_nodes = ParentSlaveElement()->Nodes();
+  CORE::Nodes::Node** s_nodes = ParentSlaveElement()->Nodes();
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
   {
@@ -151,7 +151,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int f_numnode = num_node();
-  DRT::Node** f_nodes = Nodes();
+  CORE::Nodes::Node** f_nodes = Nodes();
 
 
 
@@ -175,7 +175,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   // fill patch lm with master's nodes
   for (int k = 0; k < m_numnode; ++k)
   {
-    DRT::Node* node = m_nodes[k];
+    CORE::Nodes::Node* node = m_nodes[k];
     std::vector<int> dof;
     discretization.Dof(dof, node, dofset, nds_master[k]);
 
@@ -216,7 +216,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   for (int k = 0; k < s_numnode; ++k)
   {
-    DRT::Node* node = s_nodes[k];
+    CORE::Nodes::Node* node = s_nodes[k];
 
     int nid = node->Id();  // node id of node and id of master node if it is a PBC node
 
@@ -281,7 +281,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   for (int k = 0; k < f_numnode; ++k)
   {
-    DRT::Node* node = f_nodes[k];
+    CORE::Nodes::Node* node = f_nodes[k];
 
     int nid = node->Id();  // node id of node and id of master node if it is a PBC node
 
@@ -344,7 +344,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int m_numnode = ParentMasterElement()->num_node();
-  DRT::Node** m_nodes = ParentMasterElement()->Nodes();
+  CORE::Nodes::Node** m_nodes = ParentMasterElement()->Nodes();
 
   if (m_numnode != static_cast<int>(nds_master.size()))
   {
@@ -353,7 +353,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int s_numnode = ParentSlaveElement()->num_node();
-  DRT::Node** s_nodes = ParentSlaveElement()->Nodes();
+  CORE::Nodes::Node** s_nodes = ParentSlaveElement()->Nodes();
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
   {
@@ -362,7 +362,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int f_numnode = num_node();
-  DRT::Node** f_nodes = Nodes();
+  CORE::Nodes::Node** f_nodes = Nodes();
 
   //-----------------------------------------------------------------------
   // create the patch local map and additional local maps between elements lm and patch lm
@@ -401,7 +401,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   // fill patch lm with master's nodes
   for (int k = 0; k < m_numnode; ++k)
   {
-    DRT::Node* node = m_nodes[k];
+    CORE::Nodes::Node* node = m_nodes[k];
     std::vector<int> dof;
     discretization.Dof(dof, node, dofset, nds_master[k]);
 
@@ -447,7 +447,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   for (int k = 0; k < s_numnode; ++k)
   {
-    DRT::Node* node = s_nodes[k];
+    CORE::Nodes::Node* node = s_nodes[k];
 
     int nid = node->Id();  // node id of node and id of master node if it is a PBC node
 
@@ -517,7 +517,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   // extract face's lm from patch_lm
   for (int k = 0; k < f_numnode; ++k)
   {
-    DRT::Node* node = f_nodes[k];
+    CORE::Nodes::Node* node = f_nodes[k];
 
     int nid = node->Id();  // node id of node and id of master node if it is a PBC node
 

@@ -132,7 +132,7 @@ namespace DRT
       //! dofsets (implements pure virtual CORE::Elements::Element)
       //!
       //! The element decides how many degrees of freedom its nodes must have.
-      int NumDofPerNode(const DRT::Node& node) const override { return nsd_; };
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return nsd_; };
 
       //! Get number of degrees of freedom of this element
       int num_dof_per_element() const override { return 0; };

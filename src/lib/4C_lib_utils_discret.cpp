@@ -11,9 +11,9 @@
 
 #include "4C_lib_utils_discret.hpp"
 
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_utils_function.hpp"
 
 #include <Epetra_Map.h>
@@ -76,7 +76,7 @@ void DRT::UTILS::DoInitialField(const DRT::Discretization& discret,
     // do only nodes in my row map
     int cond_node_lid = discret.NodeRowMap()->LID(cond_nodeid);
     if (cond_node_lid < 0) continue;
-    DRT::Node* node = discret.lRowNode(cond_node_lid);
+    CORE::Nodes::Node* node = discret.lRowNode(cond_node_lid);
 
     // call explicitly the main dofset, i.e. the first column
     std::vector<int> node_dofs = discret.Dof(0, node);

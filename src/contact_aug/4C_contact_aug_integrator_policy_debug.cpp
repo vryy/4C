@@ -78,7 +78,7 @@ template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mas
 void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_w_gap(
     MORTAR::Element& sele) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -103,7 +103,7 @@ template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mas
 void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_w_gap(
     MORTAR::Element& sele) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -290,7 +290,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double jac,
     const double wgt) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -309,7 +309,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv1stMap& djac, const double wgt) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -332,7 +332,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double* gpn) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -354,7 +354,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv1stVecMap& d_gpn) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -385,7 +385,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double gapn_sl, const double gapn_ma, const double wgt, const double jac) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -405,7 +405,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double gapn_sl, const double wgt, const double jac) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -427,7 +427,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     const Deriv1stMap& d_gapn_sl, const Deriv1stMap& d_jac, const double gapn_sl, const double wgt,
     const double jac, Deriv1stMap& d_gapn_sl_complete) const
 {
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
 
   // --- standard slave gap part --------------------------------------------
   for (auto& d_gapn_sl_var : d_gapn_sl)
@@ -468,7 +468,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     const Deriv1stMap& d_gapn_sl_complete, const Deriv1stMap& d_jac, const double gapn_sl,
     const double wgt, const double jac) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -510,7 +510,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     const Deriv1stMap& d_gapn_sl_complete, const Deriv2ndMap& dd_jac, const double gapn_sl,
     const double wgt, const double jac) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -654,7 +654,7 @@ template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mas
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_w_gap(
     MORTAR::Element& sele) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -679,7 +679,7 @@ template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mas
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_w_gap(
     MORTAR::Element& sele) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -710,7 +710,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double* mxigp) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -735,7 +735,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv1stVecMap& dmxigp) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -766,7 +766,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv2ndVecMap& ddmxigp) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -802,7 +802,7 @@ template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mas
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
     mastertype>::debug_deriv1st_smooth_unit_normal(MORTAR::Element& sele) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -819,7 +819,7 @@ template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mas
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
     mastertype>::debug_deriv2nd_smooth_unit_normal(MORTAR::Element& sele) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -837,7 +837,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv1stMap& djac) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -864,7 +864,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv2ndMap& ddjac) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -898,7 +898,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
     const CORE::LINALG::Matrix<3, 2>& stau) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
@@ -943,7 +943,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
     const CORE::LINALG::Matrix<3, 2>& stau) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
@@ -995,7 +995,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
     const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
     const CORE::LINALG::Matrix<3, 2>& stau) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
@@ -1037,7 +1037,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);

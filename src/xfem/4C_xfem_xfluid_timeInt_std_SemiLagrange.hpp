@@ -153,8 +153,8 @@ namespace XFEM
     //! compute the nodal gradient
     void compute_nodal_gradient(
         const std::vector<Teuchos::RCP<Epetra_Vector>>&
-            colVectors,   ///< all vectors for that we reconstruct the their gradients
-        DRT::Node* node,  ///< node at which we reconstruct the gradients
+            colVectors,           ///< all vectors for that we reconstruct the their gradients
+        CORE::Nodes::Node* node,  ///< node at which we reconstruct the gradients
         std::vector<CORE::Elements::Element*>&
             eles,  ///< elements around node used for the reconstruction
         std::vector<std::vector<int>>& ele_nds,  ///< corresonding elements nodal dofset information

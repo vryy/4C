@@ -13,12 +13,12 @@
 
 #include "4C_comm_utils_factory.hpp"
 #include "4C_discretization_condition.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_geometric_search_bounding_volume.hpp"
 #include "4C_discretization_geometric_search_params.hpp"
 #include "4C_io_element_append_visualization.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_material_base.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -335,14 +335,15 @@ void CORE::Elements::Element::Unpack(const std::vector<char>& data)
  |  Build nodal pointers                                    (protected) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-bool CORE::Elements::Element::BuildNodalPointers(std::map<int, Teuchos::RCP<DRT::Node>>& nodes)
+bool CORE::Elements::Element::BuildNodalPointers(
+    std::map<int, Teuchos::RCP<CORE::Nodes::Node>>& nodes)
 {
   int nnode = num_node();
   const int* nodeids = NodeIds();
   node_.resize(nnode);
   for (int i = 0; i < nnode; ++i)
   {
-    std::map<int, Teuchos::RCP<DRT::Node>>::const_iterator curr = nodes.find(nodeids[i]);
+    std::map<int, Teuchos::RCP<CORE::Nodes::Node>>::const_iterator curr = nodes.find(nodeids[i]);
     // this node is not on this proc
     if (curr == nodes.end())
       FOUR_C_THROW("Element %d cannot find node %d", Id(), nodeids[i]);
@@ -356,7 +357,7 @@ bool CORE::Elements::Element::BuildNodalPointers(std::map<int, Teuchos::RCP<DRT:
  |  Build nodal pointers                                    (protected) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-bool CORE::Elements::Element::BuildNodalPointers(DRT::Node** nodes)
+bool CORE::Elements::Element::BuildNodalPointers(CORE::Nodes::Node** nodes)
 {
   node_.resize(num_node());
   for (int i = 0; i < num_node(); ++i) node_[i] = nodes[i];
@@ -456,7 +457,7 @@ void CORE::Elements::Element::LocationVector(const DRT::Discretization& dis,
     const std::vector<int>& nds, CORE::Elements::Element::LocationArray& la, bool doDirichlet) const
 {
   const int numnode = num_node();
-  const DRT::Node* const* nodes = Nodes();
+  const CORE::Nodes::Node* const* nodes = Nodes();
 
   if (numnode != static_cast<int>(nds.size()))
   {
@@ -478,7 +479,7 @@ void CORE::Elements::Element::LocationVector(const DRT::Discretization& dis,
     {
       for (int i = 0; i < numnode; ++i)
       {
-        const DRT::Node* node = nodes[i];
+        const CORE::Nodes::Node* node = nodes[i];
 
         const int owner = node->Owner();
         std::vector<int> dof;
@@ -574,7 +575,7 @@ void CORE::Elements::Element::LocationVector(
     const DRT::Discretization& dis, LocationArray& la, bool doDirichlet) const
 {
   const int numnode = num_node();
-  const DRT::Node* const* nodes = Nodes();
+  const CORE::Nodes::Node* const* nodes = Nodes();
 
   la.Clear();
 
@@ -591,7 +592,7 @@ void CORE::Elements::Element::LocationVector(
     {
       for (int i = 0; i < numnode; ++i)
       {
-        const DRT::Node* node = nodes[i];
+        const CORE::Nodes::Node* node = nodes[i];
 
         const int owner = node->Owner();
         std::vector<int> dof;
@@ -775,7 +776,7 @@ void CORE::Elements::Element::LocationVector(const DRT::Discretization& dis, std
     std::vector<int>& lmdirich, std::vector<int>& lmowner, std::vector<int>& lmstride) const
 {
   const int numnode = num_node();
-  const DRT::Node* const* nodes = Nodes();
+  const CORE::Nodes::Node* const* nodes = Nodes();
 
   lm.clear();
   lmdirich.clear();
@@ -875,7 +876,7 @@ void CORE::Elements::Element::LocationVector(const DRT::Discretization& dis, std
     std::vector<int>& lmowner, std::vector<int>& lmstride) const
 {
   const int numnode = num_node();
-  const DRT::Node* const* nodes = Nodes();
+  const CORE::Nodes::Node* const* nodes = Nodes();
 
   lm.clear();
   lmowner.clear();
@@ -886,7 +887,7 @@ void CORE::Elements::Element::LocationVector(const DRT::Discretization& dis, std
   {
     for (int i = 0; i < numnode; ++i)
     {
-      const DRT::Node* node = nodes[i];
+      const CORE::Nodes::Node* node = nodes[i];
       unsigned bef = lm.size();
       dis.Dof(0, this, node, lm);
       unsigned aft = lm.size();
@@ -1013,7 +1014,7 @@ int CORE::Elements::Element::Degree() const { return CORE::FE::getDegree(Shape()
 bool CORE::Elements::Element::HasOnlyGhostNodes(const int mypid) const
 {
   const int numnode = num_node();
-  const DRT::Node* const* nodes = Nodes();
+  const CORE::Nodes::Node* const* nodes = Nodes();
 
   // check for 'purely ghosted' element, i.e. only ghost nodes
   bool allghostnodes = true;
@@ -1075,7 +1076,7 @@ CORE::GEOMETRICSEARCH::BoundingVolume CORE::Elements::Element::GetBoundingVolume
     nodedofs.clear();
 
     // local storage position of desired dof gid
-    const DRT::Node* node = this->Nodes()[i_node];
+    const CORE::Nodes::Node* node = this->Nodes()[i_node];
     discret.Dof(node, nodedofs);
 
     for (unsigned int i_dir = 0; i_dir < 3; ++i_dir)

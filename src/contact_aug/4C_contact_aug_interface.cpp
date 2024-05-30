@@ -253,7 +253,7 @@ void CONTACT::AUG::Interface::Initialize()
   {
     const int gid = mynodegids[i];
 
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     Node* cnode = dynamic_cast<Node*>(node);
     if (not cnode) FOUR_C_THROW("Dynamic cast for node gid %d failed!", gid);
 
@@ -369,7 +369,7 @@ void CONTACT::AUG::Interface::evaluate_nodal_normals() const
   for (unsigned i = 0; i < nummyeles; ++i)
   {
     const int gid = mygids[i];
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node& cnode = dynamic_cast<CONTACT::Node&>(*node);
 
@@ -418,7 +418,7 @@ void CONTACT::AUG::Interface::export_nodal_normals_only() const
     for (unsigned i = 0; i < my_num_row_entries; ++i)
     {
       int gid = my_rgids[i];
-      DRT::Node* node = idiscret_->gNode(gid);
+      CORE::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -447,7 +447,7 @@ void CONTACT::AUG::Interface::export_nodal_normals_only() const
     for (unsigned i = 0; i < my_num_col_entries; ++i)
     {
       int gid = my_cgids[i];
-      DRT::Node* node = idiscret_->gNode(gid);
+      CORE::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node& cnode = dynamic_cast<Node&>(*node);
 
@@ -666,7 +666,7 @@ void CONTACT::AUG::Interface::assemble_active_gap_vectors(
   {
     const int gid = mynodegids[i];
 
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     Node* cnode = dynamic_cast<Node*>(node);
     if (not cnode) FOUR_C_THROW("Dynamic_cast to Node failed! [node-gid=%d]", gid);
 
@@ -720,7 +720,7 @@ void CONTACT::AUG::Interface::assemble_gap_vector_of_all_sl_nodes(
   {
     const int gid = mynodegids[i];
 
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     Node* cnode = dynamic_cast<Node*>(node);
     if (not cnode) FOUR_C_THROW("Dynamic_cast to Node failed! [node-gid=%d]", gid);
     const double wGap = cnode->AugData().GetWGap();
@@ -756,7 +756,7 @@ void CONTACT::AUG::Interface::AssembleLmNVector(Epetra_Vector& lmNVec) const
   {
     const int gid = mynodegids[i];
 
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node)
       FOUR_C_THROW(
           "ERROR: AssembleDGLmrhs: Cannot find slave"
@@ -795,7 +795,7 @@ void CONTACT::AUG::Interface::AssembleAugAVector(
   {
     const int gid = mynodegids[i];
 
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
 
     Node* cnode = static_cast<Node*>(node);
@@ -1027,7 +1027,7 @@ void CONTACT::AUG::Interface::assemble_d_lm_t_lm_t_lin_matrix(
   {
     const int gid = mynodegids[i];
 
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1374,7 +1374,7 @@ void CONTACT::AUG::Interface::SplitAugActiveDofs()
   {
     int gid = activenodes_->GID(i);
 
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
 
     Node* cnode = static_cast<Node*>(node);
@@ -1537,7 +1537,7 @@ void CONTACT::AUG::Interface::build_active_slave_element_col_map(const Epetra_Ma
   for (unsigned i = 0; i < my_num_col_entries; ++i)
   {
     const int cngid = active_col_node_gids[i];
-    DRT::Node* anode = idiscret_->gNode(cngid);
+    CORE::Nodes::Node* anode = idiscret_->gNode(cngid);
 
     CORE::Elements::Element** adj_eles = anode->Elements();
     const unsigned num_adj_eles = anode->NumElement();
@@ -1966,7 +1966,7 @@ double CONTACT::AUG::Interface::my_characteristic_element_length(
     const CORE::Elements::Element* ele = idiscret_->gElement(my_gids[i]);
     if (not ele) FOUR_C_THROW("Couldn't find the element! (ele-GID=%d)", my_gids[i]);
 
-    const DRT::Node* const* nodes = ele->Nodes();
+    const CORE::Nodes::Node* const* nodes = ele->Nodes();
     switch (ele->Shape())
     {
       case CORE::FE::CellType::line2:
@@ -2113,7 +2113,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::Interface::collect_row_node_owners(
 
   for (unsigned i = 0; i < mynumrnodes; ++i)
   {
-    const DRT::Node* node = idiscret_->gNode(myrnodegids[i]);
+    const CORE::Nodes::Node* node = idiscret_->gNode(myrnodegids[i]);
     (*gsmnodeowners)[i] = node->Owner();
   }
 

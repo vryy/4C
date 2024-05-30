@@ -36,7 +36,7 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidBoundaryType::Create(
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const int* nodeids,
-    DRT::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface)
+    CORE::Nodes::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface)
     : CORE::Elements::FaceElement(id, owner),
       distype_(CORE::FE::CellType::dis_none),
       numdofpernode_(-1)

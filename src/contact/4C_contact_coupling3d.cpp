@@ -119,7 +119,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
     // (hassegment_ of a slave node is true if ANY segment/cell
     // is integrated that contributes to this slave node)
     int nnodes = SlaveIntElement().num_node();
-    DRT::Node** mynodes = SlaveIntElement().Nodes();
+    CORE::Nodes::Node** mynodes = SlaveIntElement().Nodes();
     if (!mynodes) FOUR_C_THROW("Null pointer!");
     for (int k = 0; k < nnodes; ++k)
     {
@@ -366,7 +366,7 @@ bool CONTACT::Coupling3d::slave_vertex_linearization(
   SlaveIntElement().evaluate_shape(scxi, sval, sderiv, nrow);
 
   // we need all participating slave nodes
-  DRT::Node** snodes = SlaveIntElement().Nodes();
+  CORE::Nodes::Node** snodes = SlaveIntElement().Nodes();
   std::vector<MORTAR::Node*> smrtrnodes(nrow);
 
   for (int i = 0; i < nrow; ++i)
@@ -505,7 +505,7 @@ bool CONTACT::Coupling3d::master_vertex_linearization(
   SlaveIntElement().evaluate_shape(scxi, sval, sderiv, nrow);
 
   // we need all participating slave nodes
-  DRT::Node** snodes = SlaveIntElement().Nodes();
+  CORE::Nodes::Node** snodes = SlaveIntElement().Nodes();
   std::vector<MORTAR::Node*> smrtrnodes(nrow);
 
   for (int i = 0; i < nrow; ++i)
@@ -1522,7 +1522,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
     double alpha_test = 0.0;
     bool proj_test = false;
 
-    DRT::Node** mynodes_test = SlaveElement().Nodes();
+    CORE::Nodes::Node** mynodes_test = SlaveElement().Nodes();
     if (!mynodes_test) FOUR_C_THROW("has_proj_status: Null pointer!");
 
     if (dt_s == CORE::FE::CellType::quad4 || dt_s == CORE::FE::CellType::quad8 ||

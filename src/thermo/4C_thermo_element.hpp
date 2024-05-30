@@ -57,7 +57,7 @@ namespace DRT
           CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
@@ -215,7 +215,7 @@ namespace DRT
       //! As this may vary along a simulation, the element can redecide the
       //! number of degrees of freedom per node along the way for each of it's nodes
       //! separately.
-      int NumDofPerNode(const DRT::Node& node) const override { return numdofpernode_; }
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return numdofpernode_; }
 
       //!
       //! \brief Get number of degrees of freedom per element
@@ -378,7 +378,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
@@ -408,7 +408,7 @@ namespace DRT
       //! \param nodes: the discretization map of nodes to build ptrs to nodes from
       //! \param parent: The parent fluid element of this surface
       //! \param lsurface: the local surface number of this surface w.r.t. the parent element
-      ThermoBoundary(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
+      ThermoBoundary(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
           DRT::ELEMENTS::Thermo* parent, const int lsurface);
 
       //! \brief Copy Constructor
@@ -497,7 +497,7 @@ namespace DRT
       //! As this may vary along a simulation, the element can redecide the
       //! number of degrees of freedom per node along the way for each of it's nodes
       //! separately.
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         return parent_element()->NumDofPerNode(node);
       }

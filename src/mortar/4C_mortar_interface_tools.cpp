@@ -582,7 +582,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
       for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
       {
         int gid = snoderowmap_->GID(i);
-        DRT::Node* node = idiscret_->gNode(gid);
+        CORE::Nodes::Node* node = idiscret_->gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* mtrnode = dynamic_cast<Node*>(node);
         if (!mtrnode) FOUR_C_THROW("Static Cast to Node* failed");

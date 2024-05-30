@@ -480,7 +480,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     for (int lnodeid = 0; lnodeid < strudis->NumMyRowNodes(); lnodeid++)
     {
       // get the processor local node
-      DRT::Node* lnode = strudis->lRowNode(lnodeid);
+      CORE::Nodes::Node* lnode = strudis->lRowNode(lnodeid);
       // get the dofs of the node
       //      std::vector<int> dofs= strudis->Dof(lnode);
       // the set of degrees of freedom associated with the node
@@ -510,7 +510,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
 
       // get the processor's local node with the same lnodeid
       int gnodeid = condnodemap->GID(nodei);
-      DRT::Node* strulnode = strudis->gNode(gnodeid);
+      CORE::Nodes::Node* strulnode = strudis->gNode(gnodeid);
       // get the degrees of freedom associated with this node
       std::vector<int> strunodedofs = strudis->Dof(0, strulnode);
       // determine number of space dimensions
@@ -684,7 +684,7 @@ void FS3I::BiofilmFSI::compute_interface_vectors(Teuchos::RCP<Epetra_Vector> idi
   {
     int nodegid = condnodemap->GID(i);
     if (strudis->HaveGlobalNode(nodegid) == false) FOUR_C_THROW("node not found on this proc");
-    DRT::Node* actnode = strudis->gNode(nodegid);
+    CORE::Nodes::Node* actnode = strudis->gNode(nodegid);
     std::vector<int> globaldofs = strudis->Dof(0, actnode);
     const int numdim = (int)(globaldofs.size());
 

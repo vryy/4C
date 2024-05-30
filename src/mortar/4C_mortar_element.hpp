@@ -53,7 +53,7 @@ namespace MORTAR
         CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
     CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-        DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+        CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
    private:
     static ElementType instance_;
@@ -471,7 +471,7 @@ namespace MORTAR
     not with standard Node objects!
 
     */
-    int NumDofPerNode(const DRT::Node& node) const override;
+    int NumDofPerNode(const CORE::Nodes::Node& node) const override;
 
     /*!
     \brief Get number of degrees of freedom per element

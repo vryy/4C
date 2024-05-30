@@ -699,8 +699,8 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
       for (int dim = 0; dim < 3; ++dim) cornerpos[dim] = bincorners[corner_i](dim);
 
       nids[corner_i] = (bingid * numcorner) + corner_i;
-      Teuchos::RCP<DRT::Node> newnode =
-          Teuchos::rcp(new DRT::Node(nids[corner_i], cornerpos, myrank_));
+      Teuchos::RCP<CORE::Nodes::Node> newnode =
+          Teuchos::rcp(new CORE::Nodes::Node(nids[corner_i], cornerpos, myrank_));
       visbindis_->AddNode(newnode);
     }
 
@@ -747,8 +747,8 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
         for (int dim = 0; dim < 3; ++dim) cornerpos[dim] = iter->second[corner_i](dim);
 
         nids[corner_i] = (newelegid * numcorner) + corner_i;
-        Teuchos::RCP<DRT::Node> newnode =
-            Teuchos::rcp(new DRT::Node(nids[corner_i], cornerpos, myrank_));
+        Teuchos::RCP<CORE::Nodes::Node> newnode =
+            Teuchos::rcp(new CORE::Nodes::Node(nids[corner_i], cornerpos, myrank_));
         visbindis_->AddNode(newnode);
       }
 
@@ -911,13 +911,13 @@ void BINSTRATEGY::BinningStrategy::distribute_eles_to_bins(const DRT::Discretiza
     CORE::Elements::Element* ele = mortardis.lColElement(lid);
     if (dynamic_cast<MORTAR::Element*>(ele)->IsSlave() == isslave)
     {
-      DRT::Node** nodes = ele->Nodes();
+      CORE::Nodes::Node** nodes = ele->Nodes();
       const int numnode = ele->num_node();
 
       // initialize ijk_range with ijk of first node of element
       int ijk[3];
       {
-        DRT::Node* node = nodes[0];
+        CORE::Nodes::Node* node = nodes[0];
         const double* coords = dynamic_cast<MORTAR::Node*>(node)->xspatial();
         ConvertPosToijk(coords, ijk);
       }
@@ -928,7 +928,7 @@ void BINSTRATEGY::BinningStrategy::distribute_eles_to_bins(const DRT::Discretiza
       // fill in remaining nodes
       for (int j = 1; j < numnode; ++j)
       {
-        DRT::Node* node = nodes[j];
+        CORE::Nodes::Node* node = nodes[j];
         const double* coords = dynamic_cast<MORTAR::Node*>(node)->xspatial();
         int ijk[3];
         ConvertPosToijk(coords, ijk);
@@ -1004,11 +1004,11 @@ void BINSTRATEGY::BinningStrategy::distribute_single_element_to_bins_using_ele_a
     std::vector<int>& binIds, Teuchos::RCP<const Epetra_Vector> const& disnp) const
 {
   binIds.clear();
-  DRT::Node** nodes = eleptr->Nodes();
+  CORE::Nodes::Node** nodes = eleptr->Nodes();
 
   // initialize ijk_range with ijk of first node of element
   int ijk[3];
-  DRT::Node const* const node = nodes[0];
+  CORE::Nodes::Node const* const node = nodes[0];
   getijk_of_single_node_in_current_position(discret, node, disnp, ijk);
 
   // ijk_range contains: i_min i_max j_min j_max k_min k_max
@@ -1027,7 +1027,7 @@ void BINSTRATEGY::BinningStrategy::distribute_single_element_to_bins_using_ele_a
     // fill in remaining nodes
     for (int j = 1; j < eleptr->num_node(); ++j)
     {
-      DRT::Node const* const node = nodes[j];
+      CORE::Nodes::Node const* const node = nodes[j];
       getijk_of_single_node_in_current_position(discret, node, disnp, ijk);
       addijk_to_axis_alignedijk_range_of_beam_element(ijk, ijk_range);
     }
@@ -1037,7 +1037,7 @@ void BINSTRATEGY::BinningStrategy::distribute_single_element_to_bins_using_ele_a
     // fill in remaining nodes
     for (int j = 1; j < eleptr->num_node(); ++j)
     {
-      DRT::Node const* const node = nodes[j];
+      CORE::Nodes::Node const* const node = nodes[j];
       getijk_of_single_node_in_current_position(discret, node, disnp, ijk);
       addijk_to_axis_alignedijk_range_of_element(ijk, ijk_range);
     }
@@ -1132,7 +1132,7 @@ void BINSTRATEGY::BinningStrategy::remove_all_eles_from_bins()
 }
 
 void BINSTRATEGY::BinningStrategy::getijk_of_single_node_in_current_position(
-    Teuchos::RCP<DRT::Discretization> const& discret, DRT::Node const* const node,
+    Teuchos::RCP<DRT::Discretization> const& discret, CORE::Nodes::Node const* const node,
     Teuchos::RCP<const Epetra_Vector> const& disnp, int ijk[3]) const
 {
   double currpos[3] = {0.0, 0.0, 0.0};
@@ -1151,7 +1151,7 @@ void BINSTRATEGY::BinningStrategy::distribute_row_nodes_to_bins(
   // loop over row nodes
   for (int lid = 0; lid < discret->NumMyRowNodes(); ++lid)
   {
-    DRT::Node* node = discret->lRowNode(lid);
+    CORE::Nodes::Node* node = discret->lRowNode(lid);
     BINSTRATEGY::UTILS::GetCurrentNodePos(discret, node, disnp, currpos);
 
     const double* coords = currpos;
@@ -1519,7 +1519,7 @@ void BINSTRATEGY::BinningStrategy::extend_ghosting_of_binning_discretization(
   for (int k = 0; k < bindis_->NumMyColElements(); ++k)
   {
     int binid = bindis_->lColElement(k)->Id();
-    DRT::Node** particles = bindis_->lColElement(k)->Nodes();
+    CORE::Nodes::Node** particles = bindis_->lColElement(k)->Nodes();
 
     for (int iparticle = 0; iparticle < bindis_->lColElement(k)->num_node(); ++iparticle)
     {
@@ -1726,7 +1726,7 @@ void BINSTRATEGY::BinningStrategy::
         " Choose less procs or change parallel distribution");
 
   // initialize XAABB_ as rectangle around the first node of first discret
-  const DRT::Node* node = discret[0]->lRowNode(0);
+  const CORE::Nodes::Node* node = discret[0]->lRowNode(0);
 
   // calculate current position of this node
   double currpos[3] = {0.0, 0.0, 0.0};
@@ -1807,7 +1807,7 @@ double BINSTRATEGY::BinningStrategy::
         // loop over remaining nodes of current rowele
         for (int lid = 1; lid < ele->num_node(); ++lid)
         {
-          const DRT::Node* node = ele->Nodes()[lid];
+          const CORE::Nodes::Node* node = ele->Nodes()[lid];
           BINSTRATEGY::UTILS::GetCurrentNodePos(discret[ndis], node, disnp[ndis], currpos);
 
           //  merge eleXAABB of all nodes of this element
@@ -1922,7 +1922,7 @@ void BINSTRATEGY::BinningStrategy::
     // loop over remaining nodes of current rowele
     for (int lid = 1; lid < ele->num_node(); ++lid)
     {
-      const DRT::Node* node = ele->Nodes()[lid];
+      const CORE::Nodes::Node* node = ele->Nodes()[lid];
       BINSTRATEGY::UTILS::GetCurrentNodePos(discret, node, disnp, currpos);
 
       //  merge eleXAABB of all nodes of this element
@@ -1994,7 +1994,7 @@ void BINSTRATEGY::BinningStrategy::transfer_nodes_and_elements(
   for (int i = 0; i < discret->NodeColMap()->NumMyElements(); ++i)
   {
     // get current node and position
-    DRT::Node* currnode = discret->lColNode(i);
+    CORE::Nodes::Node* currnode = discret->lColNode(i);
     BINSTRATEGY::UTILS::GetCurrentNodePos(discret, currnode, disnp, currpos);
 
     int const gidofbin = ConvertPosToGid(currpos);
@@ -2026,7 +2026,7 @@ void BINSTRATEGY::BinningStrategy::transfer_nodes_and_elements(
   for (eleiter = elestoupdate.begin(); eleiter != elestoupdate.end(); ++eleiter)
   {
     CORE::Elements::Element* currele = *eleiter;
-    DRT::Node** nodes = currele->Nodes();
+    CORE::Nodes::Node** nodes = currele->Nodes();
     std::map<int, int> owner;
     for (int inode = 0; inode < currele->num_node(); ++inode) owner[nodes[inode]->Owner()] += 1;
 

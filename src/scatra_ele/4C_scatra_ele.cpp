@@ -81,7 +81,7 @@ void DRT::ELEMENTS::TransportType::nodal_block_information(
 }
 
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::TransportType::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
@@ -754,7 +754,8 @@ int DRT::ELEMENTS::Transport::initialize()
  |  ctor (public)                                             gjb 01/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::TransportBoundary::TransportBoundary(int id, int owner, int nnode,
-    const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Transport* parent, const int lsurface)
+    const int* nodeids, CORE::Nodes::Node** nodes, DRT::ELEMENTS::Transport* parent,
+    const int lsurface)
     : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);

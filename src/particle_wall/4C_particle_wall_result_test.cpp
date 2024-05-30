@@ -64,7 +64,7 @@ void PARTICLEWALL::WallResultTest::test_node(INPUT::LineDefinition& res, int& ne
 
   if (walldiscretization_->HaveGlobalNode(node))
   {
-    const DRT::Node* actnode = walldiscretization_->gNode(node);
+    const CORE::Nodes::Node* actnode = walldiscretization_->gNode(node);
 
     // node not owned on this processor
     if (actnode->Owner() != walldiscretization_->Comm().MyPID()) return;

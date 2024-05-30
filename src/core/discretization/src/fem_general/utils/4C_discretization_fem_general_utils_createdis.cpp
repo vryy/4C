@@ -56,11 +56,12 @@ void CORE::FE::DiscretizationCreatorBase::create_nodes(const DRT::Discretization
       int gid = sourcenoderowmap->GID(i);
       if (rownodeset.find(gid) != rownodeset.end())
       {
-        DRT::Node* node_to_create = sourcedis.lRowNode(i);
+        CORE::Nodes::Node* node_to_create = sourcedis.lRowNode(i);
         if (!buildimmersednode)
-          targetdis.AddNode(Teuchos::rcp(new DRT::Node(gid, node_to_create->X(), myrank)));
+          targetdis.AddNode(Teuchos::rcp(new CORE::Nodes::Node(gid, node_to_create->X(), myrank)));
         else
-          targetdis.AddNode(Teuchos::rcp(new DRT::ImmersedNode(gid, node_to_create->X(), myrank)));
+          targetdis.AddNode(
+              Teuchos::rcp(new CORE::Nodes::ImmersedNode(gid, node_to_create->X(), myrank)));
       }
     }
   }
@@ -138,9 +139,9 @@ CORE::FE::DiscretizationCreatorBase::create_matching_discretization(
   // clone nodes
   for (int i = 0; i < sourcedis->NodeColMap()->NumMyElements(); ++i)
   {
-    DRT::Node* node = sourcedis->lColNode(i);
+    CORE::Nodes::Node* node = sourcedis->lColNode(i);
     if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
-    Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
+    Teuchos::RCP<CORE::Nodes::Node> newnode = Teuchos::rcp(node->Clone());
     targetdis->AddNode(newnode);
   }
 

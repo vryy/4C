@@ -26,8 +26,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
+
+namespace CORE::Nodes
+{
+  class Node;
+}
 
 namespace CORE::Elements
 {
@@ -365,7 +369,7 @@ namespace CORE::COUPLING
     //!
     //! \author Andreas Rauch
     //! \date   10/16
-    std::map<int, Teuchos::RCP<DRT::Node>> nodes_;
+    std::map<int, Teuchos::RCP<CORE::Nodes::Node>> nodes_;
 
   };  // class ElementMatchingOctree
 

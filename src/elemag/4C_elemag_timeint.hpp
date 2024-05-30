@@ -48,9 +48,9 @@ namespace DRT
 {
   class Discretization;
   class DiscretizationHDG;
-  class Node;
   class ResultTest;
 }  // namespace DRT
+
 namespace IO
 {
   class DiscretizationWriter;

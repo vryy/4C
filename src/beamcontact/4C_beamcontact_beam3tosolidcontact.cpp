@@ -1426,7 +1426,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   for (int i = 0; i < numnodes; ++i)
   {
     // Get node pointer and dof ids
-    DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
+    CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     for (int j = 0; j < 3 * numnodalvalues; ++j)
@@ -1440,7 +1440,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   for (int i = 0; i < numnodessol; ++i)
   {
     // Get node pointer and dof ids
-    DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
+    CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     for (int j = 0; j < 3; ++j)
@@ -1478,7 +1478,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   for (int i = 0; i < numnodes; ++i)
   {
     // Get pointer and node ids
-    DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
+    CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     for (int j = 0; j < 3 * numnodalvalues; ++j)
@@ -1490,7 +1490,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   for (int i = 0; i < numnodessol; ++i)
   {
     // Get pointer and node ids
-    DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
+    CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     for (int j = 0; j < 3; ++j)
@@ -2607,7 +2607,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::check_
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
 std::vector<int>
 CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::get_global_dofs(
-    const DRT::Node* node)
+    const CORE::Nodes::Node* node)
 {
   // Get dofs in beam contact discretization
   const std::vector<int> cdofs = ContactDiscret().Dof(node);

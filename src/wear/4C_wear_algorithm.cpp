@@ -334,7 +334,7 @@ void WEAR::Algorithm::create_material_interface()
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
         if (!structure_->discretization()->NodeColMap()->MyGID(gid)) continue;
-        DRT::Node* node = structure_->discretization()->gNode(gid);
+        CORE::Nodes::Node* node = structure_->discretization()->gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // store initial active node gids

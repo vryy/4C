@@ -39,10 +39,10 @@ namespace MAT
 {
   class CrosslinkerMat;
 }
-namespace DRT
+namespace CORE::Nodes
 {
   class Node;
-}  // namespace DRT
+}
 
 namespace CORE::Elements
 {
@@ -246,7 +246,7 @@ namespace BEAMINTERACTION
 
       /// diffuse unbound crosslinker according to brownian dynamics
       void diffuse_unbound_crosslinker(
-          DRT::Node* crosslinker, BEAMINTERACTION::DATA::CrosslinkerData* cldata_i);
+          CORE::Nodes::Node* crosslinker, BEAMINTERACTION::DATA::CrosslinkerData* cldata_i);
 
       /// get binding spot of crosslinker that is currently occupied
       int get_single_occupied_cl_bspot(std::vector<std::pair<int, int>> const& clbspots) const;
@@ -319,11 +319,11 @@ namespace BEAMINTERACTION
       /// check if sphere should prohibit binding if double bond would be to close
       bool check_if_sphere_prohibits_binding(
           std::set<CORE::Elements::Element*> const& neighboring_col_spheres,
-          DRT::Node* node_i) const;
+          CORE::Nodes::Node* node_i) const;
 
       /// search for binding events on each proc separately (i.e. pretending myrank is alone)
       /// communication to ensure correct binding over all procs is done afterwards
-      void prepare_binding(DRT::Node* node_i,
+      void prepare_binding(CORE::Nodes::Node* node_i,
           std::set<CORE::Elements::Element*> const& neighboring_beams,
           std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>& mybonds,
           std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>>>&
@@ -455,7 +455,7 @@ namespace BEAMINTERACTION
       void update_my_double_bonds_remote_id_list();
 
       /// dissolve certain bonds
-      void dissolve_bond(DRT::Node* linker, int freedbspotid, int numbondsold,
+      void dissolve_bond(CORE::Nodes::Node* linker, int freedbspotid, int numbondsold,
           std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::UnBindEventData>>>&
               sendunbindevents,
           std::vector<Teuchos::RCP<BEAMINTERACTION::DATA::UnBindEventData>>& myrankunbindevents);

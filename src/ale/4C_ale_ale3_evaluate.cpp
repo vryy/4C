@@ -265,7 +265,7 @@ inline void DRT::ELEMENTS::Ale3Impl<distype>::ElementNodeNormal(
   CORE::LINALG::Matrix<3, iel> xyze;
 
   // get node coordinates
-  DRT::Node** nodes = ele->Nodes();
+  CORE::Nodes::Node** nodes = ele->Nodes();
   for (int i = 0; i < iel; i++)
   {
     const auto& x = nodes[i]->X();
@@ -929,7 +929,7 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
 
   // get node coordinates
   CORE::LINALG::Matrix<3, iel> xyze;
-  DRT::Node** nodes = ele->Nodes();
+  CORE::Nodes::Node** nodes = ele->Nodes();
   for (int i = 0; i < iel; i++)
   {
     const auto& x = nodes[i]->X();
@@ -1592,7 +1592,7 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discret
   CORE::LINALG::Matrix<3, iel> xyze;
 
   // get node coordinates
-  DRT::Node** nodes = ele->Nodes();
+  CORE::Nodes::Node** nodes = ele->Nodes();
   for (int i = 0; i < iel; i++)
   {
     const auto& x = nodes[i]->X();

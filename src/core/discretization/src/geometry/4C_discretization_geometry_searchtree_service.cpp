@@ -103,7 +103,7 @@ CORE::LINALG::Matrix<3, 2> CORE::GEO::getXAABBofDis(const DRT::Discretization& d
 
   for (int lid = 0; lid < dis.NumMyColNodes(); ++lid)
   {
-    const DRT::Node* node = dis.lColNode(lid);
+    const CORE::Nodes::Node* node = dis.lColNode(lid);
     CORE::LINALG::Matrix<3, 1> currpos;
     currpos(0) = node->X()[0];
     currpos(1) = node->X()[1];
@@ -223,7 +223,7 @@ std::map<int, std::set<int>> CORE::GEO::getElementsInRadius(const DRT::Discretiz
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
       double distance = CORE::GEO::LARGENUMBER;
-      const DRT::Node* node = dis.gNode(*nodeIter);
+      const CORE::Nodes::Node* node = dis.gNode(*nodeIter);
       CORE::GEO::getDistanceToPoint(node, currentpositions, querypoint, distance);
 
       if (distance < (radius + CORE::GEO::TOL7))
@@ -339,7 +339,7 @@ void CORE::GEO::nearest2DObjectInNode(const Teuchos::RCP<DRT::Discretization> di
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
-      const DRT::Node* node = dis->gNode(*nodeIter);
+      const CORE::Nodes::Node* node = dis->gNode(*nodeIter);
       CORE::GEO::getDistanceToPoint(node, currentpositions, point, distance);
       if (distance < min_distance)
       {
@@ -422,7 +422,7 @@ int CORE::GEO::nearest3DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
-      const DRT::Node* node = dis->gNode(*nodeIter);
+      const CORE::Nodes::Node* node = dis->gNode(*nodeIter);
       CORE::GEO::getDistanceToPoint(node, currentpositions, point, distance);
       if (distance < min_distance)
       {
@@ -646,7 +646,7 @@ bool CORE::GEO::getDistanceToLine(const CORE::Elements::Element* lineElement,
  |  computes the distance from a point to a node             u.may 07/08|
  |  of an element                                                       |
  *----------------------------------------------------------------------*/
-void CORE::GEO::getDistanceToPoint(const DRT::Node* node,
+void CORE::GEO::getDistanceToPoint(const CORE::Nodes::Node* node,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
     const CORE::LINALG::Matrix<3, 1>& point, double& distance)
 {

@@ -1430,7 +1430,7 @@ void CONTACT::LagrangeStrategy::compute_contact_stresses()
       for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1519,7 +1519,7 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
     for (int j = 0; j < interface_[i]->MasterRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->MasterRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
       cnode->Data().Kappa() = 0.0;
@@ -1633,7 +1633,7 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
               j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
-          std::array<DRT::Node*, 2> nodes = {
+          std::array<CORE::Nodes::Node*, 2> nodes = {
               selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
           lineEle->BuildNodalPointers(nodes.data());
 
@@ -1653,7 +1653,7 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
     for (int j = 0; j < interface_[i]->MasterRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->MasterRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -4600,7 +4600,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -4903,7 +4903,7 @@ void CONTACT::LagrangeStrategy::update_active_set_semi_smooth(const bool firstSt
       for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cnode = dynamic_cast<Node*>(node);
 
@@ -5383,7 +5383,7 @@ void CONTACT::LagrangeStrategy::evaluate_regularization_scaling(Teuchos::RCP<Epe
       for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         Node* cnode = dynamic_cast<Node*>(node);

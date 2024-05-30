@@ -266,7 +266,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xcurr;  // current  coord. of element
       CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xdisp;
 
-      DRT::Node** nodes = Nodes();
+      CORE::Nodes::Node** nodes = Nodes();
       for (int i = 0; i < NUMNOD_WEG6; ++i)
       {
         const auto& x = nodes[i]->X();
@@ -629,7 +629,7 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
   CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xcurr;  // current  coord. of element
   CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xdisp;
 
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_WEG6; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -1261,7 +1261,7 @@ void DRT::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matr
     // update element geometry
     CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xcurr;  // current  coord. of element
     CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xdisp;
-    DRT::Node** nodes = Nodes();
+    CORE::Nodes::Node** nodes = Nodes();
     for (int i = 0; i < NUMNOD_WEG6; ++i)
     {
       const auto& x = nodes[i]->X();

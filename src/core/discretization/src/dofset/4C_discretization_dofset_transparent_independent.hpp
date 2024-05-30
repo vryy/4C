@@ -60,7 +60,7 @@ namespace CORE::Dofsets
         const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
    protected:
-    int NumDofPerNode(const DRT::Node& node) const override;
+    int NumDofPerNode(const CORE::Nodes::Node& node) const override;
 
 
   };  // class TransparentDofSet

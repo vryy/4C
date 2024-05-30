@@ -822,7 +822,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
     if (dis->HaveGlobalNode(Id))
     {
       // check if the node is not a gohst node
-      DRT::Node* node = dis->gNode(Id);
+      CORE::Nodes::Node* node = dis->gNode(Id);
       if (node->Owner() == myrank)
       {
         for (int ldof = 0; ldof < 3; ldof++)
@@ -1186,7 +1186,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(Teuchos::RCP<DRT::Disc
     // check if the node exists on the current processor
     if (disc->HaveGlobalNode(gid))
     {
-      const DRT::Node* node = disc->gNode(gid);
+      const CORE::Nodes::Node* node = disc->gNode(gid);
 
       // check if the node is not a gohst node
       if (node->Owner() == myrank)

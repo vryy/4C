@@ -89,7 +89,7 @@ namespace DRT
       //@}
 
       virtual int NumDofPerNode(
-          const unsigned nds, const DRT::Node& node, const std::string disname) const
+          const unsigned nds, const CORE::Nodes::Node& node, const std::string disname) const
       {
         if (nds != 0) return 1;
         return Wall1::NumDofPerNode(node);

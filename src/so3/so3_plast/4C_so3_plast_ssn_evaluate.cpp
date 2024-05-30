@@ -723,7 +723,7 @@ int DRT::ELEMENTS::So3Plast<distype>::evaluate_neumann(Teuchos::ParameterList& p
 
   // update element geometry
   CORE::LINALG::Matrix<nen_, nsd_> xrefe;  // material coord. of element
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < nen_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -2160,7 +2160,7 @@ void DRT::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_xi_el
   xrefe.Clear();
   xcurr.Clear();
   ele_temp.Clear();
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
 
   for (int i = 0; i < nen_; ++i)
   {

@@ -46,7 +46,7 @@ namespace DRT
        */
       template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
       void compute_deformation_gradient(CORE::LINALG::Matrix<probdim, probdim>& defgrd,
-          DRT::Node** nodes, const CORE::LINALG::Matrix<probdim, 1>& xsi,
+          CORE::Nodes::Node** nodes, const CORE::LINALG::Matrix<probdim, 1>& xsi,
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xdisp);
 
       /*!
@@ -61,7 +61,7 @@ namespace DRT
        */
       template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
       void compute_deformation_gradient(CORE::LINALG::Matrix<probdim, probdim>& defgrd,
-          DRT::Node** nodes, const CORE::LINALG::Matrix<probdim, 1>& xsi,
+          CORE::Nodes::Node** nodes, const CORE::LINALG::Matrix<probdim, 1>& xsi,
           const std::vector<double>& displacement);
 
       /*!
@@ -135,8 +135,8 @@ namespace DRT
        * \param xrefe [out] : reference coordinates of the element
        */
       template <CORE::FE::CellType distype, int probdim = 3>
-      void EvaluateNodalCoordinates(
-          DRT::Node** nodes, CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xrefe);
+      void EvaluateNodalCoordinates(CORE::Nodes::Node** nodes,
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xrefe);
 
       /*!
        * \brief Evaluate the nodal displacement of the element

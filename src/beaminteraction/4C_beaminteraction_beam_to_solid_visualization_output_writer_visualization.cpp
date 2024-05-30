@@ -77,7 +77,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
   // Loop over the nodes on this rank.
   for (unsigned int i_node = 0; i_node < num_my_nodes; i_node++)
   {
-    const DRT::Node* current_node = discret_->lRowNode(i_node);
+    const CORE::Nodes::Node* current_node = discret_->lRowNode(i_node);
     node_global_dof_ids.clear();
     discret_->Dof(current_node, node_global_dof_ids);
     for (unsigned int dim = 0; dim < 3; ++dim)

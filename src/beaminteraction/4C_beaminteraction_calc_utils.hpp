@@ -30,13 +30,17 @@ namespace CORE::LINALG
 
 namespace DRT
 {
-  class Node;
   class Discretization;
 }  // namespace DRT
 
 namespace CORE::Elements
 {
   class Element;
+}
+
+namespace CORE::Nodes
+{
+  class Node;
 }
 
 namespace CORE::GEO
@@ -69,7 +73,7 @@ namespace BEAMINTERACTION
       MAP_EXTRACTOR_VECTOR_METHODS(Solid, solid)
     };
 
-    /// class for comparing CORE::Elements::Element* (and DRT::Node*) in a std::set
+    /// class for comparing CORE::Elements::Element* (and CORE::Nodes::Node*) in a std::set
     /*! -------------------------------------------------------------------------
      * overwrites standard < for pointers, this is necessary to ensure same order
      * of neighboring elements for crosslink check and therefore for random numbers
@@ -113,15 +117,15 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    bool IsBeamNode(DRT::Node const& node);
+    bool IsBeamNode(CORE::Nodes::Node const& node);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    bool IsRigidSphereNode(DRT::Node const& node);
+    bool IsRigidSphereNode(CORE::Nodes::Node const& node);
 
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    bool IsBeamCenterlineNode(DRT::Node const& node);
+    bool IsBeamCenterlineNode(CORE::Nodes::Node const& node);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/

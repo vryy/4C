@@ -283,7 +283,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
     for (size_t i = 0; i < it->second.size(); ++i)
     {
       int gid = it->second[i];
-      DRT::Node* fluidnode = fluidale->fluid_field()->discretization()->gNode(gid);
+      CORE::Nodes::Node* fluidnode = fluidale->fluid_field()->discretization()->gNode(gid);
 
       if (fluidnode->Owner() != fluidale->ale_field()->discretization()->Comm().MyPID()) continue;
 
@@ -305,7 +305,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
       for (size_t k = 0; k < fluidalenode_fs_imap_[it->first].size(); ++k)
       {
         int gidfsi = fluidalenode_fs_imap_[it->first][k];
-        DRT::Node* fluidnodeFSI = fluidale->fluid_field()->discretization()->gNode(gidfsi);
+        CORE::Nodes::Node* fluidnodeFSI = fluidale->fluid_field()->discretization()->gNode(gidfsi);
 
         double gposFSI[3] = {fluidnodeFSI->X()[0], fluidnodeFSI->X()[1], fluidnodeFSI->X()[2]};
         double lposFSI[3] = {0.0, 0.0, 0.0};
@@ -348,7 +348,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
       // safety
       if (dist > 2.0) fac = 0.0;
 
-      DRT::Node* fluidnodeFSI = fluidale->fluid_field()->discretization()->gNode(id);
+      CORE::Nodes::Node* fluidnodeFSI = fluidale->fluid_field()->discretization()->gNode(id);
       std::vector<int> temp = fluidale->fluid_field()->discretization()->Dof(fluidnodeFSI);
       std::vector<int> dofsFSI;
       for (int idof = 0; idof < dim_; idof++) dofsFSI.push_back(temp[idof]);
@@ -451,7 +451,7 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
     // calculate slabs for every node on every element
     for (int k = 0; k < sele->num_node(); k++)
     {
-      DRT::Node* node = sele->Nodes()[k];
+      CORE::Nodes::Node* node = sele->Nodes()[k];
       CORE::LINALG::Matrix<3, 1> currpos;
 
       currpos(0) = node->X()[0];
@@ -513,7 +513,7 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
       for (int j = 0; j < fluidele->num_node(); ++j)
       {
         const int nodegid = fluidele->NodeIds()[j];
-        DRT::Node* fluidnode = fluidele->Nodes()[j];
+        CORE::Nodes::Node* fluidnode = fluidele->Nodes()[j];
 
         double gpos[3] = {fluidnode->X()[0], fluidnode->X()[1], fluidnode->X()[2]};
         double lpos[3] = {0.0, 0.0, 0.0};
@@ -634,7 +634,7 @@ CORE::LINALG::Matrix<9, 2> FSI::VolCorrector::calc_dop(CORE::Elements::Element& 
   // calculate slabs for every node on every element
   for (int k = 0; k < ele.num_node(); k++)
   {
-    DRT::Node* node = ele.Nodes()[k];
+    CORE::Nodes::Node* node = ele.Nodes()[k];
 
     // get current node position
     std::array<double, 3> pos = {0.0, 0.0, 0.0};

@@ -240,7 +240,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
       // get the processor local node
-      DRT::Node* lnode = discret_->lRowNode(nn);
+      CORE::Nodes::Node* lnode = discret_->lRowNode(nn);
 
       double xdim = (lnode->X())[dim];
 
@@ -267,7 +267,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
       // get the processor local node
-      DRT::Node* lnode = discret_->lRowNode(nn);
+      CORE::Nodes::Node* lnode = discret_->lRowNode(nn);
 
       // check for slave nodes  to skip them
       std::vector<CORE::Conditions::Condition*> mypbcs;
@@ -524,7 +524,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
         // get the processor local node
-        DRT::Node* lnode = discret_->lRowNode(nn);
+        CORE::Nodes::Node* lnode = discret_->lRowNode(nn);
 
         // check for slave nodes  to skip them
         std::vector<CORE::Conditions::Condition*> mypbcs;
@@ -826,7 +826,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
       // get the processor local node
-      DRT::Node* lnode = discret_->lRowNode(nn);
+      CORE::Nodes::Node* lnode = discret_->lRowNode(nn);
 
       // check for slave nodes  to skip them
       std::vector<CORE::Conditions::Condition*> mypbcs;

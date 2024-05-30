@@ -56,7 +56,7 @@ void POROFLUIDMULTIPHASE::ResultTest::test_node(
   {
     if (porotimint_.discretization()->HaveGlobalNode(node))
     {
-      DRT::Node* actnode = porotimint_.discretization()->gNode(node);
+      CORE::Nodes::Node* actnode = porotimint_.discretization()->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != porotimint_.discretization()->Comm().MyPID()) return;
@@ -130,7 +130,7 @@ void POROFLUIDMULTIPHASE::ResultTest::TestElement(
  | get nodal result to be tested                            vuong 08/16 |
  *----------------------------------------------------------------------*/
 double POROFLUIDMULTIPHASE::ResultTest::result_node(
-    const std::string quantity, DRT::Node* node) const
+    const std::string quantity, CORE::Nodes::Node* node) const
 {
   // initialize variable for result
   double result(0.);

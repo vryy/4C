@@ -307,7 +307,8 @@ namespace IO::GRIDGENERATOR
         }
       }
 
-      Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(gid, coords, myrank));
+      Teuchos::RCP<CORE::Nodes::Node> node =
+          Teuchos::rcp(new CORE::Nodes::Node(gid, coords, myrank));
       dis.AddNode(node);
     }
     dis.ExportColumnNodes(*nodeColMap);

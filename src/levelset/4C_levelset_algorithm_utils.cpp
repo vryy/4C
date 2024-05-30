@@ -247,7 +247,7 @@ void SCATRA::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
         for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
         {
           // get the processor local node
-          DRT::Node* lnode = discret_->lRowNode(lnodeid);
+          CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
           // the set of degrees of freedom associated with the node
           std::vector<int> nodedofset = discret_->Dof(0, lnode);
 
@@ -343,7 +343,7 @@ void SCATRA::LevelSetAlgorithm::apply_contact_point_boundary_condition()
       if (discret_->HaveGlobalNode((*mynodes)[inode]))
       {
         // get node
-        DRT::Node* actnode = discret_->gNode((*mynodes)[inode]);
+        CORE::Nodes::Node* actnode = discret_->gNode((*mynodes)[inode]);
 
         // exclude ghosted nodes, since we need all adjacent elements here,
         // which are only available for nodes belonging to the this proc
@@ -433,7 +433,7 @@ void SCATRA::LevelSetAlgorithm::apply_contact_point_boundary_condition()
   {
     const int gnodeid = iter->first;
     const int lnodeid = noderowmap->LID(gnodeid);
-    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+    CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
     std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
 
@@ -548,7 +548,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
         const int gid = nodeids[j];
         const int lid = discret_->NodeRowMap()->LID(gid);
         if (lid < 0) continue;
-        const DRT::Node* lnode = discret_->lRowNode(lid);
+        const CORE::Nodes::Node* lnode = discret_->lRowNode(lid);
         const auto& coord = lnode->X();
         if (coord[planenormal.back()] < min) min = coord[planenormal.back()];
         if (coord[planenormal.back()] > max) max = coord[planenormal.back()];
@@ -589,7 +589,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
         for (int inode = 0; inode < ele->num_node(); ++inode)
         {
           const int nodegid = nodeids[inode];
-          DRT::Node* node = discret_->gNode(nodegid);
+          CORE::Nodes::Node* node = discret_->gNode(nodegid);
           const int dofgid = discret_->Dof(0, node, 0);
           const int doflid = phinpcol->Map().LID(dofgid);
           if (doflid < 0)
@@ -614,7 +614,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
       {
         const int nodelid = discret_->NodeRowMap()->LID(*nodeit);
-        DRT::Node* node = discret_->lRowNode(nodelid);
+        CORE::Nodes::Node* node = discret_->lRowNode(nodelid);
         CORE::Elements::Element** elements = node->Elements();
         for (int iele = 0; iele < node->NumElement(); ++iele)
         {
@@ -636,10 +636,10 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     {
       const int elelid = discret_->ElementColMap()->LID(*eleit);
       CORE::Elements::Element* ele = discret_->lColElement(elelid);
-      DRT::Node** nodes = ele->Nodes();
+      CORE::Nodes::Node** nodes = ele->Nodes();
       for (int inode = 0; inode < ele->num_node(); ++inode)
       {
-        DRT::Node* node = nodes[inode];
+        CORE::Nodes::Node* node = nodes[inode];
 
         // now check whether we have a pbc condition on this node
         std::vector<CORE::Conditions::Condition*> mypbc;
@@ -717,7 +717,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
   {
     const int nodelid = discret_->NodeRowMap()->LID(*nodeit);
-    DRT::Node* node = discret_->lRowNode(nodelid);
+    CORE::Nodes::Node* node = discret_->lRowNode(nodelid);
     CORE::Elements::Element** eles = node->Elements();
     int elementcount = 0;
     for (int iele = 0; iele < node->NumElement(); ++iele)
@@ -760,7 +760,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   //----------------------------------------------------------------------------------------------
   for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
   {
-    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+    CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
     std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
 
     CORE::LINALG::Matrix<3, 1> fluidvel(true);

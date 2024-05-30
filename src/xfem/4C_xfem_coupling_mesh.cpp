@@ -377,7 +377,7 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
 
     // node from coupling discretization (is on this proc, as cutter_dis nodes are
     // a subset!)
-    const DRT::Node* cond_node = cond_dis_->gNode(cond_node_gid);
+    const CORE::Nodes::Node* cond_node = cond_dis_->gNode(cond_node_gid);
 
     // get associated elements
     const CORE::Elements::Element* const* cond_eles = cond_node->Elements();
@@ -569,8 +569,8 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
   // all row nodes next to a xfem node are now added to the auxiliary discretization
   for (std::set<int>::iterator id = adjacent_row.begin(); id != adjacent_row.end(); ++id)
   {
-    DRT::Node* actnode = cond_dis_->gNode(*id);
-    Teuchos::RCP<DRT::Node> bndnode = Teuchos::rcp(actnode->Clone());
+    CORE::Nodes::Node* actnode = cond_dis_->gNode(*id);
+    Teuchos::RCP<CORE::Nodes::Node> bndnode = Teuchos::rcp(actnode->Clone());
     aux_coup_dis_->AddNode(bndnode);
   }
 
@@ -639,7 +639,7 @@ bool XFEM::MeshCouplingBC::HasMovingInterface()
   // get the first local col(!) node
   if (cutter_dis_->NumMyColNodes() == 0) FOUR_C_THROW("no col node on proc %i", myrank_);
 
-  DRT::Node* lnode = cutter_dis_->lColNode(0);
+  CORE::Nodes::Node* lnode = cutter_dis_->lColNode(0);
 
   std::vector<CORE::Conditions::Condition*> mycond;
   lnode->GetCondition("XFEMSurfDisplacement", mycond);
@@ -660,7 +660,7 @@ void XFEM::MeshCouplingBC::evaluate_condition(Teuchos::RCP<Epetra_Vector> ivec,
   for (int lnodeid = 0; lnodeid < cutter_dis_->NumMyRowNodes(); lnodeid++)
   {
     // get the processor local node
-    DRT::Node* lnode = cutter_dis_->lRowNode(lnodeid);
+    CORE::Nodes::Node* lnode = cutter_dis_->lRowNode(lnodeid);
     // the set of degrees of freedom associated with the node
     const std::vector<int> nodedofset = cutter_dis_->Dof(lnode);
 
@@ -716,7 +716,7 @@ void XFEM::MeshCouplingBC::evaluate_condition(Teuchos::RCP<Epetra_Vector> ivec,
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingBC::evaluate_interface_velocity(std::vector<double>& final_values,
-    DRT::Node* node, CORE::Conditions::Condition* cond, const double time, const double dt)
+    CORE::Nodes::Node* node, CORE::Conditions::Condition* cond, const double time, const double dt)
 {
   const std::string* evaltype = &cond->parameters().Get<std::string>("evaltype");
 
@@ -758,7 +758,7 @@ void XFEM::MeshCouplingBC::evaluate_interface_velocity(std::vector<double>& fina
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingBC::evaluate_interface_displacement(std::vector<double>& final_values,
-    DRT::Node* node, CORE::Conditions::Condition* cond, const double time)
+    CORE::Nodes::Node* node, CORE::Conditions::Condition* cond, const double time)
 {
   const std::string& evaltype = cond->parameters().Get<std::string>("evaltype");
 
@@ -786,7 +786,7 @@ void XFEM::MeshCouplingBC::evaluate_interface_displacement(std::vector<double>& 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingBC::compute_interface_velocity_from_displacement(
-    std::vector<double>& final_values, DRT::Node* node, const double dt,
+    std::vector<double>& final_values, CORE::Nodes::Node* node, const double dt,
     const std::string* evaltype)
 {
   if (dt < 1e-14) FOUR_C_THROW("zero or negative time step size not allowed!!!");
@@ -1897,7 +1897,7 @@ void XFEM::MeshCouplingFSI::LiftDrag(const int step, const double time) const
     CORE::LINALG::Matrix<3, 1> c(true);
     for (int inode = 0; inode < cutter_dis_->NumMyColNodes(); ++inode)
     {
-      const DRT::Node* node = cutter_dis_->lColNode(inode);
+      const CORE::Nodes::Node* node = cutter_dis_->lColNode(inode);
       const std::vector<int> dof = cutter_dis_->Dof(node);
       for (int isd = 0; isd < nsd; ++isd)
       {

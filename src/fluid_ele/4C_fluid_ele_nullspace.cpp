@@ -4,7 +4,7 @@
 */
 #include "4C_fluid_ele_nullspace.hpp"
 
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -12,7 +12,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace FLD
 {
   CORE::LINALG::SerialDenseMatrix ComputeFluidNullSpace(
-      const DRT::Node& node, const int numdof, const int dimnsp)
+      const CORE::Nodes::Node& node, const int numdof, const int dimnsp)
   {
     /* the rigid body modes for fluids are:
 

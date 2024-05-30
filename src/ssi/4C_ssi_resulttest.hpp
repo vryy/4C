@@ -16,12 +16,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declaration
-namespace DRT
-{
-  class Node;
-}
-
 namespace SSI
 {
   // forward declarations

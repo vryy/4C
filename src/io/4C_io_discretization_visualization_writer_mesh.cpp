@@ -229,7 +229,7 @@ namespace IO
 
       for (unsigned int inode = 0; inode < (unsigned int)ele->num_node(); ++inode)
       {
-        const DRT::Node* node = ele->Nodes()[numbering[inode]];
+        const CORE::Nodes::Node* node = ele->Nodes()[numbering[inode]];
 
         const int lid = node->LID();
 
@@ -386,7 +386,7 @@ namespace IO
       // Add the node GIDs.
       const std::vector<int>& numbering =
           IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
-      const DRT::Node* const* nodes = ele->Nodes();
+      const CORE::Nodes::Node* const* nodes = ele->Nodes();
       for (int inode = 0; inode < ele->num_node(); ++inode)
         gid_of_nodes.push_back(nodes[numbering[inode]]->Id());
     }

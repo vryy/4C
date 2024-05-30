@@ -63,8 +63,8 @@ void CORE::Dofsets::TransparentDofSet::transfer_degrees_of_freedom(
   dofrowvec.reserve(dofrowmap_->NumMyElements());
   for (int inode = 0; inode != newdis.NumMyRowNodes(); ++inode)
   {
-    const DRT::Node* newnode = newdis.lRowNode(inode);
-    const DRT::Node* sourcenode = sourcedis.gNode(newnode->Id());
+    const CORE::Nodes::Node* newnode = newdis.lRowNode(inode);
+    const CORE::Nodes::Node* sourcenode = sourcedis.gNode(newnode->Id());
 
     const std::vector<int> dofs = sourcedis.Dof(0, sourcenode);
 
@@ -94,8 +94,8 @@ void CORE::Dofsets::TransparentDofSet::transfer_degrees_of_freedom(
   dofcolvec.reserve(dofcolmap_->NumMyElements());
   for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
   {
-    const DRT::Node* newnode = newdis.lColNode(inode);
-    const DRT::Node* sourcenode = sourcedis.gNode(newnode->Id());
+    const CORE::Nodes::Node* newnode = newdis.lColNode(inode);
+    const CORE::Nodes::Node* sourcenode = sourcedis.gNode(newnode->Id());
 
     const int lid = sourcenode->LID();
     if (lid == -1)
@@ -156,7 +156,7 @@ void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
 
   for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
   {
-    const DRT::Node* newnode = newdis.lColNode(inode);
+    const CORE::Nodes::Node* newnode = newdis.lColNode(inode);
     int gid = newnode->Id();
     std::vector<int> emptyvec;
     gid_to_dofs.insert(std::pair<int, std::vector<int>>(gid, emptyvec));
@@ -248,7 +248,7 @@ void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
   dofrowvec.reserve(dofrowmap_->NumMyElements());
   for (int inode = 0; inode != newdis.NumMyRowNodes(); ++inode)
   {
-    const DRT::Node* newnode = newdis.lRowNode(inode);
+    const CORE::Nodes::Node* newnode = newdis.lRowNode(inode);
 
     const std::vector<int> dofs = gid_to_dofs[newnode->Id()];
 
@@ -295,7 +295,7 @@ void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
   dofcolvec.reserve(dofcolmap_->NumMyElements());
   for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
   {
-    const DRT::Node* newnode = newdis.lColNode(inode);
+    const CORE::Nodes::Node* newnode = newdis.lColNode(inode);
 
     const std::vector<int> dofs = gid_to_dofs[newnode->Id()];
 
@@ -349,7 +349,7 @@ void CORE::Dofsets::TransparentDofSet::set_source_dofs_available_on_this_proc(
     {
       curr->second.clear();
 
-      const DRT::Node* sourcenode = sourcedis_->gNode(curr->first);
+      const CORE::Nodes::Node* sourcenode = sourcedis_->gNode(curr->first);
 
       const std::vector<int> dofs = sourcedis_->Dof(0, sourcenode);
 

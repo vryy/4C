@@ -149,7 +149,7 @@ void CORE::FE::ExtractMyNodeBasedValues(const CORE::Elements::Element* ele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::ExtractMyNodeBasedValues(const DRT::Node* node,
+void CORE::FE::ExtractMyNodeBasedValues(const CORE::Nodes::Node* node,
     CORE::LINALG::SerialDenseVector& local, const Teuchos::RCP<Epetra_MultiVector>& global,
     const int nsd)
 {

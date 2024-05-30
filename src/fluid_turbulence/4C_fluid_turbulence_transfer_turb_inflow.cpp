@@ -239,7 +239,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       {
         mymasters.push_back(gid);
 
-        DRT::Node* master = dis_->gNode(gid);
+        CORE::Nodes::Node* master = dis_->gNode(gid);
 
         std::vector<int> masterdofs = dis_->Dof(master);
 
@@ -646,7 +646,7 @@ void FLD::TransferTurbulentInflowCondition::set_values_available_on_this_proc(
         // is this slave id on this proc?
         if (dis_->NodeRowMap()->MyGID(*sid))
         {
-          DRT::Node* slave = dis_->gNode(*sid);
+          CORE::Nodes::Node* slave = dis_->gNode(*sid);
 
           // get dofs
           std::vector<int> slavedofs = dis_->Dof(slave);
@@ -755,7 +755,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
       {
         mymasters.push_back(gid);
 
-        DRT::Node* master = dis_->gNode(gid);
+        CORE::Nodes::Node* master = dis_->gNode(gid);
 
         std::vector<int> masterdofs = dis_->Dof(master);
 
@@ -865,7 +865,7 @@ void FLD::TransferTurbulentInflowConditionXW::set_values_available_on_this_proc(
         // is this slave id on this proc?
         if (dis_->NodeRowMap()->MyGID(*sid))
         {
-          DRT::Node* slave = dis_->gNode(*sid);
+          CORE::Nodes::Node* slave = dis_->gNode(*sid);
 
           // get dofs
           std::vector<int> slavedofs = dis_->Dof(slave);
@@ -964,7 +964,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
       {
         mymasters.push_back(gid);
 
-        DRT::Node* master = dis_->gNode(gid);
+        CORE::Nodes::Node* master = dis_->gNode(gid);
 
         std::vector<int> masterdofs = dis_->Dof(master);
 

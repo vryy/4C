@@ -3071,10 +3071,10 @@ bool MAT::ConstraintMixture::VisData(
     {
       CORE::Elements::Element* myele =
           GLOBAL::Problem::Instance()->GetDis("structure")->gElement(eleID);
-      DRT::Node** mynodes = myele->Nodes();
+      CORE::Nodes::Node** mynodes = myele->Nodes();
       for (int idnodes = 0; idnodes < myele->num_node(); idnodes++)
       {
-        DRT::Node* locnode = mynodes[idnodes];
+        CORE::Nodes::Node* locnode = mynodes[idnodes];
         double elastin_survival = 0.0;
         CORE::LINALG::Matrix<3, 1> point_refe;
         point_refe(0) = locnode->X()[0];

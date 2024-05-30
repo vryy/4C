@@ -49,7 +49,7 @@ void ALE::AleResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& t
   {
     if (aledis_->HaveGlobalNode(node))
     {
-      DRT::Node* actnode = aledis_->gNode(node);
+      CORE::Nodes::Node* actnode = aledis_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != aledis_->Comm().MyPID()) return;

@@ -35,12 +35,16 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
 
 namespace CORE::Elements
 {
   class Element;
+}
+
+namespace CORE::Nodes
+{
+  class Node;
 }
 
 namespace CONTACT
@@ -143,7 +147,8 @@ namespace ADAPTER
     virtual void read_mortar_condition(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
-        std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
+        std::map<int, CORE::Nodes::Node*>& mastergnodes,
+        std::map<int, CORE::Nodes::Node*>& slavegnodes,
         std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
         std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements);
 
@@ -153,8 +158,8 @@ namespace ADAPTER
     */
     virtual void add_mortar_nodes(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
-        Teuchos::ParameterList& input, std::map<int, DRT::Node*>& mastergnodes,
-        std::map<int, DRT::Node*>& slavegnodes,
+        Teuchos::ParameterList& input, std::map<int, CORE::Nodes::Node*>& mastergnodes,
+        std::map<int, CORE::Nodes::Node*>& slavegnodes,
         std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
         std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements,
         Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof);

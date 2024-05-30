@@ -88,7 +88,7 @@ void MORTAR::NodeDataContainer::Unpack(
  *----------------------------------------------------------------------*/
 MORTAR::Node::Node(int id, const std::vector<double>& coords, const int owner,
     const std::vector<int>& dofs, const bool isslave)
-    : DRT::Node(id, coords, owner),
+    : CORE::Nodes::Node(id, coords, owner),
       isslave_(isslave),
       istiedslave_(isslave),
       isonbound_(false),
@@ -115,7 +115,7 @@ MORTAR::Node::Node(int id, const std::vector<double>& coords, const int owner,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MORTAR::Node::Node(const MORTAR::Node& old)
-    : DRT::Node(old),
+    : CORE::Nodes::Node(old),
       isslave_(old.isslave_),
       istiedslave_(old.istiedslave_),
       isonbound_(old.isonbound_),
@@ -158,7 +158,7 @@ void MORTAR::Node::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Mortar ";
-  DRT::Node::Print(os);
+  CORE::Nodes::Node::Print(os);
 
   if (IsSlave())
     os << " Slave  ";
@@ -182,8 +182,8 @@ void MORTAR::Node::Pack(CORE::COMM::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
-  // add base class DRT::Node
-  DRT::Node::Pack(data);
+  // add base class CORE::Nodes::Node
+  CORE::Nodes::Node::Pack(data);
   // add isslave_
   AddtoPack(data, isslave_);
   // add istiedslave_
@@ -230,10 +230,10 @@ void MORTAR::Node::Unpack(const std::vector<char>& data)
 
   CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  // extract base class DRT::Node
+  // extract base class CORE::Nodes::Node
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::Node::Unpack(basedata);
+  CORE::Nodes::Node::Unpack(basedata);
   // isslave_
   isslave_ = ExtractInt(position, data);
   // istiedslave_
@@ -484,7 +484,7 @@ MORTAR::Node* MORTAR::Node::FindClosestNode(const Teuchos::RCP<DRT::Discretizati
   for (int i = 0; i < nodesearchmap->NumMyElements(); ++i)
   {
     int gid = nodesearchmap->GID(i);
-    DRT::Node* node = intdis->gNode(gid);
+    CORE::Nodes::Node* node = intdis->gNode(gid);
     if (!node) FOUR_C_THROW("FindClosestNode: Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 

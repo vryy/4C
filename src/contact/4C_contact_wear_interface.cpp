@@ -100,7 +100,7 @@ void WEAR::WearInterface::AssembleTE(
   for (int i = 0; i < considerednodes->NumMyElements(); ++i)
   {
     int gid = considerednodes->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -210,7 +210,7 @@ void WEAR::WearInterface::AssembleTE_Master(
   for (int i = 0; i < slmasternodes->NumMyElements(); ++i)
   {
     int gid = slmasternodes->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -321,7 +321,7 @@ void WEAR::WearInterface::AssembleLinT_D(CORE::LINALG::SparseMatrix& lintglobal)
   for (int j = 0; j < considerednodes->NumMyElements(); ++j)
   {
     int gid = considerednodes->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -339,7 +339,7 @@ void WEAR::WearInterface::AssembleLinT_D(CORE::LINALG::SparseMatrix& lintglobal)
       int sgid = scurr->first;
       ++scurr;
 
-      DRT::Node* snode = idiscret_->gNode(sgid);
+      CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
       if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
       CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -394,7 +394,7 @@ void WEAR::WearInterface::AssembleLinT_D(CORE::LINALG::SparseMatrix& lintglobal)
   for (int j = 0; j < considerednodes->NumMyElements(); ++j)
   {
     int gid = considerednodes->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -411,7 +411,7 @@ void WEAR::WearInterface::AssembleLinT_D(CORE::LINALG::SparseMatrix& lintglobal)
       {
         // std::cout << "t-irst= " << z->first << std::endl;
         int gid3 = (int)((z->first) / Dim());
-        DRT::Node* snode = idiscret_->gNode(gid3);
+        CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
         if (!snode) FOUR_C_THROW("Cannot find node with gid");
         CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -463,7 +463,7 @@ void WEAR::WearInterface::assemble_lin_t_d_master(CORE::LINALG::SparseMatrix& li
   for (int j = 0; j < slmasternodes->NumMyElements(); ++j)
   {
     int gid = slmasternodes->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -481,7 +481,7 @@ void WEAR::WearInterface::assemble_lin_t_d_master(CORE::LINALG::SparseMatrix& li
       int sgid = scurr->first;
       ++scurr;
 
-      DRT::Node* snode = idiscret_->gNode(sgid);
+      CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
       if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
       CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -536,7 +536,7 @@ void WEAR::WearInterface::assemble_lin_t_d_master(CORE::LINALG::SparseMatrix& li
   for (int j = 0; j < slmasternodes->NumMyElements(); ++j)
   {
     int gid = slmasternodes->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -553,7 +553,7 @@ void WEAR::WearInterface::assemble_lin_t_d_master(CORE::LINALG::SparseMatrix& li
       {
         // std::cout << "t-irst= " << z->first << std::endl;
         int gid3 = (int)((z->first) / Dim());
-        DRT::Node* snode = idiscret_->gNode(gid3);
+        CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
         if (!snode) FOUR_C_THROW("Cannot find node with gid");
         CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -618,7 +618,7 @@ void WEAR::WearInterface::AssembleLinE_D(CORE::LINALG::SparseMatrix& lineglobal)
   for (int j = 0; j < considerednodes->NumMyElements(); ++j)
   {
     int gid = considerednodes->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -636,7 +636,7 @@ void WEAR::WearInterface::AssembleLinE_D(CORE::LINALG::SparseMatrix& lineglobal)
       int sgid = scurr->first;
       ++scurr;
 
-      DRT::Node* snode = idiscret_->gNode(sgid);
+      CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
       if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
       CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -704,7 +704,7 @@ void WEAR::WearInterface::assemble_lin_e_d_master(CORE::LINALG::SparseMatrix& li
   for (int j = 0; j < slmasternodes->NumMyElements(); ++j)
   {
     int gid = slmasternodes->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -722,7 +722,7 @@ void WEAR::WearInterface::assemble_lin_e_d_master(CORE::LINALG::SparseMatrix& li
       int sgid = scurr->first;
       ++scurr;
 
-      DRT::Node* snode = idiscret_->gNode(sgid);
+      CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
       if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
       CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -797,7 +797,7 @@ void WEAR::WearInterface::AssembleLinT_LM(CORE::LINALG::SparseMatrix& lintglobal
   for (int j = 0; j < considerednodes->NumMyElements(); ++j)
   {
     int gid = considerednodes->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -811,7 +811,7 @@ void WEAR::WearInterface::AssembleLinT_LM(CORE::LINALG::SparseMatrix& lintglobal
       for (CI p = fmap.begin(); p != fmap.end(); ++p)
       {
         int gid2 = (int)((p->first) / Dim());
-        DRT::Node* node2 = idiscret_->gNode(gid2);
+        CORE::Nodes::Node* node2 = idiscret_->gNode(gid2);
         if (!node2) FOUR_C_THROW("Cannot find node with gid %", gid2);
         CONTACT::FriNode* jnode = dynamic_cast<CONTACT::FriNode*>(node2);
 
@@ -854,7 +854,7 @@ void WEAR::WearInterface::assemble_lin_t_lm_master(CORE::LINALG::SparseMatrix& l
   for (int j = 0; j < slmasternodes->NumMyElements(); ++j)
   {
     int gid = slmasternodes->GID(j);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -868,7 +868,7 @@ void WEAR::WearInterface::assemble_lin_t_lm_master(CORE::LINALG::SparseMatrix& l
       for (CI p = fmap.begin(); p != fmap.end(); ++p)
       {
         int gid2 = (int)((p->first) / Dim());
-        DRT::Node* node2 = idiscret_->gNode(gid2);
+        CORE::Nodes::Node* node2 = idiscret_->gNode(gid2);
         if (!node2) FOUR_C_THROW("Cannot find node with gid %", gid2);
         CONTACT::FriNode* jnode = dynamic_cast<CONTACT::FriNode*>(node2);
 
@@ -905,7 +905,7 @@ void WEAR::WearInterface::evaluate_nodal_normals() const
     for (int i = 0; i < mnoderowmap_->NumMyElements(); ++i)
     {
       int gid = mnoderowmap_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid);
+      CORE::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
 
@@ -961,7 +961,7 @@ void WEAR::WearInterface::export_nodal_normals() const
     for (int i = 0; i < mnoderowmap_->NumMyElements(); ++i)
     {
       int gid = mnoderowmap_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid);
+      CORE::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -1064,7 +1064,7 @@ void WEAR::WearInterface::export_nodal_normals() const
     {
       // only do something for ghosted nodes
       int gid = masternodes->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid);
+      CORE::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       int linsize = cnode->GetLinsize() + (int)(n_x_key[gid].size());
@@ -1174,7 +1174,7 @@ void WEAR::WearInterface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -1219,7 +1219,7 @@ void WEAR::WearInterface::AssembleLinG_W(CORE::LINALG::SparseMatrix& sglobal)
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -1282,7 +1282,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
     for (int i = 0; i < sticknodes->NumMyElements(); ++i)
     {
       int gid = sticknodes->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid);
+      CORE::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -1579,7 +1579,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
     for (int i = 0; i < sticknodes->NumMyElements(); ++i)
     {
       int gid = sticknodes->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid);
+      CORE::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -1793,7 +1793,7 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
     for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
     {
       int gid = slipnodes_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid);
+      CORE::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -1979,7 +1979,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
     for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
     {
       int gid = slipnodes_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid);
+      CORE::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -2756,7 +2756,7 @@ void WEAR::WearInterface::AssembleLinWLm(CORE::LINALG::SparseMatrix& sglobal)
        ++i)  //(int i=0;i<activenodes_->NumMyElements();++i)
   {
     int gid = activenodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -2810,7 +2810,7 @@ void WEAR::WearInterface::AssembleLinWLmSt(CORE::LINALG::SparseMatrix& sglobal)
   for (int i = 0; i < sticknodes->NumMyElements(); ++i)
   {
     int gid = sticknodes->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -2894,7 +2894,7 @@ void WEAR::WearInterface::AssembleLinWLmSl(CORE::LINALG::SparseMatrix& sglobal)
   for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
   {
     int gid = slipnodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -2999,7 +2999,7 @@ void WEAR::WearInterface::AssembleWear(Epetra_Vector& wglobal)
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3047,7 +3047,7 @@ void WEAR::WearInterface::AssembleD2(CORE::LINALG::SparseMatrix& dglobal)
   for (int i = 0; i < masternodes->NumMyElements(); ++i)  // mnoderowmap_
   {
     int gid = masternodes->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3110,7 +3110,7 @@ bool WEAR::WearInterface::build_active_set_master()
   for (int j = 0; j < SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = SlaveRowNodes()->GID(j);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3132,7 +3132,7 @@ bool WEAR::WearInterface::build_active_set_master()
 
     if (ara->LID(gid) == -1) continue;
 
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3147,7 +3147,7 @@ bool WEAR::WearInterface::build_active_set_master()
 
     if (arsl->LID(gid) == -1) continue;
 
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3193,7 +3193,7 @@ bool WEAR::WearInterface::build_active_set_master()
   for (int j = 0; j < SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = SlaveRowNodes()->GID(j);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3253,7 +3253,7 @@ bool WEAR::WearInterface::build_active_set_master()
   for (int j = 0; j < masternodes->NumMyElements(); ++j)
   {
     int gid = masternodes->GID(j);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3286,7 +3286,7 @@ bool WEAR::WearInterface::build_active_set_master()
   for (int j = 0; j < ARactmn->NumMyElements(); ++j)
   {
     int gid = ARactmn->GID(j);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3305,7 +3305,7 @@ bool WEAR::WearInterface::build_active_set_master()
   for (int j = 0; j < ARslimn->NumMyElements(); ++j)
   {
     int gid = ARslimn->GID(j);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3334,7 +3334,7 @@ bool WEAR::WearInterface::build_active_set_master()
 
     if (ara->LID(gid) == -1) continue;
 
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3346,7 +3346,7 @@ bool WEAR::WearInterface::build_active_set_master()
 
     if (arsl->LID(gid) == -1) continue;
 
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3389,7 +3389,7 @@ bool WEAR::WearInterface::BuildActiveSet(bool init)
     for (int k = 0; k < masternodes->NumMyElements(); ++k)  // mnoderowmap_
     {
       int gid = masternodes->GID(k);
-      DRT::Node* node = idiscret_->gNode(gid);
+      CORE::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       const int numdof = cnode->NumDof();
@@ -3446,7 +3446,7 @@ void WEAR::WearInterface::initialize_data_container()
     for (int i = 0; i < masternodes->NumMyElements(); ++i)  // MasterRowNodes()
     {
       int gid = masternodes->GID(i);
-      DRT::Node* node = Discret().gNode(gid);
+      CORE::Nodes::Node* node = Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %i", gid);
       MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(node);
 
@@ -3489,7 +3489,7 @@ void WEAR::WearInterface::assemble_inactive_wear_rhs(Epetra_Vector& inactiverhs)
   for (int i = 0; i < inactivenodes->NumMyElements(); ++i)
   {
     int gid = inactivenodes->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3551,7 +3551,7 @@ void WEAR::WearInterface::assemble_inactive_wear_rhs_master(Epetra_FEVector& ina
   for (int i = 0; i < inactivenodes->NumMyElements(); ++i)
   {
     int gid = inactivenodes->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3632,7 +3632,7 @@ void WEAR::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
   for (int i = 0; i < considerednodes->NumMyElements(); ++i)
   {
     int gid = considerednodes->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3647,7 +3647,7 @@ void WEAR::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
       for (CI p = emap.begin(); p != emap.end(); ++p)
       {
         int gid3 = (int)((p->first) / Dim());
-        DRT::Node* snode = idiscret_->gNode(gid3);
+        CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
         if (!snode) FOUR_C_THROW("Cannot find node with gid");
         CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -3674,7 +3674,7 @@ void WEAR::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
       for (CI p = tmap.begin(); p != tmap.end(); ++p)
       {
         int gid3 = (int)((p->first) / Dim());
-        DRT::Node* snode = idiscret_->gNode(gid3);
+        CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
         if (!snode) FOUR_C_THROW("Cannot find node with gid");
         CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -3727,7 +3727,7 @@ void WEAR::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
   for (int i = 0; i < slmasternodes->NumMyElements(); ++i)
   {
     int gid = slmasternodes->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3739,7 +3739,7 @@ void WEAR::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
       for (CI p = emap.begin(); p != emap.end(); ++p)
       {
         int gid3 = (int)((p->first) / Dim());
-        DRT::Node* snode = idiscret_->gNode(gid3);
+        CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
         if (!snode) FOUR_C_THROW("Cannot find node with gid");
         CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -3766,7 +3766,7 @@ void WEAR::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
       for (CI p = tmap.begin(); p != tmap.end(); ++p)
       {
         int gid3 = (int)((p->first) / Dim());
-        DRT::Node* snode = idiscret_->gNode(gid3);
+        CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
         if (!snode) FOUR_C_THROW("Cannot find node with gid");
         CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -3823,7 +3823,7 @@ void WEAR::WearInterface::Initialize()
          ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
     {
       int gid = masternodes->GID(i);
-      DRT::Node* node = Discret().gNode(gid);
+      CORE::Nodes::Node* node = Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3843,7 +3843,7 @@ void WEAR::WearInterface::Initialize()
   for (int i = 0; i < SlaveColNodesBound()->NumMyElements(); ++i)
   {
     int gid = SlaveColNodesBound()->GID(i);
-    DRT::Node* node = Discret().gNode(gid);
+    CORE::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -3952,7 +3952,7 @@ void WEAR::WearInterface::Initialize()
          ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
     {
       int gid = masternodes->GID(i);
-      DRT::Node* node = Discret().gNode(gid);
+      CORE::Nodes::Node* node = Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -4051,7 +4051,7 @@ void WEAR::WearInterface::SplitSlaveDofs()
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -4108,7 +4108,7 @@ void WEAR::WearInterface::SplitMasterDofs()
   for (int i = 0; i < mnoderowmap_->NumMyElements(); ++i)
   {
     int gid = mnoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
+    CORE::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 

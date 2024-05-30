@@ -84,7 +84,7 @@ namespace DRT
       {
         return SoSh18::Surfaces();
       }
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         return SoSh18::NumDofPerNode(node);
       }

@@ -1214,7 +1214,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_configuration(const std::vector<doubl
     CORE::LINALG::Matrix<numnod_, noddof_>& xrefe, CORE::LINALG::Matrix<numnod_, noddof_>& xcurr)
 {
   // get reference configuration and determine current configuration
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
 
   for (int i = 0; i < numnod_; ++i)

@@ -15,10 +15,10 @@ MATLAB, PGFPlot or other tools.
 
 #include "4C_contact_aug_strategy.hpp"
 #include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_io_every_iteration_writer.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
@@ -163,7 +163,7 @@ void CONTACT::AUG::Plot::Direction::split_into_slave_master_body(const Epetra_Ve
 
   if (slnodes.NumMyElements() > 0)
   {
-    const DRT::Node* snode = plot_.discret_->gNode(slnodes.GID(0));
+    const CORE::Nodes::Node* snode = plot_.discret_->gNode(slnodes.GID(0));
     Teuchos::RCP<Epetra_Map> slbody_dofs = find_connected_dofs(snode, *plot_.discret_);
 
     x_dir_ptr = Teuchos::rcp(new Epetra_Vector(*slbody_dofs, true));
@@ -177,7 +177,7 @@ void CONTACT::AUG::Plot::Direction::split_into_slave_master_body(const Epetra_Ve
 
   if (manodes.NumMyElements() > 0)
   {
-    const DRT::Node* mnode = plot_.discret_->gNode(manodes.GID(0));
+    const CORE::Nodes::Node* mnode = plot_.discret_->gNode(manodes.GID(0));
     Teuchos::RCP<Epetra_Map> mabody_dofs = find_connected_dofs(mnode, *plot_.discret_);
 
     y_dir_ptr = Teuchos::rcp(new Epetra_Vector(*mabody_dofs, true));
@@ -200,19 +200,19 @@ void CONTACT::AUG::Plot::Direction::split_into_slave_master_body(const Epetra_Ve
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> CONTACT::AUG::Plot::Direction::find_connected_dofs(
-    const DRT::Node* node, const DRT::Discretization& discret) const
+    const CORE::Nodes::Node* node, const DRT::Discretization& discret) const
 {
   std::set<int> done_element_ids;
   std::set<int> connected_node_gids;
   connected_node_gids.insert(node->Id());
-  std::vector<const DRT::Node*> connected_nodes(1, node);
+  std::vector<const CORE::Nodes::Node*> connected_nodes(1, node);
 
   const int mypid = discret.Comm().MyPID();
 
   unsigned i = 0;
   for (;;)
   {
-    const DRT::Node* cnode = connected_nodes[i++];
+    const CORE::Nodes::Node* cnode = connected_nodes[i++];
 
     const CORE::Elements::Element* const* adj_eles = cnode->Elements();
     int num_adj_eles = cnode->NumElement();
@@ -223,10 +223,10 @@ Teuchos::RCP<Epetra_Map> CONTACT::AUG::Plot::Direction::find_connected_dofs(
       const auto echeck = done_element_ids.insert(ele->Id());
       if (echeck.second == false) continue;
 
-      const DRT::Node* const* nodes = ele->Nodes();
+      const CORE::Nodes::Node* const* nodes = ele->Nodes();
       for (int n = 0; n < ele->num_node(); ++n)
       {
-        const DRT::Node* ele_node = nodes[n];
+        const CORE::Nodes::Node* ele_node = nodes[n];
         if (ele_node->Owner() != mypid) continue;
 
         const auto ncheck = connected_node_gids.insert(ele_node->Id());
@@ -240,7 +240,7 @@ Teuchos::RCP<Epetra_Map> CONTACT::AUG::Plot::Direction::find_connected_dofs(
   // use a set to get an ascending order of the GIDs
   std::set<int> dof_set;
   std::vector<int> dof_vec;
-  for (const DRT::Node* cnode : connected_nodes)
+  for (const CORE::Nodes::Node* cnode : connected_nodes)
   {
     dof_vec.reserve(3);
     discret.Dof(cnode, dof_vec);
@@ -773,7 +773,7 @@ void CONTACT::AUG::Plot::compute_distance_position()
   for (unsigned i = 0; i < num_my_nodes; ++i)
   {
     const int gid = node_gids[i];
-    DRT::Node* node = discret_->gNode(gid);
+    CORE::Nodes::Node* node = discret_->gNode(gid);
 
     if (not node) FOUR_C_THROW("Couldn't find the node with GID %d!", gid);
 
@@ -799,7 +799,7 @@ void CONTACT::AUG::Plot::compute_angle_position()
   for (unsigned i = 0; i < num_my_nodes; ++i)
   {
     const int gid = node_gids[i];
-    DRT::Node* node = discret_->gNode(gid);
+    CORE::Nodes::Node* node = discret_->gNode(gid);
 
     if (not node) FOUR_C_THROW("Couldn't find the node with GID %d!", gid);
 

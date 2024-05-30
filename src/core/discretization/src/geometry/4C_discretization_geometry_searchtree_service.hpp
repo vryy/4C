@@ -24,8 +24,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
+
+namespace CORE::Nodes
+{
+  class Node;
+}
 
 namespace CORE::Elements
 {
@@ -188,7 +192,7 @@ namespace CORE::GEO
    \param point                point to be examined
    \param distance             distance to nearest point
    */
-  void getDistanceToPoint(const DRT::Node* node,
+  void getDistanceToPoint(const CORE::Nodes::Node* node,
       const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
       const CORE::LINALG::Matrix<3, 1>& point, double& distance);
 

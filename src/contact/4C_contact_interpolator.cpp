@@ -1366,8 +1366,8 @@ void NTS::Interpolator::deriv_xi_g_p2_d(MORTAR::Element& sele, MORTAR::Element& 
   // check for problem dimension
 
   // we need the participating slave and master nodes
-  DRT::Node** snodes = nullptr;
-  DRT::Node** mnodes = nullptr;
+  CORE::Nodes::Node** snodes = nullptr;
+  CORE::Nodes::Node** mnodes = nullptr;
   int numsnode = sele.num_node();
   int nummnode = mele.num_node();
 
@@ -1553,8 +1553,8 @@ void NTS::Interpolator::DerivXiGP3D(MORTAR::Element& sele, MORTAR::Element& mele
     std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi, double& alpha)
 {
   // we need the participating slave and master nodes
-  DRT::Node** snodes = sele.Nodes();
-  DRT::Node** mnodes = mele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** mnodes = mele.Nodes();
   std::vector<MORTAR::Node*> smrtrnodes(sele.num_node());
   std::vector<MORTAR::Node*> mmrtrnodes(mele.num_node());
   const int numsnode = sele.num_node();

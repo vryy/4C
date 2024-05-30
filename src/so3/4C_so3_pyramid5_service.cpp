@@ -6,8 +6,8 @@
 *----------------------------------------------------------------------*/
 
 
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_so3_pyramid5.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 std::vector<double> DRT::ELEMENTS::SoPyramid5::sop5_element_center_refe_coords()
 {
   // update element geometry
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {

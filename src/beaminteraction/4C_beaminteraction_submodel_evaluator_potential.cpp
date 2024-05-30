@@ -662,8 +662,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
       // since only the nodes know about their conditions, we need this workaround
       // we assume that a linecharge condition is always applied to the entire physical beam, i.e.
       // it is sufficient to check only one node
-      DRT::Node** nodes1;
-      DRT::Node** nodes2;
+      CORE::Nodes::Node** nodes1;
+      CORE::Nodes::Node** nodes2;
       nodes1 = currele->Nodes();
       nodes2 = currneighborele->Nodes();
 
@@ -798,8 +798,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
   const CORE::Elements::Element* ele1 = elementpair.Element1();
   const CORE::Elements::Element* ele2 = elementpair.Element2();
 
-  const DRT::Node* const* nodes1;
-  const DRT::Node* const* nodes2;
+  const CORE::Nodes::Node* const* nodes1;
+  const CORE::Nodes::Node* const* nodes2;
   nodes1 = ele1->Nodes();
   nodes2 = ele2->Nodes();
 

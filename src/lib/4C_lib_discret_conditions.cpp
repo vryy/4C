@@ -46,7 +46,7 @@ void DRT::Discretization::boundary_conditions_geometry()
     for (int node : *nodes)
     {
       if (!NodeColMap()->MyGID(node)) continue;
-      DRT::Node* actnode = gNode(node);
+      CORE::Nodes::Node* actnode = gNode(node);
       if (!actnode) FOUR_C_THROW("Cannot find global node");
       actnode->SetCondition(name, condition);
     }
@@ -240,13 +240,13 @@ bool DRT::Discretization::build_linesin_condition(
   if (!nodeids) FOUR_C_THROW("Cannot find array 'Node Ids' in condition");
 
   // ptrs to my row/column nodes of those
-  std::map<int, DRT::Node*> colnodes;
+  std::map<int, CORE::Nodes::Node*> colnodes;
 
   for (const auto& nodeid : *nodeids)
   {
     if (NodeColMap()->MyGID(nodeid))
     {
-      DRT::Node* actnode = gNode(nodeid);
+      CORE::Nodes::Node* actnode = gNode(nodeid);
       if (!actnode) FOUR_C_THROW("Cannot find global node");
       colnodes[actnode->Id()] = actnode;
     }
@@ -271,7 +271,7 @@ bool DRT::Discretization::build_linesin_condition(
         Teuchos::RCP<CORE::Elements::Element> actline = lines[j];
         // find lines that are attached to actnode
         const int nnodeperline = actline->num_node();
-        DRT::Node** nodesperline = actline->Nodes();
+        CORE::Nodes::Node** nodesperline = actline->Nodes();
         if (!nodesperline) FOUR_C_THROW("Line returned no nodes");
         for (int k = 0; k < nnodeperline; ++k)
         {
@@ -293,7 +293,7 @@ bool DRT::Discretization::build_linesin_condition(
             {
               std::vector<int> nodes(actline->num_node());
               transform(actline->Nodes(), actline->Nodes() + actline->num_node(), nodes.begin(),
-                  std::mem_fn(&DRT::Node::Id));
+                  std::mem_fn(&CORE::Nodes::Node::Id));
               sort(nodes.begin(), nodes.end());
 
               if (linemap.find(nodes) == linemap.end())
@@ -359,19 +359,19 @@ bool DRT::Discretization::build_surfacesin_condition(
   if (!nodeids) FOUR_C_THROW("Cannot find array 'Node Ids' in condition");
 
   // ptrs to my row/column nodes of those
-  std::map<int, DRT::Node*> myrownodes;
-  std::map<int, DRT::Node*> mycolnodes;
+  std::map<int, CORE::Nodes::Node*> myrownodes;
+  std::map<int, CORE::Nodes::Node*> mycolnodes;
   for (const auto& nodeid : *nodeids)
   {
     if (NodeColMap()->MyGID(nodeid))
     {
-      DRT::Node* actnode = gNode(nodeid);
+      CORE::Nodes::Node* actnode = gNode(nodeid);
       if (!actnode) FOUR_C_THROW("Cannot find global node");
       mycolnodes[actnode->Id()] = actnode;
     }
     if (NodeRowMap()->MyGID(nodeid))
     {
-      DRT::Node* actnode = gNode(nodeid);
+      CORE::Nodes::Node* actnode = gNode(nodeid);
       if (!actnode) FOUR_C_THROW("Cannot find global node");
       myrownodes[actnode->Id()] = actnode;
     }
@@ -413,7 +413,7 @@ bool DRT::Discretization::build_surfacesin_condition(
         Teuchos::RCP<CORE::Elements::Element> actsurf = surfs[j];
         // find surfs attached to actnode
         const int nnodepersurf = actsurf->num_node();
-        DRT::Node** nodespersurf = actsurf->Nodes();
+        CORE::Nodes::Node** nodespersurf = actsurf->Nodes();
         if (!nodespersurf) FOUR_C_THROW("Surface returned no nodes");
         for (int k = 0; k < nnodepersurf; ++k)
         {
@@ -435,12 +435,12 @@ bool DRT::Discretization::build_surfacesin_condition(
             if (is_conditioned_surface)
             {
               // remove internal surfaces that are connected to two volume elements
-              DRT::Node** actsurfnodes = actsurf->Nodes();
+              CORE::Nodes::Node** actsurfnodes = actsurf->Nodes();
 
               // get sorted vector of node ids
               std::vector<int> nodes(actsurf->num_node());
               transform(actsurf->Nodes(), actsurf->Nodes() + actsurf->num_node(), nodes.begin(),
-                  std::mem_fn(&DRT::Node::Id));
+                  std::mem_fn(&CORE::Nodes::Node::Id));
               sort(nodes.begin(), nodes.end());
 
               // special treatment of RedAirwayTissue and StructFluidSurfCoupling
@@ -462,7 +462,7 @@ bool DRT::Discretization::build_surfacesin_condition(
                   // get all volume elements connected to the nodes of this surface element
                   for (int n = 0; n < numnode; ++n)
                   {
-                    DRT::Node* actsurfnode = actsurfnodes[n];
+                    CORE::Nodes::Node* actsurfnode = actsurfnodes[n];
                     CORE::Elements::Element** eles = actsurfnode->Elements();
                     int numeles = actsurfnode->NumElement();
                     for (int e = 0; e < numeles; ++e)
@@ -487,7 +487,7 @@ bool DRT::Discretization::build_surfacesin_condition(
                       std::vector<int> nodesadj(adjacentvolelesurfs[n]->num_node());
                       transform(adjacentvolelesurfs[n]->Nodes(),
                           adjacentvolelesurfs[n]->Nodes() + adjacentvolelesurfs[n]->num_node(),
-                          nodesadj.begin(), std::mem_fn(&DRT::Node::Id));
+                          nodesadj.begin(), std::mem_fn(&CORE::Nodes::Node::Id));
                       sort(nodesadj.begin(), nodesadj.end());
 
                       if (nodes.size() == nodesadj.size())

@@ -9,10 +9,10 @@
 
 #include "4C_elemag_ele_boundary_calc.hpp"
 
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_elemag_ele.hpp"
 #include "4C_elemag_ele_action.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN

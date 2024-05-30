@@ -86,7 +86,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseType::nodal_block_information(
  |  do the null space computation                            vuong 08/16 |
  *----------------------------------------------------------------------*/
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::PoroFluidMultiPhaseType::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
@@ -404,8 +404,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::SetMaterial(
  |  ctor (public)                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::PoroFluidMultiPhaseBoundary(int id, int owner,
-    int nnode, const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::PoroFluidMultiPhase* parent,
-    const int lsurface)
+    int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
+    DRT::ELEMENTS::PoroFluidMultiPhase* parent, const int lsurface)
     : CORE::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);

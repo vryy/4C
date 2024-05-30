@@ -57,7 +57,7 @@ void LUBRICATION::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, i
   {
     if (dis_->HaveGlobalNode(node))
     {
-      DRT::Node* actnode = dis_->gNode(node);
+      CORE::Nodes::Node* actnode = dis_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != dis_->Comm().MyPID()) return;
@@ -83,7 +83,7 @@ void LUBRICATION::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, i
  *----------------------------------------------------------------------*/
 double LUBRICATION::ResultTest::result_node(
     const std::string quantity,  //! name of quantity to be tested
-    DRT::Node* node              //! node carrying the result to be tested
+    CORE::Nodes::Node* node      //! node carrying the result to be tested
 ) const
 {
   // initialize variable for result

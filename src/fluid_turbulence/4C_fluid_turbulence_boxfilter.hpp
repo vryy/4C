@@ -112,7 +112,7 @@ namespace FLD
         for (int n=0;n<discret_->NumMyRowNodes();++n)
         {
           // get the node
-          DRT::Node* node = discret_->lRowNode(n);
+          CORE::Nodes::Node* node = discret_->lRowNode(n);
 
           std::vector<int> dofs= discret_->Dof(node);
 
@@ -137,7 +137,7 @@ namespace FLD
         for (int n=0;n<discret_->NumMyRowNodes();++n)
         {
           // get the node
-          DRT::Node* node = discret_->lRowNode(n);
+          CORE::Nodes::Node* node = discret_->lRowNode(n);
 
           std::vector<int> dofs= discret_->Dof(node);
 
@@ -164,7 +164,7 @@ namespace FLD
         for (int nid=0;nid<discret_->NumMyRowNodes();++nid)
         {
           // get the node
-          DRT::Node* node = discret_->lRowNode(nid);
+          CORE::Nodes::Node* node = discret_->lRowNode(nid);
           int id = node->Id();
 
           double vali=(*((*filtered_vel_)(i-1)))[nid];
@@ -198,7 +198,7 @@ namespace FLD
         for (int nid=0;nid<discret_->NumMyRowNodes();++nid)
         {
           // get the node
-          DRT::Node* node = discret_->lRowNode(nid);
+          CORE::Nodes::Node* node = discret_->lRowNode(nid);
           int id = node->Id();
 
           double val = (*((*filtered_reynoldsstress_) (ij)))[nid];
@@ -485,7 +485,7 @@ namespace FLD
       for (int nid = 0; nid < discret_->NumMyRowNodes(); ++nid)
       {
         // get the node
-        DRT::Node* node = discret_->lRowNode(nid);
+        CORE::Nodes::Node* node = discret_->lRowNode(nid);
         int id = node->Id();
 
         double val = (*((*filtered_reynoldsstress_)(ij)))[nid];
@@ -501,7 +501,7 @@ namespace FLD
       for (int nid = 0; nid < discret_->NumMyRowNodes(); ++nid)
       {
         // get the node
-        DRT::Node* node = discret_->lRowNode(nid);
+        CORE::Nodes::Node* node = discret_->lRowNode(nid);
         int id = node->Id();
 
         double vali = (*((*filtered_vel_)(i - 1)))[nid];
@@ -519,7 +519,7 @@ namespace FLD
       for (int n = 0; n < discret_->NumMyRowNodes(); ++n)
       {
         // get the node
-        DRT::Node* node = discret_->lRowNode(n);
+        CORE::Nodes::Node* node = discret_->lRowNode(n);
 
         std::vector<int> dofs = discret_->Dof(node);
 
@@ -541,7 +541,7 @@ namespace FLD
       for (int n = 0; n < discret_->NumMyRowNodes(); ++n)
       {
         // get the node
-        DRT::Node* node = discret_->lRowNode(n);
+        CORE::Nodes::Node* node = discret_->lRowNode(n);
 
         std::vector<int> dofs = discret_->Dof(node);
 

@@ -65,7 +65,7 @@ void DRT::ELEMENTS::FluidType::nodal_block_information(
 
 
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::FluidType::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
@@ -326,7 +326,7 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Fluid::CreateFaceElement(
     CORE::Elements::Element* parent_slave,  //!< parent slave fluid3 element
     int nnode,                              //!< number of surface nodes
     const int* nodeids,                     //!< node ids of surface element
-    DRT::Node** nodes,                      //!< nodes of surface element
+    CORE::Nodes::Node** nodes,              //!< nodes of surface element
     const int lsurface_master,              //!< local surface number w.r.t master parent element
     const int lsurface_slave,               //!< local surface number w.r.t slave parent element
     const std::vector<int>& localtrafomap   //! local trafo map

@@ -281,8 +281,8 @@ CONSTRAINTS::MPConstraint3::create_discretization_from_condition(
         const int gid = actnoderowmap->GID(i);
         if (rownodeset.find(gid) != rownodeset.end())
         {
-          const DRT::Node* standardnode = actdisc->lRowNode(i);
-          newdis->AddNode(Teuchos::rcp(new DRT::Node(gid, standardnode->X(), myrank)));
+          const CORE::Nodes::Node* standardnode = actdisc->lRowNode(i);
+          newdis->AddNode(Teuchos::rcp(new CORE::Nodes::Node(gid, standardnode->X(), myrank)));
         }
       }
 

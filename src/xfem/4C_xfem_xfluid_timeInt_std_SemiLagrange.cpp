@@ -944,7 +944,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
           "this function is used for the first time here, check the compute gradient "
           "functionality, check also the parallel export!");
 
-    DRT::Node* node = &data->node_;
+    CORE::Nodes::Node* node = &data->node_;
 
     //----------------------------------------------------------
     // Reconstruct nodal gradients for all vectors
@@ -1088,7 +1088,7 @@ void XFEM::XfluidSemiLagrange::reinitialize_data()
   //  for (int lnodeid=0; lnodeid<discret_->NumMyColNodes(); lnodeid++)  // loop over processor
   //  nodes
   //  {
-  //    DRT::Node* currnode = discret_->lColNode(lnodeid);
+  //    CORE::Nodes::Node* currnode = discret_->lColNode(lnodeid);
   //    // node on current processor which changed interface side
   //    if ((currnode->Owner() == myrank_) &&
   //        (interfaceSideCompare((*phinp_)[lnodeid],(*phinpi_)[lnodeid])==false))
@@ -1330,7 +1330,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
 
   for (int inode = 0; inode < numnode; inode++)
   {
-    DRT::Node* node = ele->Nodes()[inode];
+    CORE::Nodes::Node* node = ele->Nodes()[inode];
     std::vector<int> dofs;
     dofset_old_->Dof(dofs, node, data->nds_[inode]);
 
@@ -1376,7 +1376,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
   // Reconstruct nodal gradients
   for (int inode = 0; inode < numnode; inode++)
   {
-    DRT::Node* node = (ele->Nodes())[inode];
+    CORE::Nodes::Node* node = (ele->Nodes())[inode];
 
     // determine the elements used for the nodal gradient computation
     // determine the corresponding nodal dofset vectors used for averaging the nodal gradients
@@ -1676,8 +1676,8 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidSemiLagrange::compute_nodal_gradient(
     const std::vector<Teuchos::RCP<Epetra_Vector>>&
-        colVectors,   ///< all vectors for that we reconstruct the their gradients
-    DRT::Node* node,  ///< node at which we reconstruct the gradients
+        colVectors,           ///< all vectors for that we reconstruct the their gradients
+    CORE::Nodes::Node* node,  ///< node at which we reconstruct the gradients
     std::vector<CORE::Elements::Element*>&
         eles,                                ///< elements around node used for the reconstruction
     std::vector<std::vector<int>>& ele_nds,  ///< corresonding elements nodal dofset information
@@ -1866,7 +1866,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
     while (posinData < dataRecv.size())
     {
       std::vector<double> coords(nsd, 0.0);
-      DRT::Node node(0, coords, 0);
+      CORE::Nodes::Node node(0, coords, 0);
       int nds_np;
       CORE::LINALG::Matrix<nsd, 1> vel;
       std::vector<CORE::LINALG::Matrix<nsd, nsd>> velDeriv;
@@ -2014,7 +2014,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
     while (posinData < dataRecv.size())
     {
       std::vector<double> coords(nsd, 0.0);
-      DRT::Node node(0, coords, 0);
+      CORE::Nodes::Node node(0, coords, 0);
       int nds_np;
       CORE::LINALG::Matrix<nsd, 1> vel;
       std::vector<CORE::LINALG::Matrix<nsd, nsd>> velDeriv;

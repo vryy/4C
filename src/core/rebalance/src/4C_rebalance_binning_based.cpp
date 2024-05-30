@@ -13,9 +13,9 @@
 
 #include "4C_binstrategy.hpp"
 #include "4C_coupling_matchingoctree.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -437,7 +437,7 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
       bool conditionedele = false;
       CORE::Elements::Element* ele =
           dis_to_rebalance.gElement(dis_to_rebalance.ElementColMap()->GID(lid));
-      DRT::Node** nodes = ele->Nodes();
+      CORE::Nodes::Node** nodes = ele->Nodes();
       for (int node = 0; node < ele->num_node(); node++)
       {
         CORE::Conditions::Condition* nodal_cond = nodes[node]->GetCondition(condname_rebalance);
@@ -636,7 +636,7 @@ Teuchos::RCP<Epetra_Map> CORE::REBALANCE::ComputeNodeColMap(
   oldcolnodemap->MyGlobalElements(mycolnodes.data());
   for (int inode = 0; inode != subdis->NumMyColNodes(); ++inode)
   {
-    const DRT::Node* newnode = subdis->lColNode(inode);
+    const CORE::Nodes::Node* newnode = subdis->lColNode(inode);
     const int gid = newnode->Id();
     if (!(sourcedis->HaveGlobalNode(gid)))
     {

@@ -87,12 +87,12 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
       // ---------------------------------------------------------------
 
       // step (1) find both inlet and outlet nodes
-      DRT::Node* ndi = nullptr;  // ith node
-      DRT::Node* ndl = nullptr;  // last node
+      CORE::Nodes::Node* ndi = nullptr;  // ith node
+      CORE::Nodes::Node* ndl = nullptr;  // last node
 
       for (unsigned int n = 0; n < nodes->size(); n++)
       {
-        DRT::Node* nd = actdis->gNode((*nodes)[n]);
+        CORE::Nodes::Node* nd = actdis->gNode((*nodes)[n]);
         if (nd->GetCondition("ArtInOutCond"))
         {
           std::string TerminalType =
@@ -280,8 +280,8 @@ void ART::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<DRT::Discretization> discre
       exit(1);
     }
 
-    //    DRT::Node * nd = discret->lColNode((*nodes)[i]);
-    DRT::Node* nd = discret->gNode((*nodes)[i]);
+    //    CORE::Nodes::Node * nd = discret->lColNode((*nodes)[i]);
+    CORE::Nodes::Node* nd = discret->gNode((*nodes)[i]);
     CORE::Elements::Element** ele = nd->Elements();
 
     // get element location vector, dirichlet flags and ownerships

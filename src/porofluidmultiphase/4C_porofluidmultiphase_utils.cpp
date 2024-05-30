@@ -50,7 +50,7 @@ namespace
 
       for (auto const nodeid : *ArteryNodeIds)
       {
-        DRT::Node* artnode = artsearchdis->gNode(nodeid);
+        CORE::Nodes::Node* artnode = artsearchdis->gNode(nodeid);
         CORE::Elements::Element** artele = artnode->Elements();
         // get Id of corresponding element; Note: in lung modeling only most distal nodes
         // are coupled, so coupling nodes can only belong to one element
@@ -144,7 +144,7 @@ Teuchos::RCP<Epetra_MultiVector> POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToN
   for (int inode = 0; inode < dis.NumMyRowNodes(); ++inode)
   {
     // get current node
-    DRT::Node* node = dis.lRowNode(inode);
+    CORE::Nodes::Node* node = dis.lRowNode(inode);
     // copy each dof value of node
     for (int idof = 0; idof < numdofpernode; ++idof)
       (*multi)[idof][inode] = vector[vectormap.LID(dis.Dof(nds, node, idof))];
@@ -436,7 +436,7 @@ std::map<int, CORE::LINALG::Matrix<3, 1>> POROFLUIDMULTIPHASE::UTILS::GetNodalPo
   std::map<int, CORE::LINALG::Matrix<3, 1>> positions;
   for (int lid = 0; lid < nodemap->NumMyElements(); ++lid)
   {
-    const DRT::Node* node = dis->gNode(nodemap->GID(lid));
+    const CORE::Nodes::Node* node = dis->gNode(nodemap->GID(lid));
     CORE::LINALG::Matrix<3, 1> currpos;
 
     currpos(0) = node->X()[0];
@@ -460,7 +460,7 @@ double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
   {
     // get first node and its position
     int node0_gid = ele->NodeIds()[inode];
-    DRT::Node* node0 = dis->gNode(node0_gid);
+    CORE::Nodes::Node* node0 = dis->gNode(node0_gid);
 
     static CORE::LINALG::Matrix<3, 1> pos0;
     pos0(0) = node0->X()[0];
@@ -471,7 +471,7 @@ double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
     for (int jnode = inode + 1; jnode < ele->num_node(); jnode++)
     {
       int node1_gid = ele->NodeIds()[jnode];
-      DRT::Node* node1 = dis->gNode(node1_gid);
+      CORE::Nodes::Node* node1 = dis->gNode(node1_gid);
 
       static CORE::LINALG::Matrix<3, 1> pos1;
       pos1(0) = node1->X()[0];

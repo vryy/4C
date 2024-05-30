@@ -295,7 +295,7 @@ void FLD::XWall::init_x_wall_maps()
     for (int i = 0; i < discret_->NodeRowMap()->NumMyElements(); ++i)
     {
       int xwallgid = discret_->NodeRowMap()->GID(i);
-      DRT::Node* xwallnode = discret_->gNode(xwallgid);
+      CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
       if (!xwallnode) FOUR_C_THROW("Cannot find node");
 
       bool enriched = false;
@@ -380,9 +380,9 @@ void FLD::XWall::init_wall_dist()
   // loop over all column nodes of underlying problem discret and add
   for (int i = 0; i < (discret_->NodeColMap())->NumMyElements(); ++i)
   {
-    DRT::Node* node = discret_->lColNode(i);
+    CORE::Nodes::Node* node = discret_->lColNode(i);
     if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
-    Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
+    Teuchos::RCP<CORE::Nodes::Node> newnode = Teuchos::rcp(node->Clone());
     commondis->AddNode(newnode);
   }
   // loop over all column elements of underlying problem discret and add
@@ -407,7 +407,7 @@ void FLD::XWall::init_wall_dist()
   for (int i = 0; i < (commondis->NodeColMap())->NumMyElements(); ++i)
   {
     int gid = commondis->NodeColMap()->GID(i);
-    DRT::Node* xwallnode = commondis->lColNode(i);
+    CORE::Nodes::Node* xwallnode = commondis->lColNode(i);
     if (!xwallnode) FOUR_C_THROW("Cannot find node with lid %", i);
     int enriched = 0;
 
@@ -430,7 +430,7 @@ void FLD::XWall::init_wall_dist()
   {
     int xwallgid = xwallcolnodemap_->GID(j);
 
-    DRT::Node* xwallnode = commondis->gNode(xwallgid);
+    CORE::Nodes::Node* xwallnode = commondis->gNode(xwallgid);
     if (!xwallnode) FOUR_C_THROW("Cannot find node");
 
     double mydist = 1.0E10;
@@ -444,7 +444,7 @@ void FLD::XWall::init_wall_dist()
 
       if (discret_->NodeRowMap()->MyGID(gid))
       {
-        DRT::Node* node = discret_->gNode(gid);
+        CORE::Nodes::Node* node = discret_->gNode(gid);
 
         if (!node) FOUR_C_THROW("ERROR: Cannot find wall node with gid %", gid);
 
@@ -511,7 +511,7 @@ void FLD::XWall::init_toggle_vector()
 
     if (discret_->NodeRowMap()->MyGID(xwallgid))  // just in case
     {
-      DRT::Node* xwallnode = discret_->gNode(xwallgid);
+      CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
       if (!xwallnode) FOUR_C_THROW("Cannot find node");
 
       bool fullyenriched = true;
@@ -577,9 +577,9 @@ void FLD::XWall::setup_x_wall_dis()
 
     if (xwallcolnodemap_->MyGID(gid))
     {
-      DRT::Node* node = discret_->lColNode(i);
+      CORE::Nodes::Node* node = discret_->lColNode(i);
       if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
-      Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
+      Teuchos::RCP<CORE::Nodes::Node> newnode = Teuchos::rcp(node->Clone());
       xwdiscret_->AddNode(newnode);
     }
   }
@@ -674,7 +674,7 @@ void FLD::XWall::setup_l2_projection()
       // continue only if on this proc
       if (xwdiscret_->NodeRowMap()->MyGID(gid))
       {
-        DRT::Node* node = xwdiscret_->gNode(gid);
+        CORE::Nodes::Node* node = xwdiscret_->gNode(gid);
         if (!node) FOUR_C_THROW("ERROR: Cannot find off wall node with gid %", gid);
         // make sure that periodic nodes are not assembled twice
         std::vector<CORE::Conditions::Condition*> periodiccond;
@@ -809,7 +809,7 @@ void FLD::XWall::setup_l2_projection()
             for (int i = 0; i < xwdiscret_->NumMyRowNodes(); ++i)
             {
               const unsigned int ndof = 3;
-              DRT::Node* actnode = xwdiscret_->lRowNode(i);
+              CORE::Nodes::Node* actnode = xwdiscret_->lRowNode(i);
               if (!actnode) FOUR_C_THROW("cannot find node");
               std::vector<int> dofs = xwdiscret_->Dof(0, actnode);
               std::vector<int> actdofs;
@@ -974,7 +974,7 @@ void FLD::XWall::calc_tau_w(
       // continue only if on this proc
       if (discret_->NodeRowMap()->MyGID(gid))
       {
-        DRT::Node* node = discret_->gNode(gid);
+        CORE::Nodes::Node* node = discret_->gNode(gid);
         if (!node) FOUR_C_THROW("ERROR: Cannot find off wall node with gid %", gid);
 
         int firstglobaldofid = discret_->Dof(0, node, 0);
@@ -1055,7 +1055,7 @@ void FLD::XWall::calc_tau_w(
       lm.resize(numnode);
       lmowner.resize(numnode);
 
-      DRT::Node** nodes = actele->Nodes();
+      CORE::Nodes::Node** nodes = actele->Nodes();
       for (int n = 0; n < numnode; ++n)
       {
         lm[n] = nodes[n]->Id();
@@ -1281,7 +1281,7 @@ void FLD::XWall::AdaptMLNullspace(const Teuchos::RCP<CORE::LINALG::Solver>& solv
     if (not discret_->NodeRowMap()->MyGID(xwallgid))  // just in case
       FOUR_C_THROW("not on proc");
     {
-      DRT::Node* xwallnode = discret_->gNode(xwallgid);
+      CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
       if (!xwallnode) FOUR_C_THROW("Cannot find node");
 
       int firstglobaldofid = discret_->Dof(xwallnode, 0);
@@ -1341,7 +1341,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::GetOutputVector(Teuchos::RCP<Epetra_Vect
   for (int i = 0; i < xwallrownodemap_->NumMyElements(); ++i)
   {
     int xwallgid = xwallrownodemap_->GID(i);
-    DRT::Node* xwallnode = discret_->gNode(xwallgid);
+    CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
     if (!xwallnode) FOUR_C_THROW("Cannot find node");
 
     int firstglobaldofid = discret_->Dof(xwallnode, 0);
@@ -1393,7 +1393,7 @@ void FLD::XWall::overwrite_transferred_values()
     for (int i = 0; i < discret_->NodeRowMap()->NumMyElements(); ++i)
     {
       int xwallgid = discret_->NodeRowMap()->GID(i);
-      DRT::Node* xwallnode = discret_->gNode(xwallgid);
+      CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
       if (!xwallnode) FOUR_C_THROW("Cannot find node");
       std::vector<CORE::Conditions::Condition*> nodecloudstocouple;
       xwallnode->GetCondition("TransferTurbulentInflow", nodecloudstocouple);
@@ -1458,7 +1458,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
     {
       int xwallgid = xwallrownodemap_->GID(j);
 
-      DRT::Node* xwallnode = discret_->gNode(xwallgid);
+      CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
       if (!xwallnode) FOUR_C_THROW("Cannot find node");
       std::vector<CORE::Conditions::Condition*> periodiccond;
       xwallnode->GetCondition("SurfacePeriodic", periodiccond);
@@ -1514,7 +1514,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
               int foundl = -1;
               for (int k = 0; k < (xwallnode->NumElement()); ++k)  // loop over elements
               {
-                DRT::Node** test = surrele[k]->Nodes();
+                CORE::Nodes::Node** test = surrele[k]->Nodes();
                 for (int l = 0; l < surrele[k]->num_node(); ++l)  // loop over nodes of element
                 {
                   // it has to be on fluidstresscalc
@@ -1561,7 +1561,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
 
               if (foundk < 0 or foundl < 0) FOUR_C_THROW("haven't found required node");
 
-              DRT::Node** test = surrele[foundk]->Nodes();
+              CORE::Nodes::Node** test = surrele[foundk]->Nodes();
 
               int firstglobaldofidtoreplace = discret_->Dof(xwallnode, 0);
               int secondglobaldofidtoreplace = discret_->Dof(xwallnode, 0) + 1;
@@ -1621,7 +1621,7 @@ void FLD::XWallAleFSI::UpdateWDistWALE()
 
     if (not discret_->NodeRowMap()->MyGID(xwallgid))  // just in case
       FOUR_C_THROW("not on proc");
-    DRT::Node* xwallnode = discret_->gNode(xwallgid);
+    CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
     if (!xwallnode) FOUR_C_THROW("Cannot find node");
 
     int firstglobaldofid = discret_->Dof(xwallnode, 0);
@@ -1654,7 +1654,7 @@ void FLD::XWallAleFSI::UpdateWDistWALE()
 
     if (not discret_->NodeRowMap()->MyGID(xwallgid))  // just in case
       FOUR_C_THROW("not on proc");
-    DRT::Node* xwallnode = discret_->gNode(xwallgid);
+    CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
     if (!xwallnode) FOUR_C_THROW("Cannot find node");
     double x = (*wdistx)[j];
     double y = (*wdisty)[j];

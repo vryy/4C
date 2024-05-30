@@ -75,7 +75,7 @@ namespace FLD
       slavenodelids_.clear();
       rotmat_.Clear();
 
-      DRT::Node** nodes = ele->Nodes();
+      CORE::Nodes::Node** nodes = ele->Nodes();
       slavenodelids_.reserve(elenumnodereal);
 
       for (int inode = 0; inode < elenumnodereal; inode++)

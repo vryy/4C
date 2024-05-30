@@ -64,7 +64,7 @@ namespace DRT::ELEMENTS
         CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
     CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-        DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+        CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
     static SolidPoroType& Instance();
 
@@ -109,7 +109,7 @@ namespace DRT::ELEMENTS
 
     std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
 
-    [[nodiscard]] int NumDofPerNode(const DRT::Node& node) const override { return 3; }
+    [[nodiscard]] int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 3; }
 
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 

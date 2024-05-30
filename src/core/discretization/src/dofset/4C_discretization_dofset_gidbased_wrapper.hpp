@@ -17,8 +17,8 @@
 
 #include "4C_discretization_dofset_base.hpp"
 #include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_node.hpp"
 
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
@@ -82,21 +82,21 @@ namespace CORE::Dofsets
 
     /// get number of nodal dofs
     int NumDofPerNode(
-        const DRT::Node& node  ///< node, for which you want to know the number of dofs
+        const CORE::Nodes::Node& node  ///< node, for which you want to know the number of dofs
     ) const override
     {
       if (not sourcedis_->HaveGlobalNode(node.Id())) return 0;
-      DRT::Node* sourcenode = sourcedis_->gNode(node.Id());
+      CORE::Nodes::Node* sourcenode = sourcedis_->gNode(node.Id());
       check_is_assigned();
       return sourcedofset_->NumDofPerNode(*sourcenode);
     };
 
     /// Get number of dofs for given node
-    int NumDof(const DRT::Node* node) const override
+    int NumDof(const CORE::Nodes::Node* node) const override
     {
       check_is_assigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return 0;
-      DRT::Node* sourcenode = sourcedis_->gNode(node->Id());
+      CORE::Nodes::Node* sourcenode = sourcedis_->gNode(node->Id());
       return sourcedofset_->NumDof(sourcenode);
     }
 
@@ -111,32 +111,32 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of a dof for given node
-    int Dof(const DRT::Node* node, int dof) const override
+    int Dof(const CORE::Nodes::Node* node, int dof) const override
     {
       check_is_assigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return -1;
-      DRT::Node* sourcenode = sourcedis_->gNode(node->Id());
+      CORE::Nodes::Node* sourcenode = sourcedis_->gNode(node->Id());
       return sourcedofset_->Dof(sourcenode, dof);
     }
 
     /// Get the gid of all dofs of a node
-    std::vector<int> Dof(const DRT::Node* node) const override
+    std::vector<int> Dof(const CORE::Nodes::Node* node) const override
     {
       check_is_assigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return std::vector<int>();
-      DRT::Node* sourcenode = sourcedis_->gNode(node->Id());
+      CORE::Nodes::Node* sourcenode = sourcedis_->gNode(node->Id());
       return sourcedofset_->Dof(sourcenode);
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
-        const DRT::Node* node,       ///< the node
+    void Dof(std::vector<int>& dof,     ///< vector of dof gids (to be filled)
+        const CORE::Nodes::Node* node,  ///< the node
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
       check_is_assigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
-      DRT::Node* sourcenode = sourcedis_->gNode(node->Id());
+      CORE::Nodes::Node* sourcenode = sourcedis_->gNode(node->Id());
       return sourcedofset_->Dof(dof, sourcenode, nodaldofset);
     }
 
@@ -151,36 +151,36 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const DRT::Node* node, std::vector<int>& lm) const override
+    void Dof(const CORE::Nodes::Node* node, std::vector<int>& lm) const override
     {
       check_is_assigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
-      DRT::Node* sourcenode = sourcedis_->gNode(node->Id());
+      CORE::Nodes::Node* sourcenode = sourcedis_->gNode(node->Id());
       return sourcedofset_->Dof(sourcenode, lm);
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const DRT::Node* node,  ///< node, for which you want the dof positions
-        const unsigned startindex,   ///< first index of vector at which will be written to end
-        std::vector<int>& lm         ///< already allocated vector to be filled with dof positions
+    void Dof(const CORE::Nodes::Node* node,  ///< node, for which you want the dof positions
+        const unsigned startindex,  ///< first index of vector at which will be written to end
+        std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
     ) const override
     {
       check_is_assigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
-      DRT::Node* sourcenode = sourcedis_->gNode(node->Id());
+      CORE::Nodes::Node* sourcenode = sourcedis_->gNode(node->Id());
       return sourcedofset_->Dof(sourcenode, startindex, lm);
     }
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
     void Dof(const CORE::Elements::Element*
-                 element,       ///< element which provides its expected number of DOFs per node
-        const DRT::Node* node,  ///< node, for which you want the DOF positions
-        std::vector<int>& lm    ///< already allocated vector to be filled with DOF positions
+                 element,  ///< element which provides its expected number of DOFs per node
+        const CORE::Nodes::Node* node,  ///< node, for which you want the DOF positions
+        std::vector<int>& lm  ///< already allocated vector to be filled with DOF positions
     ) const override
     {
       check_is_assigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
-      DRT::Node* sourcenode = sourcedis_->gNode(node->Id());
+      CORE::Nodes::Node* sourcenode = sourcedis_->gNode(node->Id());
       CORE::Elements::Element* sourceele = sourcedis_->gElement(element->Id());
       return sourcedofset_->Dof(sourceele, sourcenode, lm);
     }

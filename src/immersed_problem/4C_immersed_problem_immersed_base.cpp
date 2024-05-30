@@ -88,7 +88,7 @@ void IMMERSED::ImmersedBase::build_condition_dof_map(
     // get node id
     int nodeid = cond_nodes->at(node);
     // get node pointer
-    DRT::Node* node_ptr = dis->gNode(nodeid);
+    CORE::Nodes::Node* node_ptr = dis->gNode(nodeid);
     if (node_ptr == nullptr) FOUR_C_THROW("Could not get node with id %d", nodeid);
 
     if (dis->NodeRowMap()->LID(nodeid) != -1)

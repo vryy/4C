@@ -168,7 +168,7 @@ int DRT::ELEMENTS::Shell7pScatraType::Initialize(DRT::Discretization& dis)
 
 
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Shell7pScatraType::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   auto* shell = dynamic_cast<DRT::ELEMENTS::Shell7pScatra*>(node.Elements()[0]);
   if (!shell) FOUR_C_THROW("Cannot cast to Shell");

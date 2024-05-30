@@ -809,7 +809,7 @@ void CONTACT::SelfBinaryTree::calculate_dual_graph(
     // get current elements and its nodes
     CORE::Elements::Element* element = discret().gElement(gid);
     if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
-    DRT::Node** nodes = element->Nodes();
+    CORE::Nodes::Node** nodes = element->Nodes();
     if (!nodes) FOUR_C_THROW("Null pointer!");
 
     // first tree node of one dual edge which includes current element is the element itself saved
@@ -833,7 +833,7 @@ void CONTACT::SelfBinaryTree::calculate_dual_graph(
     // first-order nodes are always stored before higher-order nodes)
     for (int j = 0; j < numnode; ++j)
     {
-      DRT::Node* node = nodes[j];
+      CORE::Nodes::Node* node = nodes[j];
       if (!node) FOUR_C_THROW("Null pointer!");
 
       // adjacent elements of current node
@@ -1472,7 +1472,7 @@ void CONTACT::SelfBinaryTree::master_slave_sorting(int eleID, bool isslave)
     if (celement->IsSlave())
       for (int i = 0; i < (int)element->num_node(); i++)
       {
-        DRT::Node* node = element->Nodes()[i];
+        CORE::Nodes::Node* node = element->Nodes()[i];
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
         cnode->SetSlave() = isslave;
       }
@@ -1574,7 +1574,7 @@ void CONTACT::SelfBinaryTree::search_contact()
       // reset nodes to master
       for (int i = 0; i < (int)element->num_node(); ++i)
       {
-        DRT::Node* node = element->Nodes()[i];
+        CORE::Nodes::Node* node = element->Nodes()[i];
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
         cnode->SetSlave() = false;
       }
@@ -1594,7 +1594,7 @@ void CONTACT::SelfBinaryTree::search_contact()
     // reset nodes to master
     for (int i = 0; i < (int)element->num_node(); ++i)
     {
-      DRT::Node* node = element->Nodes()[i];
+      CORE::Nodes::Node* node = element->Nodes()[i];
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       if (cnode->IsOnCornerEdge())
       {

@@ -13,7 +13,7 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_element.hpp"
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -99,7 +99,7 @@ namespace DRT
        * Adds entry at the end of nodeid_ and node_ pointers
        *///                                                  (public) ghamm 11/12
       /*------------------------------------------------------------------------*/
-      virtual void AddNode(DRT::Node* nodeptr  //!< (in): pointer to node to be added
+      virtual void AddNode(CORE::Nodes::Node* nodeptr  //!< (in): pointer to node to be added
       )
       {
         ELEMENT::nodeid_.push_back(nodeptr->Id());
@@ -118,7 +118,7 @@ namespace DRT
        *///                                                  (public) ghamm 11/12
       /*------------------------------------------------------------------------*/
       virtual void AddNode(const int gid,  //!< (in): global id of node to be added
-          DRT::Node* nodeptr               //!< (in): pointer to node to be added
+          CORE::Nodes::Node* nodeptr       //!< (in): pointer to node to be added
       )
       {
         ELEMENT::nodeid_.push_back(gid);

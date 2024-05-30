@@ -28,10 +28,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT
+namespace CORE::Nodes
 {
   class Node;
-}  // namespace DRT
+}
 
 namespace CORE::Elements
 {

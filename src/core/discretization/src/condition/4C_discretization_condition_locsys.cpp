@@ -204,7 +204,7 @@ void CORE::Conditions::LocsysManager::Update(const double time,
               double functfac = 1.0;
               if ((*funct)[j] > 0)
               {
-                DRT::Node* node = Discret().gNode(nodeGID);
+                CORE::Nodes::Node* node = Discret().gNode(nodeGID);
 
                 // Determine node position, which shall be used for evaluating the function, and
                 // evaluate it
@@ -281,7 +281,7 @@ void CORE::Conditions::LocsysManager::Update(const double time,
   for (int i = 0; i < noderowmap->NumMyElements(); ++i)
   {
     int nodeGID = noderowmap->GID(i);
-    DRT::Node* node = Discret().gNode(nodeGID);
+    CORE::Nodes::Node* node = Discret().gNode(nodeGID);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", nodeGID);
     std::vector<int> dofs = Discret().Dof(0, node);
     int numdof = (int)dofs.size();
@@ -603,7 +603,7 @@ void CORE::Conditions::LocsysManager::calc_rotation_vector_for_normal_system(
     bool haveNode = discret_.HaveGlobalNode(nodeGID);
     if (!haveNode) continue;
 
-    DRT::Node* node = discret_.gNode(nodeGID);
+    CORE::Nodes::Node* node = discret_.gNode(nodeGID);
 
     // Don't care about nodes that the processor doesn't own
     bool isOwner = (node->Owner() == myrank);

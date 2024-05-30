@@ -85,7 +85,7 @@ bool CONTACT::INTEGRATOR::find_feasible_master_elements(MORTAR::Element& sele,
 
       // --- DEBUGGING --------------------------------------------------------
 #ifdef DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
-      DRT::Node** snodes = sele.Nodes();
+      CORE::Nodes::Node** snodes = sele.Nodes();
       if ((snodes[0]->Id() == 248 or snodes[1]->Id() == 251))
       //      if ( sele.Id() == 1261 )
       {
@@ -156,7 +156,7 @@ bool CONTACT::INTEGRATOR::find_feasible_master_elements(MORTAR::Element& sele,
 
   // --- DEBUGGING --------------------------------------------------------
 #ifdef DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
   const std::vector<int> desired_nids = {247, 248, 251};
   unsigned count = 0;
 
@@ -184,7 +184,7 @@ bool CONTACT::INTEGRATOR::find_feasible_master_elements(MORTAR::Element& sele,
       std::cout << "\n";
       std::cout << "mele " << proj.first->Id() << "[" << proj.first << "]"
                 << "\n";
-      DRT::Node** mnodes = proj.first->Nodes();
+      CORE::Nodes::Node** mnodes = proj.first->Nodes();
       std::cout << "\nMaster-nodes: ";
       for (unsigned i = 0; i < static_cast<unsigned>(proj.first->num_node()); ++i)
       {
@@ -806,7 +806,7 @@ template <unsigned probdim, unsigned numnode>
 void CONTACT::INTEGRATOR::GetElementNodalDofs(
     const MORTAR::Element& ele, CORE::LINALG::Matrix<probdim, numnode, int>& nodal_dofs)
 {
-  const DRT::Node* const* mynodes = ele.Nodes();
+  const CORE::Nodes::Node* const* mynodes = ele.Nodes();
 
   for (unsigned i = 0; i < numnode; ++i)
   {

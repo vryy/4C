@@ -82,7 +82,7 @@ void CROSSLINKING::CrosslinkerNodeDataContainer::Unpack(
  *----------------------------------------------------------------------------*/
 CROSSLINKING::CrosslinkerNode::CrosslinkerNode(
     int id, const std::vector<double>& coords, const int owner)
-    : DRT::Node(id, coords, owner), mat_(Teuchos::null)
+    : CORE::Nodes::Node(id, coords, owner), mat_(Teuchos::null)
 {
   return;
 }
@@ -91,7 +91,7 @@ CROSSLINKING::CrosslinkerNode::CrosslinkerNode(
  |  copy-ctor (public)                                         eichinger 10/16|
  *----------------------------------------------------------------------------*/
 CROSSLINKING::CrosslinkerNode::CrosslinkerNode(const CROSSLINKING::CrosslinkerNode& old)
-    : DRT::Node(old)
+    : CORE::Nodes::Node(old)
 {
   FOUR_C_THROW(
       "Copy constructor of CrosslinkerNodeDataContainer needs to "
@@ -125,7 +125,7 @@ void CROSSLINKING::CrosslinkerNode::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Crosslinker ";
-  DRT::Node::Print(os);
+  CORE::Nodes::Node::Print(os);
 
 
   return;
@@ -143,8 +143,8 @@ void CROSSLINKING::CrosslinkerNode::Pack(CORE::COMM::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
-  // add base class DRT::Node
-  DRT::Node::Pack(data);
+  // add base class CORE::Nodes::Node
+  CORE::Nodes::Node::Pack(data);
 
   // add material
   bool hasmat = (mat_ != Teuchos::null);
@@ -164,10 +164,10 @@ void CROSSLINKING::CrosslinkerNode::Unpack(const std::vector<char>& data)
 
   CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  // extract base class DRT::Node
+  // extract base class CORE::Nodes::Node
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::Node::Unpack(basedata);
+  CORE::Nodes::Node::Unpack(basedata);
 
   // mat
   bool hasmat = ExtractInt(position, data);

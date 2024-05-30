@@ -122,7 +122,7 @@ void PostVtuWriterNode::write_geo()
       celltypes.push_back(IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).first);
       const std::vector<int>& numbering =
           IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
-      const DRT::Node* const* nodes = ele->Nodes();
+      const CORE::Nodes::Node* const* nodes = ele->Nodes();
       for (int n = 0; n < ele->num_node(); ++n)
       {
         connectivity.push_back(nodes[numbering[n]]->LID());

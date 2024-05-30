@@ -62,7 +62,7 @@ void DRT::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params,
     params.set<Teuchos::RCP<CORE::MAT::Material>>("scatramat", scatramat);
   }
   CORE::LINALG::Matrix<2, 1> xrefe(true);
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < numnode; ++i)
   {
     const auto& x = nodes[i]->X();

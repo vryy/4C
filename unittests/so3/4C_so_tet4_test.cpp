@@ -32,7 +32,7 @@ namespace
       std::vector<std::vector<double>> coords = {
           {-0.1, -0.2, -0.5}, {1.25, 0.23, 0.66}, {1.20, 0.99, 0.5}, {-0.10, -0.2, 1.96}};
       for (int lid = 0; lid < 4; ++lid)
-        testdis_->AddNode(Teuchos::rcp(new DRT::Node(lid, coords[lid], 0)));
+        testdis_->AddNode(Teuchos::rcp(new CORE::Nodes::Node(lid, coords[lid], 0)));
 
       // create 1 element
       testele_ = Teuchos::rcp(new DRT::ELEMENTS::SoTet4(0, 0));
@@ -69,7 +69,7 @@ namespace
   TEST_F(SoTet4Test, TestNumDofPerNode)
   {
     std::vector<double> pd = {1, 2, 3};
-    DRT::Node node_dummy(0, pd, false);
+    CORE::Nodes::Node node_dummy(0, pd, false);
     EXPECT_EQ(testele_->NumDofPerNode(node_dummy), 3);
     EXPECT_EQ(copytestele_->NumDofPerNode(node_dummy), 3);
   }

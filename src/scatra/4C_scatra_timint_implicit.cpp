@@ -1233,7 +1233,7 @@ void SCATRA::ScaTraTimIntImpl::set_velocity_field()
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        DRT::Node* lnode = discret_->lRowNode(lnodeid);
+        CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
         // get dofs associated with current node
         std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
@@ -1771,7 +1771,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        DRT::Node* lnode = discret_->lRowNode(lnodeid);
+        CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->Dof(0, lnode);
 
@@ -1903,7 +1903,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        DRT::Node* lnode = discret_->lRowNode(lnodeid);
+        CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->Dof(0, lnode);
 
@@ -1962,7 +1962,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        DRT::Node* lnode = discret_->lRowNode(lnodeid);
+        CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->Dof(0, lnode);
 
@@ -2005,7 +2005,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        DRT::Node* lnode = discret_->lRowNode(lnodeid);
+        CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->Dof(0, lnode);
 
@@ -2060,7 +2060,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        DRT::Node* lnode = discret_->lRowNode(lnodeid);
+        CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->Dof(0, lnode);
 
@@ -2097,7 +2097,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        DRT::Node* lnode = discret_->lRowNode(lnodeid);
+        CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->Dof(0, lnode);
 
@@ -2137,7 +2137,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        DRT::Node* lnode = discret_->lRowNode(lnodeid);
+        CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->Dof(0, lnode);
 
@@ -2327,7 +2327,7 @@ void SCATRA::ScaTraTimIntImpl::update_krylov_space_projection()
       // set the current kernel basis vector - not very nice
       for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
       {
-        DRT::Node* node = discret_->lRowNode(inode);
+        CORE::Nodes::Node* node = discret_->lRowNode(inode);
         std::vector<int> gdof = discret_->Dof(0, node);
         int err = c->ReplaceGlobalValue(gdof[modeids[imode]], imode, 1);
         if (err != 0) FOUR_C_THROW("error while inserting value into c");
@@ -3076,7 +3076,7 @@ SCATRA::ScaTraTimIntImpl::convert_dof_vector_to_componentwise_node_vector(
       Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(), nsd_, true));
   for (int inode = 0; inode < discret_->NumMyRowNodes(); ++inode)
   {
-    DRT::Node* node = discret_->lRowNode(inode);
+    CORE::Nodes::Node* node = discret_->lRowNode(inode);
     for (int idim = 0; idim < nsd_; ++idim)
       (*componentwise_node_vector)[idim][inode] =
           (*dof_vector)[dof_vector->Map().LID(discret_->Dof(nds, node, idim))];
@@ -3263,7 +3263,7 @@ void SCATRA::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
       if (discret_->NodeRowMap()->MyGID(inode))
       {
         // extract node
-        DRT::Node* node = discret_->gNode(inode);
+        CORE::Nodes::Node* node = discret_->gNode(inode);
         if (node == nullptr)
           FOUR_C_THROW(
               "Cannot extract node with global ID %d from micro-scale discretization!", inode);
@@ -3757,7 +3757,7 @@ void SCATRA::ScaTraTimIntImpl::calc_mean_micro_concentration()
 
         const int num_dof_element = elchmat->NumDOF();
 
-        const DRT::Node* const* nodes = ele->Nodes();
+        const CORE::Nodes::Node* const* nodes = ele->Nodes();
         for (int inode = 0; inode < ele->num_node(); ++inode)
         {
           if (num_dof_element == 3)

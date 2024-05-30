@@ -55,7 +55,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::Setup()
   // Set reference nodal positions for the solid element
   for (unsigned int n = 0; n < solid::n_nodes_; ++n)
   {
-    const DRT::Node* node = this->Element2()->Nodes()[n];
+    const CORE::Nodes::Node* node = this->Element2()->Nodes()[n];
     for (int d = 0; d < 3; ++d) ele2posref_.element_position_(3 * n + d) = node->X()[d];
   }
 

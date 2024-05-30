@@ -27,8 +27,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
+
+namespace CORE::Nodes
+{
+  class Node;
+}
 
 namespace CORE::Elements
 {
@@ -123,8 +127,9 @@ namespace XFEM
       /*! split the discretization by removing the given elements and nodes in
        *  the source discretization and adding them to the target discretization */
       void split_discretization(Teuchos::RCP<DRT::Discretization> sourcedis,
-          Teuchos::RCP<DRT::Discretization> targetdis, const std::map<int, DRT::Node*>& sourcenodes,
-          const std::map<int, DRT::Node*>& sourcegnodes,
+          Teuchos::RCP<DRT::Discretization> targetdis,
+          const std::map<int, CORE::Nodes::Node*>& sourcenodes,
+          const std::map<int, CORE::Nodes::Node*>& sourcegnodes,
           const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& sourceelements,
           const std::vector<std::string>& conditions_to_copy) const;
 

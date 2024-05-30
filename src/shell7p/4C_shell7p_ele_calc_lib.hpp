@@ -11,8 +11,8 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_element_integration_select.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_transformation.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_shell7p_ele.hpp"
@@ -73,8 +73,8 @@ namespace DRT::ELEMENTS::SHELL
    * @param factor (int)  : Scaling factor due to SDC
    */
   template <CORE::FE::CellType distype>
-  DRT::ELEMENTS::SHELL::NodalCoordinates<distype> EvaluateNodalCoordinates(DRT::Node** nodes,
-      std::vector<double>& disp, const double& thickness,
+  DRT::ELEMENTS::SHELL::NodalCoordinates<distype> EvaluateNodalCoordinates(
+      CORE::Nodes::Node** nodes, std::vector<double>& disp, const double& thickness,
       const CORE::LINALG::SerialDenseMatrix& a3_reference, const double factor)
   {
     DRT::ELEMENTS::SHELL::NodalCoordinates<distype> coordinates;

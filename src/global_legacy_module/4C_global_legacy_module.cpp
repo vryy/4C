@@ -31,6 +31,7 @@
 #include "4C_contact_element.hpp"
 #include "4C_contact_friction_node.hpp"
 #include "4C_contact_node.hpp"
+#include "4C_discretization_fem_general_immersed_node.hpp"
 #include "4C_elemag_diff_ele.hpp"
 #include "4C_elemag_ele.hpp"
 #include "4C_fluid_ele.hpp"
@@ -42,7 +43,6 @@
 #include "4C_fluid_functions.hpp"
 #include "4C_fluid_xfluid_functions.hpp"
 #include "4C_fluid_xfluid_functions_combust.hpp"
-#include "4C_lib_immersed_node.hpp"
 #include "4C_lubrication_ele.hpp"
 #include "4C_mat_aaa_mixedeffects.hpp"
 #include "4C_mat_aaagasser.hpp"
@@ -186,8 +186,9 @@ namespace
     // Perform a dummy operation for the side-effect of forcing registration.
     std::stringstream s;
 
-    s << DRT::NodeType::Instance().Name() << " " << DRT::NURBS::ControlPointType::Instance().Name()
-      << " " << DRT::ImmersedNodeType::Instance().Name() << " "
+    s << CORE::Nodes::NodeType::Instance().Name() << " "
+      << DRT::NURBS::ControlPointType::Instance().Name() << " "
+      << CORE::Nodes::ImmersedNodeType::Instance().Name() << " "
       << CROSSLINKING::CrosslinkerNodeType::Instance().Name() << " "
       << DRT::MESHFREE::MeshfreeMultiBinType::Instance().Name() << " "
       << DRT::ELEMENTS::Beam3rType::Instance().Name() << " "

@@ -119,8 +119,9 @@ namespace FSI
      *  domain = {fluid, structure}.
      */
     void create_node_owner_relationship(std::map<int, int>* nodeOwner,
-        std::map<int, std::list<int>>* inverseNodeOwner, std::map<int, DRT::Node*>* fluidnodesPtr,
-        std::map<int, DRT::Node*>* structuregnodesPtr,
+        std::map<int, std::list<int>>* inverseNodeOwner,
+        std::map<int, CORE::Nodes::Node*>* fluidnodesPtr,
+        std::map<int, CORE::Nodes::Node*>* structuregnodesPtr,
         Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
         const INPAR::FSI::Redistribute domain) final;
 

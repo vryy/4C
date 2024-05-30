@@ -134,7 +134,7 @@ namespace DRT
 
       HDG element: No dofs are associated with nodes
       */
-      int NumDofPerNode(const DRT::Node&) const override { return 0; }
+      int NumDofPerNode(const CORE::Nodes::Node&) const override { return 0; }
 
       /*!
       \brief Get number of degrees of freedom per face

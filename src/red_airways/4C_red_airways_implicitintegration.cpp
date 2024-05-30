@@ -2474,7 +2474,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::ExtractPressure(Teuchos::RCP<Epetra_Vecto
     double pressure = 0.0;
     if (discret_->HaveGlobalNode(gid))
     {
-      DRT::Node* node = discret_->gNode(gid);
+      CORE::Nodes::Node* node = discret_->gNode(gid);
       if (myrank_ == node->Owner())
       {
         int giddof = discret_->Dof(node, 0);

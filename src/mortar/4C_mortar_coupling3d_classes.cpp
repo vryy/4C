@@ -10,7 +10,7 @@
 
 #include "4C_mortar_coupling3d_classes.hpp"
 
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_mortar_coupling3d.hpp"
@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MORTAR::IntElement::IntElement(int lid, int id, int owner, MORTAR::Element* parele,
     const CORE::FE::CellType& shape, const int numnode, const int* nodeids,
-    std::vector<DRT::Node*> nodes, const bool isslave, const bool rewind)
+    std::vector<CORE::Nodes::Node*> nodes, const bool isslave, const bool rewind)
     : MORTAR::Element(id, owner, shape, numnode, nodeids, isslave),
       lid_(lid),
       rewind_(rewind),

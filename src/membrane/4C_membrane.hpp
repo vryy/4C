@@ -213,7 +213,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override { return noddof_; }
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return noddof_; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -527,7 +527,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented!");
@@ -556,7 +556,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented!");
@@ -598,7 +598,7 @@ namespace DRT
       \param parent: The parent shell element of this line
       \param lline: the local line number of this line w.r.t. the parent element
       */
-      MembraneLine(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
+      MembraneLine(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
           DRT::ELEMENTS::Membrane<distype2>* parent, const int lline);
 
       /*!
@@ -686,7 +686,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override { return 3; }
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 3; }
 
       /*!
       \brief Get number of degrees of freedom per element

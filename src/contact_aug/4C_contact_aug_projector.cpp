@@ -166,7 +166,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
 {
   setup();
 
-  const DRT::Node* const* ref_nodes = ref_ele.Nodes();
+  const CORE::Nodes::Node* const* ref_nodes = ref_ele.Nodes();
 
   const CORE::LINALG::Matrix<REF_DIM, 1> rxi(ref_xi, true);
 
@@ -186,7 +186,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
   }
 
   // get the spatial coordinates of the target element
-  const DRT::Node* const* tnodes = target_ele.Nodes();
+  const CORE::Nodes::Node* const* tnodes = target_ele.Nodes();
 
   for (unsigned i = 0; i < TAR_NUMNODES; ++i)
   {

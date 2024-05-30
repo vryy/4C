@@ -21,8 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
+
+namespace CORE::Nodes
+{
+  class Node;
+}
 
 namespace CORE::Elements
 {
@@ -133,7 +137,8 @@ namespace MORTAR
        *  Stores control point weight
        *
        *  \author Farah */
-      void prepare_nurbs_node(const DRT::Node* node, Teuchos::RCP<MORTAR::Node> mnode) const;
+      void prepare_nurbs_node(
+          const CORE::Nodes::Node* node, Teuchos::RCP<MORTAR::Node> mnode) const;
 
       //!@}
 

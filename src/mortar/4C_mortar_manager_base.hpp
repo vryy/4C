@@ -33,7 +33,6 @@ namespace IO
 
 namespace DRT
 {
-  class Node;
   class Discretization;
 }  // namespace DRT
 

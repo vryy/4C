@@ -15,8 +15,8 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -45,7 +45,7 @@ namespace DRT
 
       CORE::FE::shape_function<distype>(xi, funct);
 
-      const DRT::Node* const* nodes = element->Nodes();
+      const CORE::Nodes::Node* const* nodes = element->Nodes();
       const int nodedim = nodes[0]->Dim();
 
       if (!nodes)
@@ -90,7 +90,7 @@ namespace DRT
 
       CORE::FE::shape_function_deriv1<distype>(xi, deriv);
 
-      const DRT::Node* const* nodes = element->Nodes();
+      const CORE::Nodes::Node* const* nodes = element->Nodes();
       const int nodedim = nodes[0]->Dim();
 
       if (!nodes)

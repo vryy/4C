@@ -625,7 +625,7 @@ void CORE::GEO::CUT::Parallel::export_dof_set_data(bool include_inner)
 
         if (haveGlobalNode)
         {
-          DRT::Node* node = discret_->gNode(nid);
+          CORE::Nodes::Node* node = discret_->gNode(nid);
 
           if (node->Owner() == myrank_)
           {
@@ -677,7 +677,7 @@ void CORE::GEO::CUT::Parallel::export_dof_set_data(bool include_inner)
         if (haveGlobalNode)  // node on this proc available as row or col node
         {
           // std::cout << "in haveGlobalNode for node " << nid << std::endl;
-          DRT::Node* node = discret_->gNode(nid);
+          CORE::Nodes::Node* node = discret_->gNode(nid);
           if (node->Owner() == myrank_)
           {
             int new_dofset_number = -1;

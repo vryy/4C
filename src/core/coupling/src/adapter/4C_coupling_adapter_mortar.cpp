@@ -58,12 +58,12 @@ void CORE::ADAPTER::CouplingMortar::Setup(
 )
 {
   // initialize maps for row nodes
-  std::map<int, DRT::Node*> masternodes;
-  std::map<int, DRT::Node*> slavenodes;
+  std::map<int, CORE::Nodes::Node*> masternodes;
+  std::map<int, CORE::Nodes::Node*> slavenodes;
 
   // initialize maps for column nodes
-  std::map<int, DRT::Node*> mastergnodes;
-  std::map<int, DRT::Node*> slavegnodes;
+  std::map<int, CORE::Nodes::Node*> mastergnodes;
+  std::map<int, CORE::Nodes::Node*> slavegnodes;
 
   // initialize maps for elements
   std::map<int, Teuchos::RCP<CORE::Elements::Element>> masterelements;
@@ -218,7 +218,7 @@ void CORE::ADAPTER::CouplingMortar::check_slave_dirichlet_overlap(
   for (int j = 0; j < interface_->SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->SlaveRowNodes()->GID(j);
-    DRT::Node* node = interface_->Discret().gNode(gid);
+    CORE::Nodes::Node* node = interface_->Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
@@ -256,9 +256,10 @@ void CORE::ADAPTER::CouplingMortar::check_slave_dirichlet_overlap(
 void CORE::ADAPTER::CouplingMortar::setup_interface(
     const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
     const Teuchos::RCP<DRT::Discretization>& slavedis,   ///< slave discretization
-    const std::vector<int>& coupleddof,             ///< vector defining coupled degrees of freedom
-    const std::map<int, DRT::Node*>& mastergnodes,  ///< master nodes, including ghosted nodes
-    const std::map<int, DRT::Node*>& slavegnodes,   ///< slave nodes, including ghosted nodes
+    const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
+    const std::map<int, CORE::Nodes::Node*>&
+        mastergnodes,  ///< master nodes, including ghosted nodes
+    const std::map<int, CORE::Nodes::Node*>& slavegnodes,  ///< slave nodes, including ghosted nodes
     const std::map<int, Teuchos::RCP<CORE::Elements::Element>>&
         masterelements,                                                         ///< master elements
     const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements,  ///< slave elements
@@ -330,10 +331,10 @@ void CORE::ADAPTER::CouplingMortar::setup_interface(
     if (coupleddof[ii] == 1) ++numcoupleddof;
 
   // feeding master nodes to the interface including ghosted nodes
-  std::map<int, DRT::Node*>::const_iterator nodeiter;
+  std::map<int, CORE::Nodes::Node*>::const_iterator nodeiter;
   for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
   {
-    DRT::Node* node = nodeiter->second;
+    CORE::Nodes::Node* node = nodeiter->second;
     // vector containing only the gids of the coupled dofs (size numcoupleddof)
     std::vector<int> dofids(numcoupleddof);
     int ii = 0;
@@ -358,7 +359,7 @@ void CORE::ADAPTER::CouplingMortar::setup_interface(
   // feeding slave nodes to the interface including ghosted nodes
   for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
   {
-    DRT::Node* node = nodeiter->second;
+    CORE::Nodes::Node* node = nodeiter->second;
     // vector containing only the gids of the coupled dofs (size numcoupleddof)
     std::vector<int> dofids(numcoupleddof);
     int ii = 0;
@@ -520,7 +521,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   for (int j = 0; j < interface_->SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->SlaveRowNodes()->GID(j);
-    DRT::Node* node = interface_->Discret().gNode(gid);
+    CORE::Nodes::Node* node = interface_->Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
@@ -560,7 +561,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   for (int j = 0; j < interface_->MasterRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->MasterRowNodes()->GID(j);
-    DRT::Node* node = interface_->Discret().gNode(gid);
+    CORE::Nodes::Node* node = interface_->Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
@@ -653,7 +654,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   // interface among all processors. Thus, we loop over the fully over-
   // lapping slave column map here to keep all processors around. Then,
   // the first modification (MORTAR::Node) is always performed, but the
-  // second modification (DRT::Node) is only performed if the respective
+  // second modification (CORE::Nodes::Node) is only performed if the respective
   // node in contained in the problem node column map.
   //**********************************************************************
 
@@ -667,7 +668,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   for (int j = 0; j < interface_->MasterRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->MasterRowNodes()->GID(j);
-    DRT::Node* node = interface_->Discret().gNode(gid);
+    CORE::Nodes::Node* node = interface_->Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
@@ -716,7 +717,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
     bool isininterfacecolmap = false;
     int ilid = interface_->SlaveColNodes()->LID(gid);
     if (ilid >= 0) isininterfacecolmap = true;
-    DRT::Node* node = nullptr;
+    CORE::Nodes::Node* node = nullptr;
     MORTAR::Node* mtnode = nullptr;
     if (isininterfacecolmap)
     {
@@ -730,7 +731,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
     bool isinproblemcolmap = false;
     int lid = slavedis->NodeColMap()->LID(gid);
     if (lid >= 0) isinproblemcolmap = true;
-    DRT::Node* pnode = nullptr;
+    CORE::Nodes::Node* pnode = nullptr;
     if (isinproblemcolmap)
     {
       pnode = slavedis->gNode(gid);
@@ -740,7 +741,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
     // ... AND standard node in ALE discret if fluid=slave
     // (check if the node is available on this processor)
     bool isinproblemcolmap2 = false;
-    DRT::Node* alenode = nullptr;
+    CORE::Nodes::Node* alenode = nullptr;
     if (aledis != Teuchos::null)
     {
       int lid2 = aledis->NodeColMap()->LID(gid);
@@ -881,7 +882,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   for (int j = 0; j < interface_->SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->SlaveRowNodes()->GID(j);
-    DRT::Node* node = interface_->Discret().gNode(gid);
+    CORE::Nodes::Node* node = interface_->Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
@@ -917,7 +918,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   for (int j = 0; j < interface_->MasterRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->MasterRowNodes()->GID(j);
-    DRT::Node* node = interface_->Discret().gNode(gid);
+    CORE::Nodes::Node* node = interface_->Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 

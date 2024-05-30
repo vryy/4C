@@ -229,7 +229,7 @@ void DRT::UTILS::Dbc::read_dirichlet_condition(const DRT::Discretization& discre
   for (unsigned i = 0; i < nnode; ++i)
   {
     // do only nodes in my row map
-    DRT::Node* actnode = nullptr;
+    CORE::Nodes::Node* actnode = nullptr;
     bool isrow = true;
     int nlid = discret.NodeRowMap()->LID((*nodeids)[i]);
     if (nlid < 0)
@@ -481,7 +481,7 @@ void DRT::UTILS::Dbc::do_dirichlet_condition(const DRT::Discretization& discret,
     // do only nodes in my row map
     const int nlid = discret.NodeRowMap()->LID((*nodeids)[i]);
     if (nlid < 0) continue;
-    DRT::Node* actnode = discret.lRowNode(nlid);
+    CORE::Nodes::Node* actnode = discret.lRowNode(nlid);
 
     // call explicitly the main dofset, i.e. the first column
     std::vector<int> dofs = discret.Dof(0, actnode);

@@ -212,7 +212,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::find_opposit
   std::string newPos;
   std::array<double, 2> R_ipim;
 
-  DRT::Node* nodeA = discret_ptr_->gNode(nodeID);
+  CORE::Nodes::Node* nodeA = discret_ptr_->gNode(nodeID);
 
   switch (edge)
   {
@@ -250,7 +250,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::find_opposit
   // ToDo: Switch to ArborX
   for (auto pairId : *rveBoundaryNodeIdMap[newPos])
   {
-    DRT::Node* nodeB = discret_ptr_->gNode(pairId);
+    CORE::Nodes::Node* nodeB = discret_ptr_->gNode(pairId);
 
     if (std::abs(nodeB->X()[0] - newPosition[0]) < node_search_toler_)
     {
@@ -270,8 +270,8 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_perio
     std::map<std::string, const std::vector<int>*>& rveBoundaryNodeIdMap,
     std::map<std::string, int>& rveCornerNodeIdMap)
 {
-  std::vector<std::vector<DRT::Node*>> PBCs;
-  std::vector<DRT::Node*> PBC;
+  std::vector<std::vector<CORE::Nodes::Node*>> PBCs;
+  std::vector<CORE::Nodes::Node*> PBC;
   {
     IO::cout(IO::verbose)
         << "\nCreating Node Pairs for Periodic Boundary Conditions" << IO::endl

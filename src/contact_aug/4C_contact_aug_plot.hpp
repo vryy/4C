@@ -38,8 +38,13 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
+
+namespace CORE::Nodes
+{
+  class Node;
+}
+
 namespace STR
 {
   namespace MODELEVALUATOR
@@ -218,7 +223,7 @@ namespace CONTACT
         bool extend_file_name(std::string& file_name, const std::string& file_path) const;
 
         Teuchos::RCP<Epetra_Map> find_connected_dofs(
-            const DRT::Node* node, const DRT::Discretization& discret) const;
+            const CORE::Nodes::Node* node, const DRT::Discretization& discret) const;
       };
 
       struct Options

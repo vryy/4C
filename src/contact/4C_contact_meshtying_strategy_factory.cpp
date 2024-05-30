@@ -465,7 +465,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
         if (!discret_ptr_->NodeColMap()->MyGID(gid)) continue;
-        DRT::Node* node = discret().gNode(gid);
+        CORE::Nodes::Node* node = discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // create Node object

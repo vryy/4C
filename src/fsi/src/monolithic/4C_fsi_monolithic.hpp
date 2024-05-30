@@ -37,14 +37,17 @@ namespace ADAPTER
 
 namespace DRT
 {
-  class Node;
-
   namespace UTILS
   {
     template <typename>
     class TimIntMStep;
   }
 }  // namespace DRT
+
+namespace CORE::Nodes
+{
+  class Node;
+}
 
 namespace FSI
 {
@@ -1114,8 +1117,9 @@ namespace FSI
      *  domain = {fluid, structure}.
      */
     virtual void create_node_owner_relationship(std::map<int, int>* nodeOwner,
-        std::map<int, std::list<int>>* inverseNodeOwner, std::map<int, DRT::Node*>* fluidnodesPtr,
-        std::map<int, DRT::Node*>* structuregnodesPtr,
+        std::map<int, std::list<int>>* inverseNodeOwner,
+        std::map<int, CORE::Nodes::Node*>* fluidnodesPtr,
+        std::map<int, CORE::Nodes::Node*>* structuregnodesPtr,
         Teuchos::RCP<DRT::Discretization> structuredis,  ///< structure discretization
         Teuchos::RCP<DRT::Discretization> fluiddis,      ///< fluid discretization
         const INPAR::FSI::Redistribute domain) = 0;
@@ -1126,8 +1130,9 @@ namespace FSI
      * in the map \c structureToFluidMap as structurenode -- fluidnode.
      */
     virtual void create_interface_mapping(Teuchos::RCP<DRT::Discretization> structuredis,
-        Teuchos::RCP<DRT::Discretization> fluiddis, std::map<int, DRT::Node*>* fluidnodesPtr,
-        std::map<int, DRT::Node*>* structuregnodesPtr,
+        Teuchos::RCP<DRT::Discretization> fluiddis,
+        std::map<int, CORE::Nodes::Node*>* fluidnodesPtr,
+        std::map<int, CORE::Nodes::Node*>* structuregnodesPtr,
         std::map<int, std::vector<int>>& fluidToStructureMap,
         std::map<int, std::vector<int>>& structureToFluidMap){};
 
@@ -1245,7 +1250,7 @@ namespace FSI
      *              and owner id of node
      */
     virtual void find_node_related_to_dof(
-        std::map<int, DRT::Node*>* nodes,                  ///< map of nodes with their global ids
+        std::map<int, CORE::Nodes::Node*>* nodes,          ///< map of nodes with their global ids
         int gdofid,                                        ///<  global id of dof
         Teuchos::RCP<DRT::Discretization> discretization,  ///< discretization
         int* re  ///< pointer to array with global id of node related to gdofid and owner id of node

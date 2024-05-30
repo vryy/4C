@@ -11,9 +11,9 @@
 /* headers */
 #include "4C_io_discretization_visualization_writer_nodes.hpp"
 
+#include "4C_discretization_fem_general_node.hpp"
 #include "4C_io_visualization_manager.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_node.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <utility>
@@ -54,7 +54,7 @@ namespace IO
 
 
     // loop over my nodes and collect the geometry/grid data, i.e. reference positions of nodes
-    for (const DRT::Node* node : discretization_->MyRowNodeRange())
+    for (const CORE::Nodes::Node* node : discretization_->MyRowNodeRange())
     {
       for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
       {

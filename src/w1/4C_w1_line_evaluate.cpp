@@ -727,7 +727,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::SerialDenseMatrix xrefe(numdim, nenparent);  // material coord. of element
       CORE::LINALG::SerialDenseMatrix xcurr(numdim, nenparent);  // current  coord. of element
 
-      const DRT::Node* const* nodes = parentele->Nodes();
+      const CORE::Nodes::Node* const* nodes = parentele->Nodes();
       for (int i = 0; i < nenparent; ++i)
       {
         const auto& x = nodes[i]->X();

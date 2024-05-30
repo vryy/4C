@@ -653,7 +653,7 @@ void STR::TIMINT::NoxInterface::getDofsFromElements(
   for (int egid : my_ele_gids)
   {
     CORE::Elements::Element* ele = discret_ptr->gElement(egid);
-    DRT::Node** nodes = ele->Nodes();
+    CORE::Nodes::Node** nodes = ele->Nodes();
 
     for (int i = 0; i < ele->num_node(); ++i)
     {

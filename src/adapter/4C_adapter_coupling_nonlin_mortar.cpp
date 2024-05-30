@@ -75,8 +75,8 @@ void ADAPTER::CouplingNonLinMortar::Setup(Teuchos::RCP<DRT::Discretization> mast
   Teuchos::ParameterList input;
 
   // initialize maps for column nodes
-  std::map<int, DRT::Node*> mastergnodes;
-  std::map<int, DRT::Node*> slavegnodes;
+  std::map<int, CORE::Nodes::Node*> mastergnodes;
+  std::map<int, CORE::Nodes::Node*> slavegnodes;
 
   // initialize maps for elements
   std::map<int, Teuchos::RCP<CORE::Elements::Element>> masterelements;
@@ -138,7 +138,7 @@ void ADAPTER::CouplingNonLinMortar::create_strategy(Teuchos::RCP<DRT::Discretiza
 void ADAPTER::CouplingNonLinMortar::read_mortar_condition(
     Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<DRT::Discretization> slavedis,
     std::vector<int> coupleddof, const std::string& couplingcond, Teuchos::ParameterList& input,
-    std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
+    std::map<int, CORE::Nodes::Node*>& mastergnodes, std::map<int, CORE::Nodes::Node*>& slavegnodes,
     std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
     std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements)
 {
@@ -152,8 +152,8 @@ void ADAPTER::CouplingNonLinMortar::read_mortar_condition(
   // - ....
 
   // initialize maps for row nodes
-  std::map<int, DRT::Node*> masternodes;
-  std::map<int, DRT::Node*> slavenodes;
+  std::map<int, CORE::Nodes::Node*> masternodes;
+  std::map<int, CORE::Nodes::Node*> slavenodes;
 
   // Coupling condition is defined by "MORTAR COUPLING CONDITIONS"
   // There is only one discretization (masterdis == slavedis). Therefore, the node set have to be
@@ -236,8 +236,8 @@ void ADAPTER::CouplingNonLinMortar::read_mortar_condition(
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingNonLinMortar::add_mortar_nodes(Teuchos::RCP<DRT::Discretization> masterdis,
     Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
-    Teuchos::ParameterList& input, std::map<int, DRT::Node*>& mastergnodes,
-    std::map<int, DRT::Node*>& slavegnodes,
+    Teuchos::ParameterList& input, std::map<int, CORE::Nodes::Node*>& mastergnodes,
+    std::map<int, CORE::Nodes::Node*>& slavegnodes,
     std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
     std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements,
     Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof)
@@ -276,10 +276,10 @@ void ADAPTER::CouplingNonLinMortar::add_mortar_nodes(Teuchos::RCP<DRT::Discretiz
   // ########## CHECK for a better implementation of this ###################
 
   // feeding master nodes to the interface including ghosted nodes
-  std::map<int, DRT::Node*>::const_iterator nodeiter;
+  std::map<int, CORE::Nodes::Node*>::const_iterator nodeiter;
   for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
   {
-    DRT::Node* node = nodeiter->second;
+    CORE::Nodes::Node* node = nodeiter->second;
     // vector containing only the gids of the coupled dofs (size numcoupleddof)
     std::vector<int> dofids(numcoupleddof);
     int ii = 0;
@@ -310,7 +310,7 @@ void ADAPTER::CouplingNonLinMortar::add_mortar_nodes(Teuchos::RCP<DRT::Discretiz
   // feeding slave nodes to the interface including ghosted nodes
   for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
   {
-    DRT::Node* node = nodeiter->second;
+    CORE::Nodes::Node* node = nodeiter->second;
     // vector containing only the gids of the coupled dofs (size numcoupleddof)
     std::vector<int> dofids(numcoupleddof);
     int ii = 0;
@@ -583,12 +583,12 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
     std::cout << "Generating CONTACT interface for spring dashpot condition...\n" << std::endl;
 
   // initialize maps for row nodes
-  std::map<int, DRT::Node*> slavenodes;
-  std::map<int, DRT::Node*> masternodes;
+  std::map<int, CORE::Nodes::Node*> slavenodes;
+  std::map<int, CORE::Nodes::Node*> masternodes;
 
   // initialize maps for column nodes
-  std::map<int, DRT::Node*> slavegnodes;
-  std::map<int, DRT::Node*> mastergnodes;
+  std::map<int, CORE::Nodes::Node*> slavegnodes;
+  std::map<int, CORE::Nodes::Node*> mastergnodes;
 
   // initialize maps for elements
   std::map<int, Teuchos::RCP<CORE::Elements::Element>> slaveelements;
@@ -663,7 +663,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
       CONTACT::Interface::Create(0, comm, dim, input, false);
 
   // feeding nodes to the interface including ghosted nodes
-  std::map<int, DRT::Node*>::const_iterator nodeiter;
+  std::map<int, CORE::Nodes::Node*>::const_iterator nodeiter;
 
   // feeding elements to the interface
   std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator elemiter;
@@ -675,7 +675,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   // feeding master nodes to the interface including ghosted nodes
   for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
   {
-    DRT::Node* node = nodeiter->second;
+    CORE::Nodes::Node* node = nodeiter->second;
 
     Teuchos::RCP<CONTACT::Node> mrtrnode = Teuchos::rcp(new CONTACT::FriNode(
         node->Id(), node->X(), node->Owner(), masterdis->Dof(node), false, false, false));
@@ -687,7 +687,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   // feeding slave nodes to the interface including ghosted nodes
   for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
   {
-    DRT::Node* node = nodeiter->second;
+    CORE::Nodes::Node* node = nodeiter->second;
 
     Teuchos::RCP<CONTACT::Node> mrtrnode = Teuchos::rcp(new CONTACT::FriNode(
         node->Id(), node->X(), node->Owner(), slavedis->Dof(node), true, true, false));

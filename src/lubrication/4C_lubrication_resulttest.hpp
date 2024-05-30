@@ -26,8 +26,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
+
+namespace CORE::Nodes
+{
+  class Node;
+}
 
 namespace LUBRICATION
 {
@@ -61,7 +65,7 @@ namespace LUBRICATION
    protected:
     //! get nodal result to be tested
     double result_node(const std::string quantity,  //! name of quantity to be tested
-        DRT::Node* node                             //! node carrying the result to be tested
+        CORE::Nodes::Node* node                     //! node carrying the result to be tested
     ) const;
 
     //! get special result to be tested

@@ -1194,7 +1194,7 @@ void FLD::UTILS::FluidCouplingBc::evaluate_dirichlet(
 
     if (discret_3_d_->HaveGlobalNode(gid))
     {
-      DRT::Node* node = discret_3_d_->gNode(gid);
+      CORE::Nodes::Node* node = discret_3_d_->gNode(gid);
       unsigned int numDof = discret_3_d_->NumDof(node);
       std::cout << "(" << numDof << ") dof --> ";
       for (unsigned int dof = 0; dof < numDof - 1; dof++)

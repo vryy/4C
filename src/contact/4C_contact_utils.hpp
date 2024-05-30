@@ -26,8 +26,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
+
+namespace CORE::Nodes
+{
+  class Node;
+}
 
 namespace CORE::Elements
 {
@@ -148,17 +152,18 @@ namespace CONTACT
        *  \author hiermeier \date 01/18 */
       static void detect_dbc_slave_nodes_and_elements(const DRT::Discretization& str_discret,
           const std::vector<std::vector<CORE::Conditions::Condition*>>& ccond_grps,
-          std::set<const DRT::Node*>& dbc_slave_nodes,
+          std::set<const CORE::Nodes::Node*>& dbc_slave_nodes,
           std::set<const CORE::Elements::Element*>& dbc_slave_eles);
 
      private:
-      static void detect_dbc_slave_nodes(std::map<const DRT::Node*, int>& dbc_slave_node_map,
+      static void detect_dbc_slave_nodes(
+          std::map<const CORE::Nodes::Node*, int>& dbc_slave_node_map,
           const DRT::Discretization& str_discret,
           const std::vector<const CORE::Conditions::Condition*>& sl_conds);
 
       static void detect_dbc_slave_elements(
           std::set<const CORE::Elements::Element*>& dbc_slave_eles,
-          const std::map<const DRT::Node*, int>& dbc_slave_nodes,
+          const std::map<const CORE::Nodes::Node*, int>& dbc_slave_nodes,
           const std::vector<const CORE::Conditions::Condition*>& sl_conds);
     };  // class DbcHandler
 

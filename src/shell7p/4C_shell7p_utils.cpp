@@ -326,7 +326,7 @@ namespace
 }  // namespace
 
 Teuchos::SerialDenseMatrix<int, double> STR::UTILS::SHELL::ComputeShellNullSpace(
-    DRT::Node& node, const double* x0, const CORE::LINALG::Matrix<3, 1>& dir)
+    CORE::Nodes::Node& node, const double* x0, const CORE::LINALG::Matrix<3, 1>& dir)
 {
   const auto& x = node.X();
 

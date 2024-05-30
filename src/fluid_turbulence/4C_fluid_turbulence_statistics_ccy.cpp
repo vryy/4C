@@ -159,7 +159,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
       const int numnp = actele->num_node();
 
       // get the elements control points/nodes
-      DRT::Node** nodes = actele->Nodes();
+      CORE::Nodes::Node** nodes = actele->Nodes();
 
       // acquire weights from nodes
       CORE::LINALG::SerialDenseVector weights(numnp);
@@ -622,7 +622,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     const int numnp = actele->num_node();
 
     // get the elements control points/nodes
-    DRT::Node** nodes = actele->Nodes();
+    CORE::Nodes::Node** nodes = actele->Nodes();
 
     // acquire weights from nodes
     CORE::LINALG::SerialDenseVector weights(numnp);

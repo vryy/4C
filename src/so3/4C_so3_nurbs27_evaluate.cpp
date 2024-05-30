@@ -260,7 +260,7 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::do_calc_stc_matrix(CORE::LINALG::Matrix<81
   }
 
   CORE::LINALG::Matrix<27, 1> weights;
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
     auto* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
@@ -591,7 +591,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::evaluate_neumann(Teuchos::ParameterList& pa
   if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return (0);
 
   CORE::LINALG::Matrix<27, 1> weights;
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
     weights(inode) = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode])->W();
 
@@ -704,7 +704,7 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::init_jacobian_mapping(DRT::Discretization&
   }
 
   CORE::LINALG::Matrix<27, 1> weights;
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
     auto* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
@@ -774,7 +774,7 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_nlnstiffmass(
   }
 
   CORE::LINALG::Matrix<27, 1> weights;
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
     auto* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
@@ -1097,7 +1097,7 @@ double DRT::ELEMENTS::NURBS::SoNurbs27::calc_int_energy(
   if (zero_ele) return 0.;
 
   CORE::LINALG::Matrix<27, 1> weights;
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
     auto* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);

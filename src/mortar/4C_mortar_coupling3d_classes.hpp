@@ -54,8 +54,8 @@ namespace MORTAR
     \param isslave (in):  flag indicating whether element is slave or master side
     */
     IntElement(int lid, int id, int owner, MORTAR::Element* parele, const CORE::FE::CellType& shape,
-        const int numnode, const int* nodeids, std::vector<DRT::Node*> nodes, const bool isslave,
-        const bool rewind);
+        const int numnode, const int* nodeids, std::vector<CORE::Nodes::Node*> nodes,
+        const bool isslave, const bool rewind);
 
 
     /*!
@@ -89,7 +89,7 @@ namespace MORTAR
     virtual bool MapToParent(const std::vector<CORE::GEN::Pairedvector<int, double>>& dxi,
         std::vector<CORE::GEN::Pairedvector<int, double>>& dparxi);
 
-    DRT::Node** Nodes() override
+    CORE::Nodes::Node** Nodes() override
     {
       if (parele_->Shape() != CORE::FE::CellType::nurbs9)
         return CORE::Elements::Element::Nodes();
@@ -128,7 +128,7 @@ namespace MORTAR
     // of the discretization) and once for the pseudo-node, which is only
     // stored here temporarily.
     std::vector<MORTAR::Node> nodes_;
-    std::vector<DRT::Node*> nodes_ptr_;
+    std::vector<CORE::Nodes::Node*> nodes_ptr_;
     const bool rewind_;  // if the parameter space of the int element has been rewinded
 
     MORTAR::Element* parele_;

@@ -32,7 +32,7 @@ void XFEM::UTILS::extract_node_vectors(Teuchos::RCP<DRT::Discretization> dis,
 
   for (int lid = 0; lid < dis->NumMyColNodes(); ++lid)
   {
-    const DRT::Node* node = dis->lColNode(lid);
+    const CORE::Nodes::Node* node = dis->lColNode(lid);
     std::vector<int> lm;
     dis->Dof(node, lm);
     std::vector<double> mydisp;
@@ -173,7 +173,7 @@ void XFEM::UTILS::ExtractQuantityAtElement(CORE::LINALG::SerialDenseMatrix::Base
 
 //! Extract a quantity for a node
 void XFEM::UTILS::ExtractQuantityAtNode(CORE::LINALG::SerialDenseMatrix::Base& element_vector,
-    const DRT::Node* node, const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
+    const CORE::Nodes::Node* node, const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
     Teuchos::RCP<DRT::Discretization>& dis, const int nds_vector, const unsigned int nsd)
 {
   const std::vector<int> lm = dis->Dof(nds_vector, node);

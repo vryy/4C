@@ -122,7 +122,7 @@ namespace MORTAR
       int nnode = ele.num_node();
 
       // get node number and node pointers
-      DRT::Node** mynodes = ele.Nodes();
+      CORE::Nodes::Node** mynodes = ele.Nodes();
       if (!mynodes) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
 
       // one-noded elements are directly processed here, shape independent evaluation possible
@@ -265,7 +265,7 @@ namespace MORTAR
         dual = true;
 
       // get node number and node pointers
-      DRT::Node** mynodes = ele.Nodes();
+      CORE::Nodes::Node** mynodes = ele.Nodes();
       if (!mynodes) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
 
       // one-noded elements are directly processed here, shape independent evaluation possible
@@ -443,7 +443,7 @@ namespace MORTAR
         dual = true;
 
       // get node number and node pointers
-      DRT::Node** mynodes = ele.Nodes();
+      CORE::Nodes::Node** mynodes = ele.Nodes();
       if (!mynodes) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
 
       // check for boundary nodes

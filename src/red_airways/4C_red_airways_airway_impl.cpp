@@ -45,7 +45,7 @@ namespace
     double length = 0.0;
     // get node coordinates and number of elements per node
     static const int numnode = CORE::FE::num_nodes<distype>;
-    DRT::Node** nodes = ele->Nodes();
+    CORE::Nodes::Node** nodes = ele->Nodes();
     // get airway length
     CORE::LINALG::Matrix<3, numnode> xyze;
     for (int inode = 0; inode < numnode; inode++)
@@ -68,7 +68,7 @@ namespace
   |                                                                      |
   *----------------------------------------------------------------------*/
   template <CORE::FE::CellType distype>
-  bool GetCurveValAtCond(double& bcVal, DRT::Node* node, std::string condName,
+  bool GetCurveValAtCond(double& bcVal, CORE::Nodes::Node* node, std::string condName,
       std::string optionName, std::string condType, double time)
   {
     // initialize bc value

@@ -24,12 +24,16 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Node;
 }  // namespace DRT
 
 namespace CORE::Elements
 {
   class Element;
+}
+
+namespace CORE::Nodes
+{
+  class Node;
 }
 
 namespace BINSTRATEGY
@@ -105,7 +109,8 @@ namespace BINSTRATEGY
      * @param[out] currpos current position of node
      */
     void GetCurrentNodePos(Teuchos::RCP<const DRT::Discretization> const discret,
-        DRT::Node const* node, Teuchos::RCP<const Epetra_Vector> const disnp, double* currpos);
+        CORE::Nodes::Node const* node, Teuchos::RCP<const Epetra_Vector> const disnp,
+        double* currpos);
 
   }  // namespace UTILS
 }  // namespace BINSTRATEGY

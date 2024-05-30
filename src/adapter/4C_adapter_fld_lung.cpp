@@ -91,7 +91,7 @@ void ADAPTER::FluidLung::Init()
 
   for (unsigned int i = 0; i < outflowfsinodes.size(); ++i)
   {
-    DRT::Node* actnode = discretization()->gNode(outflowfsinodes[i]);
+    CORE::Nodes::Node* actnode = discretization()->gNode(outflowfsinodes[i]);
     const std::vector<int> dof = discretization()->Dof(actnode);
 
     const int ndim = GLOBAL::Problem::Instance()->NDim();

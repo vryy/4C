@@ -734,7 +734,7 @@ void CONTACT::Node::initialize_data_container()
   for (int i = 0; i < NumElement(); ++i)
   {
     const int* snodeIds = Elements()[i]->NodeIds();
-    const DRT::Node* const* nodes = Elements()[i]->Nodes();
+    const CORE::Nodes::Node* const* nodes = Elements()[i]->Nodes();
     for (int j = 0; j < Elements()[i]->num_node(); ++j)
     {
       const int numdof = Elements()[i]->NumDofPerNode(*(nodes[j]));
@@ -925,7 +925,7 @@ void CONTACT::Node::build_averaged_edge_tangent()
               new MORTAR::Element(j, cele->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
-          std::array<DRT ::Node*, 2> nodes = {
+          std::array<CORE::Nodes::Node*, 2> nodes = {
               cele->Nodes()[nodeLIds[0]], cele->Nodes()[nodeLIds[1]]};
           lineEle->BuildNodalPointers(nodes.data());
 

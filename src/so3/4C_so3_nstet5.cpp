@@ -79,7 +79,7 @@ void DRT::ELEMENTS::NStet5Type::nodal_block_information(
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
 CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
-    DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   // TODO: switch to correct data container!
   // do nullspace for element degrees of freedom
@@ -417,7 +417,7 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::NStet5::Lines(
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet5Type::init_elementsand_maps(
-    std::map<int, DRT::ELEMENTS::NStet5*>& elecids, std::map<int, DRT::Node*>& noderids,
+    std::map<int, DRT::ELEMENTS::NStet5*>& elecids, std::map<int, CORE::Nodes::Node*>& noderids,
     const int myrank, const int numproc, DRT::Discretization& dis)
 {
   const int numele = dis.NumMyColElements();
@@ -437,7 +437,7 @@ void DRT::ELEMENTS::NStet5Type::init_elementsand_maps(
     // compute a map of all row nodes adjacent to a NStet5 element
     for (int j = 0; j < actele->num_node(); ++j)
     {
-      DRT::Node* node = actele->Nodes()[j];
+      CORE::Nodes::Node* node = actele->Nodes()[j];
       if (myrank == node->Owner()) noderids[node->Id()] = node;
     }
   }  // i
@@ -450,15 +450,17 @@ void DRT::ELEMENTS::NStet5Type::init_elementsand_maps(
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet5Type::init_adjacency(std::map<int, DRT::ELEMENTS::NStet5*>& elecids,
-    std::map<int, DRT::Node*>& noderids, std::map<int, std::vector<DRT::ELEMENTS::NStet5*>>& adjele,
-    std::map<int, std::map<int, DRT::Node*>>& adjnode, std::map<int, std::vector<int>>& adjlm,
+    std::map<int, CORE::Nodes::Node*>& noderids,
+    std::map<int, std::vector<DRT::ELEMENTS::NStet5*>>& adjele,
+    std::map<int, std::map<int, CORE::Nodes::Node*>>& adjnode,
+    std::map<int, std::vector<int>>& adjlm,
     std::map<int, std::map<int, std::vector<int>>>& adjsubele,
     std::map<int, std::vector<std::vector<std::vector<int>>>>& adjlmlm, DRT::Discretization& dis)
 {
-  std::map<int, DRT::Node*>::iterator node;
+  std::map<int, CORE::Nodes::Node*>::iterator node;
   for (node = noderids.begin(); node != noderids.end(); ++node)
   {
-    DRT::Node* nodeL = node->second;
+    CORE::Nodes::Node* nodeL = node->second;
     const int nodeidL = nodeL->Id();
 
     //-----------------------------------------------------------------
@@ -475,10 +477,10 @@ void DRT::ELEMENTS::NStet5Type::init_adjacency(std::map<int, DRT::ELEMENTS::NSte
 
     //-----------------------------------------------------------------
     // patch of all nodes adjacent to adjacent elements
-    std::map<int, DRT::Node*> nodepatch;
+    std::map<int, CORE::Nodes::Node*> nodepatch;
     for (auto& j : myadjele)
     {
-      DRT::Node** nodes = j->Nodes();
+      CORE::Nodes::Node** nodes = j->Nodes();
       for (int k = 0; k < j->num_node(); ++k) nodepatch[nodes[k]->Id()] = nodes[k];
     }
     adjnode[nodeidL] = nodepatch;
@@ -489,7 +491,7 @@ void DRT::ELEMENTS::NStet5Type::init_adjacency(std::map<int, DRT::ELEMENTS::NSte
 
     // location and ownership vector of nodal patch
     std::vector<int> lm(ndofperpatch);
-    std::map<int, DRT::Node*>::iterator pnode;
+    std::map<int, CORE::Nodes::Node*>::iterator pnode;
     int count = 0;
     // add dofs of nodes
     for (pnode = nodepatch.begin(); pnode != nodepatch.end(); ++pnode)

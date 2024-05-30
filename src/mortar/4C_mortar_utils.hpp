@@ -230,7 +230,7 @@ namespace MORTAR
     store control point weight
 
     */
-    void prepare_nurbs_node(DRT::Node* node, Teuchos::RCP<MORTAR::Node> mnode);
+    void prepare_nurbs_node(CORE::Nodes::Node* node, Teuchos::RCP<MORTAR::Node> mnode);
 
     void MortarMatrixCondensation(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& k,
         const std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>>& p);

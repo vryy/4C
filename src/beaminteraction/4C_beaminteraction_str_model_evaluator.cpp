@@ -890,7 +890,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistribution_
   for (int i = 0; i < discret_ptr_->NumMyRowNodes(); ++i)
   {
     // get a pointer at i-th row node
-    DRT::Node* node = discret_ptr_->lRowNode(i);
+    CORE::Nodes::Node* node = discret_ptr_->lRowNode(i);
 
     /* Hermite Interpolation: Check whether node is a beam node which is NOT
      * used for centerline interpolation if so, we simply skip it because

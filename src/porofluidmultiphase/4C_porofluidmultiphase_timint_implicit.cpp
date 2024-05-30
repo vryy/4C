@@ -844,7 +844,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_additional_dbc_for_vol_frac_press()
     // TODO: this works only if we have the same number of phases in every element
     if (nummat == numfluidphases) return;
 
-    DRT::Node** nodes = myele->Nodes();
+    CORE::Nodes::Node** nodes = myele->Nodes();
     for (int inode = 0; inode < (myele->num_node()); inode++)
     {
       if (nodes[inode]->Owner() == myrank_)
@@ -1955,7 +1955,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        DRT::Node* lnode = discret_->lRowNode(lnodeid);
+        CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->Dof(0, lnode);
 

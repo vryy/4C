@@ -14,7 +14,7 @@
 
 #include "4C_contact_aug_contact_integrator_utils.hpp"
 #include "4C_contact_aug_timemonitor.hpp"
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -146,20 +146,20 @@ namespace CONTACT
           const double alpha, const MORTAR::Element& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, Deriv2ndVecMap& dd_mxigp) const;
 
-      void Deriv1st_GapN_Sl(const DRT::Node* const* snodes,
+      void Deriv1st_GapN_Sl(const CORE::Nodes::Node* const* snodes,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, const double* gpn,
           Deriv1stMap& deriv_gapn_sl) const;
 
-      void Deriv1st_GapN_Ma(const DRT::Node* const* mnodes,
+      void Deriv1st_GapN_Ma(const CORE::Nodes::Node* const* mnodes,
           const CORE::LINALG::Matrix<MASTERNUMNODE, 1>& mval, const double* gpn,
           const CORE::LINALG::Matrix<3, 2>& mtau, const Deriv1stVecMap& d_mxigp,
           Deriv1stMap& deriv_gapn_ma) const;
 
-      void add_deriv1st_gap_n_contributions(DRT::Node* const* snodes, const double scale,
+      void add_deriv1st_gap_n_contributions(CORE::Nodes::Node* const* snodes, const double scale,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const Deriv1stMap& d_gapn_sl,
           const Deriv1stMap& d_gapn_ma) const;
 
-      void add_deriv1st_jacobian_contributions(DRT::Node* const* snodes, const double wgt,
+      void add_deriv1st_jacobian_contributions(CORE::Nodes::Node* const* snodes, const double wgt,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double gapn_sl,
           const double gapn_ma, const Deriv1stMap& d_jac) const;
 

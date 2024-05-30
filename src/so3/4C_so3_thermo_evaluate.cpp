@@ -810,7 +810,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::lin_fint_tsi(
   // vector of the current element temperatures
   CORE::LINALG::Matrix<nen_, 1> etemp;
 
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < nen_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -958,7 +958,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::lin_kd_t_tsi(
   // update element geometry (8x3)
   CORE::LINALG::Matrix<nen_, nsd_> xrefe(false);  // X, material coord. of element
   CORE::LINALG::Matrix<nen_, nsd_> xcurr(false);  // x, current  coord. of element
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < nen_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -1102,7 +1102,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
   // vector of the current element temperatures
   CORE::LINALG::Matrix<nen_, 1> etemp;
 
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < nen_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -1354,7 +1354,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi(
   // update element geometry (8x3)
   CORE::LINALG::Matrix<nen_, nsd_> xrefe(false);  // X, material coord. of element
   CORE::LINALG::Matrix<nen_, nsd_> xcurr(false);  // x, current  coord. of element
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < nen_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -1565,7 +1565,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
     // vector of the current element temperatures
     CORE::LINALG::Matrix<nen_, 1> etemp(false);
 
-    DRT::Node** nodes = Nodes();
+    CORE::Nodes::Node** nodes = Nodes();
     for (int i = 0; i < nen_; ++i)
     {
       const auto& x = nodes[i]->X();
@@ -1913,7 +1913,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi_fbar(
     CORE::LINALG::Matrix<nen_, nsd_> xrefe(false);  // X, material coord. of element
     CORE::LINALG::Matrix<nen_, nsd_> xcurr(false);  // x, current  coord. of element
     CORE::LINALG::Matrix<nen_, 1> etemp(true);
-    DRT::Node** nodes = Nodes();
+    CORE::Nodes::Node** nodes = Nodes();
     for (int i = 0; i < nen_; ++i)
     {
       const auto& x = nodes[i]->X();
@@ -2441,7 +2441,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::init_jacobian_mapping_special_f
   CORE::LINALG::Matrix<nen_, nsd_> xrefe;
   for (int i = 0; i < nen_; ++i)
   {
-    Node** nodes = Nodes();
+    CORE::Nodes::Node** nodes = Nodes();
     if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
     xrefe(i, 0) = Nodes()[i]->X()[0];
     xrefe(i, 1) = Nodes()[i]->X()[1];

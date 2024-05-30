@@ -846,7 +846,7 @@ void XFEM::MeshCouplingFPI::LiftDrag(const int step, const double time) const
     CORE::LINALG::Matrix<3, 1> c(true);
     for (int inode = 0; inode < cutter_dis_->NumMyColNodes(); ++inode)
     {
-      const DRT::Node* node = cutter_dis_->lColNode(inode);
+      const CORE::Nodes::Node* node = cutter_dis_->lColNode(inode);
       const std::vector<int> dof = cutter_dis_->Dof(node);
       for (int isd = 0; isd < nsd; ++isd)
       {
@@ -1019,7 +1019,7 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
 
       // update element geometry of parent element
       {
-        DRT::Node** nodes = coupl_ele->Nodes();
+        CORE::Nodes::Node** nodes = coupl_ele->Nodes();
         for (unsigned int inode = 0; inode < PARENT_NEN; ++inode)
         {
           for (unsigned int idof = 0; idof < SLAVE_NUMDOF; ++idof)

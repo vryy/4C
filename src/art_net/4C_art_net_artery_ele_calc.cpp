@@ -27,7 +27,7 @@ template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::ArteryEleCalc<distype>::calculate_ele_length(Artery* ele)
 {
   // get node coordinates and number of elements per node
-  DRT::Node** nodes = ele->Nodes();
+  CORE::Nodes::Node** nodes = ele->Nodes();
   CORE::LINALG::Matrix<3, iel_> xyze;
   // TODO: does this work for line3?
   for (int inode = 0; inode < iel_; inode++)

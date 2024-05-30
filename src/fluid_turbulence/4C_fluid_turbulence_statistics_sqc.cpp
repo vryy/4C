@@ -110,7 +110,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
   // loop nodes and build sets of lines accessible on this proc
   for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
   {
-    DRT::Node* node = discret_->lRowNode(i);
+    CORE::Nodes::Node* node = discret_->lRowNode(i);
 
     if (node->X()[1] < (7.0 + 2e-9) && node->X()[1] > (7.0 - 2e-9))
       x1cavcoords.insert(node->X()[0]);
@@ -981,7 +981,7 @@ void FLD::TurbulenceStatisticsSqc::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
-      DRT::Node* node = discret_->lRowNode(nn);
+      CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x1-direction
       if (((node->X()[0] < (*x1cline + 2e-9) && node->X()[0] > (*x1cline - 2e-9)) and
@@ -1098,7 +1098,7 @@ void FLD::TurbulenceStatisticsSqc::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
-      DRT::Node* node = discret_->lRowNode(nn);
+      CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
       if (((node->X()[1] < (*x2cline + 2e-9) && node->X()[1] > (*x2cline - 2e-9)) and
               (node->X()[0] < (5.0 + 2e-9) && node->X()[0] > (5.0 - 2e-9))) and
@@ -1214,7 +1214,7 @@ void FLD::TurbulenceStatisticsSqc::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
-      DRT::Node* node = discret_->lRowNode(nn);
+      CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x2-direction
       if (((node->X()[1] < (*x2wline + 2e-9) && node->X()[1] > (*x2wline - 2e-9)) and
@@ -1331,7 +1331,7 @@ void FLD::TurbulenceStatisticsSqc::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
-      DRT::Node* node = discret_->lRowNode(nn);
+      CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x2-direction
       if (((node->X()[1] < (*x2wline + 2e-9) && node->X()[1] > (*x2wline - 2e-9)) &&
@@ -1447,7 +1447,7 @@ void FLD::TurbulenceStatisticsSqc::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
-      DRT::Node* node = discret_->lRowNode(nn);
+      CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x1-direction
       if (((node->X()[1] < (*clrline + 2e-9) && node->X()[1] > (*clrline - 2e-9)) &&
@@ -1563,7 +1563,7 @@ void FLD::TurbulenceStatisticsSqc::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
-      DRT::Node* node = discret_->lRowNode(nn);
+      CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x1-direction
       if (((node->X()[0] < (*ctbline + 2e-9) && node->X()[0] > (*ctbline - 2e-9)) &&
@@ -1679,7 +1679,7 @@ void FLD::TurbulenceStatisticsSqc::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
-      DRT::Node* node = discret_->lRowNode(nn);
+      CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x1-direction
       if (((node->X()[1] < (*clrline + 2e-9) && node->X()[1] > (*clrline - 2e-9)) &&
@@ -1795,7 +1795,7 @@ void FLD::TurbulenceStatisticsSqc::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
-      DRT::Node* node = discret_->lRowNode(nn);
+      CORE::Nodes::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x1-direction
       if (((node->X()[0] < (*ctbline + 2e-9) && node->X()[0] > (*ctbline - 2e-9)) &&

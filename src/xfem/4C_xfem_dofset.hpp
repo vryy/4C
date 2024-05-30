@@ -54,7 +54,7 @@ namespace XFEM
       for (int lid = 0; lid < numnode; lid++)
       {
         int gid = dis_.NodeRowMap()->GID(lid);
-        DRT::Node* node = dis_.gNode(gid);
+        CORE::Nodes::Node* node = dis_.gNode(gid);
         if (NumDofPerNode(*node) != other.NumDofPerNode(*node))
           return false;  // dofsets not equal if at least one node has a different number of nodal
                          // dofsets
@@ -82,12 +82,12 @@ namespace XFEM
     \param node            (in) : the node
     \param nodal_dofset_id (in) : id of the nodal dofset
     */
-    void Dof(
-        std::vector<int>& dofs, const DRT::Node* node, unsigned nodal_dofset_id) const override;
+    void Dof(std::vector<int>& dofs, const CORE::Nodes::Node* node,
+        unsigned nodal_dofset_id) const override;
 
    protected:
     /// get number of nodal dofs for this element at this node
-    int NumDofPerNode(const DRT::Node& node) const override;
+    int NumDofPerNode(const CORE::Nodes::Node& node) const override;
 
    private:
     /// the cut wizard, holds information about the number of XFEM dofsets per node

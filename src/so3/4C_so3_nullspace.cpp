@@ -5,7 +5,7 @@
 
 #include "4C_so3_nullspace.hpp"
 
-#include "4C_lib_node.hpp"
+#include "4C_discretization_fem_general_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -14,7 +14,8 @@ namespace DRT::ELEMENTS
 
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  CORE::LINALG::SerialDenseMatrix ComputeSolid3DNullSpace(const DRT::Node& node, const double* x0)
+  CORE::LINALG::SerialDenseMatrix ComputeSolid3DNullSpace(
+      const CORE::Nodes::Node& node, const double* x0)
   {
     /* the rigid body modes for structures are:
 
@@ -59,7 +60,8 @@ namespace DRT::ELEMENTS
 
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  CORE::LINALG::SerialDenseMatrix ComputeSolid2DNullSpace(const DRT::Node& node, const double* x0)
+  CORE::LINALG::SerialDenseMatrix ComputeSolid2DNullSpace(
+      const CORE::Nodes::Node& node, const double* x0)
   {
     /* the rigid body modes for structures are:
 

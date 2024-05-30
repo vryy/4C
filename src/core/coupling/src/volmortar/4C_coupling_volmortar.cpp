@@ -149,7 +149,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::build_maps(Teuchos::RCP<DRT::Discretizatio
 
   for (int i = 0; i < numnode; ++i)
   {
-    const DRT::Node* actnode = dis->gNode(nodes[i]);
+    const CORE::Nodes::Node* actnode = dis->gNode(nodes[i]);
 
     const std::vector<int> dof = dis->Dof(dofset, actnode);
     if (numcoupleddofs > dof.size())
@@ -312,7 +312,7 @@ Teuchos::RCP<CORE::GEO::SearchTree> CORE::VOLMORTAR::VolMortarCoupl::init_search
     // calculate slabs for every node on every element
     for (int k = 0; k < sele->num_node(); k++)
     {
-      DRT::Node* node = sele->Nodes()[k];
+      CORE::Nodes::Node* node = sele->Nodes()[k];
       CORE::LINALG::Matrix<3, 1> currpos;
 
       currpos(0) = node->X()[0];
@@ -369,7 +369,7 @@ CORE::LINALG::Matrix<9, 2> CORE::VOLMORTAR::VolMortarCoupl::calc_dop(CORE::Eleme
   // calculate slabs for every node on every element
   for (int k = 0; k < ele.num_node(); k++)
   {
-    DRT::Node* node = ele.Nodes()[k];
+    CORE::Nodes::Node* node = ele.Nodes()[k];
 
     // get current node position
     std::array<double, 3> pos = {0.0, 0.0, 0.0};
@@ -629,7 +629,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::create_trafo_operator(CORE::Elements::Elem
   // loop over element nodes
   for (int i = 0; i < ele.num_node(); ++i)
   {
-    DRT::Node* cnode = ele.Nodes()[i];
+    CORE::Nodes::Node* cnode = ele.Nodes()[i];
     if (cnode->Owner() != myrank_) continue;
 
     std::set<int>::iterator iter = donebefore.find(cnode->Id());
@@ -677,7 +677,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::create_trafo_operator(CORE::Elements::Elem
         // found ids
         for (int id = 0; id < (int)ids.size(); ++id)
         {
-          DRT::Node* fnode = ele.Nodes()[ids[id]];
+          CORE::Nodes::Node* fnode = ele.Nodes()[ids[id]];
           int nfdof = searchdis->NumDof(1, fnode);
 
           for (int fdof = 0; fdof < nfdof; ++fdof)
@@ -737,7 +737,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::evaluate_consistent_interpolation()
   {
     // 1 map node into bele
     int gid = dis1_->NodeColMap()->GID(i);
-    DRT::Node* anode = dis1_->gNode(gid);
+    CORE::Nodes::Node* anode = dis1_->gNode(gid);
 
     // get found elements from other discr.
     std::vector<int> found = search(*anode->Elements()[0], SearchTreeB, CurrentDOPsB);
@@ -750,7 +750,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::evaluate_consistent_interpolation()
   {
     // 1 map node into bele
     int gid = dis2_->NodeColMap()->GID(i);
-    DRT::Node* bnode = dis2_->gNode(gid);
+    CORE::Nodes::Node* bnode = dis2_->gNode(gid);
 
     // get found elements from other discr.
     std::vector<int> found = search(*bnode->Elements()[0], SearchTreeA, CurrentDOPsA);
@@ -1072,7 +1072,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::check_initial_residuum()
     CORE::Elements::Element* Aele = discret1()->lRowElement(i);
     for (int j = 0; j < Aele->num_node(); ++j)
     {
-      DRT::Node* cnode = Aele->Nodes()[j];
+      CORE::Nodes::Node* cnode = Aele->Nodes()[j];
       int nsdof = discret1()->NumDof(0, cnode);
 
       // loop over slave dofs
@@ -1092,7 +1092,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::check_initial_residuum()
     CORE::Elements::Element* Bele = discret2()->lRowElement(i);
     for (int j = 0; j < Bele->num_node(); ++j)
     {
-      DRT::Node* cnode = Bele->Nodes()[j];
+      CORE::Nodes::Node* cnode = Bele->Nodes()[j];
       int nsdof = discret2()->NumDof(1, cnode);
 
       // loop over slave dofs
@@ -1225,7 +1225,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
     for (int n = 0; n < dis1_->NodeRowMap()->NumMyElements(); ++n)
     {
       int gid = dis1_->NodeRowMap()->GID(n);
-      DRT::Node* node = dis1_->gNode(gid);
+      CORE::Nodes::Node* node = dis1_->gNode(gid);
 
       CORE::LINALG::SerialDenseVector pos(3);
       pos(0) = node->X()[0];
@@ -1249,7 +1249,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
     for (int n = 0; n < dis2_->NodeRowMap()->NumMyElements(); ++n)
     {
       int gid = dis2_->NodeRowMap()->GID(n);
-      DRT::Node* node = dis2_->gNode(gid);
+      CORE::Nodes::Node* node = dis2_->gNode(gid);
 
       CORE::LINALG::SerialDenseVector pos(3);
       pos(0) = node->X()[0];
@@ -1410,7 +1410,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
       CORE::Elements::Element* Aele = discret1()->lRowElement(i);
       for (int j = 0; j < Aele->num_node(); ++j)
       {
-        DRT::Node* cnode = Aele->Nodes()[j];
+        CORE::Nodes::Node* cnode = Aele->Nodes()[j];
         int nsdof = discret1()->NumDof(dofseta, cnode);
         std::vector<double> nvector(3);
 
@@ -1429,7 +1429,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
       CORE::Elements::Element* Bele = discret2()->lRowElement(i);
       for (int j = 0; j < Bele->num_node(); ++j)
       {
-        DRT::Node* cnode = Bele->Nodes()[j];
+        CORE::Nodes::Node* cnode = Bele->Nodes()[j];
         int nsdof = discret2()->NumDof(dofsetb, cnode);
         std::vector<double> nvector(3);
 
@@ -1455,7 +1455,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
     for (int n = 0; n < dis1_->NodeRowMap()->NumMyElements(); ++n)
     {
       int gid = dis1_->NodeRowMap()->GID(n);
-      DRT::Node* node = dis1_->gNode(gid);
+      CORE::Nodes::Node* node = dis1_->gNode(gid);
 
       CORE::LINALG::SerialDenseVector pos(3);
       pos(0) = node->X()[0];
@@ -1478,7 +1478,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::mesh_init()
     for (int n = 0; n < dis2_->NodeRowMap()->NumMyElements(); ++n)
     {
       int gid = dis2_->NodeRowMap()->GID(n);
-      DRT::Node* node = dis2_->gNode(gid);
+      CORE::Nodes::Node* node = dis2_->gNode(gid);
 
       CORE::LINALG::SerialDenseVector pos(3);
       pos(0) = node->X()[0];
@@ -2998,7 +2998,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_b_dis_mesh_init(
  |  Assemble p matrix for cons. interpolation approach       farah 06/14|
  *----------------------------------------------------------------------*/
 void CORE::VOLMORTAR::VolMortarCoupl::assemble_consistent_interpolation_p12(
-    DRT::Node* node, std::vector<int>& foundeles)
+    CORE::Nodes::Node* node, std::vector<int>& foundeles)
 {
   static ConsInterpolator interpolator;
   interpolator.Interpolate(
@@ -3011,7 +3011,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::assemble_consistent_interpolation_p12(
  |  Assemble p matrix for cons. interpolation approach       farah 06/14|
  *----------------------------------------------------------------------*/
 void CORE::VOLMORTAR::VolMortarCoupl::assemble_consistent_interpolation_p21(
-    DRT::Node* node, std::vector<int>& foundeles)
+    CORE::Nodes::Node* node, std::vector<int>& foundeles)
 {
   static ConsInterpolator interpolator;
   interpolator.Interpolate(
@@ -3739,7 +3739,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::define_vertices_slave(
 {
   // project slave nodes onto auxiliary plane
   int nnodes = ele.num_node();
-  DRT::Node** mynodes = ele.Nodes();
+  CORE::Nodes::Node** mynodes = ele.Nodes();
   if (!mynodes) FOUR_C_THROW("ERROR: project_slave: Null pointer!");
 
   // initialize storage for slave coords + their ids
@@ -3769,7 +3769,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::define_vertices_master(
 {
   // project slave nodes onto auxiliary plane
   int nnodes = ele.num_node();
-  DRT::Node** mynodes = ele.Nodes();
+  CORE::Nodes::Node** mynodes = ele.Nodes();
   if (!mynodes) FOUR_C_THROW("ERROR: project_slave: Null pointer!");
 
   // initialize storage for slave coords + their ids

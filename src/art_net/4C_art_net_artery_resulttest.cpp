@@ -62,7 +62,7 @@ void ART::ArteryResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int
   {
     if (dis_->HaveGlobalNode(node))
     {
-      DRT::Node* actnode = dis_->gNode(node);
+      CORE::Nodes::Node* actnode = dis_->gNode(node);
 
       // Strange! It seems we might actually have a global node around
       // even if it does not belong to us. But here we are just

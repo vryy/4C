@@ -151,7 +151,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
          i_lid < couplingenforcer->GetStructure()->GetDiscretization()->NumMyRowNodes(); i_lid++)
     {
       gid_node.clear();
-      DRT::Node* current_node =
+      CORE::Nodes::Node* current_node =
           couplingenforcer->GetStructure()->GetDiscretization()->lRowNode(i_lid);
       couplingenforcer->GetStructure()->GetDiscretization()->Dof(current_node, gid_node);
       if (BEAMINTERACTION::UTILS::IsBeamNode(*current_node))

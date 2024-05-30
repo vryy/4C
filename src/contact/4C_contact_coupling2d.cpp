@@ -64,7 +64,7 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInte
   // (hassegment_ of a slave node is true if ANY segment/cell
   // is integrated that contributes to this slave node)
   int nnodes = SlaveElement().num_node();
-  DRT::Node** mynodes = SlaveElement().Nodes();
+  CORE::Nodes::Node** mynodes = SlaveElement().Nodes();
   if (!mynodes) FOUR_C_THROW("Null pointer!");
   for (int k = 0; k < nnodes; ++k)
   {

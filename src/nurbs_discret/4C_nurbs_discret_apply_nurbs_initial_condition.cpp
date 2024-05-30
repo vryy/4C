@@ -210,7 +210,7 @@ namespace
 
           // get node coordinates of element
           CORE::LINALG::SerialDenseMatrix xyze(spacedim, iel);
-          DRT::Node** nodes = actele->Nodes();
+          CORE::Nodes::Node** nodes = actele->Nodes();
           for (int inode = 0; inode < iel; inode++)
           {
             const auto& x = nodes[inode]->X();

@@ -33,7 +33,7 @@ DRT::ELEMENTS::MembraneLine3Type& DRT::ELEMENTS::MembraneLine3Type::Instance() {
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(int id, int owner, int nnode, const int* nodeids,
-    DRT::Node** nodes, DRT::ELEMENTS::Membrane<distype>* parent, const int lline)
+    CORE::Nodes::Node** nodes, DRT::ELEMENTS::Membrane<distype>* parent, const int lline)
     : CORE::Elements::FaceElement(id, owner), intpointsline_(CORE::FE::GaussRule1D::line_2point)
 {
   SetNodeIds(nnode, nodeids);

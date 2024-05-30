@@ -168,7 +168,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
     const Deriv2ndMap& dd_jac) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -198,7 +198,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_kap
     double jac) const
 {
   // Get slave nodes
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
   FOUR_C_ASSERT(snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!");
 
   //  // number of nodes (slave)
@@ -228,7 +228,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_de
     const Deriv1stMap& d_jac)
 {
   // get slave element nodes themselves
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -251,7 +251,7 @@ template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mas
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_normal(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn) const
 {
-  const DRT::Node* const* snodes = sele.Nodes();
+  const CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -279,7 +279,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_nor
     Deriv1stVecMap& dn_non_unit, Deriv2ndVecMap& ddn_non_unit, Deriv1stVecMap& dn_unit,
     Deriv2ndVecMap& ddn_unit)
 {
-  const DRT::Node* const* snodes = sele.Nodes();
+  const CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -347,7 +347,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_aug
     double jac) const
 {
   // Get slave nodes
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
   FOUR_C_ASSERT(snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!");
 
   for (unsigned it = 0; it < my::SLAVENUMNODE; ++it)
@@ -369,7 +369,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_de
     double jac, const Deriv1stMap& derivjac) const
 {
   // Get slave nodes
-  DRT::Node** snodes = sele.Nodes();
+  CORE::Nodes::Node** snodes = sele.Nodes();
   FOUR_C_ASSERT(snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!");
 
   // map iterator
@@ -397,7 +397,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_de
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
     const Deriv2ndMap& dd_jac) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -428,8 +428,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gap_n(
     const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval, const double* gpn, double& gapn_sl,
     double& gapn_ma) const
 {
-  const DRT::Node* const* snodes = sele.Nodes();
-  const DRT::Node* const* mnodes = mele.Nodes();
+  const CORE::Nodes::Node* const* snodes = sele.Nodes();
+  const CORE::Nodes::Node* const* mnodes = mele.Nodes();
 
   // slave contribution of the gauss point normal gap
   gapn_sl = 0.0;
@@ -459,7 +459,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_w_g
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double gapn_sl, const double gapn_ma, const double wg, const double jac) const
 {
-  DRT::Node* const* snodes = sele.Nodes();
+  CORE::Nodes::Node* const* snodes = sele.Nodes();
   const double scale = wg * jac;
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)

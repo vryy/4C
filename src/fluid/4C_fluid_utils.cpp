@@ -479,7 +479,7 @@ void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<CORE::LINALG::SparseOp
       if (not discret_->NodeRowMap()->MyGID(gid))  // just in case
         FOUR_C_THROW("not on proc");
       {
-        DRT::Node* node = discret_->gNode(gid);
+        CORE::Nodes::Node* node = discret_->gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node");
 
         int firstglobaldofid = discret_->Dof(node, 0);
@@ -542,7 +542,7 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
   int numfluidrownodes = fluiddis.NumMyRowNodes();
   for (int i = 0; i < numfluidrownodes; ++i)
   {
-    DRT::Node* fluidnode = fluiddis.lRowNode(i);
+    CORE::Nodes::Node* fluidnode = fluiddis.lRowNode(i);
 
     std::vector<int> fluiddof = fluiddis.Dof(0, fluidnode);
     for (unsigned j = 0; j < fluiddof.size(); ++j)
@@ -563,7 +563,7 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
   int numalefluidrownodes = alefluiddis.NumMyRowNodes();
   for (int i = 0; i < numalefluidrownodes; ++i)
   {
-    DRT::Node* alefluidnode = alefluiddis.lRowNode(i);
+    CORE::Nodes::Node* alefluidnode = alefluiddis.lRowNode(i);
 
     std::vector<int> alefluiddof = alefluiddis.Dof(alefluidnode);
     for (unsigned j = 0; j < alefluiddof.size(); ++j)
@@ -609,7 +609,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
 {
   int myrank = dis->Comm().MyPID();
 
-  std::map<const int, std::set<DRT::Node*>> ldnodemap;
+  std::map<const int, std::set<CORE::Nodes::Node*>> ldnodemap;
   std::map<const int, const std::vector<double>*> ldcoordmap;
   std::map<const int, const std::vector<double>*> ldaxismap;
   bool axis_for_moment = false;
@@ -659,7 +659,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
 
       /* get new nodeset for new label OR:
          return pointer to nodeset for known label ... */
-      std::set<DRT::Node*>& nodes = ldnodemap[label];
+      std::set<CORE::Nodes::Node*>& nodes = ldnodemap[label];
 
       // center coordinates to present label
       ldcoordmap[label] = &ldconds[i]->parameters().Get<std::vector<double>>("centerCoord");
@@ -692,13 +692,15 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
 
 
     // now step the label map
-    for (std::map<const int, std::set<DRT::Node*>>::const_iterator labelit = ldnodemap.begin();
+    for (std::map<const int, std::set<CORE::Nodes::Node*>>::const_iterator labelit =
+             ldnodemap.begin();
          labelit != ldnodemap.end(); ++labelit)
     {
-      const std::set<DRT::Node*>& nodes = labelit->second;  // pointer to nodeset of present label
-      const int label = labelit->first;                     // the present label
-      std::vector<double> myforces(3, 0.0);                 // vector with lift&drag forces
-      std::vector<double> mymoments(3, 0.0);                // vector with lift&drag moments
+      const std::set<CORE::Nodes::Node*>& nodes =
+          labelit->second;                    // pointer to nodeset of present label
+      const int label = labelit->first;       // the present label
+      std::vector<double> myforces(3, 0.0);   // vector with lift&drag forces
+      std::vector<double> mymoments(3, 0.0);  // vector with lift&drag moments
 
       // get also pointer to center coordinates
       const std::vector<double>* centerCoordvec = ldcoordmap[label];
@@ -706,8 +708,8 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
       CORE::LINALG::Matrix<3, 1> centerCoord(centerCoordvec->data(), false);
 
       // loop all nodes within my set
-      for (std::set<DRT::Node*>::const_iterator actnode = nodes.begin(); actnode != nodes.end();
-           ++actnode)
+      for (std::set<CORE::Nodes::Node*>::const_iterator actnode = nodes.begin();
+           actnode != nodes.end(); ++actnode)
       {
         const CORE::LINALG::Matrix<3, 1> x(
             (*actnode)->X().data(), false);  // pointer to nodal coordinates
@@ -998,7 +1000,7 @@ std::map<int, CORE::LINALG::Matrix<3, 1>> FLD::UTILS::ComputeSurfaceImpulsRates(
     CORE::LINALG::Matrix<3, 1> locflowrate(true);
     for (int inode = 0; inode < dis.NumMyRowNodes(); inode++)
     {
-      const DRT::Node* node = dis.lRowNode(inode);
+      const CORE::Nodes::Node* node = dis.lRowNode(inode);
       static std::vector<int> gdofs(4);
       dis.Dof(node, 0, gdofs);
       for (size_t isd = 0; isd < 3; isd++)

@@ -32,7 +32,7 @@ SCATRA::HDGResultTest::HDGResultTest(const Teuchos::RCP<ScaTraTimIntImpl> timint
  *----------------------------------------------------------------------*/
 double SCATRA::HDGResultTest::result_node(
     const std::string quantity,  //! name of quantity to be tested
-    DRT::Node* node              //! node carrying the result to be tested
+    CORE::Nodes::Node* node      //! node carrying the result to be tested
 ) const
 {
   // initialize variable for result

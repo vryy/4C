@@ -76,7 +76,7 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::pre_evaluate(Teuchos::ParameterLi
       int num = 0;  // TO BE READ FROM INPUTFILE AT EACH ELEMENT!!!
       std::vector<double> xrefe;
       xrefe.resize(3);
-      DRT::Node** nodes = Nodes();
+      CORE::Nodes::Node** nodes = Nodes();
       // get displacements of this element
       //  CORE::FE::ExtractMyValues(*disp,mydisp,lm);
       for (int i = 0; i < numnod_; ++i)
@@ -575,7 +575,7 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::nonlinear_stiffness_poroelast(
   CORE::LINALG::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -624,7 +624,7 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::nonlinear_stiffness_poroelast_pre
   CORE::LINALG::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -908,7 +908,7 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::coupling_poroelast(
   static CORE::LINALG::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   static CORE::LINALG::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -942,7 +942,7 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::coupling_poroelast_pressure_based
   CORE::LINALG::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -1150,7 +1150,7 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::coupling_stress_poroelast(
   CORE::LINALG::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  DRT::Node** nodes = Nodes();
+  CORE::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -1229,7 +1229,7 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::InitElement()
   CORE::LINALG::Matrix<numnod_, numdim_> xrefe;
   for (int i = 0; i < numnod_; ++i)
   {
-    Node** nodes = Nodes();
+    CORE::Nodes::Node** nodes = Nodes();
     if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
     xrefe(i, 0) = Nodes()[i]->X()[0];
     xrefe(i, 1) = Nodes()[i]->X()[1];
@@ -1693,7 +1693,7 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::compute_shape_functions_and_deriv
     CORE::LINALG::Matrix<numnod_, numdim_> xrefe;
     for (int i = 0; i < numnod_; ++i)
     {
-      Node** nodes = Nodes();
+      CORE::Nodes::Node** nodes = Nodes();
       if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
       xrefe(i, 0) = Nodes()[i]->X()[0];
       xrefe(i, 1) = Nodes()[i]->X()[1];

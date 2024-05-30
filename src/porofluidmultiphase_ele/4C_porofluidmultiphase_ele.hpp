@@ -46,7 +46,7 @@ namespace DRT
 
       /// do the null space computation
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       /// setup the dat file input line definitions for this type of element
       void setup_element_definition(
@@ -198,7 +198,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         if (numdofpernode_ < 1) FOUR_C_THROW("NumDofPerNode is < 1");
         return numdofpernode_;
@@ -335,7 +335,7 @@ namespace DRT
       }
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
@@ -371,7 +371,8 @@ namespace DRT
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
       PoroFluidMultiPhaseBoundary(int id, int owner, int nnode, const int* nodeids,
-          DRT::Node** nodes, DRT::ELEMENTS::PoroFluidMultiPhase* parent, const int lsurface);
+          CORE::Nodes::Node** nodes, DRT::ELEMENTS::PoroFluidMultiPhase* parent,
+          const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -458,7 +459,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const DRT::Node& node) const override
+      int NumDofPerNode(const CORE::Nodes::Node& node) const override
       {
         return parent_element()->NumDofPerNode(node);
       }

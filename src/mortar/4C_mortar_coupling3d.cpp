@@ -156,7 +156,7 @@ bool MORTAR::Coupling3d::rough_check_nodes()
 {
   // project master nodes onto auxiliary plane
   int nnodes = MasterIntElement().num_node();
-  DRT::Node** mynodes = MasterIntElement().Nodes();
+  CORE::Nodes::Node** mynodes = MasterIntElement().Nodes();
   if (!mynodes) FOUR_C_THROW("rough_check_nodes: Null pointer!");
 
   // prepare check
@@ -299,7 +299,7 @@ bool MORTAR::Coupling3d::project_slave()
 {
   // project slave nodes onto auxiliary plane
   int nnodes = SlaveIntElement().num_node();
-  DRT::Node** mynodes = SlaveIntElement().Nodes();
+  CORE::Nodes::Node** mynodes = SlaveIntElement().Nodes();
   if (!mynodes) FOUR_C_THROW("project_slave: Null pointer!");
 
   // initialize storage for slave coords + their ids
@@ -344,7 +344,7 @@ bool MORTAR::Coupling3d::project_master()
 {
   // project master nodes onto auxiliary plane
   int nnodes = MasterIntElement().num_node();
-  DRT::Node** mynodes = MasterIntElement().Nodes();
+  CORE::Nodes::Node** mynodes = MasterIntElement().Nodes();
   if (!mynodes) FOUR_C_THROW("project_master: Null pointer!");
 
   // initialize storage for master coords + their ids
@@ -1696,12 +1696,12 @@ bool MORTAR::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
 
         // get slave and master nodes
         int nsnodes = SlaveIntElement().num_node();
-        DRT::Node** mysnodes = SlaveIntElement().Nodes();
+        CORE::Nodes::Node** mysnodes = SlaveIntElement().Nodes();
         if (!mysnodes) FOUR_C_THROW("Null pointer!");
         std::vector<Node*> mycsnodes(nsnodes);
         for (int i = 0; i < nsnodes; ++i) mycsnodes[i] = dynamic_cast<Node*>(mysnodes[i]);
         int nmnodes = MasterIntElement().num_node();
-        DRT::Node** mymnodes = MasterIntElement().Nodes();
+        CORE::Nodes::Node** mymnodes = MasterIntElement().Nodes();
         if (!mymnodes) FOUR_C_THROW("Null pointer!");
         std::vector<Node*> mycmnodes(nmnodes);
         for (int i = 0; i < nmnodes; ++i) mycmnodes[i] = dynamic_cast<Node*>(mymnodes[i]);
@@ -2660,7 +2660,7 @@ bool MORTAR::Coupling3d::has_proj_status()
 {
   // check all nodes
   int nnodes = SlaveIntElement().num_node();
-  DRT::Node** mynodes = SlaveIntElement().Nodes();
+  CORE::Nodes::Node** mynodes = SlaveIntElement().Nodes();
   if (!mynodes) FOUR_C_THROW("has_proj_status: Null pointer!");
 
   // loop over all slave nodes
@@ -3376,7 +3376,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
     // (hassegment_ of a slave node is true if ANY segment/cell
     // is integrated that contributes to this slave node)
     int nnodes = SlaveIntElement().num_node();
-    DRT::Node** mynodes = SlaveIntElement().Nodes();
+    CORE::Nodes::Node** mynodes = SlaveIntElement().Nodes();
     if (!mynodes) FOUR_C_THROW("Null pointer!");
     for (int k = 0; k < nnodes; ++k)
     {
@@ -3562,7 +3562,7 @@ bool MORTAR::Coupling3dQuadManager::split_int_elements(
     nodeids[2] = ele.NodeIds()[8];
     nodeids[3] = ele.NodeIds()[7];
 
-    std::vector<DRT::Node*> nodes(4);
+    std::vector<CORE::Nodes::Node*> nodes(4);
     nodes[0] = ele.Nodes()[0];
     nodes[1] = ele.Nodes()[4];
     nodes[2] = ele.Nodes()[8];
@@ -3633,7 +3633,7 @@ bool MORTAR::Coupling3dQuadManager::split_int_elements(
     nodeids[1] = ele.NodeIds()[4];
     nodeids[2] = ele.NodeIds()[7];
 
-    std::vector<DRT::Node*> nodes(3);
+    std::vector<CORE::Nodes::Node*> nodes(3);
     nodes[0] = ele.Nodes()[0];
     nodes[1] = ele.Nodes()[4];
     nodes[2] = ele.Nodes()[7];
@@ -3688,7 +3688,7 @@ bool MORTAR::Coupling3dQuadManager::split_int_elements(
     nodeidsquad[2] = ele.NodeIds()[6];
     nodeidsquad[3] = ele.NodeIds()[7];
 
-    std::vector<DRT::Node*> nodesquad(4);
+    std::vector<CORE::Nodes::Node*> nodesquad(4);
     nodesquad[0] = ele.Nodes()[4];
     nodesquad[1] = ele.Nodes()[5];
     nodesquad[2] = ele.Nodes()[6];
@@ -3712,7 +3712,7 @@ bool MORTAR::Coupling3dQuadManager::split_int_elements(
     nodeids[1] = ele.NodeIds()[3];
     nodeids[2] = ele.NodeIds()[5];
 
-    std::vector<DRT::Node*> nodes(3);
+    std::vector<CORE::Nodes::Node*> nodes(3);
     nodes[0] = ele.Nodes()[0];
     nodes[1] = ele.Nodes()[3];
     nodes[2] = ele.Nodes()[5];
@@ -3764,7 +3764,7 @@ bool MORTAR::Coupling3dQuadManager::split_int_elements(
   else if (ele.Shape() == CORE::FE::CellType::quad4)
   {
     // 1:1 conversion to IntElement
-    std::vector<DRT::Node*> nodes(4);
+    std::vector<CORE::Nodes::Node*> nodes(4);
     nodes[0] = ele.Nodes()[0];
     nodes[1] = ele.Nodes()[1];
     nodes[2] = ele.Nodes()[2];
@@ -3778,7 +3778,7 @@ bool MORTAR::Coupling3dQuadManager::split_int_elements(
   else if (ele.Shape() == CORE::FE::CellType::tri3)
   {
     // 1:1 conversion to IntElement
-    std::vector<DRT::Node*> nodes(3);
+    std::vector<CORE::Nodes::Node*> nodes(3);
     nodes[0] = ele.Nodes()[0];
     nodes[1] = ele.Nodes()[1];
     nodes[2] = ele.Nodes()[2];
@@ -3797,9 +3797,9 @@ bool MORTAR::Coupling3dQuadManager::split_int_elements(
     // of the nurbs element
 
     // create pseudo-nodes
-    std::vector<DRT::Node> pseudo_nodes;
+    std::vector<CORE::Nodes::Node> pseudo_nodes;
     pseudo_nodes.clear();
-    std::vector<DRT::Node*> pseudo_nodes_ptr(0);
+    std::vector<CORE::Nodes::Node*> pseudo_nodes_ptr(0);
 
     // parameter space coords of pseudo nodes
     double pseudo_nodes_param_coords[4][2];

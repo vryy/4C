@@ -3717,7 +3717,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
     //    for (unsigned int i=0;i<numnodes;++i)
     //    {
     //      // get pointer and dof ids
-    //      DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
+    //      CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
     //      std::vector<int> NodeDofGIDs =  get_global_dofs(node);
     //
     //      for (unsigned int j=0;j<3*numnodalvalues;++j)
@@ -3731,7 +3731,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
     //    for (unsigned int i=0;i<numnodes;++i)
     //    {
     //      // get pointer and node ids
-    //      DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
+    //      CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
     //      std::vector<int> NodeDofGIDs =  get_global_dofs(node);
     //
     //      for (unsigned int j=0;j<3*numnodalvalues;++j)
@@ -3745,7 +3745,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
     //    for (unsigned int i=0;i<numnodes;++i)
     //    {
     //      // get pointer and node ids
-    //      DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
+    //      CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
     //      std::vector<int> NodeDofGIDs =  get_global_dofs(node);
     //
     //      for (unsigned int j=0;j<3*numnodalvalues;++j)
@@ -3759,7 +3759,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
     //    for (unsigned int i=0;i<numnodes;++i)
     //    {
     //      // get pointer and node ids
-    //      DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
+    //      CORE::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
     //      std::vector<int> NodeDofGIDs =  get_global_dofs(node);
     //
     //      for (unsigned int j=0;j<3*numnodalvalues;++j)

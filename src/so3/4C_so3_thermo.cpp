@@ -227,7 +227,7 @@ CORE::Elements::ElementType& DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Element
  | get the nodes from so3 (public)                           dano 08/12 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-inline DRT::Node** DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Nodes()
+inline CORE::Nodes::Node** DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Nodes()
 {
   return so3_ele::Nodes();
 }

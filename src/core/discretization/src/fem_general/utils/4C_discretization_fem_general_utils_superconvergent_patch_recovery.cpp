@@ -190,7 +190,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
   for (int i = 0; i < nodecolmap.NumMyElements(); ++i)
   {
     const int nodegid = nodecolmap.GID(i);
-    const DRT::Node* node = dis.gNode(nodegid);
+    const CORE::Nodes::Node* node = dis.gNode(nodegid);
     if (!node) FOUR_C_THROW("Cannot find with gid: %d", nodegid);
 
     // distinction between inner nodes and boundary nodes
@@ -263,7 +263,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         std::vector<std::vector<double>> eleoffsets(numslavenodes + 1, offset);
         for (int s = 0; s < numslavenodes; ++s)
         {
-          const DRT::Node* slavenode = dis.gNode(slavenodeids[s]);
+          const CORE::Nodes::Node* slavenode = dis.gNode(slavenodeids[s]);
           // compute offset for slave elements
           for (int d = 0; d < dim; ++d)
             eleoffsets[s][d] = (node->X()[d] - slavenode->X()[d]) /* + ALE DISP */;
@@ -335,7 +335,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         int closestnodeid = -1;
         for (int k = 0; k < numadjacentele; ++k)
         {
-          const DRT::Node* const* adjacentnodes = adjacentele[k]->Nodes();
+          const CORE::Nodes::Node* const* adjacentnodes = adjacentele[k]->Nodes();
           const int numnode = adjacentele[k]->num_node();
           for (int n = 0; n < numnode; ++n)
           {
@@ -360,7 +360,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
               "small (at least in one direction)");
 
         // build patch for closest node and evaluate patch at boundary node
-        const DRT::Node* closestnode = dis.gNode(closestnodeid);
+        const CORE::Nodes::Node* closestnode = dis.gNode(closestnodeid);
         const CORE::Elements::Element* const* closestnodeadjacentele = closestnode->Elements();
         const int numadjacent = closestnode->NumElement();
 
@@ -430,7 +430,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         int closestnodeid = -1;
         for (int k = 0; k < numadjacentele; ++k)
         {
-          const DRT::Node* const* adjacentnodes = adjacentele[k]->Nodes();
+          const CORE::Nodes::Node* const* adjacentnodes = adjacentele[k]->Nodes();
           for (int n = 0; n < adjacentele[k]->num_node(); ++n)
           {
             // continue with next node in case the neighbor is also on the boundary
@@ -456,7 +456,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         // build patch for closest node and evaluate patch at boundary node
 
         // get master nodes and corresponding slave nodes
-        DRT::Node* closestnode = dis.gNode(closestnodeid);
+        CORE::Nodes::Node* closestnode = dis.gNode(closestnodeid);
 
         // leave here in case the closest node is a ghost node
         // only row nodes have all neighboring elements on this proc
@@ -493,7 +493,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         std::vector<std::vector<double>> eleoffsets(numslavenodes + 1, offset);
         for (int s = 0; s < numslavenodes; ++s)
         {
-          const DRT::Node* slavenode = dis.gNode(masternode->second[s]);
+          const CORE::Nodes::Node* slavenode = dis.gNode(masternode->second[s]);
           // compute offset for slave elements
           for (int d = 0; d < dim; ++d)
             eleoffsets[s][d] = (closestnode->X()[d] - slavenode->X()[d]); /* + ALE DISP */

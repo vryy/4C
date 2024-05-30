@@ -12,6 +12,7 @@
 #include "4C_fluid_ele_calc.hpp"
 
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_fem_general_immersed_node.hpp"
 #include "4C_discretization_fem_general_utils_gder2.hpp"
 #include "4C_discretization_geometry_searchtree.hpp"
 #include "4C_fluid_ele.hpp"
@@ -24,7 +25,6 @@
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"
 #include "4C_immersed_problem_immersed_base.hpp"
-#include "4C_lib_immersed_node.hpp"
 #include "4C_mat_arrhenius_pv.hpp"
 #include "4C_mat_carreauyasuda.hpp"
 #include "4C_mat_ferech_pv.hpp"
@@ -9025,7 +9025,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_gradient
     extract_values_from_global_vector(
         discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
-    DRT::Node** nodes = ele->Nodes();
+    CORE::Nodes::Node** nodes = ele->Nodes();
     for (int inode = 0; inode < nen_; ++inode)
     {
       for (int idof = 0; idof < nsd_; ++idof)
@@ -9040,7 +9040,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_gradient
   {
     // do not update element geometry (here xrefe=X and no xcurr present)
     {
-      DRT::Node** nodes = ele->Nodes();
+      CORE::Nodes::Node** nodes = ele->Nodes();
       for (int inode = 0; inode < nen_; ++inode)
       {
         for (int idof = 0; idof < nsd_; ++idof)
@@ -9321,7 +9321,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_node(
       backgrdxi[1] = nodalrefcoords[node][1];
       backgrdxi[2] = nodalrefcoords[node][2];
 
-      if (static_cast<DRT::ImmersedNode*>(ele->Nodes()[node])->IsMatched())
+      if (static_cast<CORE::Nodes::ImmersedNode*>(ele->Nodes()[node])->IsMatched())
       {
         match = true;
       }
@@ -9344,7 +9344,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_node(
       if (match)
       {
         matchnum++;
-        static_cast<DRT::ImmersedNode*>(ele->Nodes()[node])->SetIsMatched(1);
+        static_cast<CORE::Nodes::ImmersedNode*>(ele->Nodes()[node])->SetIsMatched(1);
         immersedele->set_has_projected_dirichlet(1);
 
         for (int i = 0; i < nsd_; ++i)
@@ -9370,7 +9370,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_node(
 
     // loop over nodes of this ele and set IsBoundaryImmersed
     for (int node = 0; node < nen_; node++)
-      static_cast<DRT::ImmersedNode*>(ele->Nodes()[node])->set_is_boundary_immersed(1);
+      static_cast<CORE::Nodes::ImmersedNode*>(ele->Nodes()[node])->set_is_boundary_immersed(1);
 
     if (isfluidinteraction)
     {
@@ -9628,7 +9628,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_veloci
       backgrdfluidxi[1] = nodalrefcoords[node][1];
       backgrdfluidxi[2] = nodalrefcoords[node][2];
 
-      if (static_cast<DRT::ImmersedNode*>(ele->Nodes()[node])->IsMatched())
+      if (static_cast<CORE::Nodes::ImmersedNode*>(ele->Nodes()[node])->IsMatched())
       {
         match = true;
       }
@@ -9655,7 +9655,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_veloci
       {
         // if closest point to node lying in this element is found, node is set matched to indicate
         // that now has an dirichlet value
-        static_cast<DRT::ImmersedNode*>(ele->Nodes()[node])->SetIsMatched(1);
+        static_cast<CORE::Nodes::ImmersedNode*>(ele->Nodes()[node])->SetIsMatched(1);
         // this is done before anyway, but doesn't hurt here
         immersedele->set_has_projected_dirichlet(1);
 
@@ -10317,7 +10317,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
     // get the knotvector itself
     Teuchos::RCP<DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();
 
-    DRT::Node** nodes = ele->Nodes();
+    CORE::Nodes::Node** nodes = ele->Nodes();
 
     // get gid, location in the patch
     int gid = ele->Id();
@@ -10661,11 +10661,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ResetImmersedEle(
   immersedele->set_has_projected_dirichlet(0);
 
   // reset node information
-  DRT::Node** nodes = immersedele->Nodes();
+  CORE::Nodes::Node** nodes = immersedele->Nodes();
   for (int i = 0; i < immersedele->num_node(); ++i)
   {
-    static_cast<DRT::ImmersedNode*>(nodes[i])->SetIsMatched(0);
-    static_cast<DRT::ImmersedNode*>(nodes[i])->set_is_boundary_immersed(0);
+    static_cast<CORE::Nodes::ImmersedNode*>(nodes[i])->SetIsMatched(0);
+    static_cast<CORE::Nodes::ImmersedNode*>(nodes[i])->set_is_boundary_immersed(0);
   }
 
   // reset element int point information
