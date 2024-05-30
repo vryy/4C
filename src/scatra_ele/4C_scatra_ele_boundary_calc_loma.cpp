@@ -12,16 +12,10 @@
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_mat_arrhenius_pv.hpp"
-#include "4C_mat_arrhenius_temp.hpp"
-#include "4C_mat_ferech_pv.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_mixfrac.hpp"
 #include "4C_mat_sutherland.hpp"
-#include "4C_mat_tempdepwater.hpp"
 #include "4C_mat_thermostvenantkirchhoff.hpp"
-#include "4C_mat_yoghurt.hpp"
 #include "4C_material_base.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
@@ -202,130 +196,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::neumann_inflow(
 
   return;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::neumann_inflow
-
-
-/*----------------------------------------------------------------------*
- | get density at integration point                          fang 02/15 |
- *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::get_density(
-    Teuchos::RCP<const CORE::MAT::Material> material,
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k)
-{
-  // initialization
-  double density(0.);
-
-  // get density depending on material
-  switch (material->MaterialType())
-  {
-    case CORE::Materials::m_matlist:
-    {
-      const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
-
-      const int lastmatid = actmat->NumMat() - 1;
-
-      if (actmat->MaterialById(lastmatid)->MaterialType() == CORE::Materials::m_arrhenius_temp)
-      {
-        // compute temperature and check whether it is positive
-        const double temp = my::funct_.Dot(ephinp[my::numscal_ - 1]);
-        if (temp < 0.0)
-          FOUR_C_THROW(
-              "Negative temperature in ScaTra Arrhenius temperature density evaluation on "
-              "boundary!");
-
-        // compute density based on temperature and thermodynamic pressure
-        density = static_cast<const MAT::ArrheniusTemp*>(actmat->MaterialById(lastmatid).get())
-                      ->ComputeDensity(temp, thermpress_);
-      }
-      else
-        FOUR_C_THROW(
-            "Type of material found in material list not supported, should be Arrhenius-type "
-            "temperature!");
-
-      break;
-    }
-
-    case CORE::Materials::m_mixfrac:
-    {
-      // compute density based on mixture fraction
-      density = static_cast<const MAT::MixFrac*>(material.get())
-                    ->ComputeDensity(my::funct_.Dot(ephinp[k]));
-
-      break;
-    }
-
-    case CORE::Materials::m_sutherland:
-    {
-      // compute temperature and check whether it is positive
-      const double temp = my::funct_.Dot(ephinp[k]);
-      if (temp < 0.0)
-        FOUR_C_THROW("Negative temperature in ScaTra Sutherland density evaluation on boundary!");
-
-      // compute density based on temperature and thermodynamic pressure
-      density =
-          static_cast<const MAT::Sutherland*>(material.get())->ComputeDensity(temp, thermpress_);
-
-      break;
-    }
-
-    case CORE::Materials::m_tempdepwater:
-    {
-      // compute temperature and check whether it is positive
-      const double temp = my::funct_.Dot(ephinp[k]);
-      if (temp < 0.0)
-        FOUR_C_THROW(
-            "Negative temperature in ScaTra temperature-dependent water density evaluation on "
-            "boundary!");
-
-      // compute density based on temperature
-      density = static_cast<const MAT::TempDepWater*>(material.get())->ComputeDensity(temp);
-
-      break;
-    }
-
-    case CORE::Materials::m_arrhenius_pv:
-    {
-      // compute density based on progress variable
-      density = static_cast<const MAT::ArrheniusPV*>(material.get())
-                    ->ComputeDensity(my::funct_.Dot(ephinp[k]));
-
-      break;
-    }
-
-    case CORE::Materials::m_ferech_pv:
-    {
-      // compute density based on progress variable
-      density = static_cast<const MAT::FerEchPV*>(material.get())
-                    ->ComputeDensity(my::funct_.Dot(ephinp[k]));
-
-      break;
-    }
-
-    case CORE::Materials::m_thermostvenant:
-    {
-      // get constant density
-      density = static_cast<const MAT::ThermoStVenantKirchhoff*>(material.get())->Density();
-
-      break;
-    }
-
-    case CORE::Materials::m_yoghurt:
-    {
-      // get constant density
-      density = static_cast<const MAT::Yoghurt*>(material.get())->Density();
-
-      break;
-    }
-
-    default:
-    {
-      FOUR_C_THROW("Invalid material type!");
-      break;
-    }
-  }
-
-  return density;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity
 
 
 /*----------------------------------------------------------------------*

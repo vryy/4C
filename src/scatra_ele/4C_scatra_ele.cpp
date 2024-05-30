@@ -316,18 +316,12 @@ void DRT::ELEMENTS::Transport::SetMaterial(const int index, Teuchos::RCP<CORE::M
   CORE::Elements::Element::SetMaterial(index, mat);
 
   if (mat->MaterialType() == CORE::Materials::m_scatra or
-      mat->MaterialType() == CORE::Materials::m_scatra_aniso or
       mat->MaterialType() == CORE::Materials::m_scatra_multiscale or
       mat->MaterialType() == CORE::Materials::m_myocard or
-      mat->MaterialType() == CORE::Materials::m_mixfrac or
       mat->MaterialType() == CORE::Materials::m_sutherland or
-      mat->MaterialType() == CORE::Materials::m_tempdepwater or
-      mat->MaterialType() == CORE::Materials::m_arrhenius_pv or
-      mat->MaterialType() == CORE::Materials::m_ferech_pv or
       mat->MaterialType() == CORE::Materials::m_ion or
       mat->MaterialType() == CORE::Materials::m_th_fourier_iso or
       mat->MaterialType() == CORE::Materials::m_thermostvenant or
-      mat->MaterialType() == CORE::Materials::m_yoghurt or
       mat->MaterialType() == CORE::Materials::m_soret or
       mat->MaterialType() == CORE::Materials::m_scatra_multiporo_fluid or
       mat->MaterialType() == CORE::Materials::m_scatra_multiporo_volfrac or
@@ -356,35 +350,6 @@ void DRT::ELEMENTS::Transport::SetMaterial(const int index, Teuchos::RCP<CORE::M
               "with Mat_ion");
       }
       numdofpernode_ += 1;
-    }
-    // for problem type LOMA, only combination of Arrhenius-type species (first)
-    // and temperature (last) equation possible in this specific order
-    // in case of matlist
-    else if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::loma)
-    {
-      // only two-equation systems, for the time being: check!
-      if (numdofpernode_ > 2)
-        FOUR_C_THROW(
-            "Only two-equation systems (one species and one temperature equation for "
-            "Arrhenius-type systems, for the time being!");
-
-      // check that first equations are species equations and that temperature
-      // equation is last equation
-      for (int ii = 0; ii < (numdofpernode_ - 1); ++ii)
-      {
-        if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() !=
-            CORE::Materials::m_arrhenius_spec)
-          FOUR_C_THROW(
-              "For problem type LOMA, only combination of Arrhenius-type species (first equations) "
-              "and temperature (last equation) possible in this specific order in case of matlist: "
-              "one of the first equations is not a species equation!");
-      }
-      if (actmat->MaterialById(actmat->MatID(numdofpernode_ - 1))->MaterialType() !=
-          CORE::Materials::m_arrhenius_temp)
-        FOUR_C_THROW(
-            "For problem type LOMA, only combination of Arrhenius-type species (first equations) "
-            "and temperature (last equation) possible in this specific order in case of matlist: "
-            "last equation is not a temperature equation!");
     }
   }
   else if (mat->MaterialType() ==

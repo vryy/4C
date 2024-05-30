@@ -10,11 +10,9 @@
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_geometry_position_array.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_mat_arrhenius_temp.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_sutherland.hpp"
-#include "4C_mat_tempdepwater.hpp"
 #include "4C_material_base.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_action.hpp"
@@ -171,29 +169,6 @@ double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::get_density(const CORE::Elemen
 
     density = Teuchos::rcp_dynamic_cast<const MAT::Sutherland>(material)->ComputeDensity(
         tempnp, thermpress);
-  }
-  else if (material->MaterialType() == CORE::Materials::m_tempdepwater)
-  {
-    density = Teuchos::rcp_dynamic_cast<const MAT::TempDepWater>(material)->ComputeDensity(tempnp);
-  }
-  else if (material->MaterialType() == CORE::Materials::m_matlist)
-  {
-    // get thermodynamic pressure
-    const double thermpress = params.get<double>("thermpress");
-
-    const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
-
-    const int lastmatid = actmat->NumMat() - 1;
-
-    // compute density based on temperature and thermodynamic pressure
-    if (actmat->MaterialById(lastmatid)->MaterialType() == CORE::Materials::m_arrhenius_temp)
-      density = static_cast<const MAT::ArrheniusTemp*>(actmat->MaterialById(lastmatid).get())
-                    ->ComputeDensity(tempnp, thermpress);
-
-    else
-      FOUR_C_THROW(
-          "Type of material found in material list not supported, should be Arrhenius-type "
-          "temperature!");
   }
   else
     FOUR_C_THROW("Invalid material type!");

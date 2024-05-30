@@ -21,20 +21,14 @@
 #include "4C_fluid_ele_parameter_timint.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_material.hpp"
-#include "4C_mat_arrhenius_pv.hpp"
 #include "4C_mat_carreauyasuda.hpp"
-#include "4C_mat_ferech_pv.hpp"
 #include "4C_mat_fluid_linear_density_viscosity.hpp"
 #include "4C_mat_fluid_murnaghantait.hpp"
 #include "4C_mat_fluidporo.hpp"
 #include "4C_mat_herschelbulkley.hpp"
-#include "4C_mat_mixfrac.hpp"
 #include "4C_mat_modpowerlaw.hpp"
 #include "4C_mat_newtonianfluid.hpp"
-#include "4C_mat_permeablefluid.hpp"
 #include "4C_mat_sutherland.hpp"
-#include "4C_mat_tempdepwater.hpp"
-#include "4C_mat_yoghurt.hpp"
 #include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_utils_function.hpp"
 
@@ -1163,12 +1157,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::area_calculation(DRT::ELEMENTS::
     densaf_ = actmat->Density();
     visc_ = actmat->Viscosity();
   }
-  else if (mat->MaterialType() == CORE::Materials::m_permeable_fluid)
-  {
-    const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
-    densaf_ = actmat->Density();
-    visc_ = actmat->SetViscosity();
-  }
   else if (mat->MaterialType() == CORE::Materials::m_carreauyasuda)
   {
     const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
@@ -1995,26 +1983,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::get_density(
 
     densaf_ = actmat->Density();
   }
-  else if (material->MaterialType() == CORE::Materials::m_yoghurt)
-  {
-    const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
-
-    // get constant density
-    densaf_ = actmat->Density();
-  }
-  else if (material->MaterialType() == CORE::Materials::m_mixfrac)
-  {
-    const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
-
-    // compute mixture fraction at n+alpha_F or n+1
-    const double mixfracaf = funct_.Dot(escaaf);
-
-    // compute density at n+alpha_F or n+1 based on mixture fraction
-    densaf_ = actmat->ComputeDensity(mixfracaf);
-
-    // set density factor for Neumann boundary conditions to density for present material
-    densfac_ = densaf_;
-  }
   else if (material->MaterialType() == CORE::Materials::m_sutherland)
   {
     const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
@@ -2056,51 +2024,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::get_density(
 
     // set density factor for Neumann boundary conditions to density for present material
     densfac_ = densaf_;
-  }
-  else if (material->MaterialType() == CORE::Materials::m_tempdepwater)
-  {
-    const MAT::TempDepWater* actmat = static_cast<const MAT::TempDepWater*>(material.get());
-
-    // compute temperature at n+alpha_F or n+1
-    const double tempaf = funct_.Dot(escaaf);
-
-    // compute density at n+alpha_F or n+1 based on temperature
-    densaf_ = actmat->ComputeDensity(tempaf);
-
-    // set density factor for Neumann boundary conditions to density for present material
-    densfac_ = densaf_;
-  }
-  else if (material->MaterialType() == CORE::Materials::m_arrhenius_pv)
-  {
-    const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
-
-    // get progress variable at n+alpha_F or n+1
-    const double provaraf = funct_.Dot(escaaf);
-
-    // compute density at n+alpha_F or n+1 based on progress variable
-    densaf_ = actmat->ComputeDensity(provaraf);
-
-    // set density factor for Neumann boundary conditions to density for present material
-    densfac_ = densaf_;
-  }
-  else if (material->MaterialType() == CORE::Materials::m_ferech_pv)
-  {
-    const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
-
-    // get progress variable at n+alpha_F or n+1
-    const double provaraf = funct_.Dot(escaaf);
-
-    // compute density at n+alpha_F or n+1 based on progress variable
-    densaf_ = actmat->ComputeDensity(provaraf);
-
-    // set density factor for Neumann boundary conditions to density for present material
-    densfac_ = densaf_;
-  }
-  else if (material->MaterialType() == CORE::Materials::m_permeable_fluid)
-  {
-    const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
-
-    densaf_ = actmat->Density();
   }
   else if (material->MaterialType() == CORE::Materials::m_fluidporo)
   {
@@ -2170,8 +2093,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::calc_traction_velocity_component
   if (mat->MaterialType() != CORE::Materials::m_carreauyasuda &&
       mat->MaterialType() != CORE::Materials::m_modpowerlaw &&
       mat->MaterialType() != CORE::Materials::m_herschelbulkley &&
-      mat->MaterialType() != CORE::Materials::m_fluid &&
-      mat->MaterialType() != CORE::Materials::m_permeable_fluid)
+      mat->MaterialType() != CORE::Materials::m_fluid)
     FOUR_C_THROW("Material law is not a fluid");
 
   if (mat->MaterialType() == CORE::Materials::m_fluid)
@@ -2192,11 +2114,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::calc_traction_velocity_component
   else if (mat->MaterialType() == CORE::Materials::m_herschelbulkley)
   {
     const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(mat.get());
-    density = actmat->Density();
-  }
-  else if (mat->MaterialType() == CORE::Materials::m_permeable_fluid)
-  {
-    const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
     density = actmat->Density();
   }
   else

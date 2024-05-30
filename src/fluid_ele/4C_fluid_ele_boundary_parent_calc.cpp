@@ -19,17 +19,12 @@
 #include "4C_fluid_ele.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
-#include "4C_mat_arrhenius_pv.hpp"
 #include "4C_mat_carreauyasuda.hpp"
-#include "4C_mat_ferech_pv.hpp"
 #include "4C_mat_fluidporo.hpp"
 #include "4C_mat_herschelbulkley.hpp"
-#include "4C_mat_mixfrac.hpp"
 #include "4C_mat_modpowerlaw.hpp"
 #include "4C_mat_newtonianfluid.hpp"
-#include "4C_mat_permeablefluid.hpp"
 #include "4C_mat_sutherland.hpp"
-#include "4C_mat_tempdepwater.hpp"
 #include "4C_nurbs_discret.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
@@ -5851,16 +5846,6 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::get_density_and_viscosity(
       visc_ = tau0 * ((1.0 - exp(-mexp * rateofstrain)) / rateofstrain) +
               kfac * pow(rateofstrain, (nexp - 1.0));
   }
-  else if (material->MaterialType() == CORE::Materials::m_mixfrac)
-  {
-    const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
-
-    // compute dynamic viscosity at n+alpha_F or n+1 based on mixture fraction
-    visc_ = actmat->ComputeViscosity(pscaaf);
-
-    // compute density at n+alpha_F or n+1 based on mixture fraction
-    densaf_ = actmat->ComputeDensity(pscaaf);
-  }
   else if (material->MaterialType() == CORE::Materials::m_sutherland)
   {
     const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
@@ -5871,51 +5856,6 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::get_density_and_viscosity(
     // compute density at n+alpha_F or n+1 based on temperature
     // and thermodynamic pressure
     densaf_ = actmat->ComputeDensity(pscaaf, thermpressaf);
-  }
-  else if (material->MaterialType() == CORE::Materials::m_tempdepwater)
-  {
-    const MAT::TempDepWater* actmat = static_cast<const MAT::TempDepWater*>(material.get());
-
-    // compute viscosity
-    visc_ = actmat->ComputeViscosity(pscaaf);
-
-    // compute density at n+alpha_F or n+1 based on temperature
-    densaf_ = actmat->ComputeDensity(pscaaf);
-  }
-  else if (material->MaterialType() == CORE::Materials::m_arrhenius_pv)
-  {
-    const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
-
-    // compute temperature based on progress variable at n+alpha_F or n+1
-    const double tempaf = actmat->ComputeTemperature(pscaaf);
-
-    // compute viscosity according to Sutherland law
-    visc_ = actmat->ComputeViscosity(tempaf);
-
-    // compute density at n+alpha_F or n+1 based on progress variable
-    densaf_ = actmat->ComputeDensity(pscaaf);
-  }
-  else if (material->MaterialType() == CORE::Materials::m_ferech_pv)
-  {
-    const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
-
-    // compute temperature based on progress variable at n+alpha_F or n+1
-    const double tempaf = actmat->ComputeTemperature(pscaaf);
-
-    // compute viscosity according to Sutherland law
-    visc_ = actmat->ComputeViscosity(tempaf);
-
-    // compute density at n+alpha_F or n+1 based on progress variable
-    densaf_ = actmat->ComputeDensity(pscaaf);
-  }
-  else if (material->MaterialType() == CORE::Materials::m_permeable_fluid)
-  {
-    const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
-
-    densaf_ = actmat->Density();
-
-    // get constant viscosity
-    visc_ = actmat->SetViscosity();
   }
   else if (material->MaterialType() == CORE::Materials::m_fluidporo)
   {

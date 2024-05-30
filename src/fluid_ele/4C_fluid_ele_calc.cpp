@@ -25,21 +25,15 @@
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"
 #include "4C_immersed_problem_immersed_base.hpp"
-#include "4C_mat_arrhenius_pv.hpp"
 #include "4C_mat_carreauyasuda.hpp"
-#include "4C_mat_ferech_pv.hpp"
 #include "4C_mat_fluid_linear_density_viscosity.hpp"
 #include "4C_mat_fluid_murnaghantait.hpp"
 #include "4C_mat_fluidporo.hpp"
 #include "4C_mat_herschelbulkley.hpp"
 #include "4C_mat_list.hpp"
-#include "4C_mat_mixfrac.hpp"
 #include "4C_mat_modpowerlaw.hpp"
 #include "4C_mat_newtonianfluid.hpp"
-#include "4C_mat_permeablefluid.hpp"
 #include "4C_mat_sutherland.hpp"
-#include "4C_mat_tempdepwater.hpp"
-#include "4C_mat_yoghurt.hpp"
 #include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
@@ -2032,76 +2026,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::get_material_params(
       visc = tau0 * ((1.0 - exp(-mexp * rateofstrain)) / rateofstrain) +
              kfac * pow(rateofstrain, (nexp - 1.0));
   }
-  else if (material->MaterialType() == CORE::Materials::m_yoghurt)
-  {
-    const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
-
-    // get constant density
-    densaf = actmat->Density();
-    densam = densaf;
-    densn = densaf;
-
-    // compute temperature at n+alpha_F or n+1 and check whether it is positive
-    const double tempaf = funct_.Dot(escaaf);
-    if (tempaf < 0.0) FOUR_C_THROW("Negative temperature in Fluid yoghurt material evaluation!");
-
-    // compute rate of strain at n+alpha_F or n+1
-    double rateofstrain = -1.0e30;
-    rateofstrain = get_strain_rate(evelaf);
-
-    // compute viscosity for Yoghurt-like flows according to Afonso et al. (2003)
-    visc = actmat->ComputeViscosity(rateofstrain, tempaf);
-
-    // compute diffusivity
-    diffus_ = actmat->ComputeDiffusivity();
-  }
-  else if (material->MaterialType() == CORE::Materials::m_mixfrac)
-  {
-    const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
-
-    // compute mixture fraction at n+alpha_F or n+1
-    const double mixfracaf = funct_.Dot(escaaf);
-
-    // compute dynamic viscosity at n+alpha_F or n+1 based on mixture fraction
-    visc = actmat->ComputeViscosity(mixfracaf);
-
-    // compute dynamic diffusivity at n+alpha_F or n+1 based on mixture fraction
-    diffus_ = actmat->ComputeDiffusivity(mixfracaf);
-
-    // compute density at n+alpha_F or n+1 based on mixture fraction
-    densaf = actmat->ComputeDensity(mixfracaf);
-
-    // factor for convective scalar term at n+alpha_F or n+1
-    scaconvfacaf_ = actmat->EosFacA() * densaf;
-
-    if (fldparatimint_->IsGenalpha())
-    {
-      // compute density at n+alpha_M based on mixture fraction
-      const double mixfracam = funct_.Dot(escaam);
-      densam = actmat->ComputeDensity(mixfracam);
-
-      // factor for scalar time derivative at n+alpha_M
-      scadtfac_ = actmat->EosFacA() * densam;
-    }
-    else
-    {
-      // set density at n+1 at location n+alpha_M as well
-      densam = densaf;
-
-      if (not fldparatimint_->IsStationary())
-      {
-        // compute density at n based on mixture fraction
-        const double mixfracn = funct_.Dot(escaam);
-        densn = actmat->ComputeDensity(mixfracn);
-
-        // factor for convective scalar term at n
-        scaconvfacn_ = actmat->EosFacA() * densn;
-
-        // factor for scalar time derivative
-        scadtfac_ = scaconvfacaf_;
-      }
-    }
-  }
   else if (material->MaterialType() == CORE::Materials::m_sutherland)
   {
     const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
@@ -2261,206 +2185,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::get_material_params(
       }
     }
   }
-  else if (material->MaterialType() == CORE::Materials::m_tempdepwater)
-  {
-    const MAT::TempDepWater* actmat = static_cast<const MAT::TempDepWater*>(material.get());
-
-    // compute temperature at n+alpha_F or n+1 and check whether it is positive
-    const double tempaf = funct_.Dot(escaaf);
-    if (tempaf < 0.0)
-      FOUR_C_THROW("Negative temperature in Fluid temperature-dependent water evaluation!");
-
-    // compute temperature-dependent viscosity
-    visc = actmat->ComputeViscosity(tempaf);
-
-    // compute temperature-dependent diffusivity
-    diffus_ = actmat->ComputeDiffusivity(tempaf);
-
-    // compute temperature-dependent density at n+alpha_F or n+1
-    densaf = actmat->ComputeDensity(tempaf);
-
-    if (fldparatimint_->IsGenalpha())
-    {
-      // compute temperature at n+alpha_M
-      const double tempam = funct_.Dot(escaam);
-
-      // compute density at n+alpha_M based on temperature
-      densam = actmat->ComputeDensity(tempam);
-    }
-    else
-    {
-      // set density at n+1 at location n+alpha_M as well
-      densam = densaf;
-
-      if (not fldparatimint_->IsStationary())
-      {
-        // compute temperature at n
-        const double tempn = funct_.Dot(escaam);
-
-        // compute density at n based on temperature at n
-        densn = actmat->ComputeDensity(tempn);
-      }
-    }
-
-    // second part of right-hand side for scalar equation: body force
-    // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    const double scatrabodyforce = funct_.Dot(escabofoaf);
-    scarhs_ = scatrabodyforce / actmat->Shc();
-  }
-  else if (material->MaterialType() == CORE::Materials::m_arrhenius_pv)
-  {
-    const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
-
-    // get progress variable at n+alpha_F or n+1
-    const double provaraf = funct_.Dot(escaaf);
-
-    // compute temperature based on progress variable at n+alpha_F or n+1
-    // and check whether it is positive
-    const double tempaf = actmat->ComputeTemperature(provaraf);
-    if (tempaf < 0.0)
-      FOUR_C_THROW(
-          "Negative temperature in Fluid Arrhenius progress-variable material evaluation!");
-
-    // compute viscosity according to Sutherland law
-    visc = actmat->ComputeViscosity(tempaf);
-
-    // compute diffusivity according to Sutherland law
-    diffus_ = actmat->ComputeDiffusivity(tempaf);
-
-    // compute density at n+alpha_F or n+1 based on progress variable
-    densaf = actmat->ComputeDensity(provaraf);
-
-    // factor for convective scalar term at n+alpha_F or n+1
-    scaconvfacaf_ = actmat->ComputeFactor(provaraf);
-
-    if (fldparatimint_->IsGenalpha())
-    {
-      // compute density at n+alpha_M based on progress variable
-      const double provaram = funct_.Dot(escaam);
-      densam = actmat->ComputeDensity(provaram);
-
-      // factor for scalar time derivative at n+alpha_M
-      scadtfac_ = actmat->ComputeFactor(provaram);
-
-      // right-hand side for scalar equation (including reactive term)
-      scarhs_ = densaf * actmat->compute_reaction_coeff(tempaf) * (1.0 - provaraf);
-    }
-    else
-    {
-      // set density at n+1 at location n+alpha_M as well
-      densam = densaf;
-
-      if (not fldparatimint_->IsStationary())
-      {
-        // compute density at n based on progress variable
-        const double provarn = funct_.Dot(escaam);
-        densn = actmat->ComputeDensity(provarn);
-
-        // factor for convective scalar term at n
-        scaconvfacn_ = actmat->ComputeFactor(provarn);
-
-        // factor for scalar time derivative
-        scadtfac_ = scaconvfacaf_;
-
-        // right-hand side for scalar equation (including reactive term)
-        const double tempn = actmat->ComputeTemperature(provarn);
-        scarhs_ = fldparatimint_->Theta() *
-                      (densaf * actmat->compute_reaction_coeff(tempaf) * (1.0 - provaraf)) +
-                  fldparatimint_->OmTheta() *
-                      (densn * actmat->compute_reaction_coeff(tempn) * (1.0 - provarn));
-      }
-    }
-  }
-  else if (material->MaterialType() == CORE::Materials::m_ferech_pv)
-  {
-    const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
-
-    // get progress variable at n+alpha_F or n+1
-    const double provaraf = funct_.Dot(escaaf);
-
-    // compute temperature based on progress variable at n+alpha_F or n+1
-    // and check whether it is positive
-    const double tempaf = actmat->ComputeTemperature(provaraf);
-    if (tempaf < 0.0)
-      FOUR_C_THROW(
-          "Negative temperature in Fluid Ferziger and Echekki progress-variable material "
-          "evaluation!");
-
-    // compute viscosity according to Sutherland law
-    visc = actmat->ComputeViscosity(tempaf);
-
-    // compute diffusivity according to Sutherland law
-    diffus_ = actmat->ComputeDiffusivity(tempaf);
-
-    // compute density at n+alpha_F or n+1 based on progress variable
-    densaf = actmat->ComputeDensity(provaraf);
-
-    // factor for convective scalar term at n+alpha_F or n+1
-    scaconvfacaf_ = actmat->ComputeFactor(provaraf);
-
-    if (fldparatimint_->IsGenalpha())
-    {
-      // compute density at n+alpha_M based on progress variable
-      const double provaram = funct_.Dot(escaam);
-      densam = actmat->ComputeDensity(provaram);
-
-      // factor for scalar time derivative at n+alpha_M
-      scadtfac_ = actmat->ComputeFactor(provaram);
-
-      // right-hand side for scalar equation (including reactive term)
-      scarhs_ = densaf * actmat->compute_reaction_coeff(tempaf) * (1.0 - provaraf);
-    }
-    else
-    {
-      // set density at n+1 at location n+alpha_M as well
-      densam = densaf;
-
-      if (not fldparatimint_->IsStationary())
-      {
-        // compute density at n based on progress variable
-        const double provarn = funct_.Dot(escaam);
-        densn = actmat->ComputeDensity(provarn);
-
-        // factor for convective scalar term at n
-        scaconvfacn_ = actmat->ComputeFactor(provarn);
-
-        // factor for scalar time derivative
-        scadtfac_ = scaconvfacaf_;
-
-        // right-hand side for scalar equation (including reactive term)
-        const double tempn = actmat->ComputeTemperature(provarn);
-        scarhs_ = fldparatimint_->Theta() *
-                      (densaf * actmat->compute_reaction_coeff(tempaf) * (1.0 - provaraf)) +
-                  fldparatimint_->OmTheta() *
-                      (densn * actmat->compute_reaction_coeff(tempn) * (1.0 - provarn));
-      }
-    }
-  }
-  else if (material->MaterialType() == CORE::Materials::m_permeable_fluid)
-  {
-    const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
-
-    densaf = actmat->Density();
-    densam = densaf;
-    densn = densaf;
-
-    // calculate reaction coefficient
-    reacoeff_ = actmat->compute_reaction_coeff();
-
-    // get constant viscosity (zero for Darcy and greater than zero for Darcy-Stokes)
-    visc = actmat->SetViscosity();
-
-    // set darcy flag to true
-    // f3Parameter_->darcy_ = true;
-    // set reaction flag to true
-    // f3Parameter_->reaction_ = true;
-
-    // check stabilization parameter definition for permeable fluid
-    if (not(fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
-            fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
-      FOUR_C_THROW(
-          "incorrect definition of stabilization parameter for Darcy or Darcy-Stokes problem");
-  }
   else if (material->MaterialType() == CORE::Materials::m_matlist)
   {
     // get material list for this element
@@ -2580,9 +2304,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::get_material_params(
     FOUR_C_THROW("Material type is not supported");
 
   // check whether there is zero or negative (physical) viscosity
-  // (expect for permeable fluid)
-  if (visc < 1e-15 and not(material->MaterialType() == CORE::Materials::m_permeable_fluid))
-    FOUR_C_THROW("zero or negative (physical) diffusivity");
+  if (visc < 1e-15) FOUR_C_THROW("zero or negative (physical) diffusivity");
 
   return;
 }  // FluidEleCalc::get_material_params
@@ -11841,56 +11563,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::update_material_params(
     const CORE::LINALG::Matrix<nen_, 1>& escaam, const double thermpressaf,
     const double thermpressam, const double sgsca)
 {
-  if (material->MaterialType() == CORE::Materials::m_mixfrac)
-  {
-    const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
-
-    // compute mixture fraction at n+alpha_F or n+1
-    double mixfracaf = funct_.Dot(escaaf);
-
-    // add subgrid-scale part to obtain complete mixture fraction
-    mixfracaf += sgsca;
-
-    // compute dynamic viscosity at n+alpha_F or n+1 based on mixture fraction
-    visc_ = actmat->ComputeViscosity(mixfracaf);
-
-    // compute density at n+alpha_F or n+1 based on mixture fraction
-    densaf_ = actmat->ComputeDensity(mixfracaf);
-
-    // factor for convective scalar term at n+alpha_F or n+1
-    scaconvfacaf_ = actmat->EosFacA() * densaf_;
-
-    if (fldparatimint_->IsGenalpha())
-    {
-      // compute density at n+alpha_M based on mixture fraction
-      double mixfracam = funct_.Dot(escaam);
-      mixfracam += sgsca;
-      densam_ = actmat->ComputeDensity(mixfracam);
-
-      // factor for scalar time derivative at n+alpha_M
-      scadtfac_ = actmat->EosFacA() * densam_;
-    }
-    else
-    {
-      // set density at n+1 at location n+alpha_M as well
-      densam_ = densaf_;
-
-      if (not fldparatimint_->IsStationary())
-      {
-        // compute density at n based on mixture fraction
-        double mixfracn = funct_.Dot(escaam);
-        mixfracn += sgsca;
-        densn_ = actmat->ComputeDensity(mixfracn);
-
-        // factor for convective scalar term at n
-        scaconvfacn_ = actmat->EosFacA() * densn_;
-
-        // factor for scalar time derivative
-        scadtfac_ = scaconvfacaf_;
-      }
-    }
-  }
-  else if (material->MaterialType() == CORE::Materials::m_sutherland)
+  if (material->MaterialType() == CORE::Materials::m_sutherland)
   {
     const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
 
@@ -12033,144 +11706,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::update_material_params(
         FOUR_C_THROW("Genalpha is the only scheme implemented for weakly compressibility");
       }
     }
-  }
-  else if (material->MaterialType() == CORE::Materials::m_arrhenius_pv)
-  {
-    const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
-
-    // get progress variable at n+alpha_F or n+1
-    double provaraf = funct_.Dot(escaaf);
-
-    // add subgrid-scale part to obtain complete progress variable
-    provaraf += sgsca;
-
-    // compute temperature based on progress variable at n+alpha_F or n+1
-    // and check whether it is positive
-    const double tempaf = actmat->ComputeTemperature(provaraf);
-    if (tempaf < 0.0)
-      FOUR_C_THROW(
-          "Negative temperature in Fluid Arrhenius progress-variable material-update evaluation!");
-
-
-    // compute viscosity according to Sutherland law
-    visc_ = actmat->ComputeViscosity(tempaf);
-
-    // compute density at n+alpha_F or n+1 based on progress variable
-    densaf_ = actmat->ComputeDensity(provaraf);
-
-    // factor for convective scalar term at n+alpha_F or n+1
-    scaconvfacaf_ = actmat->ComputeFactor(provaraf);
-
-    if (fldparatimint_->IsGenalpha())
-    {
-      // compute density at n+alpha_M based on progress variable
-      double provaram = funct_.Dot(escaam);
-      provaram += sgsca;
-      densam_ = actmat->ComputeDensity(provaram);
-
-      // factor for scalar time derivative at n+alpha_M
-      scadtfac_ = actmat->ComputeFactor(provaram);
-    }
-    else
-    {
-      // set density at n+1 at location n+alpha_M as well
-      densam_ = densaf_;
-
-      if (not fldparatimint_->IsStationary())
-      {
-        // compute density at n based on progress variable
-        double provarn = funct_.Dot(escaam);
-        provarn += sgsca;
-        densn_ = actmat->ComputeDensity(provarn);
-
-        // factor for convective scalar term at n
-        scaconvfacn_ = actmat->ComputeFactor(provarn);
-
-        // factor for scalar time derivative
-        scadtfac_ = scaconvfacaf_;
-      }
-    }
-  }
-  else if (material->MaterialType() == CORE::Materials::m_ferech_pv)
-  {
-    const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
-
-    // get progress variable at n+alpha_F or n+1
-    double provaraf = funct_.Dot(escaaf);
-
-    // add subgrid-scale part to obtain complete progress variable
-    provaraf += sgsca;
-
-    // compute temperature based on progress variable at n+alpha_F or n+1
-    // and check whether it is positive
-    const double tempaf = actmat->ComputeTemperature(provaraf);
-    if (tempaf < 0.0)
-      FOUR_C_THROW(
-          "Negative temperature in Fluid Ferziger and Echekki progress-variable material-update "
-          "evaluation!");
-
-    // compute viscosity according to Sutherland law
-    visc_ = actmat->ComputeViscosity(tempaf);
-
-    // compute density at n+alpha_F or n+1 based on progress variable
-    densaf_ = actmat->ComputeDensity(provaraf);
-
-    // factor for convective scalar term at n+alpha_F or n+1
-    scaconvfacaf_ = actmat->ComputeFactor(provaraf);
-
-    if (fldparatimint_->IsGenalpha())
-    {
-      // compute density at n+alpha_M based on progress variable
-      double provaram = funct_.Dot(escaam);
-      provaram += sgsca;
-      densam_ = actmat->ComputeDensity(provaram);
-
-      // factor for scalar time derivative at n+alpha_M
-      scadtfac_ = actmat->ComputeFactor(provaram);
-    }
-    else
-    {
-      // set density at n+1 at location n+alpha_M as well
-      densam_ = densaf_;
-
-      if (not fldparatimint_->IsStationary())
-      {
-        // compute density at n based on progress variable
-        double provarn = funct_.Dot(escaam);
-        provarn += sgsca;
-        densn_ = actmat->ComputeDensity(provarn);
-
-        // factor for convective scalar term at n
-        scaconvfacn_ = actmat->ComputeFactor(provarn);
-
-        // factor for scalar time derivative
-        scadtfac_ = scaconvfacaf_;
-      }
-    }
-  }
-  else if (material->MaterialType() == CORE::Materials::m_yoghurt)
-  {
-    const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
-
-    // get constant density
-    densaf_ = actmat->Density();
-    densam_ = densaf_;
-    densn_ = densaf_;
-
-    // compute temperature at n+alpha_F or n+1 and check whether it is positive
-    const double tempaf = funct_.Dot(escaaf);
-    if (tempaf < 0.0)
-      FOUR_C_THROW("Negative temperature in Fluid yoghurt material-update evaluation!");
-
-    // compute rate of strain at n+alpha_F or n+1
-    double rateofstrain = -1.0e30;
-    rateofstrain = get_strain_rate(evelaf);
-
-    // compute viscosity for Yoghurt-like flows according to Afonso et al. (2003)
-    visc_ = actmat->ComputeViscosity(rateofstrain, tempaf);
-
-    // compute diffusivity
-    diffus_ = actmat->ComputeDiffusivity();
   }
   else
     FOUR_C_THROW("Update of material parameters not required for this material type!");

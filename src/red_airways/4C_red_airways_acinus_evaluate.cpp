@@ -132,18 +132,6 @@ int DRT::ELEMENTS::RedAcinus::Evaluate(Teuchos::ParameterList& params,
           this, params, discretization, elevec1, lm, mat);
     }
     break;
-    case solve_scatra:
-    {
-      DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->SolveScatra(
-          this, params, discretization, elevec1, elevec2, lm, mat);
-    }
-    break;
-    case solve_junction_scatra:
-    {
-      DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->solve_scatra_bifurcations(
-          this, params, discretization, elevec1, elevec2, lm, mat);
-    }
-    break;
     case update_scatra:
     {
       DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->update_scatra(
@@ -170,12 +158,6 @@ int DRT::ELEMENTS::RedAcinus::Evaluate(Teuchos::ParameterList& params,
     {
       DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->eval_nodal_essential_values(
           this, params, discretization, elevec1, elevec2, elevec3, lm, mat);
-    }
-    break;
-    case eval_PO2_from_concentration:
-    {
-      DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->EvalPO2FromScatra(
-          this, params, discretization, lm, mat);
     }
     break;
     default:

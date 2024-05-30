@@ -28,21 +28,13 @@ DRT::ELEMENTS::RedAirBloodScatraType& DRT::ELEMENTS::RedAirBloodScatraType::Inst
 
 CORE::COMM::ParObject* DRT::ELEMENTS::RedAirBloodScatraType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::RedAirBloodScatra* object = new DRT::ELEMENTS::RedAirBloodScatra(-1, -1);
-  object->Unpack(data);
-  return object;
+  FOUR_C_THROW("Not implemented.");
 }
 
 
 Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RedAirBloodScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "RED_AIR_BLOOD_SCATRA")
-  {
-    Teuchos::RCP<CORE::Elements::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::RedAirBloodScatra(id, owner));
-    return ele;
-  }
   return Teuchos::null;
 }
 
@@ -50,9 +42,7 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RedAirBloodScatraType::Crea
 Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RedAirBloodScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::RedAirBloodScatra(id, owner));
-  return ele;
+  FOUR_C_THROW("Not implemented.");
 }
 
 
@@ -95,8 +85,7 @@ DRT::ELEMENTS::RedAirBloodScatra::RedAirBloodScatra(const DRT::ELEMENTS::RedAirB
  *----------------------------------------------------------------------*/
 CORE::Elements::Element* DRT::ELEMENTS::RedAirBloodScatra::Clone() const
 {
-  DRT::ELEMENTS::RedAirBloodScatra* newelement = new DRT::ELEMENTS::RedAirBloodScatra(*this);
-  return newelement;
+  FOUR_C_THROW("Not implemented.");
 }
 
 /*----------------------------------------------------------------------*

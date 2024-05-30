@@ -52,9 +52,6 @@ namespace SCATRA
     //! predict thermodynamic pressure and time derivative
     virtual void predict_therm_pressure() = 0;
 
-    //! compute initial thermodyn. pressure time derivative
-    void compute_initial_therm_pressure_deriv();
-
     //! compute initial total mass in domain
     void ComputeInitialMass();
 
