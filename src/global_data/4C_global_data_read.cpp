@@ -29,7 +29,6 @@
 #include "4C_io_materialdefinition.hpp"
 #include "4C_io_meshreader.hpp"
 #include "4C_lib_discret_hdg.hpp"
-#include "4C_lib_discret_xwall.hpp"
 #include "4C_mat_elchmat.hpp"
 #include "4C_mat_elchphase.hpp"
 #include "4C_mat_micromaterial.hpp"
@@ -40,6 +39,7 @@
 #include "4C_particle_engine_particlereader.hpp"
 #include "4C_rebalance_graph_based.hpp"
 #include "4C_xfem_discretization.hpp"
+#include "4C_xfem_discretization_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -92,7 +92,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
                    problem.FluidDynamicParams().sublist("WALL MODEL"), "X_WALL"))
       {
         structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
-        fluiddis = Teuchos::rcp(new DRT::DiscretizationXWall("fluid", reader.Comm()));
+        fluiddis = Teuchos::rcp(new XFEM::DiscretizationXWall("fluid", reader.Comm()));
         aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
       }
       else
@@ -374,7 +374,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       else if (CORE::UTILS::IntegralValue<int>(
                    problem.FluidDynamicParams().sublist("WALL MODEL"), "X_WALL"))
       {
-        fluiddis = Teuchos::rcp(new DRT::DiscretizationXWall("fluid", reader.Comm()));
+        fluiddis = Teuchos::rcp(new XFEM::DiscretizationXWall("fluid", reader.Comm()));
 
         // create discretization writer - in constructor set into and owned by corresponding discret
         fluiddis->SetWriter(
@@ -495,7 +495,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       else if (CORE::UTILS::IntegralValue<int>(
                    problem.FluidDynamicParams().sublist("WALL MODEL"), "X_WALL"))
       {
-        fluiddis = Teuchos::rcp(new DRT::DiscretizationXWall("fluid", reader.Comm()));
+        fluiddis = Teuchos::rcp(new XFEM::DiscretizationXWall("fluid", reader.Comm()));
         aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
       }
       else
