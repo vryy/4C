@@ -20,6 +20,7 @@
 #include "4C_inpar_validcontactconstitutivelaw.hpp"
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_inpar_validparameters.hpp"
+#include "4C_io_dat_file_utils.hpp"
 #include "4C_io_elementdefinition.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
@@ -293,15 +294,15 @@ int main(int argc, char *argv[])
       PrintConditionDatHeader();
       PrintMaterialDatHeader();
       PrintContactConstitutiveLawDatHeader();
-      CORE::FE::PrintCloningMaterialMapDatHeader();
+
+      const auto lines = CORE::FE::valid_cloning_material_map_lines();
+      IO::DatFileUtils::print_section(std::cout, "CLONING MATERIAL MAP", lines);
+
       PrintElementDatHeader();
 
-      INPUT::Lines result_lines("RESULT DESCRIPTION",
-          "The result of the simulation with respect to specific quantities at concrete points "
-          "can be tested against particular values with a given tolerance.");
-
-      GlobalLegacyModuleCallbacks().AttachResultLines(result_lines);
-      result_lines.Print(std::cout);
+      const std::vector<INPUT::LineDefinition> result_lines =
+          GlobalLegacyModuleCallbacks().valid_result_description_lines();
+      IO::DatFileUtils::print_section(std::cout, "RESULT DESCRIPTION", result_lines);
 
       printf("\n\n");
     }

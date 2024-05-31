@@ -27,6 +27,7 @@ its parameters and conditions.
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_condition_definition.hpp"
+#include "4C_io_dat_file_utils.hpp"
 #include "4C_io_elementdefinition.hpp"
 #include "4C_pre_exodus_readbc.hpp"
 #include "4C_pre_exodus_reader.hpp"
@@ -343,8 +344,8 @@ int main(int argc, char** argv)
       }
 
       // print cloning material map default lines (right after the materials)
-      INPUT::Lines lines = CORE::FE::ValidCloningMaterialMapLines();
-      lines.Print(defaulthead);
+      const auto lines = CORE::FE::valid_cloning_material_map_lines();
+      IO::DatFileUtils::print_section(defaulthead, "CLONING MATERIAL MAP", lines);
 
       // print spatial functions
       defaulthead << "-------------------------------------------------------------FUNCT1"
@@ -358,8 +359,9 @@ int main(int argc, char** argv)
       {
         std::stringstream tmp;
         CORE::UTILS::FunctionManager functionmanager;
-        INPUT::Lines flines = functionmanager.ValidFunctionLines();
-        flines.Print(tmp);
+        GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(functionmanager);
+        const std::vector<INPUT::LineDefinition> flines = functionmanager.valid_function_lines();
+        IO::DatFileUtils::print_section(tmp, "FUNCT", flines);
         std::string tmpstring = tmp.str();
         std::string removeit =
             "--------------------------------------------------------------FUNCT\n";
@@ -373,12 +375,8 @@ int main(int argc, char** argv)
 
       // default result-test lines
       {
-        CORE::UTILS::ResultTestManager resulttestmanager;
-        INPUT::Lines lines("RESULT DESCRIPTION",
-            "The result of the simulation with respect to specific quantities at concrete points "
-            "can be tested against particular values with a given tolerance.");
-        GlobalLegacyModuleCallbacks().AttachResultLines(lines);
-        lines.Print(defaulthead);
+        const auto lines = GlobalLegacyModuleCallbacks().valid_result_description_lines();
+        IO::DatFileUtils::print_section(defaulthead, "RESULT DESCRIPTION", lines);
       }
 
       // close default header file

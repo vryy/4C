@@ -919,11 +919,8 @@ namespace CORE::FE
     return;
   };  // CloneDiscretizationFromCondition
 
-  //! construct and return cloning material map input lines
-  INPUT::Lines ValidCloningMaterialMapLines();
-
-  //! helper method for printout
-  void PrintCloningMaterialMapDatHeader();
+  //! Return valid cloning material map input lines.
+  std::vector<INPUT::LineDefinition> valid_cloning_material_map_lines();
 
 }  // namespace CORE::FE
 

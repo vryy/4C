@@ -259,32 +259,14 @@ void CORE::FE::DiscretizationCreatorBase::finalize(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-INPUT::Lines CORE::FE::ValidCloningMaterialMapLines()
+std::vector<INPUT::LineDefinition> CORE::FE::valid_cloning_material_map_lines()
 {
-  // this defines the valid input line
-  INPUT::LineDefinition structure = INPUT::LineDefinition::Builder()
-                                        .AddNamedString("SRC_FIELD")
-                                        .AddNamedInt("SRC_MAT")
-                                        .AddNamedString("TAR_FIELD")
-                                        .AddNamedInt("TAR_MAT")
-                                        .Build();
-  INPUT::Lines lines = INPUT::Lines("CLONING MATERIAL MAP",
-      "This section is used for multi physics simulations, "
-      "in which a discretization is used for more than one physics. "
-      "The material model given for the defined element (SRC_MAT) is coupled to the material model "
-      "for a different physics (TAR_MAT).");
-
-  lines.Add(structure);
-
-  return lines;
-}  // CORE::FE::ValidCloningMaterialMapLines
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void CORE::FE::PrintCloningMaterialMapDatHeader()
-{
-  INPUT::Lines lines = ValidCloningMaterialMapLines();
-  lines.Print(std::cout);
-}  // DRT::UTILS::PrintCloningMaterialMapDatHeader
+  return {INPUT::LineDefinition::Builder()
+              .AddNamedString("SRC_FIELD")
+              .AddNamedInt("SRC_MAT")
+              .AddNamedString("TAR_FIELD")
+              .AddNamedInt("TAR_MAT")
+              .Build()};
+}
 
 FOUR_C_NAMESPACE_CLOSE

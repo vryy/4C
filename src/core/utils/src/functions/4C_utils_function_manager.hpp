@@ -33,7 +33,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace INPUT
 {
-  class Lines;
   class DatFileReader;
 }  // namespace INPUT
 
@@ -55,7 +54,7 @@ namespace CORE::UTILS
     using FunctionFactory = std::function<std::any(const std::vector<INPUT::LineDefinition>&)>;
 
     /// Return all known input lines that define a Function.
-    INPUT::Lines ValidFunctionLines();
+    std::vector<INPUT::LineDefinition> valid_function_lines();
 
     /// Read the 4C input file and set up all Functions.
     void ReadInput(INPUT::DatFileReader& reader);

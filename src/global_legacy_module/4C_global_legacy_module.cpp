@@ -370,344 +370,313 @@ namespace
     POROMULTIPHASESCATRA::AddValidPoroFunctions(function_manager);
   }
 
-  void ValidResultLines(INPUT::Lines& lines)
+  std::vector<INPUT::LineDefinition> ValidResultLines()
   {
-    INPUT::LineDefinition structure = INPUT::LineDefinition::Builder()
-                                          .AddTag("STRUCTURE")
-                                          .AddNamedString("DIS")
-                                          .AddNamedInt("NODE")
-                                          .AddNamedString("QUANTITY")
-                                          .AddNamedDouble("VALUE")
-                                          .AddNamedDouble("TOLERANCE")
-                                          .add_optional_named_string("NAME")
-                                          .Build();
+    return {//
+        INPUT::LineDefinition::Builder()
+            .AddTag("STRUCTURE")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition structure_special = INPUT::LineDefinition::Builder()
-                                                  .AddTag("STRUCTURE")
-                                                  .AddTag("SPECIAL")
-                                                  .AddNamedString("QUANTITY")
-                                                  .AddNamedDouble("VALUE")
-                                                  .AddNamedDouble("TOLERANCE")
-                                                  .add_optional_named_string("NAME")
-                                                  .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("STRUCTURE")
+            .AddTag("SPECIAL")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition fluid_node = INPUT::LineDefinition::Builder()
-                                           .AddTag("FLUID")
-                                           .AddNamedString("DIS")
-                                           .AddNamedInt("NODE")
-                                           .AddNamedString("QUANTITY")
-                                           .AddNamedDouble("VALUE")
-                                           .AddNamedDouble("TOLERANCE")
-                                           .add_optional_named_string("NAME")
-                                           .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("FLUID")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition fluid_ele = INPUT::LineDefinition::Builder()
-                                          .AddTag("FLUID")
-                                          .AddNamedString("DIS")
-                                          .AddNamedInt("ELEMENT")
-                                          .AddNamedString("QUANTITY")
-                                          .AddNamedDouble("VALUE")
-                                          .AddNamedDouble("TOLERANCE")
-                                          .add_optional_named_string("NAME")
-                                          .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("FLUID")
+            .AddNamedString("DIS")
+            .AddNamedInt("ELEMENT")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition xfluid_node = INPUT::LineDefinition::Builder()
-                                            .AddTag("XFLUID")
-                                            .AddNamedString("DIS")
-                                            .AddNamedInt("NODE")
-                                            .AddNamedString("QUANTITY")
-                                            .AddNamedDouble("VALUE")
-                                            .AddNamedDouble("TOLERANCE")
-                                            .add_optional_named_string("NAME")
-                                            .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("XFLUID")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition ale = INPUT::LineDefinition::Builder()
-                                    .AddTag("ALE")
-                                    .AddNamedString("DIS")
-                                    .AddNamedInt("NODE")
-                                    .AddNamedString("QUANTITY")
-                                    .AddNamedDouble("VALUE")
-                                    .AddNamedDouble("TOLERANCE")
-                                    .add_optional_named_string("NAME")
-                                    .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("ALE")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition thermal = INPUT::LineDefinition::Builder()
-                                        .AddTag("THERMAL")
-                                        .AddNamedString("DIS")
-                                        .AddNamedInt("NODE")
-                                        .AddNamedString("QUANTITY")
-                                        .AddNamedDouble("VALUE")
-                                        .AddNamedDouble("TOLERANCE")
-                                        .add_optional_named_string("NAME")
-                                        .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("THERMAL")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition lubrication = INPUT::LineDefinition::Builder()
-                                            .AddTag("LUBRICATION")
-                                            .AddNamedString("DIS")
-                                            .AddNamedInt("NODE")
-                                            .AddNamedString("QUANTITY")
-                                            .AddNamedDouble("VALUE")
-                                            .AddNamedDouble("TOLERANCE")
-                                            .add_optional_named_string("NAME")
-                                            .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("LUBRICATION")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition porofluidmultiphase_node = INPUT::LineDefinition::Builder()
-                                                         .AddTag("POROFLUIDMULTIPHASE")
-                                                         .AddNamedString("DIS")
-                                                         .AddNamedInt("NODE")
-                                                         .AddNamedString("QUANTITY")
-                                                         .AddNamedDouble("VALUE")
-                                                         .AddNamedDouble("TOLERANCE")
-                                                         .add_optional_named_string("NAME")
-                                                         .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("POROFLUIDMULTIPHASE")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition porofluidmultiphase_ele = INPUT::LineDefinition::Builder()
-                                                        .AddTag("POROFLUIDMULTIPHASE")
-                                                        .AddNamedString("DIS")
-                                                        .AddNamedInt("ELEMENT")
-                                                        .AddNamedString("QUANTITY")
-                                                        .AddNamedDouble("VALUE")
-                                                        .AddNamedDouble("TOLERANCE")
-                                                        .add_optional_named_string("NAME")
-                                                        .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("POROFLUIDMULTIPHASE")
+            .AddNamedString("DIS")
+            .AddNamedInt("ELEMENT")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition porofluidmultiphase_special = INPUT::LineDefinition::Builder()
-                                                            .AddTag("POROFLUIDMULTIPHASE")
-                                                            .AddNamedString("DIS")
-                                                            .AddTag("SPECIAL")
-                                                            .AddNamedString("QUANTITY")
-                                                            .AddNamedDouble("VALUE")
-                                                            .AddNamedDouble("TOLERANCE")
-                                                            .add_optional_named_string("NAME")
-                                                            .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("POROFLUIDMULTIPHASE")
+            .AddNamedString("DIS")
+            .AddTag("SPECIAL")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition scatra = INPUT::LineDefinition::Builder()
-                                       .AddTag("SCATRA")
-                                       .AddNamedString("DIS")
-                                       .AddNamedInt("NODE")
-                                       .AddNamedString("QUANTITY")
-                                       .AddNamedDouble("VALUE")
-                                       .AddNamedDouble("TOLERANCE")
-                                       .add_optional_named_string("NAME")
-                                       .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("SCATRA")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition scatra_special = INPUT::LineDefinition::Builder()
-                                               .AddTag("SCATRA")
-                                               .AddNamedString("DIS")
-                                               .AddTag("SPECIAL")
-                                               .AddNamedString("QUANTITY")
-                                               .AddNamedDouble("VALUE")
-                                               .AddNamedDouble("TOLERANCE")
-                                               .add_optional_named_string("NAME")
-                                               .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("SCATRA")
+            .AddNamedString("DIS")
+            .AddTag("SPECIAL")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition ssi = INPUT::LineDefinition::Builder()
-                                    .AddTag("SSI")
-                                    .AddNamedString("DIS")
-                                    .AddNamedInt("NODE")
-                                    .AddNamedString("QUANTITY")
-                                    .AddNamedDouble("VALUE")
-                                    .AddNamedDouble("TOLERANCE")
-                                    .add_optional_named_string("NAME")
-                                    .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("SSI")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition ssi_special = INPUT::LineDefinition::Builder()
-                                            .AddTag("SSI")
-                                            .AddTag("SPECIAL")
-                                            .AddNamedString("QUANTITY")
-                                            .AddNamedDouble("VALUE")
-                                            .AddNamedDouble("TOLERANCE")
-                                            .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("SSI")
+            .AddTag("SPECIAL")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .Build(),
 
-    INPUT::LineDefinition ssti_special = INPUT::LineDefinition::Builder()
-                                             .AddTag("SSTI")
-                                             .AddTag("SPECIAL")
-                                             .AddNamedString("QUANTITY")
-                                             .AddNamedDouble("VALUE")
-                                             .AddNamedDouble("TOLERANCE")
-                                             .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("SSTI")
+            .AddTag("SPECIAL")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .Build(),
 
-    INPUT::LineDefinition sti_special = INPUT::LineDefinition::Builder()
-                                            .AddTag("STI")
-                                            .AddTag("SPECIAL")
-                                            .AddNamedString("QUANTITY")
-                                            .AddNamedDouble("VALUE")
-                                            .AddNamedDouble("TOLERANCE")
-                                            .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("STI")
+            .AddTag("SPECIAL")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .Build(),
 
-    INPUT::LineDefinition red_airway = INPUT::LineDefinition::Builder()
-                                           .AddTag("RED_AIRWAY")
-                                           .AddNamedString("DIS")
-                                           .AddNamedInt("NODE")
-                                           .AddNamedString("QUANTITY")
-                                           .AddNamedDouble("VALUE")
-                                           .AddNamedDouble("TOLERANCE")
-                                           .add_optional_named_string("NAME")
-                                           .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("RED_AIRWAY")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition red_airway_ele = INPUT::LineDefinition::Builder()
-                                               .AddTag("RED_AIRWAY")
-                                               .AddNamedString("DIS")
-                                               .AddNamedInt("ELEMENT")
-                                               .AddNamedString("QUANTITY")
-                                               .AddNamedDouble("VALUE")
-                                               .AddNamedDouble("TOLERANCE")
-                                               .add_optional_named_string("NAME")
-                                               .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("RED_AIRWAY")
+            .AddNamedString("DIS")
+            .AddNamedInt("ELEMENT")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition art_net_node = INPUT::LineDefinition::Builder()
-                                             .AddTag("ARTNET")
-                                             .AddNamedString("DIS")
-                                             .AddNamedInt("NODE")
-                                             .AddNamedString("QUANTITY")
-                                             .AddNamedDouble("VALUE")
-                                             .AddNamedDouble("TOLERANCE")
-                                             .add_optional_named_string("NAME")
-                                             .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("ARTNET")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition art_net_ele = INPUT::LineDefinition::Builder()
-                                            .AddTag("ARTNET")
-                                            .AddNamedString("DIS")
-                                            .AddNamedInt("ELEMENT")
-                                            .AddNamedString("QUANTITY")
-                                            .AddNamedDouble("VALUE")
-                                            .AddNamedDouble("TOLERANCE")
-                                            .add_optional_named_string("NAME")
-                                            .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("ARTNET")
+            .AddNamedString("DIS")
+            .AddNamedInt("ELEMENT")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition fld_adj = INPUT::LineDefinition::Builder()
-                                        .AddTag("ADJOINT")
-                                        .AddNamedString("DIS")
-                                        .AddNamedInt("NODE")
-                                        .AddNamedString("QUANTITY")
-                                        .AddNamedDouble("VALUE")
-                                        .AddNamedDouble("TOLERANCE")
-                                        .add_optional_named_string("NAME")
-                                        .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("ADJOINT")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition opti_node = INPUT::LineDefinition::Builder()
-                                          .AddTag("OPTI")
-                                          .AddNamedString("DIS")
-                                          .AddNamedInt("NODE")
-                                          .AddNamedString("QUANTITY")
-                                          .AddNamedDouble("VALUE")
-                                          .AddNamedDouble("TOLERANCE")
-                                          .add_optional_named_string("NAME")
-                                          .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("OPTI")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition opti_ele = INPUT::LineDefinition::Builder()
-                                         .AddTag("OPTI")
-                                         .AddNamedString("DIS")
-                                         .AddNamedInt("ELEMENT")
-                                         .AddNamedString("QUANTITY")
-                                         .AddNamedDouble("VALUE")
-                                         .AddNamedDouble("TOLERANCE")
-                                         .add_optional_named_string("NAME")
-                                         .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("OPTI")
+            .AddNamedString("DIS")
+            .AddNamedInt("ELEMENT")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition fsi_node = INPUT::LineDefinition::Builder()
-                                         .AddTag("FSI")
-                                         .AddNamedInt("NODE")
-                                         .AddNamedString("QUANTITY")
-                                         .AddNamedDouble("VALUE")
-                                         .AddNamedDouble("TOLERANCE")
-                                         .add_optional_named_string("NAME")
-                                         .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("FSI")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition fsi_special = INPUT::LineDefinition::Builder()
-                                            .AddTag("FSI")
-                                            .AddTag("SPECIAL")
-                                            .AddNamedString("QUANTITY")
-                                            .AddNamedDouble("VALUE")
-                                            .AddNamedDouble("TOLERANCE")
-                                            .add_optional_named_string("NAME")
-                                            .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("FSI")
+            .AddTag("SPECIAL")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition particle = INPUT::LineDefinition::Builder()
-                                         .AddTag("PARTICLE")
-                                         .AddNamedInt("ID")
-                                         .AddNamedString("QUANTITY")
-                                         .AddNamedDouble("VALUE")
-                                         .AddNamedDouble("TOLERANCE")
-                                         .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("PARTICLE")
+            .AddNamedInt("ID")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .Build(),
 
-    INPUT::LineDefinition particlewall_node = INPUT::LineDefinition::Builder()
-                                                  .AddTag("PARTICLEWALL")
-                                                  .AddNamedString("DIS")
-                                                  .AddNamedInt("NODE")
-                                                  .AddNamedString("QUANTITY")
-                                                  .AddNamedDouble("VALUE")
-                                                  .AddNamedDouble("TOLERANCE")
-                                                  .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("PARTICLEWALL")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .Build(),
 
-    INPUT::LineDefinition particlewall_special = INPUT::LineDefinition::Builder()
-                                                     .AddTag("PARTICLEWALL")
-                                                     .AddNamedString("DIS")
-                                                     .AddTag("SPECIAL")
-                                                     .AddNamedString("QUANTITY")
-                                                     .AddNamedDouble("VALUE")
-                                                     .AddNamedDouble("TOLERANCE")
-                                                     .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("PARTICLEWALL")
+            .AddNamedString("DIS")
+            .AddTag("SPECIAL")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .Build(),
 
-    INPUT::LineDefinition rigidbody = INPUT::LineDefinition::Builder()
-                                          .AddTag("RIGIDBODY")
-                                          .AddNamedInt("ID")
-                                          .AddNamedString("QUANTITY")
-                                          .AddNamedDouble("VALUE")
-                                          .AddNamedDouble("TOLERANCE")
-                                          .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("RIGIDBODY")
+            .AddNamedInt("ID")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .Build(),
 
-    INPUT::LineDefinition elemag = INPUT::LineDefinition::Builder()
-                                       .AddTag("ELECTROMAGNETIC")
-                                       .AddNamedString("DIS")
-                                       .AddNamedInt("NODE")
-                                       .AddNamedString("QUANTITY")
-                                       .AddNamedDouble("VALUE")
-                                       .AddNamedDouble("TOLERANCE")
-                                       .add_optional_named_string("NAME")
-                                       .Build();
+        INPUT::LineDefinition::Builder()
+            .AddTag("ELECTROMAGNETIC")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
 
-    INPUT::LineDefinition cardiovascular0d = INPUT::LineDefinition::Builder()
-                                                 .AddTag("CARDIOVASCULAR0D")
-                                                 .AddNamedString("DIS")
-                                                 .AddTag("SPECIAL")
-                                                 .AddNamedString("QUANTITY")
-                                                 .AddNamedDouble("VALUE")
-                                                 .AddNamedDouble("TOLERANCE")
-                                                 .add_optional_named_string("NAME")
-                                                 .Build();
-    lines.Add(structure);
-    lines.Add(structure_special);
-    lines.Add(fluid_node);
-    lines.Add(fluid_ele);
-    lines.Add(xfluid_node);
-    lines.Add(ale);
-    lines.Add(thermal);
-    lines.Add(lubrication);
-    lines.Add(porofluidmultiphase_node);
-    lines.Add(porofluidmultiphase_ele);
-    lines.Add(porofluidmultiphase_special);
-    lines.Add(scatra);
-    lines.Add(scatra_special);
-    lines.Add(ssi);
-    lines.Add(ssi_special);
-    lines.Add(ssti_special);
-    lines.Add(sti_special);
-    lines.Add(red_airway);
-    lines.Add(red_airway_ele);
-    lines.Add(art_net_node);
-    lines.Add(art_net_ele);
-    lines.Add(fld_adj);
-    lines.Add(opti_node);
-    lines.Add(opti_ele);
-    lines.Add(fsi_node);
-    lines.Add(fsi_special);
-    lines.Add(particle);
-    lines.Add(particlewall_node);
-    lines.Add(particlewall_special);
-    lines.Add(rigidbody);
-    lines.Add(elemag);
-    lines.Add(cardiovascular0d);
+        INPUT::LineDefinition::Builder()
+            .AddTag("CARDIOVASCULAR0D")
+            .AddNamedString("DIS")
+            .AddTag("SPECIAL")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build()};
   }
 
 }  // namespace
@@ -717,7 +686,7 @@ ModuleCallbacks GlobalLegacyModuleCallbacks()
   ModuleCallbacks callbacks;
   callbacks.RegisterParObjectTypes = RegisterParObjectTypes;
   callbacks.AttachFunctionDefinitions = AttachFunctionDefinitions;
-  callbacks.AttachResultLines = ValidResultLines;
+  callbacks.valid_result_description_lines = ValidResultLines;
   return callbacks;
 }
 

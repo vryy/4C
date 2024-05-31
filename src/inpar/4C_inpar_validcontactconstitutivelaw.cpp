@@ -10,6 +10,7 @@
 
 #include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"
 #include "4C_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
+#include "4C_io_dat_file_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -19,10 +20,7 @@ void INPUT::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
     std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& contactconstitutivlawlist)
 {
   const std::string sectionname = "Contact Constitutive Law";
-  const unsigned l = sectionname.length();
-  stream << "--";
-  for (int i = 0; i < std::max<int>(65 - l, 0); ++i) stream << '-';
-  stream << sectionname << '\n';
+  IO::DatFileUtils::print_section_header(stream, sectionname);
 
   for (unsigned i = 0; i < contactconstitutivlawlist.size(); ++i)
   {
