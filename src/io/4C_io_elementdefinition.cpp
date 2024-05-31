@@ -61,7 +61,7 @@ void INPUT::ElementDefinition::print_element_dat_header_to_stream(std::ostream& 
   PrintElementLines(stream, "MEMBRANE");
   PrintElementLines(stream, "SOLIDH8P1J1");
   PrintElementLines(stream, "SOLIDH8FBAR");
-  PrintElementLines(stream, "SOLIDH8FBARSCATRA");
+  PrintElementLines(stream, "SOLIDH8FBARSCATRA_DEPRECATED");
   PrintElementLines(stream, "SOLIDH8FBARTHERMO");
   PrintElementLines(stream, "SOLIDH8PORO");
   PrintElementLines(stream, "SOLIDH8POROSCATRA");
@@ -83,12 +83,12 @@ void INPUT::ElementDefinition::print_element_dat_header_to_stream(std::ostream& 
   PrintElementLines(stream, "SOLIDT4THERMO");
   PrintElementLines(stream, "SOLIDT10THERMO");
   PrintElementLines(stream, "SOLIDT4PLAST");
-  PrintElementLines(stream, "SOLIDT4SCATRA");
-  PrintElementLines(stream, "SOLIDT10SCATRA");
+  PrintElementLines(stream, "SOLIDT4SCATRA_DEPRECATED");
+  PrintElementLines(stream, "SOLIDT10SCATRA_DEPRECATED");
   PrintElementLines(stream, "SOLIDW6");
   PrintElementLines(stream, "SOLIDP5");
   PrintElementLines(stream, "SOLIDP5FBAR");
-  PrintElementLines(stream, "SOLIDW6SCATRA");
+  PrintElementLines(stream, "SOLIDW6SCATRA_DEPRECATED");
   PrintElementLines(stream, "TORSION3");
   PrintElementLines(stream, "TRUSS3");
   PrintElementLines(stream, "TRUSS3SCATRA");
