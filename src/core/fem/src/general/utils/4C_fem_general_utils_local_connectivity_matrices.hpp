@@ -458,11 +458,171 @@ namespace Core::FE
    * @brief Fills a Core::LinAlg::SerialDenseMatrix with parameter space coordinates for each node
    * of the given discretization type
    *
-   * @param[in] distype discretization type
+   * @param[in] celltype discretization type
    * @return map of parameter space coordinates for all nodes
    */
   Core::LinAlg::SerialDenseMatrix getEleNodeNumbering_nodes_paramspace(
-      const Core::FE::CellType distype);
+      const Core::FE::CellType celltype);
+
+  template <Core::FE::CellType celltype>
+  constexpr std::array<std::array<double, Core::FE::dim<celltype>>, Core::FE::num_nodes<celltype>>
+  get_element_nodes_in_parameter_space()
+  {
+    std::array<std::array<double, Core::FE::dim<celltype>>, Core::FE::num_nodes<celltype>>
+        nodal_parameter_coordinate{};
+    switch (celltype)
+    {
+      case Core::FE::CellType::quad4:
+      case Core::FE::CellType::quad8:
+      case Core::FE::CellType::quad9:
+      case Core::FE::CellType::nurbs9:
+      {
+        for (int inode = 0; inode < Core::FE::num_nodes<celltype>; inode++)
+        {
+          for (int isd = 0; isd < Core::FE::dim<celltype>; isd++)
+          {
+            nodal_parameter_coordinate[inode][isd] =
+                eleNodeNumbering_quad9_nodes_reference[inode][isd];
+          }
+        }
+        break;
+      }
+      case Core::FE::CellType::nurbs4:
+      {
+        for (int inode = 0; inode < Core::FE::num_nodes<celltype>; inode++)
+        {
+          for (int isd = 0; isd < Core::FE::dim<celltype>; isd++)
+            nodal_parameter_coordinate[inode][isd] =
+                eleNodeNumbering_nurbs4_nodes_reference[inode][isd];
+        }
+        break;
+      }
+      case Core::FE::CellType::quad6:
+      {
+        for (int inode = 0; inode < Core::FE::num_nodes<celltype>; inode++)
+        {
+          for (int isd = 0; isd < Core::FE::dim<celltype>; isd++)
+            nodal_parameter_coordinate[inode][isd] =
+                eleNodeNumbering_quad6_nodes_reference[inode][isd];
+        }
+        break;
+      }
+      case Core::FE::CellType::tri3:
+      case Core::FE::CellType::tri6:
+      {
+        for (int inode = 0; inode < Core::FE::num_nodes<celltype>; inode++)
+        {
+          for (int isd = 0; isd < Core::FE::dim<celltype>; isd++)
+            nodal_parameter_coordinate[inode][isd] =
+                eleNodeNumbering_tri6_nodes_reference[inode][isd];
+        }
+        break;
+      }
+      case Core::FE::CellType::hex8:
+      case Core::FE::CellType::hex20:
+      case Core::FE::CellType::hex27:
+      {
+        for (int inode = 0; inode < Core::FE::num_nodes<celltype>; inode++)
+        {
+          for (int isd = 0; isd < Core::FE::dim<celltype>; isd++)
+            nodal_parameter_coordinate[inode][isd] =
+                eleNodeNumbering_hex27_nodes_reference[inode][isd];
+        }
+        break;
+      }
+      case Core::FE::CellType::nurbs8:
+      {
+        for (int inode = 0; inode < Core::FE::num_nodes<celltype>; inode++)
+        {
+          for (int isd = 0; isd < Core::FE::dim<celltype>; isd++)
+            nodal_parameter_coordinate[inode][isd] =
+                eleNodeNumbering_nurbs8_nodes_reference[inode][isd];
+        }
+        break;
+      }
+      case Core::FE::CellType::nurbs27:
+      {
+        for (int inode = 0; inode < Core::FE::num_nodes<celltype>; inode++)
+        {
+          for (int isd = 0; isd < Core::FE::dim<celltype>; isd++)
+            nodal_parameter_coordinate[inode][isd] =
+                eleNodeNumbering_nurbs27_nodes_reference[inode][isd];
+        }
+        break;
+      }
+      case Core::FE::CellType::hex16:
+      {
+        for (int inode = 0; inode < Core::FE::num_nodes<celltype>; inode++)
+        {
+          for (int isd = 0; isd < Core::FE::dim<celltype>; isd++)
+            nodal_parameter_coordinate[inode][isd] =
+                eleNodeNumbering_hex16_nodes_reference[inode][isd];
+        }
+        break;
+      }
+      case Core::FE::CellType::hex18:
+      {
+        for (int inode = 0; inode < Core::FE::num_nodes<celltype>; inode++)
+        {
+          for (int isd = 0; isd < Core::FE::dim<celltype>; isd++)
+            nodal_parameter_coordinate[inode][isd] =
+                eleNodeNumbering_hex18_nodes_reference[inode][isd];
+        }
+        break;
+      }
+      case Core::FE::CellType::wedge6:
+      case Core::FE::CellType::wedge15:
+      {
+        for (int inode = 0; inode < Core::FE::num_nodes<celltype>; inode++)
+        {
+          for (int isd = 0; isd < Core::FE::dim<celltype>; isd++)
+          {
+            nodal_parameter_coordinate[inode][isd] =
+                eleNodeNumbering_wedge18_nodes_reference[inode][isd];
+          }
+        }
+        break;
+      }
+      case Core::FE::CellType::tet4:
+      case Core::FE::CellType::tet10:
+      {
+        for (int inode = 0; inode < Core::FE::num_nodes<celltype>; inode++)
+        {
+          for (int isd = 0; isd < Core::FE::dim<celltype>; isd++)
+            nodal_parameter_coordinate[inode][isd] =
+                eleNodeNumbering_tet10_nodes_reference[inode][isd];
+        }
+        break;
+      }
+      case Core::FE::CellType::pyramid5:
+      {
+        for (int inode = 0; inode < Core::FE::num_nodes<celltype>; inode++)
+        {
+          for (int isd = 0; isd < Core::FE::dim<celltype>; isd++)
+            nodal_parameter_coordinate[inode][isd] =
+                eleNodeNumbering_pyramid5_nodes_reference[inode][isd];
+        }
+        break;
+      }
+      case Core::FE::CellType::line3:
+      case Core::FE::CellType::line2:
+      {
+        for (int inode = 0; inode < Core::FE::num_nodes<celltype>; inode++)
+        {
+          for (int isd = 0; isd < Core::FE::dim<celltype>; isd++)
+            nodal_parameter_coordinate[inode][isd] =
+                eleNodeNumbering_line3_nodes_reference[inode][isd];
+        }
+        break;
+      }
+      default:
+      {
+        FOUR_C_THROW("discretization type not yet implemented");
+      }
+    }
+
+    return nodal_parameter_coordinate;
+  }
 
   /*!
    * @brief Returns the coordinates in parameter space for a given node id and discretization type

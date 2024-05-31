@@ -754,13 +754,13 @@ namespace RTD
       }
       const unsigned num_nodes = coordmap.numCols();
       yamlcelltypestring += "  nodes:\n";
-      for (unsigned node = 0; node < num_nodes; ++node)
+      for (unsigned int node = 0; node < num_nodes; ++node)
       {
         yamlcelltypestring += "    - [";
         for (int indx = 0; indx < coordmap.numRows(); ++indx)
         {
           if (indx > 0) yamlcelltypestring += ",";
-          yamlcelltypestring += boost::str(boost::format("%6.2f") % coordmap[node][indx]);
+          yamlcelltypestring += boost::str(boost::format("%6.2f") % coordmap(indx, node));
         }
         yamlcelltypestring += "]\n";
       }
