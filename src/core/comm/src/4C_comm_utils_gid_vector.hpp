@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_UTILS_GID_VECTOR_HPP
-#define FOUR_C_LIB_UTILS_GID_VECTOR_HPP
+#ifndef FOUR_C_COMM_UTILS_GID_VECTOR_HPP
+#define FOUR_C_COMM_UTILS_GID_VECTOR_HPP
 
 #include "4C_config.hpp"
 
@@ -28,70 +28,70 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
+}
 
-  namespace UTILS
+namespace CORE::COMM
+{
+  /*!
+   * \brief Add nodal GID on this processor to existing list of GIDs
+   *
+   * @param[in] dis                   discretization, that holds nodes with GIDs
+   * @param[in] nodegid               nodal GID
+   * @param[out] my_gid_vec           vector/set with my node GIDs
+   */
+  void AddOwnedNodeGID(const DRT::Discretization& dis, int nodegid, std::vector<int>& my_gid_vec);
+  void AddOwnedNodeGID(const DRT::Discretization& dis, int nodegid, std::set<int>& my_gid_set);
+
+  /*!
+   * \brief Add nodal GIDs on this processor to existing list from list with global GIDs
+   *
+   * @param[in] dis                   discretization, that holds nodes with GIDs
+   * @param[in] global_node_gid_vec   vector/set with all node GIDs
+   * @param[out] my_gid_vec           vector/set with my node GIDs
+   */
+  template <typename T, typename U>
+  void AddOwnedNodeGIDFromList(
+      const DRT::Discretization& dis, const T& global_node_gid_vec, U& my_gid_list)
   {
-    /*!
-     * \brief Add nodal GID on this processor to existing list of GIDs
-     *
-     * @param[in] dis                   discretization, that holds nodes with GIDs
-     * @param[in] nodegid               nodal GID
-     * @param[out] my_gid_vec           vector/set with my node GIDs
-     */
-    void AddOwnedNodeGID(const Discretization& dis, int nodegid, std::vector<int>& my_gid_vec);
-    void AddOwnedNodeGID(const Discretization& dis, int nodegid, std::set<int>& my_gid_set);
+    for (const int nodegid : global_node_gid_vec) AddOwnedNodeGID(dis, nodegid, my_gid_list);
+  }
 
-    /*!
-     * \brief Add nodal GIDs on this processor to existing list from list with global GIDs
-     *
-     * @param[in] dis                   discretization, that holds nodes with GIDs
-     * @param[in] global_node_gid_vec   vector/set with all node GIDs
-     * @param[out] my_gid_vec           vector/set with my node GIDs
-     */
-    template <typename T, typename U>
-    void AddOwnedNodeGIDFromList(
-        const Discretization& dis, const T& global_node_gid_vec, U& my_gid_list)
-    {
-      for (const int nodegid : global_node_gid_vec) AddOwnedNodeGID(dis, nodegid, my_gid_list);
-    }
+  /*!
+   * \brief check, whether node with GID is owned by this processor
+   *
+   * @param[in] dis                   discretization, that holds nodes with GIDs
+   * @param[in] node_gid              GID of node to be checked
+   * @return                          indicates, whether node is owned by this processor
+   */
+  bool IsNodeGIDOnThisProc(const DRT::Discretization& dis, int node_gid);
 
-    /*!
-     * \brief check, whether node with GID is owned by this processor
-     *
-     * @param[in] dis                   discretization, that holds nodes with GIDs
-     * @param[in] node_gid              GID of node to be checked
-     * @return                          indicates, whether node is owned by this processor
-     */
-    bool IsNodeGIDOnThisProc(const DRT::Discretization& dis, int node_gid);
+  //! Merge map @p map_in (key of type @p T and value of type @p U) from all procs to a merged
+  //! map (key of type @p T and value of type @p U). It is distributed to to all procs.
+  template <typename T, typename U>
+  std::map<T, U> BroadcastMap(const std::map<T, U>& map_in, const Epetra_Comm& comm);
 
-    //! Merge map @p map_in (key of type @p T and value of type @p U) from all procs to a merged
-    //! map (key of type @p T and value of type @p U). It is distributed to to all procs.
-    template <typename T, typename U>
-    std::map<T, U> BroadcastMap(const std::map<T, U>& map_in, const Epetra_Comm& comm);
+  //! Merge vector of pairs @p pairs_in (items of type @p T and @p U) from all procs to a merged
+  //! vector (items of type @p T and @p U). The merged items are in an unspecified order. It is
+  //! distributed to to all procs.
+  template <typename T, typename U>
+  std::vector<std::pair<T, U>> BroadcastPairVector(
+      const std::vector<std::pair<T, U>>& pairs_in, const Epetra_Comm& comm);
 
-    //! Merge vector of pairs @p pairs_in (items of type @p T and @p U) from all procs to a merged
-    //! vector (items of type @p T and @p U). The merged items are in an unspecified order. It is
-    //! distributed to to all procs.
-    template <typename T, typename U>
-    std::vector<std::pair<T, U>> BroadcastPairVector(
-        const std::vector<std::pair<T, U>>& pairs_in, const Epetra_Comm& comm);
+  //! Merge @p set_in (items of type @p T) from all procs to a merged set (items of type @p T). It
+  //! is distributed to to all procs.
+  template <typename T>
+  std::set<T> BroadcastSet(const std::set<T>& set_in, const Epetra_Comm& comm);
 
-    //! Merge @p set_in (items of type @p T) from all procs to a merged set (items of type @p T). It
-    //! is distributed to to all procs.
-    template <typename T>
-    std::set<T> BroadcastSet(const std::set<T>& set_in, const Epetra_Comm& comm);
-
-    //! Merge vector @p vec_in (items of type @p T) from all procs to a merged vector (items of type
-    //! @p T). The items of are in an unspecified order. It is distributed to to all procs.
-    template <typename T>
-    std::vector<T> BroadcastVector(const std::vector<T>& vec_in, const Epetra_Comm& comm);
-  }  // namespace UTILS
-}  // namespace DRT
+  //! Merge vector @p vec_in (items of type @p T) from all procs to a merged vector (items of type
+  //! @p T). The items of are in an unspecified order. It is distributed to to all procs.
+  template <typename T>
+  std::vector<T> BroadcastVector(const std::vector<T>& vec_in, const Epetra_Comm& comm);
+}  // namespace CORE::COMM
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-namespace DRT::UTILS::DETAIL
+namespace CORE::COMM::DETAIL
 {
   //! Broadcast a map or vector<pair>
   template <typename T, typename U, typename M>
@@ -120,12 +120,12 @@ namespace DRT::UTILS::DETAIL
       vec_out2.emplace_back(vec2[i]);
     }
   }
-}  // namespace DRT::UTILS::DETAIL
+}  // namespace CORE::COMM::DETAIL
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::map<T, U> DRT::UTILS::BroadcastMap(const std::map<T, U>& map_in, const Epetra_Comm& comm)
+std::map<T, U> CORE::COMM::BroadcastMap(const std::map<T, U>& map_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
   std::vector<U> vec2;
@@ -138,7 +138,7 @@ std::map<T, U> DRT::UTILS::BroadcastMap(const std::map<T, U>& map_in, const Epet
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::vector<std::pair<T, U>> DRT::UTILS::BroadcastPairVector(
+std::vector<std::pair<T, U>> CORE::COMM::BroadcastPairVector(
     const std::vector<std::pair<T, U>>& pairs_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
@@ -153,7 +153,7 @@ std::vector<std::pair<T, U>> DRT::UTILS::BroadcastPairVector(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T>
-std::set<T> DRT::UTILS::BroadcastSet(const std::set<T>& set_in, const Epetra_Comm& comm)
+std::set<T> CORE::COMM::BroadcastSet(const std::set<T>& set_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec_in, vec_out;
   for (const auto& val : set_in) vec_in.emplace_back(val);
@@ -166,7 +166,7 @@ std::set<T> DRT::UTILS::BroadcastSet(const std::set<T>& set_in, const Epetra_Com
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T>
-std::vector<T> DRT::UTILS::BroadcastVector(const std::vector<T>& vec_in, const Epetra_Comm& comm)
+std::vector<T> CORE::COMM::BroadcastVector(const std::vector<T>& vec_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec_out;
   for (int iproc = 0; iproc < comm.NumProc(); ++iproc)

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_DISCRETIZATION_GEOMETRY_UPDATE_MATERIAL_CONFIG_HPP
-#define FOUR_C_DISCRETIZATION_GEOMETRY_UPDATE_MATERIAL_CONFIG_HPP
+#ifndef FOUR_C_DISCRETIZATION_GEOMETRY_UPDATE_REFERENCE_CONFIG_HPP
+#define FOUR_C_DISCRETIZATION_GEOMETRY_UPDATE_REFERENCE_CONFIG_HPP
 
 
 #include "4C_config.hpp"
@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace CORE::GEO
 {
   //! Update material configuration of @p dis with @p disp
-  void UpdateMaterialConfigWithDispVector(
+  void update_reference_config_with_disp(
       Teuchos::RCP<const DRT::Discretization> dis, Teuchos::RCP<const Epetra_Vector> disp);
 }  // namespace CORE::GEO
 

@@ -10,7 +10,7 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "4C_discretization_geometry_update_material_config.hpp"
+#include "4C_discretization_geometry_update_reference_config.hpp"
 
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::GEO::UpdateMaterialConfigWithDispVector(
+void CORE::GEO::update_reference_config_with_disp(
     Teuchos::RCP<const DRT::Discretization> dis, Teuchos::RCP<const Epetra_Vector> disp)
 {
   // Export row-displacments to col-displacements

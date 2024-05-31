@@ -10,10 +10,10 @@
 
 #include "4C_adapter_str_ssiwrapper.hpp"
 #include "4C_comm_exporter.hpp"
+#include "4C_comm_utils_gid_vector.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_discretization_fem_general_utils_gauss_point_postprocess.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_utils_gid_vector.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 
