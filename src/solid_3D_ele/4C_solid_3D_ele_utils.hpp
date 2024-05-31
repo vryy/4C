@@ -60,6 +60,10 @@ namespace STR::UTILS
     DRT::ELEMENTS::ElementTechnology ReadElementTechnology(INPUT::LineDefinition* linedef);
 
     DRT::ELEMENTS::PrestressTechnology ReadPrestressTechnology(INPUT::LineDefinition* linedef);
+
+    DRT::ELEMENTS::SolidElementProperties ReadSolidElementProperties(
+        INPUT::LineDefinition* linedef);
+
   }  // namespace READELEMENT
 
 }  // namespace STR::UTILS

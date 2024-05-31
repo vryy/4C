@@ -232,21 +232,7 @@ bool DRT::ELEMENTS::Solid::ReadElement(
   // kinematic type
   SetKinematicType(STR::UTILS::READELEMENT::ReadElementKinematicType(linedef));
 
-  if (linedef->HaveNamed("TECH"))
-  {
-    solid_ele_property_.element_technology =
-        STR::UTILS::READELEMENT::ReadElementTechnology(linedef);
-  }
-
-  if (linedef->HaveNamed("PRESTRESS_TECH"))
-  {
-    solid_ele_property_.prestress_technology =
-        STR::UTILS::READELEMENT::ReadPrestressTechnology(linedef);
-  }
-
-
-  // kinematic type
-  solid_ele_property_.kintype = STR::UTILS::READELEMENT::ReadElementKinematicType(linedef);
+  solid_ele_property_ = STR::UTILS::READELEMENT::ReadSolidElementProperties(linedef);
 
   if (Shape() == CORE::FE::CellType::nurbs27)
   {

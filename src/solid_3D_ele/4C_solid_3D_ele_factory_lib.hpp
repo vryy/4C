@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
+#include "4C_inpar_structure.hpp"
 
 #include <memory>
 #include <variant>
@@ -80,6 +81,59 @@ namespace DRT::ELEMENTS
   template <typename... Ts>
   using CreateVariantType = typename DETAILS::CreateVariant<Ts...>::type;
 
+  namespace DETAILS
+  {
+    /*!
+     * @brief A struct that determines whether @p T is a valid template type
+     *
+     * The member variable value is true if the first template parameter is a valid type
+     *
+     * @tparam typename : Template parameter that may be a valid type or not
+     */
+    template <typename, typename = void>
+    struct IsValidTypeTrait : std::false_type
+    {
+    };
+
+    template <typename T>
+    struct IsValidTypeTrait<T, std::void_t<typename T::type>> : std::true_type
+    {
+    };
+  }  // namespace DETAILS
+
+  /*!
+   * @brief Determines whether we have implemented a solid calculation formulation
+   *
+   * @tparam T typename: Template parameter that may be a valid type or not
+   */
+  template <typename T>
+  constexpr bool is_valid_type = DETAILS::IsValidTypeTrait<T>::value;
+
+  /*!
+   * @brief An automatic switch from runtime kinematic type to constexpr kinematic type.
+   *
+   * @tparam Function
+   * @param kinem_type
+   * @param fct : A callable function that has operators for each kinematic-type integral
+   * constants
+   * @return auto
+   */
+  template <typename Function>
+  auto switch_kinematic_type(INPAR::STR::KinemType kinem_type, Function fct)
+  {
+    switch (kinem_type)
+    {
+      case INPAR::STR::KinemType::linear:
+        return fct(std::integral_constant<INPAR::STR::KinemType, INPAR::STR::KinemType::linear>{});
+      case INPAR::STR::KinemType::nonlinearTotLag:
+        return fct(std::integral_constant<INPAR::STR::KinemType,
+            INPAR::STR::KinemType::nonlinearTotLag>{});
+      case INPAR::STR::KinemType::vague:
+        return fct(std::integral_constant<INPAR::STR::KinemType, INPAR::STR::KinemType::vague>{});
+    }
+
+    FOUR_C_THROW("Your kinematic type is unknown: %d", kinem_type);
+  }
 }  // namespace DRT::ELEMENTS
 
 
