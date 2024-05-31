@@ -15,8 +15,8 @@
 #include "4C_discretization_dofset_transparent.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret_xwall.hpp"
 #include "4C_rebalance_graph_based.hpp"
+#include "4C_xfem_discretization_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -53,9 +53,9 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // add your discretization name here!
     if (condition == "TurbulentInflowSection")
     {
-      DRT::DiscretizationXWall* xwall = dynamic_cast<DRT::DiscretizationXWall*>(&*actdis);
+      XFEM::DiscretizationXWall* xwall = dynamic_cast<XFEM::DiscretizationXWall*>(&*actdis);
       if (nullptr != xwall)
-        childdiscret_ = Teuchos::rcp(new DRT::DiscretizationXWall(
+        childdiscret_ = Teuchos::rcp(new XFEM::DiscretizationXWall(
             (std::string) "inflow", Teuchos::rcp(parentdiscret_->Comm().Clone())));
       else
         childdiscret_ = Teuchos::rcp(new DRT::Discretization(

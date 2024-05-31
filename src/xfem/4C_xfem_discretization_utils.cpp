@@ -555,4 +555,11 @@ Teuchos::RCP<CORE::Conditions::Condition> XFEM::UTILS::XFEMDiscretizationBuilder
   return src_cond->copy_without_geometry();
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+XFEM::DiscretizationXWall::DiscretizationXWall(
+    const std::string name, Teuchos::RCP<Epetra_Comm> comm)
+    : DiscretizationFaces(name, comm)  // use base class constructor
+      {};
+
 FOUR_C_NAMESPACE_CLOSE
