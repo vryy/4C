@@ -1131,7 +1131,8 @@ void CORE::IO::DiscretizationWriter::WriteMesh(const int step, const double time
                              << "    max_nodeid = " << max_nodeid << "\n"
                              << "    num_ele = " << dis_->NumGlobalElements() << "\n"
                              << "    num_dof = " << dis_->dof_row_map(0)->NumGlobalElements()
-                             << "\n\n";
+                             << "\n"
+                             << "    num_dim = " << dis_->n_dim() << "\n\n";
 
       // knotvectors for nurbs-discretisation
       write_knotvector();
@@ -1179,7 +1180,8 @@ void CORE::IO::DiscretizationWriter::WriteMesh(
                              << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
                              << "    num_ele = " << dis_->NumGlobalElements() << "\n"
                              << "    num_dof = " << dis_->dof_row_map(0)->NumGlobalElements()
-                             << "\n\n";
+                             << "\n"
+                             << "    num_dim = " << dis_->n_dim() << "\n\n";
 
       // knotvectors for nurbs-discretisation
       // write_knotvector();
@@ -1265,7 +1267,8 @@ void CORE::IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_cont
                              << "    max_nodeid = " << max_nodeid << "\n"
                              << "    num_ele = " << 0 << "\n"
                              << "    num_dof = " << dis_->dof_row_map(0)->NumGlobalElements()
-                             << "\n\n";
+                             << "\n"
+                             << "    num_dim = " << dis_->n_dim() << "\n\n";
 
       /* name of the output file must be specified for changing geometries in
        * each time step */
