@@ -142,6 +142,8 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
     Teuchos::ParameterList p;
     const double time = 0.0;
     p.set("total time", time);
+    p.set<const CORE::UTILS::FunctionManager*>(
+        "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
     actdisc_->evaluate_dirichlet(p, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
   }

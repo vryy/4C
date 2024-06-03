@@ -114,6 +114,8 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   {
     Teuchos::ParameterList p;
     p.set("total time", timen_);
+    p.set<const CORE::UTILS::FunctionManager*>(
+        "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
     discret_->evaluate_dirichlet(p, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
   }
@@ -239,6 +241,8 @@ void THR::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Vect
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time", time);  // target time
+  p.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
   // predicted Dirichlet values
   // \c temp then also holds prescribed new Dirichlet temperatures
@@ -912,8 +916,10 @@ void THR::TimInt::SetInitialField(const INPAR::THR::InitialField init, const int
     {
       std::vector<int> localdofs;
       localdofs.push_back(0);
-      discret_->evaluate_initial_field("Temperature", (*temp_)(0), localdofs);
-      discret_->evaluate_initial_field("Temperature", tempn_, localdofs);
+      discret_->evaluate_initial_field(
+          GLOBAL::Problem::Instance()->FunctionManager(), "Temperature", (*temp_)(0), localdofs);
+      discret_->evaluate_initial_field(
+          GLOBAL::Problem::Instance()->FunctionManager(), "Temperature", tempn_, localdofs);
 
       break;
     }  // initfield_field_by_condition

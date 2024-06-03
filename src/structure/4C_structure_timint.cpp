@@ -379,6 +379,9 @@ void STR::TimInt::CreateFields()
   {
     Teuchos::ParameterList p;
     p.set("total time", timen_);
+    p.set<const CORE::UTILS::FunctionManager*>(
+        "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
+
     discret_->evaluate_dirichlet(p, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
   }
@@ -418,13 +421,16 @@ void STR::TimInt::SetInitialFields()
   localdofs.push_back(0);
   localdofs.push_back(1);
   localdofs.push_back(2);
-  discret_->evaluate_initial_field(field, (*vel_)(0), localdofs);
+  discret_->evaluate_initial_field(
+      GLOBAL::Problem::Instance()->FunctionManager(), field, (*vel_)(0), localdofs);
 
   // set initial porosity field if existing
   const std::string porosityfield = "Porosity";
   std::vector<int> porositylocaldofs;
   porositylocaldofs.push_back(GLOBAL::Problem::Instance()->NDim());
-  discret_->evaluate_initial_field(porosityfield, (*dis_)(0), porositylocaldofs);
+
+  discret_->evaluate_initial_field(
+      GLOBAL::Problem::Instance()->FunctionManager(), porosityfield, (*dis_)(0), porositylocaldofs);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1199,6 +1205,8 @@ void STR::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Vect
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time", time);  // target time
+  p.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
   // predicted Dirichlet values
   // \c dis then also holds prescribed new Dirichlet displacements
@@ -2903,6 +2911,8 @@ void STR::TimInt::apply_force_external(const double time, const Teuchos::RCP<Epe
   Teuchos::ParameterList p;
   // other parameters needed by the elements
   p.set("total time", time);
+  p.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
   // set vector values needed by elements
   discret_->ClearState();

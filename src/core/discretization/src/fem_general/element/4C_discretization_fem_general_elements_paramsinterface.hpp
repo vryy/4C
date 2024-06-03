@@ -21,6 +21,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace CORE::UTILS
+{
+  class FunctionManager;
+}
+
 namespace CORE::Elements
 {
 
@@ -53,6 +58,9 @@ namespace CORE::Elements
 
     //! get the current time step
     virtual double GetDeltaTime() const = 0;
+
+    //! get function manager
+    virtual const CORE::UTILS::FunctionManager* get_function_manager() const = 0;
     //! @}
   };  // class ParamsInterface
 }  // namespace CORE::Elements

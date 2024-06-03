@@ -80,8 +80,8 @@ void FLD::Meshtying::setup_meshtying(const std::vector<int>& coupleddof, const b
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  1)   Setup Meshtying");
 
   // Setup of meshtying adapter
-  adaptermeshtying_->Setup(
-      discret_, discret_, Teuchos::null, coupleddof, "Mortar", discret_->Comm(), true);
+  adaptermeshtying_->Setup(discret_, discret_, Teuchos::null, coupleddof, "Mortar",
+      discret_->Comm(), GLOBAL::Problem::Instance()->FunctionManager(), true);
 
   // 4 different systems to solve
   // a) Condensation with a block matrix (condensed_bmat)

@@ -181,7 +181,8 @@ namespace DRT
        *      start to build and solve the least squares problem
        *
        *  \author hiermeier, vuong \date 01/17 */
-      void evaluate(const DRT::Discretization& discret, double time,
+      void evaluate(const CORE::UTILS::FunctionManager& function_manager,
+          const DRT::Discretization& discret, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
           Teuchos::RCP<std::set<int>>* dbcgids) const override;
 
@@ -197,8 +198,8 @@ namespace DRT
        * Dirichlet boundary conditions
        *
        * \author vuong */
-      void do_dirichlet_condition(const DRT::Discretization& discret,
-          const CORE::Conditions::Condition& cond, double time,
+      void do_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
+          const DRT::Discretization& discret, const CORE::Conditions::Condition& cond, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const override;
 

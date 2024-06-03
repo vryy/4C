@@ -252,7 +252,8 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     std::vector<int> coupleddof(ndim, 1);
 
     coupsfm_->Setup(fluid_field()->discretization(), structure_field()->discretization(),
-        ale_field()->write_access_discretization(), coupleddof, "FSICoupling", comm_, false);
+        ale_field()->write_access_discretization(), coupleddof, "FSICoupling", comm_,
+        GLOBAL::Problem::Instance()->FunctionManager(), false);
 
     // fluid to ale at the interface
     icoupfa.setup_condition_coupling(*fluid_field()->discretization(),

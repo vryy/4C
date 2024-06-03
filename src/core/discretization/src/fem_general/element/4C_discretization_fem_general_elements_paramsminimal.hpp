@@ -16,6 +16,7 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_elements_paramsinterface.hpp"
+#include "4C_utils_function_manager.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -31,17 +32,16 @@ namespace CORE::Elements
     //! constructor
     ParamsMinimal() : ele_action_(none), total_time_(-1.0), delta_time_(-1.0){};
 
-    //! @name Access general control parameters
-    //! @{
-    //! get the desired action type
     enum ActionType GetActionType() const override { return ele_action_; };
 
-    //! get the current total time for the evaluate call
     double GetTotalTime() const override { return total_time_; };
 
-    //! get the current time step
     double GetDeltaTime() const override { return delta_time_; };
-    //! @}
+
+    const CORE::UTILS::FunctionManager* get_function_manager() const override
+    {
+      return function_manager_;
+    }
 
     /*! @name set routines which are used to set the parameters of the data container
      *
@@ -59,6 +59,12 @@ namespace CORE::Elements
     //! set the current time step for the evaluation call
     inline void SetDeltaTime(const double& dt) { delta_time_ = dt; }
 
+    //! store function manager
+    void set_function_manager(const CORE::UTILS::FunctionManager& function_manager)
+    {
+      function_manager_ = &function_manager;
+    }
+
     //! @}
 
    private:
@@ -72,6 +78,9 @@ namespace CORE::Elements
 
     //! current time step for the evaluation
     double delta_time_;
+
+    //! function manager
+    const CORE::UTILS::FunctionManager* function_manager_;
     //! @}
   };  // class ParamsMinimal
 

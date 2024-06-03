@@ -12,9 +12,9 @@
 #include "4C_lib_utils_discret.hpp"
 
 #include "4C_discretization_fem_general_node.hpp"
-#include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_utils_function.hpp"
+#include "4C_utils_function_manager.hpp"
 
 #include <Epetra_Map.h>
 
@@ -23,9 +23,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::evaluate_initial_field(const DRT::Discretization& discret,
-    const std::string& fieldstring, Teuchos::RCP<Epetra_Vector> fieldvector,
-    const std::vector<int>& locids)
+void DRT::UTILS::evaluate_initial_field(const CORE::UTILS::FunctionManager& function_manager,
+    const DRT::Discretization& discret, const std::string& fieldstring,
+    Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids)
 {
   // get initial field conditions
   std::vector<CORE::Conditions::Condition*> initfieldconditions;
@@ -53,7 +53,7 @@ void DRT::UTILS::evaluate_initial_field(const DRT::Discretization& discret,
       if (initfieldcondition->Type() != type) continue;
       const std::string condstring = initfieldcondition->parameters().Get<std::string>("Field");
       if (condstring != fieldstring) continue;
-      DoInitialField(discret, *initfieldcondition, *fieldvector, locids);
+      DoInitialField(function_manager, discret, *initfieldcondition, *fieldvector, locids);
     }
   }
 }
@@ -61,8 +61,9 @@ void DRT::UTILS::evaluate_initial_field(const DRT::Discretization& discret,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::DoInitialField(const DRT::Discretization& discret,
-    CORE::Conditions::Condition& cond, Epetra_Vector& fieldvector, const std::vector<int>& locids)
+void DRT::UTILS::DoInitialField(const CORE::UTILS::FunctionManager& function_manager,
+    const DRT::Discretization& discret, CORE::Conditions::Condition& cond,
+    Epetra_Vector& fieldvector, const std::vector<int>& locids)
 {
   const std::vector<int> cond_nodeids = *cond.GetNodes();
   if (cond_nodeids.empty()) FOUR_C_THROW("Initfield condition does not have nodal cloud.");
@@ -105,11 +106,12 @@ void DRT::UTILS::DoInitialField(const DRT::Discretization& discret,
         if (localdof == locid)
         {
           const double time = 0.0;  // dummy time here
+
           const double functfac =
-              funct_num > 0 ? GLOBAL::Problem::Instance()
-                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                                  .Evaluate(node->X().data(), time, localdof)
-                            : 0.0;
+              funct_num > 0
+                  ? function_manager.FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                        .Evaluate(node->X().data(), time, localdof)
+                  : 0.0;
 
           // assign value
           const int gid = node_dofs[j];

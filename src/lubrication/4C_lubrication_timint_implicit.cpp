@@ -133,6 +133,8 @@ void LUBRICATION::TimIntImpl::Init()
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
+    eleparams.set<const CORE::UTILS::FunctionManager*>(
+        "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
     discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
@@ -526,6 +528,8 @@ void LUBRICATION::TimIntImpl::apply_dirichlet_bc(
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time", time);  // actual time t_{n+1}
+  p.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
   // predicted Dirichlet values
   // \c  prenp then also holds prescribed new Dirichlet values

@@ -82,8 +82,8 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
               GLOBAL::Problem::Instance()->spatial_approximation_type()));
 
       std::vector<int> coupleddof(1, 1);
-      adaptermeshtying_->Setup(
-          actdis, actdis, Teuchos::null, coupleddof, "Mortar", actdis->Comm(), false, false, 0, 0);
+      adaptermeshtying_->Setup(actdis, actdis, Teuchos::null, coupleddof, "Mortar", actdis->Comm(),
+          GLOBAL::Problem::Instance()->FunctionManager(), false, false, 0, 0);
       adaptermeshtying_->Evaluate();
     }
   }

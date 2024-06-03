@@ -47,12 +47,14 @@ namespace FLD
        * Dirichlet boundary conditions
        *
        *  \author kronbichler \date 06/16 */
-      void read_dirichlet_condition(const DRT::Discretization& discret,
-          const CORE::Conditions::Condition& cond, double time, DbcInfo& info,
-          const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const override;
-      void read_dirichlet_condition(const DRT::DiscretizationFaces& discret,
-          const CORE::Conditions::Condition& cond, double time, DbcInfo& info,
-          const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const;
+      void read_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
+          const DRT::Discretization& discret, const CORE::Conditions::Condition& cond, double time,
+          DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+          int hierarchical_order) const override;
+      void read_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
+          const DRT::DiscretizationFaces& discret, const CORE::Conditions::Condition& cond,
+          double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+          int hierarchical_order) const;
 
       /** \brief Determine Dirichlet condition at given time and apply its
        *         values to a system vector
@@ -67,13 +69,14 @@ namespace FLD
        * Dirichlet boundary conditions
        *
        *  \author kronbichler \date 02/08 */
-      void do_dirichlet_condition(const DRT::Discretization& discret,
-          const CORE::Conditions::Condition& cond, double time,
+      void do_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
+          const DRT::Discretization& discret, const CORE::Conditions::Condition& cond, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const override;
-      void do_dirichlet_condition(const DRT::DiscretizationFaces& discret,
-          const CORE::Conditions::Condition& cond, double time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle) const;
+      void do_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
+          const DRT::DiscretizationFaces& discret, const CORE::Conditions::Condition& cond,
+          double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+          const Epetra_IntVector& toggle) const;
     };  // class DbcHDG_Fluid
   }     // namespace UTILS
 

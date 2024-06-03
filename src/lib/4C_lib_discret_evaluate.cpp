@@ -12,7 +12,6 @@
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_discretization_fem_general_elements_paramsinterface.hpp"
-#include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_utils_discret.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
@@ -214,7 +213,12 @@ void DRT::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
             {
               if (tmp_funct && (*tmp_funct)[j] > 0)
               {
-                return GLOBAL::Problem::Instance()
+                const auto* function_manager =
+                    params.isParameter("interface")
+                        ? params.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface")
+                              ->get_function_manager()
+                        : params.get<const CORE::UTILS::FunctionManager*>("function_manager");
+                return function_manager
                     ->FunctionById<CORE::UTILS::FunctionOfTime>((*tmp_funct)[j] - 1)
                     .Evaluate(time);
               }
@@ -397,9 +401,10 @@ void DRT::Discretization::evaluate_condition(Teuchos::ParameterList& params,
         double curvefac = 1.0;
         if (curvenum >= 0)
         {
-          curvefac = GLOBAL::Problem::Instance()
-                         ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
-                         .Evaluate(time);
+          const auto& function_manager =
+              params.get<const CORE::UTILS::FunctionManager*>("function_manager");
+          curvefac =
+              function_manager->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(time);
         }
 
         // Get ConditionID of current condition if defined and write value in parameter list
@@ -653,10 +658,11 @@ void DRT::Discretization::EvaluateScalars(
 /*----------------------------------------------------------------------*
  |  evaluate an initial scalar or vector field (public)       popp 06/11|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::evaluate_initial_field(const std::string& fieldstring,
+void DRT::Discretization::evaluate_initial_field(
+    const CORE::UTILS::FunctionManager& function_manager, const std::string& fieldstring,
     Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids) const
 {
-  DRT::UTILS::evaluate_initial_field(*this, fieldstring, fieldvector, locids);
+  DRT::UTILS::evaluate_initial_field(function_manager, *this, fieldstring, fieldvector, locids);
 }  // DRT::Discretization::EvaluateIntialField
 
 FOUR_C_NAMESPACE_CLOSE

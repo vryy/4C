@@ -12,6 +12,7 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_discretization_condition_selector.hpp"
+#include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 
@@ -278,6 +279,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::check_dbc_on_c
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", 0.0);
+    eleparams.set<const CORE::UTILS::FunctionManager*>(
+        "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
     dis->evaluate_dirichlet(eleparams, zeros, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps);
   }
   // intersect DBC maps and coupled dof map to check if coupling and DBC are applied on same dofs

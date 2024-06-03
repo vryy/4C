@@ -4757,6 +4757,8 @@ void FLD::XFluid::set_dirichlet_neumann_bc()
 
   // other parameters needed by the elements
   eleparams.set("total time", time_);
+  eleparams.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -4943,6 +4945,8 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
   // total time required for evaluation of Dirichlet conditions
   Teuchos::ParameterList eleparams;
   eleparams.set("total time", time_);
+  eleparams.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
   // initialize
   state_->velnp_->Update(1.0, *state_->veln_, 0.0);

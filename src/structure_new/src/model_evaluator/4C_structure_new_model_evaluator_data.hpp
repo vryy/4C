@@ -21,6 +21,7 @@
 #include "4C_structure_new_gauss_point_data_output_manager.hpp"
 #include "4C_structure_new_timint_basedatasdyn.hpp"  // base class of the Data class
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_function_manager.hpp"
 #include "4C_utils_pairedvector.hpp"
 
 #include <Epetra_MultiVector.h>
@@ -120,6 +121,12 @@ namespace STR
         return delta_time_;
       }
 
+      //! get function manager
+      const CORE::UTILS::FunctionManager* get_function_manager() const override
+      {
+        return function_manager_;
+      }
+
       //! get the current step length [derived]
       [[nodiscard]] inline double GetStepLength() const override
       {
@@ -164,6 +171,8 @@ namespace STR
         check_init_setup();
         return predict_type_;
       }
+
+
 
       //! is the current state the predictor state?
       bool IsPredictorState() const;
@@ -215,6 +224,12 @@ namespace STR
 
       //! set value for a specific energy type
       void set_value_for_energy_type(double value, enum STR::EnergyType type);
+
+      //! set function manager
+      void set_function_manager(const CORE::UTILS::FunctionManager& function_manager)
+      {
+        function_manager_ = &function_manager;
+      }
 
       //! clear values for all energy types
       void clear_values_for_all_energy_types();
@@ -841,6 +856,9 @@ namespace STR
 
       //! total time for the evaluation
       double total_time_;
+
+      //! function manager
+      const CORE::UTILS::FunctionManager* function_manager_;
 
       //! current time step for the evaluation
       double delta_time_;

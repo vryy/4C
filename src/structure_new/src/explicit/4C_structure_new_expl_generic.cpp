@@ -11,6 +11,7 @@
 
 #include "4C_structure_new_expl_generic.hpp"
 
+#include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
@@ -180,6 +181,7 @@ void STR::EXPLICIT::Generic::reset_eval_params()
   EvalData().SetTotalTime(global_state().GetTimeNp());
   EvalData().SetDeltaTime((*global_state().GetDeltaTime())[0]);
   EvalData().SetIsTolerateError(true);
+  EvalData().set_function_manager(GLOBAL::Problem::Instance()->FunctionManager());
 }
 
 /*----------------------------------------------------------------------------*

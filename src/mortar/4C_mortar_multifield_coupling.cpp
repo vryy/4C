@@ -34,7 +34,7 @@ void MORTAR::MultiFieldCoupling::PushBackCoupling(const Teuchos::RCP<DRT::Discre
           GLOBAL::Problem::Instance()->spatial_approximation_type()));
 
   adaptermeshtying->Setup(dis, dis, Teuchos::null, dofs_to_couple, "MortarMulti", dis->Comm(),
-      false, false, nodeset, nodeset);
+      GLOBAL::Problem::Instance()->FunctionManager(), false, false, nodeset, nodeset);
 
   adaptermeshtying->Evaluate();
   p_.push_back(adaptermeshtying->GetMortarMatrixP());

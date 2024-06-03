@@ -23,6 +23,7 @@
 #include "4C_mortar_interface.hpp"
 #include "4C_mortar_node.hpp"
 #include "4C_mortar_utils.hpp"
+#include "4C_utils_function_manager.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -42,20 +43,13 @@ CORE::ADAPTER::CouplingMortar::CouplingMortar(int spatial_dimension,
 
 
 /*----------------------------------------------------------------------*
- | setup routine for mortar framework                        fang 01/16 |
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::Setup(
-    const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
-    const Teuchos::RCP<DRT::Discretization>& slavedis,   ///< slave discretization
-    const Teuchos::RCP<DRT::Discretization>& aledis,     ///< ALE discretization
-    const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
-    const std::string& couplingcond,     ///< string for coupling condition
-    const Epetra_Comm& comm,             ///< communicator
-    const bool slavewithale,             ///< flag defining if slave is ALE
-    const bool slidingale,               ///< flag indicating sliding ALE case
-    const int nds_master,                ///< master dofset number
-    const int nds_slave                  ///< slave dofset number
-)
+void CORE::ADAPTER::CouplingMortar::Setup(const Teuchos::RCP<DRT::Discretization>& masterdis,
+    const Teuchos::RCP<DRT::Discretization>& slavedis,
+    const Teuchos::RCP<DRT::Discretization>& aledis, const std::vector<int>& coupleddof,
+    const std::string& couplingcond, const Epetra_Comm& comm,
+    const CORE::UTILS::FunctionManager& function_manager, const bool slavewithale,
+    const bool slidingale, const int nds_master, const int nds_slave)
 {
   // initialize maps for row nodes
   std::map<int, CORE::Nodes::Node*> masternodes;
@@ -189,7 +183,7 @@ void CORE::ADAPTER::CouplingMortar::Setup(
   matrix_row_col_transform();
 
   // check if slave dofs have dirichlet constraints
-  check_slave_dirichlet_overlap(slavedis, comm);
+  check_slave_dirichlet_overlap(slavedis, comm, function_manager);
 
   // bye
   return;
@@ -200,7 +194,8 @@ void CORE::ADAPTER::CouplingMortar::Setup(
  | check for overlap of slave and Dirichlet boundaries      farah 02/16 |
  *----------------------------------------------------------------------*/
 void CORE::ADAPTER::CouplingMortar::check_slave_dirichlet_overlap(
-    const Teuchos::RCP<DRT::Discretization>& slavedis, const Epetra_Comm& comm)
+    const Teuchos::RCP<DRT::Discretization>& slavedis, const Epetra_Comm& comm,
+    const CORE::UTILS::FunctionManager& function_manager)
 {
   // safety check
   check_setup();
@@ -210,6 +205,7 @@ void CORE::ADAPTER::CouplingMortar::check_slave_dirichlet_overlap(
   bool overlap = false;
   Teuchos::ParameterList p;
   p.set("total time", 0.0);
+  p.set<const CORE::UTILS::FunctionManager*>("function_manager", &function_manager);
   Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps = Teuchos::rcp(new CORE::LINALG::MapExtractor());
   Teuchos::RCP<Epetra_Vector> temp = CORE::LINALG::CreateVector(*(slavedis->dof_row_map()), true);
   slavedis->evaluate_dirichlet(p, temp, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps);
