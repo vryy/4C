@@ -385,6 +385,50 @@ namespace
 
         INPUT::LineDefinition::Builder()
             .AddTag("STRUCTURE")
+            .AddNamedString("DIS")
+            .AddNamedInt("NODE")
+            .AddNamedString("OP")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
+
+        INPUT::LineDefinition::Builder()
+            .AddTag("STRUCTURE")
+            .AddNamedString("DIS")
+            .AddNamedInt("LINE")
+            .AddNamedString("OP")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
+
+        INPUT::LineDefinition::Builder()
+            .AddTag("STRUCTURE")
+            .AddNamedString("DIS")
+            .AddNamedInt("SURFACE")
+            .AddNamedString("OP")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
+
+        INPUT::LineDefinition::Builder()
+            .AddTag("STRUCTURE")
+            .AddNamedString("DIS")
+            .AddNamedInt("VOLUME")
+            .AddNamedString("OP")
+            .AddNamedString("QUANTITY")
+            .AddNamedDouble("VALUE")
+            .AddNamedDouble("TOLERANCE")
+            .add_optional_named_string("NAME")
+            .Build(),
+
+        INPUT::LineDefinition::Builder()
+            .AddTag("STRUCTURE")
             .AddTag("SPECIAL")
             .AddNamedString("QUANTITY")
             .AddNamedDouble("VALUE")

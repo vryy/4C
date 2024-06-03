@@ -8,7 +8,6 @@
 */
 /*-----------------------------------------------------------*/
 
-
 #ifndef FOUR_C_STRUCTURE_NEW_RESULTTEST_HPP
 #define FOUR_C_STRUCTURE_NEW_RESULTTEST_HPP
 
@@ -60,6 +59,15 @@ namespace STR
       unevaluated
     };
 
+    /// possible value for test operation on geometry
+    enum class TestOp : int
+    {
+      sum,
+      max,
+      min,
+      unknown
+    };
+
    public:
     //! Constructor for time integrators of general kind
     //! \author bborn \date 06/08 (originally)
@@ -82,6 +90,18 @@ namespace STR
     //!
     //! \note The type of stress that is used for testing has to be specified in IO->STRUCT_STRESS
     void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+
+    //! \brief structure version of nodal value tests on geometry
+    //!
+    //! Possible position flags are "dispx", "dispy", "dispz",
+    //!                             "velx", "vely", "velz",
+    //!                             "accx", "accy", "accz"
+    //!                             "stress_xx", "stress_yy", "stress_zz", "stress_xy", "stress_xz",
+    //!                             "stress_yz"
+    //!
+    //! \note The type of stress that is used for testing has to be specified in IO->STRUCT_STRESS
+    void test_node_on_geometry(INPUT::LineDefinition& res, int& nerr, int& test_count,
+        const std::vector<std::vector<std::vector<int>>>& nodeset) override;
 
     /*! \brief test special quantity not associated with a particular element or node
      *
@@ -183,6 +203,13 @@ namespace STR
      *  \author kremheller \date 11/19 */
     std::optional<double> get_energy(const std::string& quantity, Status& special_status) const;
 
+    /**! \brief extract nodal value on specific position
+     *  \param[in]  node        node index
+     *  \param[in]  position  the quantity to extract
+     *  \param[out] result  the nodal value
+     *  \return     the flag indicates whether the node is in the current proc or not */
+    int get_nodal_result(double& result, const int node, const std::string& position) const;
+
    protected:
     //! flag which indicates if the Init() routine has already been called
     bool isinit_;
@@ -228,7 +255,6 @@ namespace STR
   int GetIntegerNumberAtLastPositionOfName(const std::string& quantity);
 
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 
