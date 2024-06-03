@@ -247,7 +247,7 @@ void SSI::SSICouplingNonMatchingBoundary::Setup()
   std::vector<int> coupleddof(problem_dimension_, 1);
   // Setup of meshtying adapter
   adaptermeshtying_->Setup(structdis_, scatradis_, Teuchos::null, coupleddof, "SSICoupling",
-      structdis_->Comm(), false, false, 0, 1);
+      structdis_->Comm(), GLOBAL::Problem::Instance()->FunctionManager(), false, false, 0, 1);
 
   // extractor for coupled surface of structure discretization with surface scatra
   extractor_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(

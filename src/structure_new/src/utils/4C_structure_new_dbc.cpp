@@ -71,6 +71,8 @@ void STR::Dbc::Setup()
   Teuchos::ParameterList p;
   p.set<double>("total time", timint_ptr_->GetDataGlobalState().GetTimeNp());
   dbcmap_ptr_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
+  p.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
   discret_ptr_->evaluate_dirichlet(
       p, zeros_ptr_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmap_ptr_);
   // clear the system vector of possibly inserted non-zero DBC values
@@ -195,6 +197,8 @@ void STR::Dbc::apply_dirichlet_bc(const double& time, Teuchos::RCP<Epetra_Vector
   // ---------------------------------------------------------------------------
   Teuchos::ParameterList p;
   p.set("total time", time);
+  p.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
   // predicted Dirichlet values
   // \c dis then also holds prescribed new Dirichlet displacements

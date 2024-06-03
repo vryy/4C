@@ -102,6 +102,8 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
+    eleparams.set<const CORE::UTILS::FunctionManager*>(
+        "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
     discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
@@ -346,6 +348,8 @@ void ART::ArtNetImplStationary::apply_dirichlet_bc()
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time", time_);  // actual time t_{n+1}
+  p.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
   // Dirichlet values
   // \c  pressurenp_ then also holds prescribed new Dirichlet values
@@ -387,6 +391,8 @@ void ART::ArtNetImplStationary::apply_neumann_bc(const Teuchos::RCP<Epetra_Vecto
   // create parameter list
   Teuchos::ParameterList condparams;
   condparams.set("total time", time_);
+  condparams.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
   // evaluate Neumann boundary conditions
   discret_->evaluate_neumann(condparams, *neumann_loads);
@@ -697,7 +703,9 @@ void ART::ArtNetImplStationary::SetInitialField(
       const std::string field = "Artery";
       std::vector<int> localdofs;
       localdofs.push_back(0);
-      discret_->evaluate_initial_field(field, pressurenp_, localdofs);
+
+      discret_->evaluate_initial_field(
+          GLOBAL::Problem::Instance()->FunctionManager(), field, pressurenp_, localdofs);
 
       break;
     }

@@ -239,6 +239,8 @@ void FLD::FluidImplicitTimeInt::Init()
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
+    eleparams.set<const CORE::UTILS::FunctionManager*>(
+        "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
     apply_dirichlet_bc(eleparams, zeros_, Teuchos::null, Teuchos::null, true);
     // zeros_ has to be reset to zero here, since it has a different value after call of
@@ -6504,6 +6506,8 @@ void FLD::FluidImplicitTimeInt::set_dirichlet_neumann_bc()
 
   // total time required for Dirichlet conditions
   eleparams.set("total time", time_);
+  eleparams.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
   // predicted dirichlet values
   // velnp then also holds prescribed new dirichlet values

@@ -237,13 +237,17 @@ void STR::TIMINT::BaseDataGlobalState::SetInitialFields()
   localdofs.push_back(0);
   localdofs.push_back(1);
   localdofs.push_back(2);
-  DRT::UTILS::evaluate_initial_field(*discret_, field, velnp_, localdofs);
+
+  DRT::UTILS::evaluate_initial_field(
+      GLOBAL::Problem::Instance()->FunctionManager(), *discret_, field, velnp_, localdofs);
 
   // set initial porosity field if existing
   const std::string porosityfield = "Porosity";
   std::vector<int> porositylocaldofs;
   porositylocaldofs.push_back(GLOBAL::Problem::Instance()->NDim());
-  DRT::UTILS::evaluate_initial_field(*discret_, porosityfield, (*dis_)(0), porositylocaldofs);
+
+  DRT::UTILS::evaluate_initial_field(GLOBAL::Problem::Instance()->FunctionManager(), *discret_,
+      porosityfield, (*dis_)(0), porositylocaldofs);
 }
 
 /*----------------------------------------------------------------------------*

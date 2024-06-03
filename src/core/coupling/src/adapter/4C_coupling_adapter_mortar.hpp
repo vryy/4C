@@ -45,6 +45,11 @@ namespace CORE::Nodes
   class Node;
 }
 
+namespace CORE::UTILS
+{
+  class FunctionManager;
+}
+
 namespace MORTAR
 {
   class Interface;
@@ -97,10 +102,11 @@ feel free to write your own tailored Setup() method.
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
         const std::string& couplingcond,     ///< string for coupling condition
         const Epetra_Comm& comm,             ///< communicator
-        const bool slavewithale = false,     ///< flag defining if slave is ALE
-        const bool slidingale = false,       ///< flag indicating sliding ALE case
-        const int nds_master = 0,            ///< master dofset number
-        const int nds_slave = 0              ///< slave dofset number
+        const CORE::UTILS::FunctionManager& function_manager,  ///< function manager
+        const bool slavewithale = false,                       ///< flag defining if slave is ALE
+        const bool slidingale = false,                         ///< flag indicating sliding ALE case
+        const int nds_master = 0,                              ///< master dofset number
+        const int nds_slave = 0                                ///< slave dofset number
     );
 
     /*! setup the machinery (generalized version)
@@ -310,10 +316,8 @@ feel free to write your own tailored Setup() method.
      *  [1] Puso, M and Laursen, TA: Mesh tying on curved interfaces in 3D,
      *      Engineering Computation, 20:305-319 (2003)
      */
-    void check_slave_dirichlet_overlap(
-        const Teuchos::RCP<DRT::Discretization>& slavedis,  ///< [in] Slave discretization
-        const Epetra_Comm& comm                             ///< [in] Communicator
-    );
+    void check_slave_dirichlet_overlap(const Teuchos::RCP<DRT::Discretization>& slavedis,
+        const Epetra_Comm& comm, const CORE::UTILS::FunctionManager& function_manager);
 
     /// back transformation to initial parallel distribution
     void matrix_row_col_transform();

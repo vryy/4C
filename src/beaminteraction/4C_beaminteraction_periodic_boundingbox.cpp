@@ -601,6 +601,8 @@ void CORE::GEO::MESHFREE::BoundingBox::ApplyDirichlet(double timen)
 
   Teuchos::ParameterList p;
   p.set("total time", timen);
+  p.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
   // disn_ then also holds prescribed new Dirichlet displacements
   boxdiscret_->ClearState();

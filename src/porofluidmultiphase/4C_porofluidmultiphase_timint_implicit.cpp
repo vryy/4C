@@ -236,6 +236,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
+    eleparams.set<const CORE::UTILS::FunctionManager*>(
+        "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
     discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     discret_->evaluate_dirichlet(
@@ -669,6 +671,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_dirichlet_bc(
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time", time);  // actual time t_{n+1}
+  p.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
   // predicted Dirichlet values
   // \c  prenp then also holds prescribed new Dirichlet values
@@ -2011,7 +2015,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
       {
         localdofs[i] = i;
       }
-      discret_->evaluate_initial_field(field, phin_, localdofs);
+      discret_->evaluate_initial_field(
+          GLOBAL::Problem::Instance()->FunctionManager(), field, phin_, localdofs);
 
       // initialize also the solution vector. These values are a pretty good guess for the
       // solution after the first time step (much better than starting with a zero vector)

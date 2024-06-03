@@ -255,7 +255,8 @@ void FSI::SlidingMonolithicFluidSplit::SetupSystem()
     std::vector<int> coupleddof(ndim, 1);
 
     coupsfm_->Setup(structure_field()->discretization(), fluid_field()->discretization(),
-        ale_field()->write_access_discretization(), coupleddof, "FSICoupling", comm_, true);
+        ale_field()->write_access_discretization(), coupleddof, "FSICoupling", comm_,
+        GLOBAL::Problem::Instance()->FunctionManager(), true);
 
     // fluid to ale at the interface
 

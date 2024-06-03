@@ -66,6 +66,11 @@ namespace CORE::Dofsets
   class DofSetProxy;
 }
 
+namespace CORE::UTILS
+{
+  class FunctionManager;
+}
+
 namespace IO
 {
   class DiscretizationWriter;
@@ -1987,8 +1992,9 @@ namespace DRT
     the local pressure DOF id, namely {3}.
 
     */
-    void evaluate_initial_field(const std::string& fieldstring,
-        Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids) const;
+    void evaluate_initial_field(const CORE::UTILS::FunctionManager& function_manager,
+        const std::string& fieldstring, Teuchos::RCP<Epetra_Vector> fieldvector,
+        const std::vector<int>& locids) const;
 
     //@}
 

@@ -11,6 +11,7 @@
 
 #include "4C_structure_new_impl_generic.hpp"
 
+#include "4C_global_data.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
@@ -105,6 +106,7 @@ void STR::IMPLICIT::Generic::reset_eval_params()
   EvalData().SetTotalTime(global_state().GetTimeNp());
   EvalData().SetDeltaTime((*global_state().GetDeltaTime())[0]);
   EvalData().SetIsTolerateError(true);
+  EvalData().set_function_manager(GLOBAL::Problem::Instance()->FunctionManager());
 }
 
 /*----------------------------------------------------------------------------*

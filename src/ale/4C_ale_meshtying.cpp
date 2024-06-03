@@ -406,8 +406,8 @@ void ALE::Meshtying::AdapterMortar(std::vector<int> coupleddof)
       GLOBAL::Problem::Instance()->spatial_approximation_type()));
 
   // Setup of meshtying adapter
-  adaptermeshtying_->Setup(
-      discret_, discret_, Teuchos::null, coupleddof, "Mortar", discret_->Comm(), true);
+  adaptermeshtying_->Setup(discret_, discret_, Teuchos::null, coupleddof, "Mortar",
+      discret_->Comm(), GLOBAL::Problem::Instance()->FunctionManager(), true);
 }
 
 /*-------------------------------------------------------*/

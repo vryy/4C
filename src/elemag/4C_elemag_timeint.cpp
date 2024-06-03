@@ -99,6 +99,8 @@ void ELEMAG::ElemagTimeInt::Init()
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
+    eleparams.set<const CORE::UTILS::FunctionManager *>(
+        "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
     // Evaluation of the dirichlet conditions (why is it here and also later?)
     discret_->evaluate_dirichlet(
@@ -736,6 +738,8 @@ void ELEMAG::ElemagTimeInt::apply_dirichlet_to_system(bool resonly)
   TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
   Teuchos::ParameterList params;
   params.set<double>("total time", time_);
+  params.set<const CORE::UTILS::FunctionManager *>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
   discret_->evaluate_dirichlet(
       params, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   if (resonly)

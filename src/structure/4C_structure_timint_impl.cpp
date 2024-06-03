@@ -844,6 +844,8 @@ void STR::TimIntImpl::apply_force_stiff_external(const double time,  //!< evalua
   Teuchos::ParameterList p;
   // other parameters needed by the elements
   p.set("total time", time);
+  p.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
   // set vector values needed by elements
   discret_->ClearState();

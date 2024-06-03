@@ -138,7 +138,7 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
         (Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(MBFluidField()))
             ->ale_field()
             ->write_access_discretization(),
-        coupleddof, "FSICoupling", comm, true);
+        coupleddof, "FSICoupling", comm, GLOBAL::Problem::Instance()->FunctionManager(), true);
   }
   else
   {

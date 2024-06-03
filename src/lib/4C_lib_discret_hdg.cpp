@@ -286,7 +286,8 @@ std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationHDG& dis)
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::DbcHDG::read_dirichlet_condition(const DRT::Discretization& discret,
+void DRT::UTILS::DbcHDG::read_dirichlet_condition(
+    const CORE::UTILS::FunctionManager& function_manager, const DRT::Discretization& discret,
     const CORE::Conditions::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
@@ -295,18 +296,21 @@ void DRT::UTILS::DbcHDG::read_dirichlet_condition(const DRT::Discretization& dis
   const DRT::DiscretizationFaces& face_discret =
       static_cast<const DRT::DiscretizationFaces&>(discret);
 
-  read_dirichlet_condition(face_discret, cond, time, info, dbcgids, hierarchical_order);
+  read_dirichlet_condition(
+      function_manager, face_discret, cond, time, info, dbcgids, hierarchical_order);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::DbcHDG::read_dirichlet_condition(const DRT::DiscretizationFaces& discret,
+void DRT::UTILS::DbcHDG::read_dirichlet_condition(
+    const CORE::UTILS::FunctionManager& function_manager, const DRT::DiscretizationFaces& discret,
     const CORE::Conditions::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 
 {
   // call to corresponding method in base class; safety checks inside
-  DRT::UTILS::Dbc::read_dirichlet_condition(discret, cond, time, info, dbcgids, hierarchical_order);
+  DRT::UTILS::Dbc::read_dirichlet_condition(
+      function_manager, discret, cond, time, info, dbcgids, hierarchical_order);
 
   // say good bye if there are no face elements
   if (discret.FaceRowMap() == nullptr) return;
@@ -402,7 +406,8 @@ void DRT::UTILS::DbcHDG::read_dirichlet_condition(const DRT::DiscretizationFaces
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::DbcHDG::do_dirichlet_condition(const DRT::Discretization& discret,
+void DRT::UTILS::DbcHDG::do_dirichlet_condition(
+    const CORE::UTILS::FunctionManager& function_manager, const DRT::Discretization& discret,
     const CORE::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
@@ -412,17 +417,19 @@ void DRT::UTILS::DbcHDG::do_dirichlet_condition(const DRT::Discretization& discr
   const DRT::DiscretizationFaces& face_discret =
       static_cast<const DRT::DiscretizationFaces&>(discret);
 
-  do_dirichlet_condition(face_discret, cond, time, systemvectors, toggle);
+  do_dirichlet_condition(function_manager, face_discret, cond, time, systemvectors, toggle);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::DbcHDG::do_dirichlet_condition(const DRT::DiscretizationFaces& discret,
+void DRT::UTILS::DbcHDG::do_dirichlet_condition(
+    const CORE::UTILS::FunctionManager& function_manager, const DRT::DiscretizationFaces& discret,
     const CORE::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle) const
 {
   // call corresponding method from base class; safety checks inside
-  DRT::UTILS::Dbc::do_dirichlet_condition(discret, cond, time, systemvectors, toggle, nullptr);
+  DRT::UTILS::Dbc::do_dirichlet_condition(
+      function_manager, discret, cond, time, systemvectors, toggle, nullptr);
 
   // say good bye if there are no face elements
   if (discret.FaceRowMap() == nullptr) return;

@@ -402,6 +402,8 @@ void SCATRA::ScaTraTimIntImpl::Setup()
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
+    eleparams.set<const CORE::UTILS::FunctionManager*>(
+        "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
     discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
@@ -1886,7 +1888,8 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       {
         localdofs[i] = i;
       }
-      discret_->evaluate_initial_field(field, phin_, localdofs);
+      discret_->evaluate_initial_field(
+          GLOBAL::Problem::Instance()->FunctionManager(), field, phin_, localdofs);
 
       // initialize also the solution vector. These values are a pretty good guess for the
       // solution after the first time step (much better than starting with a zero vector)
@@ -2448,6 +2451,8 @@ void SCATRA::ScaTraTimIntImpl::apply_dirichlet_bc(
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time", time);  // actual time t_{n+1}
+  p.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
   // predicted Dirichlet values
   // \c  phinp then also holds prescribed new Dirichlet values
@@ -2486,6 +2491,9 @@ void SCATRA::ScaTraTimIntImpl::apply_neumann_bc(const Teuchos::RCP<Epetra_Vector
   // action for elements
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_Neumann, condparams);
+
+  condparams.set<const CORE::UTILS::FunctionManager*>(
+      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
 
   // specific parameters
   add_problem_specific_parameters_and_vectors(condparams);
