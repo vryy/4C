@@ -29,7 +29,7 @@ namespace
    public:
     DomainReaderTest()
     {
-      testdis_ = Teuchos::rcp(new DRT::Discretization("dummy", testreader_.Comm()));
+      testdis_ = Teuchos::rcp(new DRT::Discretization("dummy", testreader_.Comm(), 3));
     }
 
    protected:

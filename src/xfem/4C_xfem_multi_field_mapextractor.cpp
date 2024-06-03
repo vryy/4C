@@ -17,6 +17,7 @@
 #include "4C_comm_parobject.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_global_data.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -146,8 +147,8 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   // ------------------------------------------------------------------------
   // create an auxiliary master interface discretization
   // ------------------------------------------------------------------------
-  idiscret_ = Teuchos::rcp(
-      new DRT::Discretization("multifield_interface", Teuchos::rcp<Epetra_Comm>(comm().Clone())));
+  idiscret_ = Teuchos::rcp(new DRT::Discretization("multifield_interface",
+      Teuchos::rcp<Epetra_Comm>(comm().Clone()), GLOBAL::Problem::Instance()->NDim()));
 
   // ------------------------------------------------------------------------
   // (1) create a list of coupling discretizations per node on this proc and

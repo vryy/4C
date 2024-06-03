@@ -158,10 +158,11 @@ namespace DRT
     /*!
     \brief Standard Constructor
 
-    \param name (in): name of this discretization
-    \param comm (in): An epetra comm object associated with this discretization
+    \param name: name of this discretization
+    \param comm: Epetra comm object associated with this discretization
+    \param n_dim: number of space dimensions of this discretization
     */
-    Discretization(const std::string& name, Teuchos::RCP<Epetra_Comm> comm);
+    Discretization(const std::string& name, Teuchos::RCP<Epetra_Comm> comm, unsigned int n_dim);
 
     /**
      * Virtual destructor.
@@ -921,6 +922,8 @@ namespace DRT
       FOUR_C_ASSERT(Filled(), "Discretization %s not Filled()!", name_.c_str());
       return std_20::ranges::views::all(nodecolptr_);
     }
+
+    unsigned int n_dim() const { return n_dim_; }
 
     //@}
 
@@ -2298,6 +2301,9 @@ namespace DRT
 
     //! Vector of DofSets
     std::vector<Teuchos::RCP<CORE::Dofsets::DofSetInterface>> dofsets_;
+
+    //! number of space dimension
+    const unsigned int n_dim_;
   };  // class Discretization
 }  // namespace DRT
 

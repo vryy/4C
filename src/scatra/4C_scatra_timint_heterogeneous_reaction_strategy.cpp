@@ -98,7 +98,8 @@ void SCATRA::HeterogeneousReactionStrategy::setup_meshtying()
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(scatratimint_->discretization()->Comm().Clone());
 
   // standard case
-  discret_ = Teuchos::rcp(new DRT::Discretization(scatratimint_->discretization()->Name(), com));
+  discret_ = Teuchos::rcp(new DRT::Discretization(
+      scatratimint_->discretization()->Name(), com, GLOBAL::Problem::Instance()->NDim()));
 
   // call complete without assigning degrees of freedom
   discret_->fill_complete(false, true, false);

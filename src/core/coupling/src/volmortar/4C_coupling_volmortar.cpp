@@ -1590,9 +1590,9 @@ void CORE::VOLMORTAR::VolMortarCoupl::perform_cut(
   // and dofs of the original elements are kept untouched.
 
   Teuchos::RCP<DRT::Discretization> sauxdis =
-      Teuchos::rcp(new DRT::Discretization((std::string) "slaveauxdis", comm_));
+      Teuchos::rcp(new DRT::Discretization((std::string) "slaveauxdis", comm_, dim_));
   Teuchos::RCP<DRT::Discretization> mauxdis =
-      Teuchos::rcp(new DRT::Discretization((std::string) "masterauxdis", comm_));
+      Teuchos::rcp(new DRT::Discretization((std::string) "masterauxdis", comm_, dim_));
 
   // build surface elements for all surfaces of slave element
   std::vector<Teuchos::RCP<CORE::Elements::Element>> sele_surfs = sele->Surfaces();

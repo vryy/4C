@@ -38,7 +38,7 @@ namespace XFEM
     \param name (in): name of this discretization
     \param comm (in): An epetra comm object associated with this discretization
     */
-    DiscretizationXFEM(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
+    DiscretizationXFEM(const std::string name, Teuchos::RCP<Epetra_Comm> comm, unsigned int n_dim);
 
     /*!
     \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)

@@ -184,7 +184,8 @@ void electromagnetics_drt()
 
         if (ishdg)
         {
-          scatradis = Teuchos::rcp(new DRT::DiscretizationHDG((std::string) "scatra", newcomm));
+          scatradis = Teuchos::rcp(
+              new DRT::DiscretizationHDG((std::string) "scatra", newcomm, problem->NDim()));
 
           scatradis->fill_complete();
 
@@ -194,7 +195,8 @@ void electromagnetics_drt()
         }
         else
         {
-          scatradis = Teuchos::rcp(new DRT::Discretization((std::string) "scatra", newcomm));
+          scatradis = Teuchos::rcp(
+              new DRT::Discretization((std::string) "scatra", newcomm, problem->NDim()));
           scatradis->fill_complete();
 
           CORE::FE::CloneDiscretization<

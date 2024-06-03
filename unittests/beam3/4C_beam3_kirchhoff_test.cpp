@@ -29,7 +29,7 @@ namespace
     Beam3k()
     {
       testdis_ =
-          Teuchos::rcp(new DRT::Discretization("Beam3k", Teuchos::rcp(new Epetra_SerialComm)));
+          Teuchos::rcp(new DRT::Discretization("Beam3k", Teuchos::rcp(new Epetra_SerialComm), 3));
 
       std::vector<std::vector<double>> xrefe{{-0.05, 0.05, 0.3}, {0.45, -0.05, 0.1}};
 

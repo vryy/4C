@@ -24,8 +24,8 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                    schott 03/12|
  *----------------------------------------------------------------------*/
 DRT::DiscretizationFaces::DiscretizationFaces(
-    const std::string name, Teuchos::RCP<Epetra_Comm> comm)
-    : Discretization(name, comm),  // use base class constructor
+    const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
+    : Discretization(name, comm, n_dim),  // use base class constructor
       extension_filled_(false),
       doboundaryfaces_(false){};
 

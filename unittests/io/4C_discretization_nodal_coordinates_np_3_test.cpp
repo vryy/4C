@@ -44,7 +44,7 @@ namespace
       CreateMaterialInGlobalProblem();
 
       comm_ = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
-      test_discretization_ = Teuchos::rcp(new DRT::Discretization("dummy", comm_));
+      test_discretization_ = Teuchos::rcp(new DRT::Discretization("dummy", comm_, 3));
 
       CORE::IO::cout.setup(false, false, false, CORE::IO::standard, comm_, 0, 0, "dummyFilePrefix");
 

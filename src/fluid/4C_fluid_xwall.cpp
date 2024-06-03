@@ -374,8 +374,8 @@ void FLD::XWall::init_wall_dist()
 
   // this is very expensive in terms of memory
   // we will delete it as soon as we are ready here
-  Teuchos::RCP<DRT::Discretization> commondis =
-      Teuchos::rcp(new DRT::Discretization((std::string) "Commondis", newcomm));
+  Teuchos::RCP<DRT::Discretization> commondis = Teuchos::rcp(new DRT::Discretization(
+      (std::string) "Commondis", newcomm, GLOBAL::Problem::Instance()->NDim()));
 
   // loop over all column nodes of underlying problem discret and add
   for (int i = 0; i < (discret_->NodeColMap())->NumMyElements(); ++i)
@@ -568,7 +568,8 @@ void FLD::XWall::setup_x_wall_dis()
   // build a new discretization
   Teuchos::RCP<Epetra_Comm> newcomm = Teuchos::rcp(discret_->Comm().Clone());
 
-  xwdiscret_ = Teuchos::rcp(new DRT::Discretization((std::string) "xwalldis", newcomm));
+  xwdiscret_ = Teuchos::rcp(new DRT::Discretization(
+      (std::string) "xwalldis", newcomm, GLOBAL::Problem::Instance()->NDim()));
 
   // loop over all xwall row nodes and add
   for (int i = 0; i < (discret_->NodeColMap())->NumMyElements(); ++i)

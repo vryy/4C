@@ -303,7 +303,7 @@ namespace
 
     // Add the relevant nurbs information to the discretization.
     Teuchos::RCP<DRT::NURBS::NurbsDiscretization> structdis =
-        Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure", Teuchos::null));
+        Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure", Teuchos::null, 3));
     GLOBAL::Problem::Instance()->AddDis("structure", structdis);
 
     // Get the geometry.

@@ -18,6 +18,7 @@
 #include "4C_discretization_condition_periodic.hpp"
 #include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_dofset_independent.hpp"
+#include "4C_global_data.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_problemtype.hpp"
 #include "4C_io_legacy_table.hpp"
@@ -629,12 +630,14 @@ PostField PostProblem::getfield(MAP* field_info)
     case CORE::FE::ShapeFunctionType::polynomial:
     case CORE::FE::ShapeFunctionType::hdg:
     {
-      dis = Teuchos::rcp(new DRT::Discretization(field_name, comm_));
+      dis = Teuchos::rcp(
+          new DRT::Discretization(field_name, comm_, GLOBAL::Problem::Instance()->NDim()));
       break;
     }
     case CORE::FE::ShapeFunctionType::nurbs:
     {
-      dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(field_name, comm_));
+      dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(
+          field_name, comm_, GLOBAL::Problem::Instance()->NDim()));
       break;
     }
     default:

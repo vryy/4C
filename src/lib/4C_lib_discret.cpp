@@ -26,8 +26,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Discretization::Discretization(const std::string& name, Teuchos::RCP<Epetra_Comm> comm)
-    : name_(name), comm_(comm), writer_(Teuchos::null), filled_(false), havedof_(false)
+DRT::Discretization::Discretization(
+    const std::string& name, Teuchos::RCP<Epetra_Comm> comm, unsigned int n_dim)
+    : name_(name),
+      comm_(comm),
+      writer_(Teuchos::null),
+      filled_(false),
+      havedof_(false),
+      n_dim_(n_dim)
 {
   dofsets_.emplace_back(Teuchos::rcp(new CORE::Dofsets::DofSet()));
 }

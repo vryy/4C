@@ -23,8 +23,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::DiscretizationHDG::DiscretizationHDG(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
-    : DiscretizationFaces(name, comm)
+DRT::DiscretizationHDG::DiscretizationHDG(
+    const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
+    : DiscretizationFaces(name, comm, n_dim)
 {
   this->doboundaryfaces_ = true;
 }

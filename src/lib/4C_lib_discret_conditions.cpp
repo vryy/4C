@@ -75,12 +75,10 @@ void DRT::Discretization::boundary_conditions_geometry()
     //  - line conditions in 1D
     //  - surface conditions in 2D
     //  - volume conditions in 3D
-    else if (CORE::Conditions::geometry_type_to_dim.at(condition->GType()) ==
-             GLOBAL::Problem::Instance()->NDim())
+    else if (CORE::Conditions::geometry_type_to_dim.at(condition->GType()) == n_dim_)
       havenewelements = build_volumesin_condition(name, condition);
     // dimension of condition must not larger than the one of the problem itself
-    else if (CORE::Conditions::geometry_type_to_dim.at(condition->GType()) >
-             GLOBAL::Problem::Instance()->NDim())
+    else if (CORE::Conditions::geometry_type_to_dim.at(condition->GType()) > n_dim_)
       FOUR_C_THROW("Dimension of condition is larger than the problem dimension.");
     // build a line element geometry description
     else if (condition->GType() == CORE::Conditions::geometry_type_line)

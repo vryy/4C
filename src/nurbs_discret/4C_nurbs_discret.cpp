@@ -34,8 +34,8 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                            gammi 05/08|
  *----------------------------------------------------------------------*/
 DRT::NURBS::NurbsDiscretization::NurbsDiscretization(
-    const std::string name, Teuchos::RCP<Epetra_Comm> comm)
-    : DRT::Discretization::Discretization(name, comm), knots_(Teuchos::null)
+    const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
+    : DRT::Discretization::Discretization(name, comm, n_dim), knots_(Teuchos::null)
 {
   return;
 }

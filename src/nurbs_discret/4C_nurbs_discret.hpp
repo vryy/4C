@@ -48,10 +48,12 @@ namespace DRT
       /*!
       \brief Standard Constructor
 
-      \param name (in): name of this nurbs discretization
-      \param comm (in): An epetra comm object associated with this discretization
+      \param name: name of this nurbs discretization
+      \param comm: An epetra comm object associated with this discretization
+      \param n_dim: number of space dimensions of this discretization
       */
-      NurbsDiscretization(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
+      NurbsDiscretization(
+          const std::string name, Teuchos::RCP<Epetra_Comm> comm, unsigned int n_dim);
 
       /*!
       \brief Set a knot vector

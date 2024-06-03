@@ -622,8 +622,8 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // the copied beam contact discretization.
 
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_.Comm().Clone());
-  btsoldiscret_ =
-      Teuchos::rcp(new DRT::Discretization((std::string) "beam to solid contact", comm));
+  btsoldiscret_ = Teuchos::rcp(new DRT::Discretization(
+      (std::string) "beam to solid contact", comm, GLOBAL::Problem::Instance()->NDim()));
   dofoffsetmap_.clear();
   std::map<int, std::vector<int>> nodedofs;
   nodedofs.clear();

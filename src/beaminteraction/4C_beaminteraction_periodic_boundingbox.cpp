@@ -195,7 +195,8 @@ void CORE::GEO::MESHFREE::BoundingBox::setup_bounding_box_discretization()
     {
       Teuchos::RCP<Epetra_Comm> com =
           Teuchos::rcp(GLOBAL::Problem::Instance()->GetDis("structure")->Comm().Clone());
-      boxdiscret_ = Teuchos::rcp(new DRT::Discretization("boundingbox", com));
+      boxdiscret_ = Teuchos::rcp(
+          new DRT::Discretization("boundingbox", com, GLOBAL::Problem::Instance()->NDim()));
     }
     else
     {

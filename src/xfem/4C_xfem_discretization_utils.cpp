@@ -562,8 +562,8 @@ Teuchos::RCP<CORE::Conditions::Condition> XFEM::UTILS::XFEMDiscretizationBuilder
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 XFEM::DiscretizationXWall::DiscretizationXWall(
-    const std::string name, Teuchos::RCP<Epetra_Comm> comm)
-    : DiscretizationFaces(name, comm)  // use base class constructor
+    const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
+    : DiscretizationFaces(name, comm, n_dim)  // use base class constructor
       {};
 
 FOUR_C_NAMESPACE_CLOSE
