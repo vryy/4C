@@ -50,12 +50,12 @@ namespace IO
    * @tparam T type of object one line is read into
    */
   template <typename T>
-  std::vector<T> ReadFileAsLines(std::istream& input_stream);
+  std::vector<T> convert_lines(std::istream& input_stream);
 
   /*!
    * @brief Read an @p input_stream line by line and parse each line into an object of type @p T
    * using `IO::StringConverter<T>::Parse(line_string)`. The parsed objects are then reduced into
-   * another object of @p ReturnType. This process is also known as a `fold` over the data. The user
+   * another object of @p ReturnType. This process is also known as a `fold` over the data. You
    * can specify which @p operation should be performed by supplying a callable that takes the
    * already accumulated data of type @p ReturnType and the result of parsing a single line into a
    * type @p T.
@@ -68,7 +68,7 @@ namespace IO
    * array entries:
    *
    * @code {.cpp}
-   * auto operation = [](ReducedType &&acc, T &&next)
+   * auto operation = [](ReducedType acc, T &&next)
    * {
    *   for (const auto &[key, value] : next)
    *   {
@@ -83,26 +83,26 @@ namespace IO
    * @code {.cpp}
    * using ReducedType = std::map<int, int>;
    * using T = std::map<int, std::array<int, 3>>;
-   * ReducedType read_data = IO::ReadFileAsLines<T, ReducedType>(input_stream, operator);
+   * ReducedType converted_data = IO::convert_lines<T, ReducedType>(input_stream, operator);
    * @endcode
    *
    * @param[in] input_stream input stream
    * @param[in] operation Binary operation function object that is apply to create the operated data
    *                      from the parsed data. Its signature must be:
    *                      @code {.cpp}
-   *                      ReturnType operation(ReturnType&& a, T&& b)
+   *                      ReturnType operation(ReturnType a, T&& b)
    *                      @endcode
    * @tparam T type of object one line is read into
    * @tparam ReturnType type of the result created through the binary operation
    */
   template <typename T, typename ReturnType, typename BinaryOperation>
-  ReturnType ReadFileAsLines(std::istream& input_stream, BinaryOperation operation);
+  ReturnType convert_lines(std::istream& input_stream, BinaryOperation operation);
 
   template <typename T>
-  std::vector<T> ReadFileAsLines(std::istream& input_stream)
+  std::vector<T> convert_lines(std::istream& input_stream)
   {
-    return ReadFileAsLines<T, std::vector<T>>(input_stream,
-        [](std::vector<T>&& accumulator, T&& next)
+    return convert_lines<T, std::vector<T>>(input_stream,
+        [](std::vector<T> accumulator, T&& next)
         {
           accumulator.emplace_back(std::move(next));
           return accumulator;
@@ -110,12 +110,12 @@ namespace IO
   }
 
   template <typename T, typename ReturnType, typename BinaryOperation>
-  ReturnType ReadFileAsLines(std::istream& input_stream, BinaryOperation operation)
+  ReturnType convert_lines(std::istream& input_stream, BinaryOperation operation)
   {
     std::string line_str;
     ReturnType operated_data;
 
-    // read lines of file
+    // read the input stream line by line
     while (std::getline(input_stream, line_str))
     {
       // do not read in line if it is a header
@@ -125,12 +125,12 @@ namespace IO
       {
         // parse line string and apply the specified operation on the parsed data
         T parsed_data = IO::StringConverter<T>::Parse(line_str);
-        operated_data = operation(std::move(operated_data), std::move(parsed_data));
+        operated_data = operation(std::forward<ReturnType>(operated_data), std::move(parsed_data));
       }
       catch (...)
       {
         FOUR_C_THROW(
-            "Could not read line '%s' from file. Likely the string's pattern is not "
+            "Could not read line '%s' from input stream. Likely the string's pattern is not "
             "convertible to an object of type %s",
             line_str.c_str(), CORE::UTILS::TryDemangle(typeid(T).name()).c_str());
       }
