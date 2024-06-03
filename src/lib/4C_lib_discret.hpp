@@ -229,7 +229,8 @@ namespace DRT
     */
     virtual int NumDof(const CORE::Elements::Element* element) const
     {
-      FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(
+          dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
       return NumDof(0, element);
     }
 
@@ -244,7 +245,8 @@ namespace DRT
     */
     virtual int Dof(const CORE::Elements::Element* element, const int dof) const
     {
-      FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(
+          dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
       return Dof(0, element, dof);
     }
 
@@ -259,7 +261,8 @@ namespace DRT
     */
     virtual std::vector<int> Dof(const CORE::Elements::Element* element) const
     {
-      FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(
+          dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
       return Dof(0, element);
     }
 
@@ -277,7 +280,8 @@ namespace DRT
     virtual void Dof(const CORE::Elements::Element* element, const CORE::Nodes::Node* node,
         std::vector<int>& lm) const
     {
-      FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(
+          dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
       Dof(0, element, node, lm);
     }
 
@@ -293,7 +297,8 @@ namespace DRT
     */
     virtual void Dof(const CORE::Elements::Element* element, std::vector<int>& lm) const
     {
-      FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(
+          dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
       Dof(0, element, lm);
     }
 
@@ -311,7 +316,8 @@ namespace DRT
     virtual void Dof(
         const CORE::Nodes::Node* node, const unsigned startindex, std::vector<int>& lm) const
     {
-      FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(
+          dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
       Dof(0, node, startindex, lm);
     }
 
@@ -349,7 +355,8 @@ namespace DRT
     */
     int NumDof(const CORE::Nodes::Node* node) const
     {
-      FOUR_C_ASSERT(NumDofSets() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(
+          dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
       return NumDof(0, node);
     }
 
@@ -364,8 +371,9 @@ namespace DRT
     */
     virtual int NumDof(unsigned nds, const CORE::Nodes::Node* node) const
     {
-      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
-      FOUR_C_ASSERT(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(
+          nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
+      FOUR_C_ASSERT(havedof_, "no dofs assigned in discretization %s!", name_.c_str());
       return dofsets_[nds]->NumDof(node);
     }
 
@@ -380,8 +388,9 @@ namespace DRT
     */
     virtual int NumDof(unsigned nds, const CORE::Elements::Element* element) const
     {
-      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
-      FOUR_C_ASSERT(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(
+          nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
+      FOUR_C_ASSERT(havedof_, "no dofs assigned in discretization %s!", name_.c_str());
       return dofsets_[nds]->NumDof(element);
     }
 
@@ -411,7 +420,8 @@ namespace DRT
     */
     int Dof(const CORE::Nodes::Node* node, const int ldof) const
     {
-      FOUR_C_ASSERT(NumDofSets() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(
+          NumDofSets() == 1, "Discretization %s expects just one dof set!", name_.c_str());
       return Dof(0, node, ldof);
     }
 
@@ -427,8 +437,9 @@ namespace DRT
     */
     virtual int Dof(unsigned nds, const CORE::Nodes::Node* node, const int dof) const
     {
-      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
-      FOUR_C_ASSERT(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(
+          nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
+      FOUR_C_ASSERT(havedof_, "no dofs assigned in discretization %s!", name_.c_str());
       return dofsets_[nds]->Dof(node, dof);
     }
 
@@ -444,8 +455,9 @@ namespace DRT
     */
     virtual int Dof(unsigned nds, const CORE::Elements::Element* element, const int dof) const
     {
-      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
-      FOUR_C_ASSERT(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(
+          nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
+      FOUR_C_ASSERT(havedof_, "no dofs assigned in discretization %s!", name_.c_str());
       return dofsets_[nds]->Dof(element, dof);
     }
 
@@ -460,7 +472,8 @@ namespace DRT
     */
     std::vector<int> Dof(const CORE::Nodes::Node* node) const
     {
-      FOUR_C_ASSERT(NumDofSets() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(
+          NumDofSets() == 1, "Discretization %s expects just one dof set!", name_.c_str());
       return Dof(0, node);
     }
 
@@ -476,8 +489,9 @@ namespace DRT
     */
     virtual std::vector<int> Dof(unsigned nds, const CORE::Nodes::Node* node) const
     {
-      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
-      FOUR_C_ASSERT(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(
+          nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
+      FOUR_C_ASSERT(havedof_, "no dofs assigned in discretization %s!", name_.c_str());
       return dofsets_[nds]->Dof(node);
     }
 
@@ -501,8 +515,9 @@ namespace DRT
     virtual void Dof(std::vector<int>& dof, const CORE::Nodes::Node* node, unsigned nds,
         unsigned nodaldofset, const CORE::Elements::Element* element = nullptr) const
     {
-      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
-      FOUR_C_ASSERT(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(
+          nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
+      FOUR_C_ASSERT(havedof_, "no dofs assigned in discretization %s!", name_.c_str());
       return dofsets_[nds]->Dof(dof, node, nodaldofset);
     }
 
@@ -518,8 +533,9 @@ namespace DRT
     */
     virtual std::vector<int> Dof(unsigned nds, const CORE::Elements::Element* element) const
     {
-      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
-      FOUR_C_ASSERT(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(
+          nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
+      FOUR_C_ASSERT(havedof_, "no dofs assigned in discretization %s!", name_.c_str());
       return dofsets_[nds]->Dof(element);
     }
 
@@ -535,7 +551,8 @@ namespace DRT
     */
     void Dof(const CORE::Nodes::Node* node, std::vector<int>& lm) const
     {
-      FOUR_C_ASSERT(NumDofSets() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(
+          NumDofSets() == 1, "Discretization %s expects just one dof set!", name_.c_str());
       Dof((unsigned)0, node, lm);
     }
 
@@ -552,8 +569,9 @@ namespace DRT
     */
     virtual void Dof(unsigned nds, const CORE::Nodes::Node* node, std::vector<int>& lm) const
     {
-      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
-      FOUR_C_ASSERT(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(
+          nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
+      FOUR_C_ASSERT(havedof_, "no dofs assigned in discretization %s!", name_.c_str());
       dofsets_[nds]->Dof(node, lm);
     }
 
@@ -572,8 +590,9 @@ namespace DRT
     virtual void Dof(unsigned nds, const CORE::Elements::Element* element,
         const CORE::Nodes::Node* node, std::vector<int>& lm) const
     {
-      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
-      FOUR_C_ASSERT(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(
+          nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
+      FOUR_C_ASSERT(havedof_, "no dofs assigned in discretization %s!", name_.c_str());
       dofsets_[nds]->Dof(element, node, lm);
     }
 
@@ -591,8 +610,9 @@ namespace DRT
     virtual void Dof(
         unsigned nds, const CORE::Elements::Element* element, std::vector<int>& lm) const
     {
-      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
-      FOUR_C_ASSERT(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(
+          nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
+      FOUR_C_ASSERT(havedof_, "no dofs assigned in discretization %s!", name_.c_str());
       dofsets_[nds]->Dof(element, lm);
     }
 
@@ -611,8 +631,9 @@ namespace DRT
     virtual void Dof(unsigned nds, const CORE::Nodes::Node* node, const unsigned startindex,
         std::vector<int>& lm) const
     {
-      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
-      FOUR_C_ASSERT(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(
+          nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
+      FOUR_C_ASSERT(havedof_, "no dofs assigned in discretization %s!", name_.c_str());
       dofsets_[nds]->Dof(node, startindex, lm);
     }
 
@@ -785,7 +806,7 @@ namespace DRT
     */
     [[nodiscard]] virtual CORE::Elements::Element* lRowElement(int lid) const
     {
-      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization %s not Filled()!", name_.c_str());
       return elerowptr_[lid];
     }
 
@@ -800,7 +821,7 @@ namespace DRT
     */
     virtual CORE::Elements::Element* lColElement(int lid) const
     {
-      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization %s not Filled()!", name_.c_str());
       return elecolptr_[lid];
     }
 
@@ -815,7 +836,7 @@ namespace DRT
      */
     [[nodiscard]] auto MyRowElementRange() const
     {
-      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization %s not Filled()!", name_.c_str());
       return std_20::ranges::views::all(elerowptr_);
     }
 
@@ -824,7 +845,7 @@ namespace DRT
      */
     [[nodiscard]] auto MyColElementRange() const
     {
-      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization %s not Filled()!", name_.c_str());
       return std_20::ranges::views::all(elecolptr_);
     }
 
@@ -860,7 +881,7 @@ namespace DRT
     */
     [[nodiscard]] virtual CORE::Nodes::Node* lRowNode(int lid) const
     {
-      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization %s not Filled()!", name_.c_str());
       return noderowptr_[lid];
     }
 
@@ -875,21 +896,21 @@ namespace DRT
     */
     virtual CORE::Nodes::Node* lColNode(int lid) const
     {
-      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization %s not Filled()!", name_.c_str());
       return nodecolptr_[lid];
     }
 
 
     [[nodiscard]] auto MyRowNodeRange() const
     {
-      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization %s not Filled()!", name_.c_str());
       return std_20::ranges::views::all(noderowptr_);
     }
 
 
     [[nodiscard]] auto MyColNodeRange() const
     {
-      FOUR_C_ASSERT(Filled(), "discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization %s not Filled()!", name_.c_str());
       return std_20::ranges::views::all(nodecolptr_);
     }
 
@@ -1548,13 +1569,14 @@ namespace DRT
     [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> GetState(
         unsigned nds, const std::string& name) const
     {
-      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(
+          nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
       if (state_.size() <= nds) return Teuchos::null;
 
-      if (auto state_iterator = state_[nds].find(name); state_iterator == state_[nds].end())
-        FOUR_C_THROW("Cannot find state %s", name.data());
-      else
-        return state_iterator->second;
+      auto state_iterator = state_[nds].find(name);
+      FOUR_C_THROW_UNLESS(state_iterator != state_[nds].end(),
+          "Cannot find state %s in discretization %s", name.data(), name_.c_str());
+      return state_iterator->second;
     }
 
     /*!
@@ -1564,7 +1586,8 @@ namespace DRT
      */
     virtual bool HasState(unsigned nds, const std::string& name) const
     {
-      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(
+          nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
       if (state_.size() <= nds) return false;
 
       return state_[nds].count(name) == 1;
@@ -2266,11 +2289,8 @@ namespace DRT
   };  // class Discretization
 }  // namespace DRT
 
-
 /// << operator
 std::ostream& operator<<(std::ostream& os, const DRT::Discretization& dis);
-
-
 
 FOUR_C_NAMESPACE_CLOSE
 

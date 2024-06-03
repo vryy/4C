@@ -147,90 +147,54 @@ bool DRT::Discretization::ClearDiscret()
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::NodeRowMap() const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (Filled())
-    return noderowmap_.get();
-  else
-    FOUR_C_THROW("fill_complete() must be called before call to NodeRowMap()");
-  return nullptr;
-#else
+  FOUR_C_ASSERT(
+      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
   return noderowmap_.get();
-#endif
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::NodeColMap() const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (Filled())
-    return nodecolmap_.get();
-  else
-    FOUR_C_THROW("fill_complete() must be called before call to NodeColMap()");
-  return nullptr;
-#else
+  FOUR_C_ASSERT(
+      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
   return nodecolmap_.get();
-#endif
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::ElementRowMap() const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (Filled())
-    return elerowmap_.get();
-  else
-    FOUR_C_THROW("fill_complete() must be called before call to ElementRowMap()");
-  return nullptr;
-#else
+  FOUR_C_ASSERT(
+      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
   return elerowmap_.get();
-#endif
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::ElementColMap() const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (Filled())
-    return elecolmap_.get();
-  else
-    FOUR_C_THROW("fill_complete() must be called before call to ElementColMap()");
-  return nullptr;
-#else
+  FOUR_C_ASSERT(
+      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
   return elecolmap_.get();
-#endif
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int DRT::Discretization::NumGlobalElements() const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (Filled())
-    return ElementRowMap()->NumGlobalElements();
-  else
-    FOUR_C_THROW("fill_complete() must be called before call to NumGlobalElements()");
-  return -1;
-#else
+  FOUR_C_ASSERT(
+      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
   return ElementRowMap()->NumGlobalElements();
-#endif
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int DRT::Discretization::NumMyRowElements() const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (Filled())
-    return ElementRowMap()->NumMyElements();
-  else
-    FOUR_C_THROW("fill_complete() must be called before call to NumMyRowElements()");
-  return -1;
-#else
+  FOUR_C_ASSERT(
+      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
   return ElementRowMap()->NumMyElements();
-#endif
 }
 
 /*----------------------------------------------------------------------*
@@ -247,30 +211,18 @@ int DRT::Discretization::NumMyColElements() const
  *----------------------------------------------------------------------*/
 int DRT::Discretization::NumGlobalNodes() const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (Filled())
-    return NodeRowMap()->NumGlobalElements();
-  else
-    FOUR_C_THROW("fill_complete() must be called before call to NumGlobalNodes()");
-  return -1;
-#else
+  FOUR_C_ASSERT(
+      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
   return NodeRowMap()->NumGlobalElements();
-#endif
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int DRT::Discretization::NumMyRowNodes() const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (Filled())
-    return NodeRowMap()->NumMyElements();
-  else
-    FOUR_C_THROW("fill_complete() must be called before call to NumMyRowNodes()");
-  return -1;
-#else
+  FOUR_C_ASSERT(
+      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
   return NodeRowMap()->NumMyElements();
-#endif
 }
 
 /*----------------------------------------------------------------------*
@@ -294,16 +246,10 @@ bool DRT::Discretization::HaveGlobalElement(const int gid) const
  *----------------------------------------------------------------------*/
 CORE::Elements::Element* DRT::Discretization::gElement(const int gid) const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
   std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator curr = element_.find(gid);
-  if (curr == element_.end())
-    FOUR_C_THROW("Element with gobal id gid=%d not stored on this proc", gid);
-  else
-    return curr->second.get();
-  return nullptr;
-#else
-  return element_.find(gid)->second.get();
-#endif
+  FOUR_C_ASSERT(
+      curr != element_.end(), "Element with global id gid=%d not stored on this proc!", gid);
+  return curr->second.get();
 }
 
 /*----------------------------------------------------------------------*
@@ -317,16 +263,9 @@ bool DRT::Discretization::HaveGlobalNode(const int gid) const
  *----------------------------------------------------------------------*/
 CORE::Nodes::Node* DRT::Discretization::gNode(int gid) const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
   std::map<int, Teuchos::RCP<CORE::Nodes::Node>>::const_iterator curr = node_.find(gid);
-  if (curr == node_.end())
-    FOUR_C_THROW("Node with global id gid=%d not stored on this proc", gid);
-  else
-    return curr->second.get();
-  return nullptr;
-#else
-  return node_.find(gid)->second.get();
-#endif
+  FOUR_C_ASSERT(curr != node_.end(), "Node with global id gid=%d not stored on this proc!", gid);
+  return curr->second.get();
 }
 
 /*----------------------------------------------------------------------*
@@ -453,9 +392,12 @@ void DRT::Discretization::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::dof_row_map(const unsigned nds) const
 {
-  FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
-  if (!Filled()) FOUR_C_THROW("fill_complete was not called on this discretization");
-  if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() not called on this discretization");
+  FOUR_C_ASSERT(
+      nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
+  FOUR_C_THROW_UNLESS(
+      Filled(), "fill_complete was not called on discretization %s!", name_.c_str());
+  FOUR_C_THROW_UNLESS(
+      HaveDofs(), "assign_degrees_of_freedom() not called on discretization %s!", name_.c_str());
 
   return dofsets_[nds]->dof_row_map();
 }
@@ -465,9 +407,12 @@ const Epetra_Map* DRT::Discretization::dof_row_map(const unsigned nds) const
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::DofColMap(const unsigned nds) const
 {
-  FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
-  if (!Filled()) FOUR_C_THROW("fill_complete was not called on this discretization");
-  if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() not called on this discretization");
+  FOUR_C_ASSERT(
+      nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
+  FOUR_C_THROW_UNLESS(
+      Filled(), "fill_complete was not called on discretization %s!", name_.c_str());
+  FOUR_C_THROW_UNLESS(
+      HaveDofs(), "assign_degrees_of_freedom() not called on discretization %s!", name_.c_str());
 
   return dofsets_[nds]->DofColMap();
 }
@@ -478,7 +423,8 @@ const Epetra_Map* DRT::Discretization::DofColMap(const unsigned nds) const
 void DRT::Discretization::ReplaceDofSet(const unsigned nds,
     Teuchos::RCP<CORE::Dofsets::DofSetInterface> newdofset, const bool replaceinstatdofsets)
 {
-  FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
+  FOUR_C_ASSERT(
+      nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
   // if we already have our dofs here and we add a properly filled (proxy)
   // DofSet, we do not need (and do not want) to refill.
   havedof_ = havedof_ and newdofset->Filled() and nds != 0;
@@ -503,7 +449,8 @@ int DRT::Discretization::AddDofSet(Teuchos::RCP<CORE::Dofsets::DofSetInterface> 
  *----------------------------------------------------------------------*/
 Teuchos::RCP<CORE::Dofsets::DofSetInterface> DRT::Discretization::GetDofSetProxy(const int nds)
 {
-  FOUR_C_ASSERT(nds < (int)dofsets_.size(), "undefined dof set");
+  FOUR_C_ASSERT(
+      nds < (int)dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
   return Teuchos::rcp(new CORE::Dofsets::DofSetProxy(&*dofsets_[nds]));
 }
 
@@ -512,7 +459,7 @@ Teuchos::RCP<CORE::Dofsets::DofSetInterface> DRT::Discretization::GetDofSetProxy
 void DRT::Discretization::ReplaceDofSet(
     Teuchos::RCP<CORE::Dofsets::DofSetInterface> newdofset, const bool replaceinstatdofsets)
 {
-  FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
+  FOUR_C_ASSERT(dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
   havedof_ = false;
   if (replaceinstatdofsets) newdofset->replace_in_static_dofsets(dofsets_[0]);
   dofsets_[0] = newdofset;
@@ -568,7 +515,8 @@ void DRT::Discretization::set_state(
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::set_state");
 
-  if (!HaveDofs()) FOUR_C_THROW("fill_complete() was not called");
+  FOUR_C_THROW_UNLESS(
+      HaveDofs(), "fill_complete() was not called for discretization %s!", name_.c_str());
   const Epetra_Map* colmap = DofColMap(nds);
   const Epetra_BlockMap& vecmap = state->Map();
 
@@ -580,14 +528,9 @@ void DRT::Discretization::set_state(
   // maps.
   if (vecmap.PointSameAs(*colmap))
   {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-    if (not colmap->SameAs(vecmap))
-    {
-      FOUR_C_THROW(
-          "col map of discretization and state vector %s are different. This is a fatal bug!",
-          name.c_str());
-    }
-#endif
+    FOUR_C_ASSERT(colmap->SameAs(vecmap),
+        "col map of discretization %s and state vector %s are different. This is a fatal bug!",
+        name_.c_str(), name.c_str());
     // make a copy as in parallel such that no additional RCP points to the state vector
     Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*colmap, false);
     tmp->Update(1.0, *state, 0.0);
@@ -595,14 +538,9 @@ void DRT::Discretization::set_state(
   }
   else  // if it's not in column map export and allocate
   {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-    if (not dof_row_map(nds)->SameAs(state->Map()))
-    {
-      FOUR_C_THROW(
-          "row map of discretization and state vector %s are different. This is a fatal bug!",
-          name.c_str());
-    }
-#endif
+    FOUR_C_ASSERT(dof_row_map(nds)->SameAs(state->Map()),
+        "row map of discretization %s and state vector %s are different. This is a fatal bug!",
+        name_.c_str(), name.c_str());
     Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*colmap, false);
 
     // this is necessary to find out the number of nodesets in the beginning
@@ -621,7 +559,8 @@ void DRT::Discretization::set_state(
 
     // transfer data
     int err = tmp->Import(*state, (*stateimporter_[nds]), Insert);
-    if (err) FOUR_C_THROW("Export using importer failed for Epetra_Vector: return value = %d", err);
+    FOUR_C_THROW_UNLESS(
+        !err, "Export using importer failed for Epetra_Vector: return value = %d", err);
 
     // save state
     state_[nds][name] = tmp;
@@ -670,7 +609,8 @@ void DRT::Discretization::GetCondition(
   {
     out[count++] = cond->second.get();
   }
-  if (count != num) FOUR_C_THROW("Mismatch in number of conditions found");
+  FOUR_C_THROW_UNLESS(
+      count == num, "Mismatch in number of conditions found in discretization %s!", name_.c_str());
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -686,7 +626,8 @@ void DRT::Discretization::GetCondition(
   {
     out[count++] = cond->second;
   }
-  if (count != num) FOUR_C_THROW("Mismatch in number of conditions found");
+  FOUR_C_THROW_UNLESS(
+      count == num, "Mismatch in number of conditions found in discretization %s!", name_.c_str());
 }
 
 /*----------------------------------------------------------------------*
@@ -716,7 +657,8 @@ void DRT::Discretization::GetConditionNames(std::vector<std::string>& names) con
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<char>> DRT::Discretization::PackMyElements() const
 {
-  if (!Filled()) FOUR_C_THROW("fill_complete was not called on this discretization");
+  FOUR_C_THROW_UNLESS(
+      Filled(), "fill_complete was not called on discretization %s!", name_.c_str());
 
   CORE::COMM::PackBuffer buffer;
 
@@ -736,7 +678,8 @@ Teuchos::RCP<std::vector<char>> DRT::Discretization::PackMyElements() const
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<char>> DRT::Discretization::PackMyNodes() const
 {
-  if (!Filled()) FOUR_C_THROW("fill_complete was not called on this discretization");
+  FOUR_C_THROW_UNLESS(
+      Filled(), "fill_complete was not called on discretization %s!", name_.c_str());
 
   CORE::COMM::PackBuffer buffer;
 
@@ -763,10 +706,8 @@ void DRT::Discretization::UnPackMyElements(Teuchos::RCP<std::vector<char>> e)
     CORE::COMM::ParObject::ExtractfromPack(index, *e, data);
     CORE::COMM::ParObject* o = CORE::COMM::Factory(data);
     auto* ele = dynamic_cast<CORE::Elements::Element*>(o);
-    if (ele == nullptr)
-    {
-      FOUR_C_THROW("Failed to build an element from the element data");
-    }
+    FOUR_C_THROW_UNLESS(ele != nullptr,
+        "Failed to build an element from the element data for discretization %s", name_.c_str());
     ele->SetOwner(comm_->MyPID());
     add_element(Teuchos::rcp(ele));
   }
@@ -785,10 +726,8 @@ void DRT::Discretization::UnPackMyNodes(Teuchos::RCP<std::vector<char>> e)
     CORE::COMM::ParObject::ExtractfromPack(index, *e, data);
     CORE::COMM::ParObject* o = CORE::COMM::Factory(data);
     auto* node = dynamic_cast<CORE::Nodes::Node*>(o);
-    if (node == nullptr)
-    {
-      FOUR_C_THROW("Failed to build a node from the node data");
-    }
+    FOUR_C_THROW_UNLESS(node != nullptr,
+        "Failed to build a node from the node data for discretization %s", name_.c_str());
     node->SetOwner(comm_->MyPID());
     AddNode(Teuchos::rcp(node));
   }
