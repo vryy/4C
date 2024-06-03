@@ -257,10 +257,10 @@ namespace CORE::Conditions
   */
   enum GeometryType
   {
+    geometry_type_volume,
     geometry_type_point,
     geometry_type_line,
     geometry_type_surface,
-    geometry_type_volume,
     geometry_type_no_geom
   };
 }  // namespace CORE::Conditions
