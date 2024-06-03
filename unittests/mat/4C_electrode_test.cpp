@@ -10,7 +10,7 @@
 
 #include "4C_global_data.hpp"
 #include "4C_mat_electrode.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 namespace
 {

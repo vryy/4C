@@ -16,7 +16,6 @@
 #include "4C_inpar_material.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
-#include "4C_material_input_base.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_mixture_rule_function.hpp"
 #include "4C_mixture_rule_growthremodel.hpp"
@@ -65,8 +64,7 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
   // retrieve problem instance to read from
   const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
-      GLOBAL::Problem::Instance(probinst)->Materials()->ById(matid);
+  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
 
   switch (curmat->Type())
   {

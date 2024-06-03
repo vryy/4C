@@ -7,7 +7,7 @@
 
 #include "4C_matelast_coupsimopister.hpp"
 
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include <limits>
 

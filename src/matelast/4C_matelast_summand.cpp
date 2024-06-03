@@ -70,8 +70,7 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
   // retrieve problem instance to read from
   const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
-      GLOBAL::Problem::Instance(probinst)->Materials()->ById(matnum);
+  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matnum);
 
   // construct structural tensor strategy for anisotropic materials
   switch (curmat->Type())
@@ -95,321 +94,228 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
   {
     case CORE::Materials::mes_anisoactivestress_evolution:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::AnisoActiveStressEvolution(curmat));
-      auto* params =
-          dynamic_cast<MAT::ELASTIC::PAR::AnisoActiveStressEvolution*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::AnisoActiveStressEvolution*>(curmat);
       return Teuchos::rcp(new AnisoActiveStressEvolution(params));
     }
     case CORE::Materials::mes_coupanisoexpoactive:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupAnisoExpoActive(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoActive*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoActive*>(curmat);
       return Teuchos::rcp(new CoupAnisoExpoActive(params));
     }
     case CORE::Materials::mes_coupanisoexpo:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupAnisoExpo(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpo*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpo*>(curmat);
       return Teuchos::rcp(new CoupAnisoExpo(params));
     }
     case CORE::Materials::mes_coupanisoexposhear:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupAnisoExpoShear(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoShear*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoShear*>(curmat);
       return Teuchos::rcp(new CoupAnisoExpoShear(params));
     }
     case CORE::Materials::mes_coupanisoexpotwocoup:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup*>(curmat);
       return Teuchos::rcp(new CoupAnisoExpoTwoCoup(params));
     }
     case CORE::Materials::mes_coupanisoneohooke:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupAnisoNeoHooke(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHooke*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHooke*>(curmat);
       return Teuchos::rcp(new CoupAnisoNeoHooke(params));
     }
     case CORE::Materials::mes_coupanisoneohooke_varprop:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupAnisoNeoHookeVarProp(curmat));
-      auto* params =
-          dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHookeVarProp*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHookeVarProp*>(curmat);
       return Teuchos::rcp(new CoupAnisoNeoHookeVarProp(params));
     }
     case CORE::Materials::mes_coupanisopow:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupAnisoPow(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoPow*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoPow*>(curmat);
       return Teuchos::rcp(new CoupAnisoPow(params));
     }
     case CORE::Materials::mes_coupblatzko:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupBlatzKo(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupBlatzKo*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupBlatzKo*>(curmat);
       return Teuchos::rcp(new CoupBlatzKo(params));
     }
     case CORE::Materials::mes_coupexppol:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupExpPol(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupExpPol*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupExpPol*>(curmat);
       return Teuchos::rcp(new CoupExpPol(params));
     }
     case CORE::Materials::mes_couplogneohooke:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupLogNeoHooke(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupLogNeoHooke*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupLogNeoHooke*>(curmat);
       return Teuchos::rcp(new CoupLogNeoHooke(params));
     }
     case CORE::Materials::mes_couplogmixneohooke:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupLogMixNeoHooke(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupLogMixNeoHooke*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupLogMixNeoHooke*>(curmat);
       return Teuchos::rcp(new CoupLogMixNeoHooke(params));
     }
     case CORE::Materials::mes_coupmooneyrivlin:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupMooneyRivlin(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupMooneyRivlin*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupMooneyRivlin*>(curmat);
       return Teuchos::rcp(new CoupMooneyRivlin(params));
     }
     case CORE::Materials::mes_coupmyocard:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupMyocard(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupMyocard*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupMyocard*>(curmat);
       return Teuchos::rcp(new CoupMyocard(params));
     }
     case CORE::Materials::mes_coupneohooke:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupNeoHooke(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupNeoHooke*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupNeoHooke*>(curmat);
       return Teuchos::rcp(new CoupNeoHooke(params));
     }
     case CORE::Materials::mes_coup1pow:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::Coup1Pow(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::Coup1Pow*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::Coup1Pow*>(curmat);
       return Teuchos::rcp(new Coup1Pow(params));
     }
     case CORE::Materials::mes_coup2pow:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::Coup2Pow(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::Coup2Pow*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::Coup2Pow*>(curmat);
       return Teuchos::rcp(new Coup2Pow(params));
     }
     case CORE::Materials::mes_coup3pow:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::Coup3Pow(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::Coup3Pow*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::Coup3Pow*>(curmat);
       return Teuchos::rcp(new Coup3Pow(params));
     }
     case CORE::Materials::mes_coup13apow:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::Coup13aPow(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::Coup13aPow*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::Coup13aPow*>(curmat);
       return Teuchos::rcp(new Coup13aPow(params));
     }
     case CORE::Materials::mes_coupsimopister:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupSimoPister(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupSimoPister*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupSimoPister*>(curmat);
       return Teuchos::rcp(new CoupSimoPister(params));
     }
     case CORE::Materials::mes_coupSVK:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupSVK(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupSVK*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupSVK*>(curmat);
       return Teuchos::rcp(new CoupSVK(params));
     }
     case CORE::Materials::mes_couptransverselyisotropic:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupTransverselyIsotropic(curmat));
-      auto* params =
-          dynamic_cast<MAT::ELASTIC::PAR::CoupTransverselyIsotropic*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupTransverselyIsotropic*>(curmat);
       return Teuchos::rcp(new CoupTransverselyIsotropic(params));
     }
     case CORE::Materials::mes_coupvarga:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::CoupVarga(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupVarga*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::CoupVarga*>(curmat);
       return Teuchos::rcp(new CoupVarga(params));
     }
     case CORE::Materials::mes_fract:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::Fract(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::Fract*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::Fract*>(curmat);
       return Teuchos::rcp(new Fract(params));
     }
     case CORE::Materials::mes_genmax:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::GenMax(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::GenMax*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::GenMax*>(curmat);
       return Teuchos::rcp(new GenMax(params));
     }
     case CORE::Materials::mes_generalizedgenmax:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::GeneralizedGenMax(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::GeneralizedGenMax*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::GeneralizedGenMax*>(curmat);
       return Teuchos::rcp(new GeneralizedGenMax(params));
     }
     case CORE::Materials::mes_isoanisoexpo:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::IsoAnisoExpo(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoAnisoExpo*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoAnisoExpo*>(curmat);
       return Teuchos::rcp(new IsoAnisoExpo(params));
     }
     case CORE::Materials::mes_isoexpopow:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::IsoExpoPow(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoExpoPow*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoExpoPow*>(curmat);
       return Teuchos::rcp(new IsoExpoPow(params));
     }
     case CORE::Materials::mes_isomooneyrivlin:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::IsoMooneyRivlin(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoMooneyRivlin*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoMooneyRivlin*>(curmat);
       return Teuchos::rcp(new IsoMooneyRivlin(params));
     }
     case CORE::Materials::mes_isomuscleblemker:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::IsoMuscleBlemker(curmat));
       MAT::ELASTIC::PAR::IsoMuscleBlemker* params =
-          static_cast<MAT::ELASTIC::PAR::IsoMuscleBlemker*>(curmat->Parameter());
+          static_cast<MAT::ELASTIC::PAR::IsoMuscleBlemker*>(curmat);
       return Teuchos::rcp(new IsoMuscleBlemker(params));
     }
     case CORE::Materials::mes_isoneohooke:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::IsoNeoHooke(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoNeoHooke*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoNeoHooke*>(curmat);
       return Teuchos::rcp(new IsoNeoHooke(params));
     }
     case CORE::Materials::mes_isoogden:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::IsoOgden(curmat));
-      auto* params = static_cast<MAT::ELASTIC::PAR::IsoOgden*>(curmat->Parameter());
+      auto* params = static_cast<MAT::ELASTIC::PAR::IsoOgden*>(curmat);
       return Teuchos::rcp(new IsoOgden(params));
     }
     case CORE::Materials::mes_iso1pow:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::Iso1Pow(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::Iso1Pow*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::Iso1Pow*>(curmat);
       return Teuchos::rcp(new Iso1Pow(params));
     }
     case CORE::Materials::mes_iso2pow:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::Iso2Pow(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::Iso2Pow*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::Iso2Pow*>(curmat);
       return Teuchos::rcp(new Iso2Pow(params));
     }
     case CORE::Materials::mes_isoratedep:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::IsoRateDep(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoRateDep*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoRateDep*>(curmat);
       return Teuchos::rcp(new IsoRateDep(params));
     }
     case CORE::Materials::mes_isotestmaterial:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::IsoTestMaterial(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoTestMaterial*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoTestMaterial*>(curmat);
       return Teuchos::rcp(new IsoTestMaterial(params));
     }
     case CORE::Materials::mes_isovarga:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::IsoVarga(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoVarga*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoVarga*>(curmat);
       return Teuchos::rcp(new IsoVarga(params));
     }
     case CORE::Materials::mes_isoyeoh:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::IsoYeoh(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(curmat);
       return Teuchos::rcp(new IsoYeoh(params));
     }
     case CORE::Materials::mes_remodelfiber:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::RemodelFiber(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::RemodelFiber*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::RemodelFiber*>(curmat);
       return Teuchos::rcp(new RemodelFiber(params));
     }
     case CORE::Materials::mes_vologden:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::VolOgden(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(curmat);
       return Teuchos::rcp(new VolOgden(params));
     }
     case CORE::Materials::mes_volpenalty:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::VolPenalty(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::VolPenalty*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::VolPenalty*>(curmat);
       return Teuchos::rcp(new VolPenalty(params));
     }
     case CORE::Materials::mes_volpow:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::VolPow(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::VolPow*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::VolPow*>(curmat);
       return Teuchos::rcp(new VolPow(params));
     }
     case CORE::Materials::mes_volsussmanbathe:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::VolSussmanBathe(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::VolSussmanBathe*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::VolSussmanBathe*>(curmat);
       return Teuchos::rcp(new VolSussmanBathe(params));
     }
     case CORE::Materials::mes_viscobranch:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::ViscoBranch(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::ViscoBranch*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::ViscoBranch*>(curmat);
       return Teuchos::rcp(new ViscoBranch(params));
     }
     case CORE::Materials::mes_viscopart:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::ELASTIC::PAR::ViscoPart(curmat));
-      auto* params = dynamic_cast<MAT::ELASTIC::PAR::ViscoPart*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::ELASTIC::PAR::ViscoPart*>(curmat);
       return Teuchos::rcp(new ViscoPart(params));
     }
     default:

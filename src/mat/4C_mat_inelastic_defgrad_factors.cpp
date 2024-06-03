@@ -71,14 +71,14 @@ MAT::PAR::InelasticDefgradIntercalFrac::InelasticDefgradIntercalFrac(
     // retrieve problem instance to read from
     const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
     // retrieve validated input line of material ID in question
-    auto curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ById(matid);
+    auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
     switch (curmat->Type())
     {
       case CORE::Materials::m_electrode:
       {
         // Get C_max and Chi_max of electrode material
-        c_max_ = curmat->Get<double>("C_MAX");
-        chi_max_ = curmat->Get<double>("CHI_MAX");
+        c_max_ = curmat->raw_parameters().Get<double>("C_MAX");
+        chi_max_ = curmat->raw_parameters().Get<double>("CHI_MAX");
         break;
       }
       default:
@@ -217,8 +217,7 @@ Teuchos::RCP<MAT::InelasticDefgradFactors> MAT::InelasticDefgradFactors::Factory
   // retrieve problem instance to read from
   const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
-      GLOBAL::Problem::Instance(probinst)->Materials()->ById(matnum);
+  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matnum);
 
   // get material type and call corresponding constructors
   const CORE::Materials::MaterialType currentMaterialType = curmat->Type();
@@ -226,54 +225,38 @@ Teuchos::RCP<MAT::InelasticDefgradFactors> MAT::InelasticDefgradFactors::Factory
   {
     case CORE::Materials::mfi_no_growth:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::InelasticDefgradNoGrowth(curmat));
-
-      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradNoGrowth*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradNoGrowth*>(curmat);
 
       return Teuchos::rcp(new InelasticDefgradNoGrowth(params));
     }
     case CORE::Materials::mfi_lin_scalar_aniso:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::InelasticDefgradLinScalarAniso(curmat));
-
       // get pointer to parameter class
-      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradLinScalarAniso*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradLinScalarAniso*>(curmat);
 
       // return pointer to inelastic deformation gradient object
       return Teuchos::rcp(new InelasticDefgradLinScalarAniso(params));
     }
     case CORE::Materials::mfi_lin_scalar_iso:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::InelasticDefgradLinScalar(curmat));
-
       // get pointer to parameter class
-      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradScalar*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradScalar*>(curmat);
 
       // return pointer to inelastic deformation gradient object
       return Teuchos::rcp(new InelasticDefgradLinScalarIso(params));
     }
     case CORE::Materials::mfi_poly_intercal_frac_aniso:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::InelasticDefgradPolyIntercalFracAniso(curmat));
-
       // get pointer to parameter class
-      auto* params =
-          dynamic_cast<MAT::PAR::InelasticDefgradPolyIntercalFracAniso*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradPolyIntercalFracAniso*>(curmat);
 
       // return pointer to inelastic deformation gradient object
       return Teuchos::rcp(new InelasticDefgradPolyIntercalFracAniso(params));
     }
     case CORE::Materials::mfi_poly_intercal_frac_iso:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::InelasticDefgradPolyIntercalFrac(curmat));
-
       // get pointer to parameter class
-      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradPolyIntercalFrac*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradPolyIntercalFrac*>(curmat);
 
       // return pointer to inelastic deformation gradient object
       return Teuchos::rcp(new InelasticDefgradPolyIntercalFracIso(params));
@@ -281,18 +264,12 @@ Teuchos::RCP<MAT::InelasticDefgradFactors> MAT::InelasticDefgradFactors::Factory
 
     case CORE::Materials::mfi_lin_temp_iso:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::InelasticDefgradLinTempIso(curmat));
-
-      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradLinTempIso*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradLinTempIso*>(curmat);
       return Teuchos::rcp(new InelasticDefgradLinTempIso(params));
     }
     case CORE::Materials::mfi_time_funct:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::InelasticDefgradTimeFunct(curmat));
-
-      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradTimeFunct*>(curmat->Parameter());
+      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradTimeFunct*>(curmat);
       return Teuchos::rcp(new InelasticDefgradTimeFunct(params));
     }
 

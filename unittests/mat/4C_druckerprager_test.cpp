@@ -16,7 +16,7 @@
 #include "4C_mat_plasticdruckerprager.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_material_base.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 namespace
 {
@@ -27,26 +27,29 @@ namespace
    protected:
     void SetUp() override
     {
-      const Teuchos::RCP<CORE::MAT::PAR::Material> container = Teuchos::rcp(
-          new CORE::MAT::PAR::Material(1, CORE::Materials::MaterialType::m_pldruckprag));
-      container->Add("YOUNG", 1.0);
-      container->Add("NUE", 0.25);
-      container->Add("DENS", 0.0);
-      container->Add("ISOHARD", 1.0);
-      container->Add("TOL", 1.e-12);
-      container->Add("C", 1.);
-      container->Add("ETA", 1.);
-      container->Add("XI", 1.);
-      container->Add("ETABAR", 1.);
-      container->Add("MAXITER", 50);
-      container->set_parameter(new MAT::PAR::PlasticDruckerPrager(container));
+      IO::InputParameterContainer container;
+      container.Add("YOUNG", 1.0);
+      container.Add("NUE", 0.25);
+      container.Add("DENS", 0.0);
+      container.Add("ISOHARD", 1.0);
+      container.Add("TOL", 1.e-12);
+      container.Add("C", 1.);
+      container.Add("ETA", 1.);
+      container.Add("XI", 1.);
+      container.Add("ETABAR", 1.);
+      container.Add("MAXITER", 50);
+
+      param_druckprag_ = std::shared_ptr(
+          MAT::make_parameter(1, CORE::Materials::MaterialType::m_pldruckprag, container));
+
       GLOBAL::Problem& problem = (*GLOBAL::Problem::Instance());
       problem.Materials()->SetReadFromProblem(0);
-      problem.Materials()->Insert(1, container);
+      problem.Materials()->insert(1, param_druckprag_);
       problem.Materials().assert_not_null();
-      param_druckprag_ = Teuchos::rcp(new MAT::PAR::PlasticDruckerPrager(container));
-      druckprag_ = Teuchos::rcp(new MAT::PlasticDruckerPrager(param_druckprag_.get()));
-    };
+      druckprag_ = Teuchos::rcp(new MAT::PlasticDruckerPrager(
+          dynamic_cast<MAT::PAR::PlasticDruckerPrager*>(param_druckprag_.get())));
+    }
+
     void TearDown() override
     {
       // We need to make sure the GLOBAL::Problem instance created in SetUp is deleted again. If
@@ -54,7 +57,7 @@ namespace
       // configurations. We suspect that missing singleton destruction might be the reason for that.
       GLOBAL::Problem::Done();
     };
-    Teuchos::RCP<MAT::PAR::PlasticDruckerPrager> param_druckprag_;
+    std::shared_ptr<CORE::MAT::PAR::Parameter> param_druckprag_;
     CORE::COMM::PackBuffer data;
     Teuchos::RCP<MAT::PlasticDruckerPrager> druckprag_;
   };

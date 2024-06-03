@@ -12,7 +12,7 @@
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_mat_service.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

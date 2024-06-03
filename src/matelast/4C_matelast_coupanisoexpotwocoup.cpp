@@ -11,7 +11,7 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 
 #include "4C_mat_anisotropy_extension.hpp"
 #include "4C_mat_service.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

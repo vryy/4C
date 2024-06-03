@@ -14,6 +14,7 @@ function
 #include "4C_contact_constitutivelaw_mirco_contactconstitutivelaw.hpp"
 #include "4C_contact_rough_node.hpp"
 #include "4C_global_data.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_utils_function.hpp"
 
@@ -45,14 +46,14 @@ namespace
       problem.SetFunctionManager(std::move(functionmanager_));
 
       // set up material to be added to problem instance
-      const int matid(1);
-      Teuchos::RCP<CORE::MAT::PAR::Material> material =
-          Teuchos::rcp(new CORE::MAT::PAR::Material(matid, CORE::Materials::m_stvenant));
-      material->Add("YOUNG", 1.0);
-      material->Add("NUE", 0.3);
+      IO::InputParameterContainer mat_stvenant;
+      mat_stvenant.Add("YOUNG", 1.0);
+      mat_stvenant.Add("NUE", 0.3);
+      mat_stvenant.Add("DENS", 1.0);
 
-      // add material to problem instance
-      problem.Materials()->Insert(matid, material);
+      problem.Materials()->insert(
+          1, CORE::UTILS::LazyPtr<CORE::MAT::PAR::Parameter>(
+                 MAT::make_parameter(1, CORE::Materials::MaterialType::m_stvenant, mat_stvenant)));
 
       // initialize container for material parameters
       const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =

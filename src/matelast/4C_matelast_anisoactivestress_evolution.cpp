@@ -12,7 +12,7 @@
 #include "4C_mat_anisotropy_extension.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_utils_function.hpp"
 
 FOUR_C_NAMESPACE_OPEN

@@ -28,11 +28,9 @@ namespace
   /// returns Weakly Compressible Fluid quick access parameters from given material id
   const MAT::PAR::WeaklyCompressibleFluid& GetWeaklyCompressibleFluidMatPars(int mat_id)
   {
-    Teuchos::RCP<CORE::MAT::PAR::Material> mat =
-        GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
-    if (mat->Type() != CORE::Materials::m_fluid_weakly_compressible)
+    auto* params = GLOBAL::Problem::Instance()->Materials()->ParameterById(mat_id);
+    if (params->Type() != CORE::Materials::m_fluid_weakly_compressible)
       FOUR_C_THROW("Material %d is not a weakly compressible fluid", mat_id);
-    CORE::MAT::PAR::Parameter* params = mat->Parameter();
     auto* fparams = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
     if (!fparams) FOUR_C_THROW("Material does not cast to Weakly compressible fluid");
     return *fparams;
@@ -41,10 +39,9 @@ namespace
   /// returns Newton Fluid quick access parameters from given material id
   const MAT::PAR::NewtonianFluid& GetNewtonianFluidMatPars(int mat_id)
   {
-    Teuchos::RCP<CORE::MAT::PAR::Material> mat =
-        GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
-    if (mat->Type() != CORE::Materials::m_fluid) FOUR_C_THROW("Material %d is not a fluid", mat_id);
-    CORE::MAT::PAR::Parameter* params = mat->Parameter();
+    auto* params = GLOBAL::Problem::Instance()->Materials()->ParameterById(mat_id);
+    if (params->Type() != CORE::Materials::m_fluid)
+      FOUR_C_THROW("Material %d is not a fluid", mat_id);
     auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
     if (!fparams) FOUR_C_THROW("Material does not cast to Newtonian fluid");
     return *fparams;
@@ -53,11 +50,9 @@ namespace
   /// returns St. Venant Kirchhof quick access parameters from given material id
   const MAT::PAR::StVenantKirchhoff& GetSVKMatPars(int mat_id)
   {
-    Teuchos::RCP<CORE::MAT::PAR::Material> mat =
-        GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
-    if (mat->Type() != CORE::Materials::m_stvenant)
+    auto* params = GLOBAL::Problem::Instance()->Materials()->ParameterById(mat_id);
+    if (params->Type() != CORE::Materials::m_stvenant)
       FOUR_C_THROW("Material %d is not a St.Venant-Kirchhoff structure material", mat_id);
-    CORE::MAT::PAR::Parameter* params = mat->Parameter();
     auto* fparams = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params);
     if (!fparams) FOUR_C_THROW("Material does not cast to St.Venant-Kirchhoff structure material");
     return *fparams;

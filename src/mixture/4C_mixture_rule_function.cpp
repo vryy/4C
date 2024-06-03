@@ -13,7 +13,7 @@ functions
 
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_mixture_constituent.hpp"
 #include "4C_utils_exceptions.hpp"
 

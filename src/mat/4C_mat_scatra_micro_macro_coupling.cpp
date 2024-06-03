@@ -11,7 +11,7 @@ problems. This material handles the communication between micro and macro materi
 
 #include "4C_global_data.hpp"
 #include "4C_mat_scatra_multiscale_gp.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

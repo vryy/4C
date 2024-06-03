@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_mat_anisotropy_extension_default.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_mixture_constituent.hpp"
 #include "4C_mixture_constituent_remodelfiber_material.hpp"
 #include "4C_mixture_remodelfiber.hpp"

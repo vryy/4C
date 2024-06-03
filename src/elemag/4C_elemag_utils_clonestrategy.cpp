@@ -16,7 +16,7 @@
 #include "4C_global_data_enums.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_hdg.hpp"
 
@@ -39,7 +39,7 @@ void ELEMAG::UTILS::ScatraCloneStrategy<sft>::check_material_type(const int mati
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   CORE::Materials::MaterialType mtype =
-      GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
+      GLOBAL::Problem::Instance()->Materials()->ParameterById(matid)->Type();
   if (mtype != CORE::Materials::m_scatra)
     FOUR_C_THROW("Material with ID %d is not admissible for TRANSP elements", matid);
 }

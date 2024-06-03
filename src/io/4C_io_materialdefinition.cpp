@@ -46,12 +46,13 @@ void INPUT::MaterialDefinition::AddComponent(const Teuchos::RCP<INPUT::LineCompo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void INPUT::MaterialDefinition::Read(
-    DatFileReader& reader, const Teuchos::RCP<MAT::PAR::Bundle>& mmap)
+std::vector<std::pair<int, IO::InputParameterContainer>> INPUT::MaterialDefinition::Read(
+    DatFileReader& reader)
 {
   std::string name = "--MATERIALS";
   std::vector<const char*> section = reader.Section(name);
 
+  std::vector<std::pair<int, IO::InputParameterContainer>> found_materials;
   if (!section.empty())
   {
     for (std::vector<const char*>::const_iterator i = section.begin(); i != section.end(); ++i)
@@ -78,15 +79,8 @@ void INPUT::MaterialDefinition::Read(
       {
         if (matid <= -1) FOUR_C_THROW("Illegal negative ID provided");
 
-        // check if material ID is already in use
-        if (mmap->Find(matid) != -1) FOUR_C_THROW("More than one material with 'MAT %d'", matid);
-
-        // the read-in material line
-        Teuchos::RCP<CORE::MAT::PAR::Material> material =
-            Teuchos::rcp(new CORE::MAT::PAR::Material(matid, mattype_));
-        // fill the latter
-
-        for (auto& j : inputline_) condline = j->Read(Name(), condline, *material);
+        IO::InputParameterContainer input_data;
+        for (auto& j : inputline_) condline = j->Read(Name(), condline, input_data);
 
         // current material input line contains bad elements
         if (condline->str().find_first_not_of(' ') != std::string::npos)
@@ -95,13 +89,12 @@ void INPUT::MaterialDefinition::Read(
               "incorrect elements: '%s'",
               materialname_.c_str(), condline->str().c_str());
 
-        // put material in map of materials
-        mmap->Insert(matid, material);
+        found_materials.emplace_back(matid, std::move(input_data));
       }
     }
   }
 
-  return;
+  return found_materials;
 }
 
 

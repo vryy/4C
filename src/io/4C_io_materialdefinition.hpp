@@ -68,10 +68,9 @@ namespace INPUT
     /// Add new components to the input line. One at a time.
     void AddComponent(const Teuchos::RCP<INPUT::LineComponent>& c);
 
-    /// read all materials from my input file section
-    void Read(
-        DatFileReader& reader,  ///< the actual dat file reader that has access to the dat file
-        const Teuchos::RCP<MAT::PAR::Bundle>& mmap  ///< the materials we read here
+    /// Try to read all lines that fit the current material definition.
+    std::vector<std::pair<int, IO::InputParameterContainer>> Read(
+        DatFileReader& reader  ///< the actual dat file reader that has access to the dat file
     );
 
     /// print my DAT file section and possible materials from the discretization

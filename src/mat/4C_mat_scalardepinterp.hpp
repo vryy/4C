@@ -23,7 +23,6 @@ parameters or totally different strain energy function).
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_so3_material.hpp"
-#include "4C_material_input_base.hpp"
 #include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN

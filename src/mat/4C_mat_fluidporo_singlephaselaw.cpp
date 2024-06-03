@@ -41,8 +41,7 @@ MAT::PAR::FluidPoroPhaseLaw* MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(int pha
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
-      GLOBAL::Problem::Instance(probinst)->Materials()->ById(phaselawId);
+  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(phaselawId);
 
   // phase law
   MAT::PAR::FluidPoroPhaseLaw* phaselaw = nullptr;
@@ -52,30 +51,22 @@ MAT::PAR::FluidPoroPhaseLaw* MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(int pha
   {
     case CORE::Materials::m_fluidporo_phaselaw_linear:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::FluidPoroPhaseLawLinear(curmat));
-      phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawLinear*>(curmat->Parameter());
+      phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawLinear*>(curmat);
       break;
     }
     case CORE::Materials::m_fluidporo_phaselaw_tangent:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::FluidPoroPhaseLawTangent(curmat));
-      phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawTangent*>(curmat->Parameter());
+      phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawTangent*>(curmat);
       break;
     }
     case CORE::Materials::m_fluidporo_phaselaw_constraint:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::FluidPoroPhaseLawConstraint(curmat));
-      phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawConstraint*>(curmat->Parameter());
+      phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawConstraint*>(curmat);
       break;
     }
     case CORE::Materials::m_fluidporo_phaselaw_byfunction:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::FluidPoroPhaseLawByFunction(curmat));
-      phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawByFunction*>(curmat->Parameter());
+      phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawByFunction*>(curmat);
       break;
     }
     default:

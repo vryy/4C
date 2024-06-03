@@ -16,6 +16,7 @@
 /* headers */
 #include "4C_config.hpp"
 
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_legacy_enum_definitions_materials.hpp"
 
 #include <Epetra_Vector.h>
@@ -30,7 +31,7 @@ namespace CORE::MAT
   class Material;
   namespace PAR
   {
-    class Material;
+    class Parameter;
   }
 }  // namespace CORE::MAT
 
@@ -39,6 +40,53 @@ namespace CORE::MAT
 
 namespace CORE::MAT::PAR
 {
+  /// Legacy container for read-in materials
+  ///
+  /// This object stores the validated material parameters as
+  /// IO::InputParameterContainer.
+  class Material : public IO::InputParameterContainer
+  {
+   public:
+    /// @name life span
+    //@{
+
+    /// Standard constructor
+    Material(const int id,                        ///< unique material ID
+        const CORE::Materials::MaterialType type  ///< type of material
+    );
+
+    /// Copy the input_data into this object.
+    Material(
+        int id, CORE::Materials::MaterialType type, const IO::InputParameterContainer& input_data);
+
+    /// Default constructor without information from the input lines.
+    Material() = default;
+
+    //@}
+
+    /// @name Query methods
+    //@{
+
+    /// Return material id
+    [[nodiscard]] inline virtual int Id() const { return id_; }
+
+    /// Return type of material
+    [[nodiscard]] inline virtual CORE::Materials::MaterialType Type() const { return type_; }
+
+    //@}
+
+    /// don't want = operator
+    Material operator=(const Material& old) = delete;
+    Material(const CORE::MAT::PAR::Material& old) = delete;
+
+   protected:
+    /// Unique ID of this material, no second material of same ID may exist
+    int id_{};
+
+    /// Type of this material
+    CORE::Materials::MaterialType type_{};
+  };
+
   /*----------------------------------------------------------------------*/
   /// Base object to hold 'quick' access material parameters
   ///
@@ -68,20 +116,14 @@ namespace CORE::MAT::PAR
     /// create material instance of matching type with my parameters
     virtual Teuchos::RCP<CORE::MAT::Material> create_material() = 0;
 
-    //! \brief set element specific or global material parameter using enum parametername which is
-    //! defined in respective MAT::PAR classes
-    void set_parameter(int parametername, Teuchos::RCP<Epetra_Vector> myparameter);
-
-    //! \brief set element specific or global material parameter using enum parametername which is
-    //! defined in respective MAT::PAR classes
-    void set_parameter(int parametername, const double val, const int eleGID);
-
     //! \brief return element specific or global material parameter using enum parametername which
     //! is defined in respective MAT::PAR classes
     double GetParameter(int parametername, const int EleId);
 
-    /// return matparams_
-    virtual std::vector<Teuchos::RCP<Epetra_Vector>>& ReturnMatparams() { return matparams_; }
+    /**
+     * Access to the raw input data.
+     */
+    const IO::InputParameterContainer& raw_parameters() const { return *raw_parameters_; }
 
    protected:
     /*! \brief
@@ -98,6 +140,9 @@ namespace CORE::MAT::PAR
 
     /// material type
     CORE::Materials::MaterialType type_;
+
+    /// raw input parameters
+    Teuchos::RCP<const CORE::MAT::PAR::Material> raw_parameters_;
 
   };  // class Parameter
 

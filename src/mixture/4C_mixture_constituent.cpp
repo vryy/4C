@@ -15,7 +15,7 @@
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_mixture_constituent_elasthyper.hpp"
 #include "4C_mixture_constituent_elasthyper_damage.hpp"
 #include "4C_mixture_constituent_elasthyper_elastin_membrane.hpp"
@@ -59,68 +59,37 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
   // retrieve problem instance to read from
   const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
-      GLOBAL::Problem::Instance(probinst)->Materials()->ById(matnum);
+  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matnum);
 
   switch (curmat->Type())
   {
     case CORE::Materials::mix_elasthyper:
     {
-      if (curmat->Parameter() == nullptr)
-      {
-        curmat->set_parameter(new MIXTURE::PAR::MixtureConstituentElastHyper(curmat));
-      }
-      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
+      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
     }
     case CORE::Materials::mix_elasthyper_damage:
     {
-      if (curmat->Parameter() == nullptr)
-      {
-        curmat->set_parameter(new MIXTURE::PAR::MixtureConstituentElastHyperDamage(curmat));
-      }
-      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
+      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
     }
     case CORE::Materials::mix_elasthyper_elastin_membrane:
     {
-      if (curmat->Parameter() == nullptr)
-      {
-        curmat->set_parameter(
-            new MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane(curmat));
-      }
-      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
+      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
     }
     case CORE::Materials::mix_remodelfiber_expl:
     {
-      if (curmat->Parameter() == nullptr)
-      {
-        curmat->set_parameter(new MIXTURE::PAR::MixtureConstituentRemodelFiberExpl(curmat));
-      }
-      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
+      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
     }
     case CORE::Materials::mix_full_constrained_mixture_fiber:
     {
-      if (curmat->Parameter() == nullptr)
-      {
-        curmat->set_parameter(
-            new MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber(curmat));
-      }
-      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
+      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
     }
     case CORE::Materials::mix_remodelfiber_impl:
     {
-      if (curmat->Parameter() == nullptr)
-      {
-        curmat->set_parameter(new MIXTURE::PAR::MixtureConstituentRemodelFiberImpl(curmat));
-      }
-      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
+      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
     }
     case CORE::Materials::mix_solid_material:
     {
-      if (curmat->Parameter() == nullptr)
-      {
-        curmat->set_parameter(new MIXTURE::PAR::MixtureConstituentSolidMaterial(curmat));
-      }
-      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
+      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
     }
     default:
       break;

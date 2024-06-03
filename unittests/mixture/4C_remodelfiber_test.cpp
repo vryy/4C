@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_mixture_constituent_remodelfiber_material_exponential.hpp"
 #include "4C_mixture_growth_evolution_linear_cauchy_poisson_turnover.hpp"
 #include "4C_mixture_remodelfiber-internal.hpp"

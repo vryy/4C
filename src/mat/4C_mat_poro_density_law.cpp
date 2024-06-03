@@ -34,23 +34,18 @@ MAT::PAR::PoroDensityLaw* MAT::PAR::PoroDensityLaw::CreateDensityLaw(int matID)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
-      GLOBAL::Problem::Instance(probinst)->Materials()->ById(matID);
+  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matID);
 
   switch (curmat->Type())
   {
     case CORE::Materials::m_poro_densitylaw_constant:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::PoroDensityLawConstant(curmat));
-      densitylaw = static_cast<MAT::PAR::PoroDensityLawConstant*>(curmat->Parameter());
+      densitylaw = static_cast<MAT::PAR::PoroDensityLawConstant*>(curmat);
       break;
     }
     case CORE::Materials::m_poro_densitylaw_exp:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::PoroDensityLawExp(curmat));
-      densitylaw = static_cast<MAT::PAR::PoroDensityLawExp*>(curmat->Parameter());
+      densitylaw = static_cast<MAT::PAR::PoroDensityLawExp*>(curmat);
       break;
     }
     default:

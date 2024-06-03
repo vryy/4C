@@ -1438,7 +1438,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
 
     // find out how many micro problems have to be solved on this macro proc
     int microcount = 0;
-    for (const auto& material_map : *problem.Materials()->Map())
+    for (const auto& material_map : problem.Materials()->Map())
     {
       int matid = material_map.first;
       if (my_multimat_IDs.find(matid) != my_multimat_IDs.end()) microcount++;
@@ -1446,7 +1446,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
     // and broadcast it to the corresponding group of procs
     subgroupcomm->Broadcast(&microcount, 1, 0);
 
-    for (const auto& material_map : *problem.Materials()->Map())
+    for (const auto& material_map : problem.Materials()->Map())
     {
       int matid = material_map.first;
 
@@ -2001,11 +2001,40 @@ void GLOBAL::ReadMaterials(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
 
   // test for each material definition (input file --MATERIALS section)
   // and store in #matmap_
+  auto mmap = problem.Materials();
   for (auto& mat : matlist)
   {
-    // read material from DAT file of type #matlist[m]
-    mat->Read(reader, problem.Materials());
+    std::vector<std::pair<int, IO::InputParameterContainer>> read_materials = mat->Read(reader);
+
+    for (const auto& [id, data] : read_materials)
+    {
+      if (mmap->id_exists(id)) FOUR_C_THROW("More than one material with 'MAT %d'", id);
+
+      // Here we call out to the factory code to create materials from generic input data.
+      // We do this via a lambda function which is wrapped inside the LazyPtr. This allows to defer
+      // the actual creation of the material until needed. Any other material parameters that are
+      // needed during creation, are constructed automatically, when querying them from the list
+      // of parameters.
+      // Also, this line shows a design flaw where the parameter object needs to know the material
+      // id that was chosen in the input file.
+      mmap->insert(id, CORE::UTILS::LazyPtr<CORE::MAT::PAR::Parameter>(
+                           [i = id, mat_type = mat->Type(), d = data]()
+                           { return MAT::make_parameter(i, mat_type, d); }));
+    }
   }
+
+  // We have read in all the materials and now we force construction of them all. The LazyPtr
+  // ensures that the ordering does not matter. Note that we do not wait any longer for
+  // construction, because materials might later be used in code sections that only run on proc 0.
+  // Doing anything MPI-parallel inside the material constructors would then fail. Unfortunately,
+  // such operations happen in the code base, thus we construct the materials here.
+  for (const auto& [id, mat] : mmap->Map())
+  {
+    // This is the point where the material is actually constructed via the side effect that we try
+    // to access the material.
+    (void)mat.get();
+  }
+
 
   // check if every material was identified
   const std::string material_section = "--MATERIALS";
@@ -2032,15 +2061,10 @@ void GLOBAL::ReadMaterials(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
           FOUR_C_THROW("failed to read material object number '%s'", number.c_str());
       }
 
-      // processed?
-      if (problem.Materials()->Find(matid) == -1)
-        FOUR_C_THROW(
-            "Material 'MAT %d' with name '%s' could not be identified", matid, name.c_str());
+      FOUR_C_THROW_UNLESS(problem.Materials()->id_exists(matid),
+          "Material 'MAT %d' with name '%s' could not be identified", matid, name.c_str());
     }
   }
-
-  // make fast access parameters
-  problem.Materials()->MakeParameters();
 }
 
 /*----------------------------------------------------------------------*/
