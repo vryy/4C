@@ -488,7 +488,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
 
       if (file_stream.fail()) FOUR_C_THROW("Invalid file %s!", map_file_path.c_str());
 
-      auto map_reduction_operation = [](actMapType&& acc, actMapType&& next)
+      auto map_reduction_operation = [](actMapType acc, const actMapType& next)
       {
         for (const auto& [key, value] : next)
         {
@@ -497,7 +497,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
         return acc;
       };
 
-      return IO::ReadFileAsLines<actMapType, actMapType>(file_stream, map_reduction_operation);
+      return IO::convert_lines<actMapType, actMapType>(file_stream, map_reduction_operation);
     };
     const std::string print_string = std::string(
         "map of activation values retrieved from pattern file with rows in the format \"eleid: "
@@ -3863,7 +3863,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
 
       if (file_stream.fail()) FOUR_C_THROW("Invalid file %s!", map_file_path.c_str());
 
-      auto map_reduction_operation = [](mapType&& acc, mapType&& next)
+      auto map_reduction_operation = [](mapType acc, const mapType& next)
       {
         for (const auto& [key, value] : next)
         {
@@ -3872,7 +3872,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
         return acc;
       };
 
-      return IO::ReadFileAsLines<mapType, mapType>(file_stream, map_reduction_operation);
+      return IO::convert_lines<mapType, mapType>(file_stream, map_reduction_operation);
     };
     const std::string print_string = std::string(
         "map of massfraction values retrieved from pattern file with rows in the format \"eleid: "

@@ -123,7 +123,7 @@ namespace
         IO::ReadCsvAsColumns(2, test_csv_file), CORE::Exception, "separated by commas");
   }
 
-  TEST(ReadFileAsLines, ValidFile)
+  TEST(ConvertLines, ValidFile)
   {
     using T = std::map<int, std::array<int, 3>>;
     std::stringstream test_file;
@@ -133,9 +133,9 @@ namespace
 
     std::vector<T> expected_data = {{{1, {1, 2, 3}}}, {{2, {4, 5, 6}}}, {{3, {7, 8, 9}}}};
 
-    std::vector<T> read_data = IO::ReadFileAsLines<T>(test_file);
+    std::vector<T> converted_data = IO::convert_lines<T>(test_file);
 
-    EXPECT_EQ(read_data, expected_data);
+    EXPECT_EQ(converted_data, expected_data);
   }
 
   TEST(FoldLines, ReduceMapToVector)
@@ -148,8 +148,8 @@ namespace
 
     std::vector<T> expected_data = {{{1, {1, 2, 3}}}, {{3, {7, 8, 9}}}};
 
-    T read_data = IO::ReadFileAsLines<T, T>(test_file,
-        [](T&& acc, T&& next)
+    T converted_data = IO::convert_lines<T, T>(test_file,
+        [](T acc, T&& next)
         {
           // add only maps that have a key != 2
           if (acc.size() == 1 && acc.count(2) == 0) acc.merge(std::move(next));
@@ -168,8 +168,8 @@ namespace
     std::map<int, int> expected_data{{1, 6}, {2, 15}, {3, 24}};
 
     using ReducedType = std::map<int, int>;
-    ReducedType read_data = IO::ReadFileAsLines<T, ReducedType>(test_file,
-        [](ReducedType&& acc, T&& next)
+    ReducedType converted_data = IO::convert_lines<T, ReducedType>(test_file,
+        [](ReducedType acc, const T& next)
         {
           for (const auto& [key, value] : next)
           {
@@ -178,7 +178,7 @@ namespace
           return acc;
         });
 
-    EXPECT_EQ(read_data, expected_data);
+    EXPECT_EQ(converted_data, expected_data);
   }
 
   TEST(FoldLines, ReduceMapToMap)
@@ -191,8 +191,8 @@ namespace
     T expected_data = {
         {1, {{0.0, 0.0}, {0.1, 0.1}, {0.2, 0.2}}}, {2, {{0.0, 0.0}, {0.1, 0.2}, {0.2, 0.4}}}};
 
-    T read_data = IO::ReadFileAsLines<T, T>(test_file,
-        [](T&& acc, T&& next)
+    T converted_data = IO::convert_lines<T, T>(test_file,
+        [](T acc, const T& next)
         {
           for (const auto& [key, value] : next)
           {
@@ -201,6 +201,6 @@ namespace
           return acc;
         });
 
-    EXPECT_EQ(read_data, expected_data);
+    EXPECT_EQ(converted_data, expected_data);
   }
 }  // namespace
