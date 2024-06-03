@@ -37,31 +37,23 @@ MAT::PAR::LubricationMat::LubricationMat(Teuchos::RCP<CORE::MAT::PAR::Material> 
   if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
-  // retrieve validated input line of material ID in question
-  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
-      GLOBAL::Problem::Instance(probinst)->Materials()->ById(lubricationlawID_);
+  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(lubricationlawID_);
 
   switch (curmat->Type())
   {
     case CORE::Materials::m_lubrication_law_constant:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::LubricationLawConstant(curmat));
-      lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat->Parameter());
+      lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat);
       break;
     }
     case CORE::Materials::m_lubrication_law_barus:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::LubricationLawBarus(curmat));
-      lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat->Parameter());
+      lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat);
       break;
     }
     case CORE::Materials::m_lubrication_law_roeland:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::LubricationLawRoeland(curmat));
-      lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat->Parameter());
+      lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat);
       break;
     }
     default:

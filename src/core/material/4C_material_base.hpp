@@ -68,14 +68,12 @@ namespace CORE::MAT
     virtual double Density() const
     {
       FOUR_C_THROW("The material you are using does not provide a density");
-      return 0.0;
     }
 
     /// return internal state
     virtual double GetInternalState(int k) const
     {
       FOUR_C_THROW("The material you are using does not provide an internal state");
-      return 0.0;
     }
   };
 

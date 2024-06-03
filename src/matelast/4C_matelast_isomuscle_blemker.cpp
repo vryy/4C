@@ -17,7 +17,7 @@ stress approach)
 #include "4C_mat_muscle_utils.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

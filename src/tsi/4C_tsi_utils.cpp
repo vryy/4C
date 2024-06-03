@@ -53,7 +53,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::check_material_type(const int mat
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   //  CORE::Materials::MaterialType mtype =
-  //  GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type(); if ((mtype !=
+  //  GLOBAL::Problem::Instance()->Materials()->ParameterById(matid)->Type(); if ((mtype !=
   //  CORE::Materials::m_th_fourier_iso))
   //    FOUR_C_THROW("Material with ID %d is not admissible for thermo elements",matid);
 

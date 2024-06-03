@@ -755,17 +755,6 @@ void MAT::StretchesModified(
   modstr.Update(std::pow(detdefgrad, -1.0 / 3.0), prstr);
 }
 
-template <class T>
-T* MAT::CreateMaterialParameterInstance(Teuchos::RCP<CORE::MAT::PAR::Material> curmat)
-{
-  if (curmat->Parameter() == nullptr)
-  {
-    curmat->set_parameter(new T(curmat));
-  }
-  auto* params = dynamic_cast<T*>(curmat->Parameter());
-  return params;
-}
-
 template <int dim>
 void MAT::ClearFourTensor(CORE::LINALG::FourTensor<dim>& fourTensor)
 {
@@ -1193,31 +1182,6 @@ template void MAT::AddtoCmatHolzapfelProduct<double>(CORE::LINALG::Matrix<6, 6, 
     const CORE::LINALG::Matrix<6, 1, double>&, const double scalar);
 template void MAT::AddtoCmatHolzapfelProduct<FAD>(
     CORE::LINALG::Matrix<6, 6, FAD>&, const CORE::LINALG::Matrix<6, 1, FAD>&, const FAD scalar);
-
-template MIXTURE::PAR::IsotropicCylinderPrestressStrategy* MAT::CreateMaterialParameterInstance(
-    Teuchos::RCP<CORE::MAT::PAR::Material> curmat);
-template MIXTURE::PAR::ConstantPrestressStrategy* MAT::CreateMaterialParameterInstance(
-    Teuchos::RCP<CORE::MAT::PAR::Material> curmat);
-template MIXTURE::PAR::IterativePrestressStrategy* MAT::CreateMaterialParameterInstance(
-    Teuchos::RCP<CORE::MAT::PAR::Material> curmat);
-template MIXTURE::PAR::FunctionMixtureRule* MAT::CreateMaterialParameterInstance(
-    Teuchos::RCP<CORE::MAT::PAR::Material> curmat);
-template MIXTURE::PAR::MapMixtureRule* MAT::CreateMaterialParameterInstance(
-    Teuchos::RCP<CORE::MAT::PAR::Material> curmat);
-template MIXTURE::PAR::SimpleMixtureRule* MAT::CreateMaterialParameterInstance(
-    Teuchos::RCP<CORE::MAT::PAR::Material> curmat);
-template MIXTURE::PAR::GrowthRemodelMixtureRule* MAT::CreateMaterialParameterInstance(
-    Teuchos::RCP<CORE::MAT::PAR::Material> curmat);
-template MIXTURE::PAR::IsotropicGrowthStrategy* MAT::CreateMaterialParameterInstance(
-    Teuchos::RCP<CORE::MAT::PAR::Material> curmat);
-template MIXTURE::PAR::AnisotropicGrowthStrategy* MAT::CreateMaterialParameterInstance(
-    Teuchos::RCP<CORE::MAT::PAR::Material> curmat);
-template MIXTURE::PAR::StiffnessGrowthStrategy* MAT::CreateMaterialParameterInstance(
-    Teuchos::RCP<CORE::MAT::PAR::Material> curmat);
-template MIXTURE::PAR::RemodelFiberMaterialExponential<double>*
-MAT::CreateMaterialParameterInstance(Teuchos::RCP<CORE::MAT::PAR::Material> curmat);
-template MIXTURE::PAR::RemodelFiberMaterialExponentialActive<double>*
-MAT::CreateMaterialParameterInstance(Teuchos::RCP<CORE::MAT::PAR::Material> curmat);
 
 template void MAT::ClearFourTensor<3>(CORE::LINALG::FourTensor<3>& fourTensor);
 

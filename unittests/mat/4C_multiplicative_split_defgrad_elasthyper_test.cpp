@@ -13,7 +13,7 @@
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 
 namespace
@@ -82,27 +82,26 @@ namespace
 
       // set up elastic material to be added to problem instance
       const int matid_elastic(1);
-      const auto mat_elastic_neo_hooke = Teuchos::rcp(
-          new CORE::MAT::PAR::Material(matid_elastic, CORE::Materials::mes_coupneohooke));
-
-      // add actually required parameters to electrode material
-      mat_elastic_neo_hooke->Add("YOUNG", 1.5e2);
-      mat_elastic_neo_hooke->Add("NUE", 0.3);
+      IO::InputParameterContainer mat_elastic_neo_hooke_data;
+      mat_elastic_neo_hooke_data.Add("YOUNG", 1.5e2);
+      mat_elastic_neo_hooke_data.Add("NUE", 0.3);
 
       // add elastic material to problem instance
-      problem.Materials()->Insert(matid_elastic, mat_elastic_neo_hooke);
+      problem.Materials()->insert(
+          matid_elastic, MAT::make_parameter(1, CORE::Materials::MaterialType::mes_coupneohooke,
+                             mat_elastic_neo_hooke_data));
 
       // set up inelastic material to be added to problem instance
       const int inelastic_defgrad_id(2);
-      const auto mat_inelastic = Teuchos::rcp(
-          new CORE::MAT::PAR::Material(inelastic_defgrad_id, CORE::Materials::mfi_lin_scalar_iso));
-
-      mat_inelastic->Add("SCALAR1", 1);
-      mat_inelastic->Add("SCALAR1_MolarGrowthFac", 1.1);
-      mat_inelastic->Add("SCALAR1_RefConc", 1.2);
+      IO::InputParameterContainer mat_inelastic_data;
+      mat_inelastic_data.Add("SCALAR1", 1);
+      mat_inelastic_data.Add("SCALAR1_MolarGrowthFac", 1.1);
+      mat_inelastic_data.Add("SCALAR1_RefConc", 1.2);
 
       // add inelastic material to problem instance
-      problem.Materials()->Insert(inelastic_defgrad_id, mat_inelastic);
+      problem.Materials()->insert(inelastic_defgrad_id,
+          MAT::make_parameter(
+              1, CORE::Materials::MaterialType::mfi_lin_scalar_iso, mat_inelastic_data));
 
       // set parameter list
       auto parameter_list_pointer = Teuchos::rcp(new Teuchos::ParameterList());

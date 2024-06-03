@@ -28,7 +28,7 @@ namespace CORE::LINALG
 
 namespace CORE::MAT::PAR
 {
-  class Material;
+  class Parameter;
 }
 
 namespace MAT
@@ -416,7 +416,11 @@ namespace MAT
   }
 
   template <class T>
-  T* CreateMaterialParameterInstance(Teuchos::RCP<CORE::MAT::PAR::Material> curmat);
+  T* CreateMaterialParameterInstance(CORE::MAT::PAR::Parameter* curmat)
+  {
+    auto* params = dynamic_cast<T*>(curmat);
+    return params;
+  }
 
   /// Set every tensor value to zero
   template <int dim>

@@ -13,7 +13,7 @@
 #include "4C_global_data.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_porofluidmultiphase_ele.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -41,7 +41,7 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::check_material_typ
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   CORE::Materials::MaterialType mtype =
-      GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
+      GLOBAL::Problem::Instance()->Materials()->ParameterById(matid)->Type();
   if ((mtype != CORE::Materials::m_fluidporo_multiphase) and
       (mtype != CORE::Materials::m_fluidporo_multiphase_reactions))
     FOUR_C_THROW("Material with ID %d is not admissible for porofluid multiphase elements", matid);

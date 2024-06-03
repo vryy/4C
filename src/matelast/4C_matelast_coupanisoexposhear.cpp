@@ -10,7 +10,7 @@
 
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

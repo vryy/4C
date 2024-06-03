@@ -73,15 +73,19 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<CORE::MAT::PAR::Material> firstmat =
-      GLOBAL::Problem::Instance(probinst)->Materials()->ById(GetFirstMatID());
-  Teuchos::RCP<CORE::MAT::PAR::Material> secondmat =
-      GLOBAL::Problem::Instance(probinst)->Materials()->ById(GetSecondMatID());
+  const auto& firstmat = GLOBAL::Problem::Instance(probinst)
+                             ->Materials()
+                             ->ParameterById(GetFirstMatID())
+                             ->raw_parameters();
+  const auto& secondmat = GLOBAL::Problem::Instance(probinst)
+                              ->Materials()
+                              ->ParameterById(GetSecondMatID())
+                              ->raw_parameters();
 
-  const double E1 = firstmat->Get<double>("YOUNG");
-  const double E2 = secondmat->Get<double>("YOUNG");
-  const double nu1 = firstmat->Get<double>("NUE");
-  const double nu2 = secondmat->Get<double>("NUE");
+  const double E1 = firstmat.Get<double>("YOUNG");
+  const double E2 = secondmat.Get<double>("YOUNG");
+  const double nu1 = firstmat.Get<double>("NUE");
+  const double nu2 = secondmat.Get<double>("NUE");
 
   // Composite Young's modulus
   composite_youngs_ = pow(((1 - pow(nu1, 2)) / E1 + (1 - pow(nu2, 2)) / E2), -1);

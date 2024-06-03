@@ -15,7 +15,7 @@
 #include "4C_inpar_ssi.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_scatra_ele.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -65,7 +65,7 @@ void SSI::ScatraStructureCloneStrategy::check_material_type(const int matid)
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   CORE::Materials::MaterialType mtype =
-      GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
+      GLOBAL::Problem::Instance()->Materials()->ParameterById(matid)->Type();
   if ((mtype != CORE::Materials::m_scatra) && (mtype != CORE::Materials::m_elchmat) &&
       (mtype != CORE::Materials::m_electrode) && (mtype != CORE::Materials::m_matlist) &&
       (mtype != CORE::Materials::m_matlist_reactions) && (mtype != CORE::Materials::m_myocard) &&

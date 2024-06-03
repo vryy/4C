@@ -15,7 +15,8 @@
 /* headers */
 #include "4C_config.hpp"
 
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
+#include "4C_utils_lazy_ptr.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -48,43 +49,34 @@ namespace MAT
     class Bundle
     {
      public:
-      /// construct
-      Bundle();
+      /**
+       * Insert new pair of material ID and the input data. The input data is set up for lazy
+       * construction the first time the material is accessed.
+       */
+      void insert(int matid, CORE::UTILS::LazyPtr<CORE::MAT::PAR::Parameter> mat);
 
-      /// insert new par of material ID and its data
-      void Insert(int matid,                          ///< material ID
-          Teuchos::RCP<CORE::MAT::PAR::Material> mat  ///< (validated) material parameters
-      );
-
-      /// check if a material exists to provided ID
-      ///
-      /// \return Upon failure -1 is returned, otherwise >=0
-      int Find(const int id) const;
+      /**
+       * Check whether material parameters exist for provided @p id.
+       *
+       * @note This call does not check whether material parameters are already constructed. It only
+       * checks whether the material ID is known.
+       */
+      [[nodiscard]] bool id_exists(int id) const;
 
       /// provide access to material map (a li'l dirty)
-      const std::map<int, Teuchos::RCP<CORE::MAT::PAR::Material>>* Map() const
+      [[nodiscard]] const std::map<int, CORE::UTILS::LazyPtr<CORE::MAT::PAR::Parameter>>& Map()
+          const
       {
-        return &(matmap_);
+        return matmap_;
       }
-
-      /// make quick access parameters
-      void MakeParameters();
 
       /// return number of defined materials
       int Num() const { return matmap_.size(); }
 
-      /// return materials by ID
-      Teuchos::RCP<CORE::MAT::PAR::Material> ById(
-          const int num  ///< request is made for this material ID
-      ) const;
-
       /// return material parameters
       CORE::MAT::PAR::Parameter* ParameterById(
           const int num  ///< request is made for this material ID
-      ) const
-      {
-        return ById(num)->Parameter();
-      }
+      ) const;
 
       /// return (first) ID by material type
       ///
@@ -106,11 +98,12 @@ namespace MAT
       void reset_read_from_problem() { materialreadfromproblem_ = 0; }
 
      private:
-      /// the map linking material IDs to input materials
-      std::map<int, Teuchos::RCP<CORE::MAT::PAR::Material>> matmap_;
+      /// The map linking material IDs to input paramters. The data is stored as a lazy pointer to
+      /// allow for lazy construction of material parameters in arbitrary order.
+      std::map<int, CORE::UTILS::LazyPtr<CORE::MAT::PAR::Parameter>> matmap_;
 
       /// the index of problem instance of which material read-in shall be performed
-      int materialreadfromproblem_;
+      int materialreadfromproblem_{};
     };
 
   }  // namespace PAR

@@ -9,7 +9,7 @@
 
 #include "4C_matelast_isovarga.hpp"
 
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

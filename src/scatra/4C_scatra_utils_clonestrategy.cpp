@@ -14,7 +14,7 @@
 #include "4C_discretization_fem_general_element.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_scatra_ele.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -51,7 +51,7 @@ void SCATRA::ScatraFluidCloneStrategy::check_material_type(const int matid)
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   CORE::Materials::MaterialType mtype =
-      GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
+      GLOBAL::Problem::Instance()->Materials()->ParameterById(matid)->Type();
   if ((mtype != CORE::Materials::m_scatra) && (mtype != CORE::Materials::m_sutherland) &&
       (mtype != CORE::Materials::m_ion) && (mtype != CORE::Materials::m_th_fourier_iso) &&
       (mtype != CORE::Materials::m_thermostvenant) && (mtype != CORE::Materials::m_matlist) &&
@@ -127,7 +127,7 @@ void SCATRA::ScatraReactionCloneStrategy::check_material_type(const int matid)
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   CORE::Materials::MaterialType mtype =
-      GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
+      GLOBAL::Problem::Instance()->Materials()->ParameterById(matid)->Type();
   if ((mtype != CORE::Materials::m_scatra) && (mtype != CORE::Materials::m_matlist) &&
       (mtype != CORE::Materials::m_matlist_reactions))
     FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);

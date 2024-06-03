@@ -9,70 +9,25 @@
 
 #include "4C_material_parameter_base.hpp"
 
-#include "4C_material_input_base.hpp"
-
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
 
+CORE::MAT::PAR::Material::Material(const int id, const CORE::Materials::MaterialType type)
+    : InputParameterContainer(), id_(id), type_(type)
+{
+}
+
+CORE::MAT::PAR::Material::Material(
+    int id, CORE::Materials::MaterialType type, const IO::InputParameterContainer& input_data)
+    : InputParameterContainer(input_data), id_(id), type_(type)
+{
+}
+
 CORE::MAT::PAR::Parameter::Parameter(Teuchos::RCP<const CORE::MAT::PAR::Material> matdata)
-    : id_(matdata->Id()), type_(matdata->Type())
+    : id_(matdata->Id()), type_(matdata->Type()), raw_parameters_(matdata)
 {
-}
-
-void CORE::MAT::PAR::Parameter::set_parameter(
-    int parametername, Teuchos::RCP<Epetra_Vector> myparameter)
-{
-  // security check
-  int length_old = matparams_.at(parametername)->GlobalLength();
-  int length_new = myparameter->GlobalLength();
-
-  // we had spatially constant matparameter and want elementwise, thats ok
-  if (length_old == 1 && (length_old < length_new))
-  {
-    matparams_.at(parametername) = Teuchos::rcp(new Epetra_Vector(*myparameter));
-  }
-  // we had spatially constant matparameter and want constant, thats ok
-  else if (length_old == 1 && (length_old == length_new))
-  {
-    matparams_.at(parametername) = Teuchos::rcp(new Epetra_Vector(*myparameter));
-  }
-  // we had elementwise matparameter and want elementwise, thats ok
-  else if (length_old > 1 && (length_old == length_new))
-  {
-    matparams_.at(parametername) = Teuchos::rcp(new Epetra_Vector(*myparameter));
-  }
-  // we had elementwise matparameter and want constant, thats OK, simply set same value in all
-  // entries
-  else if (length_old > 1 && (length_new == 1))
-  {
-    matparams_.at(parametername)->PutScalar((*myparameter)[0]);
-  }
-  // we had elementwise matparameter and elementwise but there is  size mismatch, thats  not ok
-  else if (length_old > 1 && (length_old != length_new))
-  {
-    FOUR_C_THROW("Problem setting elementwise material parameter: Size mismatch ");
-  }
-  else
-  {
-    FOUR_C_THROW("Can not set material parameter: Unknown Problem");
-  }
-}
-
-void CORE::MAT::PAR::Parameter::set_parameter(int parametername, const double val, const int eleGID)
-{
-  // check if we own this element
-  Teuchos::RCP<Epetra_Vector> fool = matparams_.at(parametername);
-  if (matparams_.at(parametername)->GlobalLength() == 1)
-    FOUR_C_THROW("spatially constant parameters! Cannot set elementwise parameter!");
-
-  if (!matparams_.at(parametername)->Map().MyGID(eleGID))
-    FOUR_C_THROW("I do not have this element");
-
-  // otherwise set parameter for element
-  // calculate LID here, instead of before each call
-  (*matparams_.at(parametername))[matparams_[parametername]->Map().LID(eleGID)] = val;
 }
 
 double CORE::MAT::PAR::Parameter::GetParameter(int parametername, const int EleId)

@@ -39,80 +39,61 @@ MAT::PAR::Growth::Growth(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
   if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
-  // retrieve validated input line of material ID in question
-  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
-      GLOBAL::Problem::Instance(probinst)->Materials()->ById(idgrowthlaw_);
+  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(idgrowthlaw_);
 
   switch (curmat->Type())
   {
     case CORE::Materials::m_growth_aniso_strain:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::GrowthLawAnisoStrain(curmat));
-      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStrain*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStrain*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case CORE::Materials::m_growth_aniso_stress:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::GrowthLawAnisoStress(curmat));
-      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStress*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStress*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case CORE::Materials::m_growth_aniso_strain_const_trig:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::GrowthLawAnisoStrainConstTrig(curmat));
-      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStrainConstTrig*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStrainConstTrig*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case CORE::Materials::m_growth_aniso_stress_const_trig:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::GrowthLawAnisoStressConstTrig(curmat));
-      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStressConstTrig*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStressConstTrig*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case CORE::Materials::m_growth_iso_stress:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::GrowthLawIsoStress(curmat));
-      auto* params = static_cast<MAT::PAR::GrowthLawIsoStress*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawIsoStress*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case CORE::Materials::m_growth_ac:
     {
-      if (curmat->Parameter() == nullptr) curmat->set_parameter(new MAT::PAR::GrowthLawAC(curmat));
-      auto* params = static_cast<MAT::PAR::GrowthLawAC*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawAC*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case CORE::Materials::m_growth_ac_radial:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::GrowthLawACRadial(curmat));
-      auto* params = static_cast<MAT::PAR::GrowthLawACRadial*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawACRadial*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case CORE::Materials::m_growth_ac_radial_refconc:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::GrowthLawACRadialRefConc(curmat));
-      auto* params = static_cast<MAT::PAR::GrowthLawACRadialRefConc*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawACRadialRefConc*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case CORE::Materials::m_growth_const:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::GrowthLawConst(curmat));
-      auto* params = static_cast<MAT::PAR::GrowthLawConst*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawConst*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }

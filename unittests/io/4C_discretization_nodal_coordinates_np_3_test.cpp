@@ -14,8 +14,9 @@
 #include "4C_io_gridgenerator.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_lib_discret.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include <Epetra_MpiComm.h>
 
@@ -25,14 +26,13 @@ namespace
 
   void CreateMaterialInGlobalProblem()
   {
-    const auto mat_stvenant =
-        Teuchos::rcp(new CORE::MAT::PAR::Material(1, CORE::Materials::MaterialType::m_stvenant));
+    IO::InputParameterContainer mat_stvenant;
+    mat_stvenant.Add("YOUNG", 1.0);
+    mat_stvenant.Add("NUE", 0.1);
+    mat_stvenant.Add("DENS", 2.0);
 
-    mat_stvenant->Add("YOUNG", 1.0);
-    mat_stvenant->Add("NUE", 0.1);
-    mat_stvenant->Add("DENS", 2.0);
-
-    GLOBAL::Problem::Instance()->Materials()->Insert(1, mat_stvenant);
+    GLOBAL::Problem::Instance()->Materials()->insert(
+        1, MAT::make_parameter(1, CORE::Materials::MaterialType::m_stvenant, mat_stvenant));
   }
 
   // Serial discretization nodal method tests

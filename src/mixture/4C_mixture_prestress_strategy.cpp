@@ -14,7 +14,7 @@
 #include "4C_inpar_material.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_mixture_prestress_strategy_constant.hpp"
 #include "4C_mixture_prestress_strategy_isocyl.hpp"
 #include "4C_mixture_prestress_strategy_iterative.hpp"
@@ -41,8 +41,7 @@ MIXTURE::PAR::PrestressStrategy* MIXTURE::PAR::PrestressStrategy::Factory(int ma
   const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
-      GLOBAL::Problem::Instance(probinst)->Materials()->ById(matid);
+  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
 
   switch (curmat->Type())
   {

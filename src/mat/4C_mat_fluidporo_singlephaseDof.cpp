@@ -39,8 +39,7 @@ MAT::PAR::FluidPoroPhaseDof* MAT::PAR::FluidPoroPhaseDof::CreatePhaseDof(int pha
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
-      GLOBAL::Problem::Instance(probinst)->Materials()->ById(phasedofId);
+  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(phasedofId);
 
   // phase law
   MAT::PAR::FluidPoroPhaseDof* phasedof = nullptr;
@@ -49,23 +48,17 @@ MAT::PAR::FluidPoroPhaseDof* MAT::PAR::FluidPoroPhaseDof::CreatePhaseDof(int pha
   {
     case CORE::Materials::m_fluidporo_phasedof_diffpressure:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::FluidPoroPhaseDofDiffPressure(curmat));
-      phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofDiffPressure*>(curmat->Parameter());
+      phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofDiffPressure*>(curmat);
       break;
     }
     case CORE::Materials::m_fluidporo_phasedof_pressure:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::FluidPoroPhaseDofPressure(curmat));
-      phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofPressure*>(curmat->Parameter());
+      phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofPressure*>(curmat);
       break;
     }
     case CORE::Materials::m_fluidporo_phasedof_saturation:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::FluidPoroPhaseDofSaturation(curmat));
-      phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofSaturation*>(curmat->Parameter());
+      phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofSaturation*>(curmat);
       break;
     }
     default:

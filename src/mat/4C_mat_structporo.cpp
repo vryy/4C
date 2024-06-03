@@ -35,51 +35,38 @@ MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
-      GLOBAL::Problem::Instance(probinst)->Materials()->ById(poro_law_ID_);
+  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(poro_law_ID_);
 
   switch (curmat->Type())
   {
     case CORE::Materials::m_poro_law_linear:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::PoroLawLinear(curmat));
-      poro_law_ = static_cast<MAT::PAR::PoroLaw*>(curmat->Parameter());
+      poro_law_ = static_cast<MAT::PAR::PoroLaw*>(curmat);
       break;
     }
     case CORE::Materials::m_poro_law_constant:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::PoroLawConstant(curmat));
-      poro_law_ = static_cast<MAT::PAR::PoroLaw*>(curmat->Parameter());
+      poro_law_ = static_cast<MAT::PAR::PoroLaw*>(curmat);
       break;
     }
     case CORE::Materials::m_poro_law_logNeoHooke_Penalty:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::PoroLawNeoHooke(curmat));
-      poro_law_ = static_cast<MAT::PAR::PoroLaw*>(curmat->Parameter());
+      poro_law_ = static_cast<MAT::PAR::PoroLaw*>(curmat);
       break;
     }
     case CORE::Materials::m_poro_law_incompr_skeleton:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::PoroLawIncompSkeleton(curmat));
-      poro_law_ = static_cast<MAT::PAR::PoroLawIncompSkeleton*>(curmat->Parameter());
+      poro_law_ = static_cast<MAT::PAR::PoroLawIncompSkeleton*>(curmat);
       break;
     }
     case CORE::Materials::m_poro_law_linear_biot:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::PoroLawLinBiot(curmat));
-      poro_law_ = static_cast<MAT::PAR::PoroLawLinBiot*>(curmat->Parameter());
+      poro_law_ = static_cast<MAT::PAR::PoroLawLinBiot*>(curmat);
       break;
     }
     case CORE::Materials::m_poro_law_density_dependent:
     {
-      if (curmat->Parameter() == nullptr)
-        curmat->set_parameter(new MAT::PAR::PoroLawDensityDependent(curmat));
-      poro_law_ = static_cast<MAT::PAR::PoroLawDensityDependent*>(curmat->Parameter());
+      poro_law_ = static_cast<MAT::PAR::PoroLawDensityDependent*>(curmat);
       break;
     }
     default:

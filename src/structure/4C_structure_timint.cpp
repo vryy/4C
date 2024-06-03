@@ -1868,11 +1868,8 @@ void STR::TimInt::read_restart_beam_contact()
 void STR::TimInt::read_restart_multi_scale()
 {
   Teuchos::RCP<MAT::PAR::Bundle> materials = GLOBAL::Problem::Instance()->Materials();
-  for (std::map<int, Teuchos::RCP<CORE::MAT::PAR::Material>>::const_iterator i =
-           materials->Map()->begin();
-       i != materials->Map()->end(); ++i)
+  for (const auto& [_, mat] : materials->Map())
   {
-    Teuchos::RCP<CORE::MAT::PAR::Material> mat = i->second;
     if (mat->Type() == CORE::Materials::m_struct_multiscale)
     {
       // create the parameters for the discretization

@@ -10,10 +10,11 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_elasthyper_service.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_matelast_coupanisoexpo.hpp"
 #include "4C_matelast_isoneohooke.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 
 namespace
@@ -113,16 +114,16 @@ namespace
     // added here as the setup of the anisotropy is not trivial.
 
     // Create parameter of IsoNeoHooke material
-    Teuchos::RCP<CORE::MAT::PAR::Material> isoNeoHookeParams =
-        Teuchos::rcp(new CORE::MAT::PAR::Material());
-    isoNeoHookeParams->Add("MUE", 1.3);
-    isoNeoHookeParams->set_parameter(new MAT::ELASTIC::PAR::IsoNeoHooke(isoNeoHookeParams));
-    auto* isoNeoHookeParams2 =
-        dynamic_cast<MAT::ELASTIC::PAR::IsoNeoHooke*>(isoNeoHookeParams->Parameter());
+    IO::InputParameterContainer iso_neo_hooke_data;
+    iso_neo_hooke_data.Add("MUE", 1.3);
+
+    auto iso_neo_hooke_params =
+        MAT::make_parameter(1, CORE::Materials::MaterialType::mes_isoneohooke, iso_neo_hooke_data);
 
     // Create summand vector
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsum(0);
-    potsum.emplace_back(Teuchos::rcp(new MAT::ELASTIC::IsoNeoHooke(isoNeoHookeParams2)));
+    potsum.emplace_back(Teuchos::rcp(new MAT::ELASTIC::IsoNeoHooke(
+        dynamic_cast<MAT::ELASTIC::PAR::IsoNeoHooke *>(iso_neo_hooke_params.get()))));
 
     // Read summand properties
     MAT::SummandProperties properties;

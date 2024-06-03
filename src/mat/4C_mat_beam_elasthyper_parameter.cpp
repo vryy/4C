@@ -10,7 +10,7 @@
 #include "4C_mat_beam_elasthyper_parameter.hpp"
 
 #include "4C_mat_beam_elasthyper.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>

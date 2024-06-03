@@ -9,7 +9,7 @@
 #include <gtest/gtest.h>
 
 #include "4C_mat_stvenantkirchhoff.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 
 namespace

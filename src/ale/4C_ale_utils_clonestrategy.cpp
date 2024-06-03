@@ -19,7 +19,7 @@
 #include "4C_global_data.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 
 FOUR_C_NAMESPACE_OPEN
@@ -45,7 +45,7 @@ void ALE::UTILS::AleCloneStrategy::check_material_type(const int matid)
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   CORE::Materials::MaterialType mtype =
-      GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
+      GLOBAL::Problem::Instance()->Materials()->ParameterById(matid)->Type();
   if (mtype != CORE::Materials::m_stvenant && mtype != CORE::Materials::m_elasthyper)
     FOUR_C_THROW("Material with ID %d is not admissible for ALE elements", matid);
 }

@@ -39,8 +39,7 @@ MIXTURE::PAR::MixtureGrowthStrategy* MIXTURE::PAR::MixtureGrowthStrategy::Factor
   // retrieve problem instance to read from
   const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
-      GLOBAL::Problem::Instance(probinst)->Materials()->ById(matid);
+  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
 
   switch (curmat->Type())
   {
