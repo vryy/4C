@@ -264,7 +264,7 @@ namespace RTD
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void WriteMaterialReference(
-      std::ostream &stream, const std::vector<Teuchos::RCP<INPUT::MaterialDefinition>> &matlist)
+      std::ostream &stream, const std::vector<Teuchos::RCP<MAT::MaterialDefinition>> &matlist)
   {
     WriteLinktarget(stream, "materialsreference");
     write_header(stream, 0, "Material reference");
@@ -299,7 +299,7 @@ namespace RTD
 
 
   void WriteSingleMaterialReadTheDocs(
-      std::ostream &stream, const Teuchos::RCP<INPUT::MaterialDefinition> material)
+      std::ostream &stream, const Teuchos::RCP<MAT::MaterialDefinition> material)
   {
     /* Each entry consists of a number of fields:
     - header

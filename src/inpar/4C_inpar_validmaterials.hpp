@@ -28,18 +28,19 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
+namespace MAT
+{
+  class MaterialDefinition;
+}
 
 namespace INPUT
 {
-  class MaterialDefinition;
-
   /// construct list with all materials and documentation
-  Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> ValidMaterials();
+  Teuchos::RCP<std::vector<Teuchos::RCP<MAT::MaterialDefinition>>> ValidMaterials();
 
   /// print all known material sections without contents
   void PrintEmptyMaterialDefinitions(
-      std::ostream& stream, std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>& matlist);
+      std::ostream& stream, std::vector<Teuchos::RCP<MAT::MaterialDefinition>>& matlist);
 }  // namespace INPUT
 
 /// print empty material sections

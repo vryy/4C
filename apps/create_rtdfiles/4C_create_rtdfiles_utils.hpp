@@ -15,7 +15,7 @@
 #include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_condition_definition.hpp"
-#include "4C_io_materialdefinition.hpp"
+#include "4C_mat_materialdefinition.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -183,7 +183,7 @@ namespace RTD
    *  \param[in] matlist: vector containing all material definitions
    */
   void WriteMaterialReference(
-      std::ostream& stream, const std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>& matlist);
+      std::ostream& stream, const std::vector<Teuchos::RCP<MAT::MaterialDefinition>>& matlist);
 
   /*!
    *  \brief write the information of a single material to readthedocs
@@ -192,7 +192,7 @@ namespace RTD
    *  \param[in] material: single material definition
    */
   void WriteSingleMaterialReadTheDocs(
-      std::ostream& stream, const Teuchos::RCP<INPUT::MaterialDefinition> material);
+      std::ostream& stream, const Teuchos::RCP<MAT::MaterialDefinition> material);
   /*!
    *  \brief write all parameters of the header sections for readthedocs
    *

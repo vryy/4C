@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FOUR_C_IO_MATERIALDEFINITION_HPP
-#define FOUR_C_IO_MATERIALDEFINITION_HPP
+#ifndef FOUR_C_MAT_MATERIALDEFINITION_HPP
+#define FOUR_C_MAT_MATERIALDEFINITION_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -30,6 +30,12 @@ namespace DRT
 }  // namespace DRT
 
 namespace INPUT
+{
+  class DatFileReader;
+  class MaterialDefinition;
+}  // namespace INPUT
+
+namespace MAT
 {
   /// Definition of a valid material in 4C input
   ///
@@ -69,8 +75,8 @@ namespace INPUT
     void AddComponent(const Teuchos::RCP<INPUT::LineComponent>& c);
 
     /// Try to read all lines that fit the current material definition.
-    std::vector<std::pair<int, IO::InputParameterContainer>> Read(
-        DatFileReader& reader  ///< the actual dat file reader that has access to the dat file
+    std::vector<std::pair<int, IO::InputParameterContainer>> Read(INPUT::DatFileReader&
+            reader  ///< the actual dat file reader that has access to the dat file
     );
 
     /// print my DAT file section and possible materials from the discretization
@@ -106,11 +112,11 @@ namespace INPUT
   ///
   /// this method checks for coincidental material names or types
   void AppendMaterialDefinition(
-      std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>& matlist,  ///< list of defined materials
-      const Teuchos::RCP<INPUT::MaterialDefinition>& mat              ///< material to add
+      std::vector<Teuchos::RCP<MaterialDefinition>>& matlist,  ///< list of defined materials
+      const Teuchos::RCP<MaterialDefinition>& mat              ///< material to add
   );
 
-}  // namespace INPUT
+}  // namespace MAT
 
 
 FOUR_C_NAMESPACE_CLOSE

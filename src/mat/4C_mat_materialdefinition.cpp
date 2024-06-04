@@ -12,7 +12,7 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "4C_io_materialdefinition.hpp"
+#include "4C_mat_materialdefinition.hpp"
 
 #include "4C_io_line_parser.hpp"
 #include "4C_mat_par_bundle.hpp"
@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /*======================================================================*/
-INPUT::MaterialDefinition::MaterialDefinition(
+MAT::MaterialDefinition::MaterialDefinition(
     std::string materialname, std::string description, CORE::Materials::MaterialType mattype)
     : materialname_(std::move(materialname)),
       description_(std::move(description)),
@@ -38,7 +38,7 @@ INPUT::MaterialDefinition::MaterialDefinition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void INPUT::MaterialDefinition::AddComponent(const Teuchos::RCP<INPUT::LineComponent>& c)
+void MAT::MaterialDefinition::AddComponent(const Teuchos::RCP<INPUT::LineComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -46,8 +46,8 @@ void INPUT::MaterialDefinition::AddComponent(const Teuchos::RCP<INPUT::LineCompo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::vector<std::pair<int, IO::InputParameterContainer>> INPUT::MaterialDefinition::Read(
-    DatFileReader& reader)
+std::vector<std::pair<int, IO::InputParameterContainer>> MAT::MaterialDefinition::Read(
+    INPUT::DatFileReader& reader)
 {
   std::string name = "--MATERIALS";
   std::vector<const char*> section = reader.Section(name);
@@ -100,7 +100,7 @@ std::vector<std::pair<int, IO::InputParameterContainer>> INPUT::MaterialDefiniti
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& INPUT::MaterialDefinition::Print(std::ostream& stream, const DRT::Discretization* dis)
+std::ostream& MAT::MaterialDefinition::Print(std::ostream& stream, const DRT::Discretization* dis)
 {
   // a string holding the comment indicating symbols for DAT input file
   const std::string comment = "//";
@@ -131,14 +131,14 @@ std::ostream& INPUT::MaterialDefinition::Print(std::ostream& stream, const DRT::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::AppendMaterialDefinition(std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>& matlist,
-    const Teuchos::RCP<INPUT::MaterialDefinition>& mat)
+void MAT::AppendMaterialDefinition(std::vector<Teuchos::RCP<MaterialDefinition>>& matlist,
+    const Teuchos::RCP<MaterialDefinition>& mat)
 {
   // test if material was defined with same name or type
-  std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>::const_iterator m;
+  std::vector<Teuchos::RCP<MAT::MaterialDefinition>>::const_iterator m;
   for (m = matlist.begin(); m != matlist.end(); ++m)
   {
-    Teuchos::RCP<INPUT::MaterialDefinition> mmd = *m;
+    Teuchos::RCP<MAT::MaterialDefinition> mmd = *m;
 
     if (mmd->Type() == mat->Type())
       FOUR_C_THROW(

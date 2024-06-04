@@ -338,7 +338,7 @@ int main(int argc, char** argv)
 
       // get valid input materials
       {
-        Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> mlist =
+        Teuchos::RCP<std::vector<Teuchos::RCP<MAT::MaterialDefinition>>> mlist =
             INPUT::ValidMaterials();
         INPUT::PrintEmptyMaterialDefinitions(defaulthead, *mlist);
       }

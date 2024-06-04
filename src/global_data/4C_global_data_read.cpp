@@ -26,11 +26,11 @@
 #include "4C_io_geometry_type.hpp"
 #include "4C_io_inputreader.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_io_materialdefinition.hpp"
 #include "4C_io_meshreader.hpp"
 #include "4C_lib_discret_hdg.hpp"
 #include "4C_mat_elchmat.hpp"
 #include "4C_mat_elchphase.hpp"
+#include "4C_mat_materialdefinition.hpp"
 #include "4C_mat_micromaterial.hpp"
 #include "4C_mat_newman_multiscale.hpp"
 #include "4C_mat_par_bundle.hpp"
@@ -1996,8 +1996,8 @@ void GLOBAL::ReadParameter(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
 void GLOBAL::ReadMaterials(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
   // create list of known materials
-  Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> vm = INPUT::ValidMaterials();
-  std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>& matlist = *vm;
+  Teuchos::RCP<std::vector<Teuchos::RCP<MAT::MaterialDefinition>>> vm = INPUT::ValidMaterials();
+  std::vector<Teuchos::RCP<MAT::MaterialDefinition>>& matlist = *vm;
 
   // test for each material definition (input file --MATERIALS section)
   // and store in #matmap_

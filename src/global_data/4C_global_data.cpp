@@ -19,10 +19,10 @@
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_io_materialdefinition.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_discret_faces.hpp"
 #include "4C_lib_discret_hdg.hpp"
+#include "4C_mat_materialdefinition.hpp"
 #include "4C_particle_engine_particlereader.hpp"
 #include "4C_rebalance_graph_based.hpp"
 
