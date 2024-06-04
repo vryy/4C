@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_IO_UTILS_READER_HPP
-#define FOUR_C_IO_UTILS_READER_HPP
+#ifndef FOUR_C_UTILS_STRING_HPP
+#define FOUR_C_UTILS_STRING_HPP
 
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
 #include "4C_config.hpp"
@@ -27,7 +27,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT::UTILS
+namespace CORE::UTILS
 {
   /*!
    * @brief Remove all leading and trailing whitespaces from a string.
@@ -75,7 +75,7 @@ namespace DRT::UTILS
    *  @result vector of strings
    */
   std::vector<std::string> SplitStringList(const std::string& str, const char separator);
-}  // namespace DRT::UTILS
+}  // namespace CORE::UTILS
 
 FOUR_C_NAMESPACE_CLOSE
 

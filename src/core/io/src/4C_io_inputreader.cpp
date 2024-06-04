@@ -13,9 +13,9 @@
 #include "4C_io_inputreader.hpp"
 
 #include "4C_io_pstream.hpp"
-#include "4C_io_utils_reader.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_nurbs_discret_knotvector.hpp"
+#include "4C_utils_string.hpp"
 
 #include <Teuchos_Time.hpp>
 
@@ -280,7 +280,7 @@ namespace CORE::IO
                 {
                   // remove comments, trailing and leading whitespaces
                   // compact internal whitespaces
-                  line = DRT::UTILS::StripComment(line);
+                  line = CORE::UTILS::StripComment(line);
 
                   // line is now empty
                   if (line.size() == 0) continue;
@@ -956,7 +956,7 @@ namespace CORE::IO
       {
         // remove comments, trailing and leading whitespaces
         // compact internal whitespaces
-        line = DRT::UTILS::StripComment(line);
+        line = CORE::UTILS::StripComment(line);
 
         // line is now empty
         if (line.size() == 0) continue;
@@ -1198,8 +1198,8 @@ namespace CORE::IO
         FOUR_C_THROW("Line '%s' with just one word in parameter section", line.c_str());
     }
 
-    std::string key = DRT::UTILS::Trim(line.substr(0, separator_index));
-    std::string value = DRT::UTILS::Trim(line.substr(separator_index + 1));
+    std::string key = CORE::UTILS::Trim(line.substr(0, separator_index));
+    std::string value = CORE::UTILS::Trim(line.substr(separator_index + 1));
 
     if (key.empty()) FOUR_C_THROW("Cannot get key from line '%s'", line.c_str());
     if (value.empty()) FOUR_C_THROW("Cannot get value from line '%s'", line.c_str());

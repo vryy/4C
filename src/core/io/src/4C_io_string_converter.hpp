@@ -13,8 +13,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_io_utils_reader.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_string.hpp"
 
 #include <algorithm>
 #include <array>
@@ -363,7 +363,7 @@ namespace CORE::IO
     {
       const char sep = INTERNAL::GetSeparatorAtRank<INTERNAL::StringPatternTraits<T>::list_rank>(
           INTERNAL::default_list_separator);
-      auto split_str = DRT::UTILS::SplitStringList(str, sep);
+      auto split_str = CORE::UTILS::SplitStringList(str, sep);
 
       T t;
       INTERNAL::ParseSplitString(t, split_str);
@@ -394,11 +394,11 @@ namespace CORE::IO
           INTERNAL::GetSeparatorAtRank<INTERNAL::StringPatternTraits<T>::list_rank>(
               INTERNAL::default_list_separator);
 
-      auto split_str = DRT::UTILS::SplitStringList(str, sep_list);
+      auto split_str = CORE::UTILS::SplitStringList(str, sep_list);
 
       for (const auto &split_str_i : split_str)
       {
-        auto key_val = DRT::UTILS::SplitStringList(split_str_i, sep_map);
+        auto key_val = CORE::UTILS::SplitStringList(split_str_i, sep_map);
         INTERNAL::CheckDimension(key_val, 2);
 
         t.insert(std::make_pair(StringConverter<typename T::key_type>::Parse(key_val[0]),

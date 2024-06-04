@@ -7,12 +7,12 @@
 
 */
 
-#include "4C_io_utils_reader.hpp"
+#include "4C_utils_string.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT::UTILS
+namespace CORE::UTILS
 {
   std::string Trim(const std::string& line)
   {
@@ -100,7 +100,7 @@ namespace DRT::UTILS
   {
     return SplitStringList(str, std::string(1, separator));
   }
-}  // namespace DRT::UTILS
+}  // namespace CORE::UTILS
 
 
 FOUR_C_NAMESPACE_CLOSE

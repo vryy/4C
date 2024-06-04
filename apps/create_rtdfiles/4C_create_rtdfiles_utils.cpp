@@ -15,9 +15,9 @@
 #include "4C_global_legacy_module.hpp"
 #include "4C_io_dat_file_utils.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_io_utils_reader.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_result_test.hpp"
+#include "4C_utils_string.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
@@ -292,7 +292,8 @@ namespace RTD
     const std::vector<INPUT::LineDefinition> lines = CORE::FE::valid_cloning_material_map_lines();
     std::stringstream cloningMatStream;
     CORE::IO::DatFileUtils::print_section(cloningMatStream, "CLONING MATERIAL MAP", lines);
-    const std::vector<std::string> cloningMatList = DRT::UTILS::Split(cloningMatStream.str(), "\n");
+    const std::vector<std::string> cloningMatList =
+        CORE::UTILS::Split(cloningMatStream.str(), "\n");
 
     WriteCode(stream, cloningMatList);
   }
@@ -391,7 +392,7 @@ namespace RTD
         }
         fullname += name;
         std::string linktarget = boost::algorithm::replace_all_copy(fullname, "/", "_");
-        linktarget = Teuchos::StrUtils::removeAllSpaces(DRT::UTILS::ToLower(linktarget));
+        linktarget = Teuchos::StrUtils::removeAllSpaces(CORE::UTILS::ToLower(linktarget));
 
         if (entry.isList())  // it is a section header
         {
@@ -471,7 +472,7 @@ namespace RTD
 
     std::string sectionname = condition->SectionName();
     const std::string sectionlinktarget =
-        Teuchos::StrUtils::removeAllSpaces(DRT::UTILS::ToLower(sectionname));
+        Teuchos::StrUtils::removeAllSpaces(CORE::UTILS::ToLower(sectionname));
     //
     // boundary condition header
     //
@@ -710,7 +711,7 @@ namespace RTD
       std::stringstream resultDescriptionStream;
       CORE::IO::DatFileUtils::print_section(resultDescriptionStream, "RESULT DESCRIPTION", lines);
       const std::vector<std::string> resultDescriptionList =
-          DRT::UTILS::Split(resultDescriptionStream.str(), "\n");
+          CORE::UTILS::Split(resultDescriptionStream.str(), "\n");
       WriteCode(stream, resultDescriptionList);
     }
     //
@@ -727,7 +728,7 @@ namespace RTD
           stream, "Definition of functions for various cases, mainly boundary conditions");
       std::stringstream functionStream;
       CORE::IO::DatFileUtils::print_section(functionStream, "FUNCT", lines);
-      const std::vector<std::string> functionList = DRT::UTILS::Split(functionStream.str(), "\n");
+      const std::vector<std::string> functionList = CORE::UTILS::Split(functionStream.str(), "\n");
       WriteCode(stream, functionList);
     }
   }

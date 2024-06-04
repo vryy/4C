@@ -15,10 +15,10 @@
 #include "4C_discretization_fem_general_element_definition.hpp"
 #include "4C_io_gridgenerator.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_io_utils_reader.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_print.hpp"
+#include "4C_utils_string.hpp"
 
 #include <Teuchos_Time.hpp>
 
@@ -94,7 +94,7 @@ namespace CORE::IO
         {
           // remove comments, trailing and leading whitespaces
           // compact internal whitespaces
-          line = DRT::UTILS::StripComment(line);
+          line = CORE::UTILS::StripComment(line);
 
           // line is now empty
           if (line.size() == 0) continue;
