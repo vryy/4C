@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 #include "4C_inpar_cardiac_monodomain.hpp"
 
-#include "4C_io_condition_definition.hpp"
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -34,7 +34,8 @@ void INPAR::EP::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 }
 
 
-void INPAR::EP::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+void INPAR::EP::SetValidConditions(
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
 }
 

@@ -13,8 +13,8 @@
 
 #include "4C_inpar_xfem.hpp"
 
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_inpar_cut.hpp"
-#include "4C_io_condition_definition.hpp"
 #include "4C_io_linecomponent.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -387,7 +387,7 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 void INPAR::XFEM::SetValidConditions(
     const std::vector<Teuchos::RCP<INPUT::LineComponent>>& dirichletbundcomponents,
     const std::vector<Teuchos::RCP<INPUT::LineComponent>>& neumanncomponents,
-    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
@@ -395,15 +395,17 @@ void INPAR::XFEM::SetValidConditions(
 
   xfemcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("label")));
 
-  Teuchos::RCP<ConditionDefinition> movingfluid =
-      Teuchos::rcp(new ConditionDefinition("DESIGN FLUID MESH VOL CONDITIONS", "FluidMesh",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> movingfluid = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN FLUID MESH VOL CONDITIONS", "FluidMesh",
           "Fluid Mesh", CORE::Conditions::FluidMesh, true, CORE::Conditions::geometry_type_volume));
-  Teuchos::RCP<ConditionDefinition> fluidfluidcoupling = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN FLUID FLUID COUPLING SURF CONDITIONS", "FluidFluidCoupling", "FLUID FLUID Coupling",
-      CORE::Conditions::FluidFluidCoupling, true, CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<ConditionDefinition> ALEfluidcoupling = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN ALE FLUID COUPLING SURF CONDITIONS", "ALEFluidCoupling", "ALE FLUID Coupling",
-      CORE::Conditions::ALEFluidCoupling, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> fluidfluidcoupling = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN FLUID FLUID COUPLING SURF CONDITIONS",
+          "FluidFluidCoupling", "FLUID FLUID Coupling", CORE::Conditions::FluidFluidCoupling, true,
+          CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> ALEfluidcoupling =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN ALE FLUID COUPLING SURF CONDITIONS", "ALEFluidCoupling", "ALE FLUID Coupling",
+          CORE::Conditions::ALEFluidCoupling, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < xfemcomponents.size(); ++i)
   {
@@ -423,9 +425,10 @@ void INPAR::XFEM::SetValidConditions(
   //*----------------*/
   // Displacement surface condition for XFEM WDBC and Neumann boundary conditions
 
-  Teuchos::RCP<ConditionDefinition> xfem_surf_displacement = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN XFEM DISPLACEMENT SURF CONDITIONS", "XFEMSurfDisplacement", "XFEM Surf Displacement",
-      CORE::Conditions::XFEM_Surf_Displacement, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_surf_displacement = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN XFEM DISPLACEMENT SURF CONDITIONS",
+          "XFEMSurfDisplacement", "XFEM Surf Displacement",
+          CORE::Conditions::XFEM_Surf_Displacement, true, CORE::Conditions::geometry_type_surface));
 
   xfem_surf_displacement->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("COUPLINGID")));
   xfem_surf_displacement->AddComponent(Teuchos::rcp(new INPUT::IntComponent("label")));
@@ -472,10 +475,11 @@ void INPAR::XFEM::SetValidConditions(
   //*----------------*/
   // Levelset based Weak Dirichlet conditions
 
-  Teuchos::RCP<ConditionDefinition> xfem_levelset_wdbc = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN XFEM LEVELSET WEAK DIRICHLET VOL CONDITIONS", "XFEMLevelsetWeakDirichlet",
-      "XFEM Levelset Weak Dirichlet", CORE::Conditions::XFEM_Levelset_Weak_Dirichlet, true,
-      CORE::Conditions::geometry_type_volume));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_levelset_wdbc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN XFEM LEVELSET WEAK DIRICHLET VOL CONDITIONS", "XFEMLevelsetWeakDirichlet",
+          "XFEM Levelset Weak Dirichlet", CORE::Conditions::XFEM_Levelset_Weak_Dirichlet, true,
+          CORE::Conditions::geometry_type_volume));
 
   for (unsigned i = 0; i < levelsetfield_components.size(); ++i)
   {
@@ -497,9 +501,10 @@ void INPAR::XFEM::SetValidConditions(
   //*----------------*/
   // Levelset based Neumann conditions
 
-  Teuchos::RCP<ConditionDefinition> xfem_levelset_neumann = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN XFEM LEVELSET NEUMANN VOL CONDITIONS", "XFEMLevelsetNeumann", "XFEM Levelset Neumann",
-      CORE::Conditions::XFEM_Levelset_Neumann, true, CORE::Conditions::geometry_type_volume));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_levelset_neumann = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN XFEM LEVELSET NEUMANN VOL CONDITIONS",
+          "XFEMLevelsetNeumann", "XFEM Levelset Neumann", CORE::Conditions::XFEM_Levelset_Neumann,
+          true, CORE::Conditions::geometry_type_volume));
 
   for (unsigned i = 0; i < levelsetfield_components.size(); ++i)
   {
@@ -522,10 +527,10 @@ void INPAR::XFEM::SetValidConditions(
   //*----------------*/
   // Levelset based Navier Slip conditions
 
-  Teuchos::RCP<ConditionDefinition> xfem_levelset_navier_slip =
-      Teuchos::rcp(new ConditionDefinition("DESIGN XFEM LEVELSET NAVIER SLIP VOL CONDITIONS",
-          "XFEMLevelsetNavierSlip", "XFEM Levelset Navier Slip",
-          CORE::Conditions::XFEM_Levelset_Navier_Slip, true,
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_levelset_navier_slip =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN XFEM LEVELSET NAVIER SLIP VOL CONDITIONS", "XFEMLevelsetNavierSlip",
+          "XFEM Levelset Navier Slip", CORE::Conditions::XFEM_Levelset_Navier_Slip, true,
           CORE::Conditions::geometry_type_volume));
 
   for (unsigned i = 0; i < levelsetfield_components.size(); ++i)
@@ -576,8 +581,9 @@ void INPAR::XFEM::SetValidConditions(
 
   // Add condition XFEM DIRICHLET/NEUMANN?
 
-  Teuchos::RCP<ConditionDefinition> xfem_navier_slip_robin_dirch = Teuchos::rcp(
-      new ConditionDefinition("DESIGN XFEM ROBIN DIRICHLET VOL CONDITIONS", "XFEMRobinDirichletVol",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_navier_slip_robin_dirch =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN XFEM ROBIN DIRICHLET VOL CONDITIONS", "XFEMRobinDirichletVol",
           "XFEM Robin Dirichlet Volume", CORE::Conditions::XFEM_Robin_Dirichlet_Volume, true,
           CORE::Conditions::geometry_type_volume));
 
@@ -593,8 +599,9 @@ void INPAR::XFEM::SetValidConditions(
 
   condlist.push_back(xfem_navier_slip_robin_dirch);
 
-  Teuchos::RCP<ConditionDefinition> xfem_navier_slip_robin_neumann = Teuchos::rcp(
-      new ConditionDefinition("DESIGN XFEM ROBIN NEUMANN VOL CONDITIONS", "XFEMRobinNeumannVol",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_navier_slip_robin_neumann =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN XFEM ROBIN NEUMANN VOL CONDITIONS", "XFEMRobinNeumannVol",
           "XFEM Robin Neumann Volume", CORE::Conditions::XFEM_Robin_Neumann_Volume, true,
           CORE::Conditions::geometry_type_volume));
 
@@ -614,8 +621,8 @@ void INPAR::XFEM::SetValidConditions(
   //*----------------*/
   // Levelset based Twophase conditions
 
-  Teuchos::RCP<ConditionDefinition> xfem_levelset_twophase =
-      Teuchos::rcp(new ConditionDefinition("DESIGN XFEM LEVELSET TWOPHASE VOL CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_levelset_twophase = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN XFEM LEVELSET TWOPHASE VOL CONDITIONS",
           "XFEMLevelsetTwophase", "XFEM Levelset Twophase",
           CORE::Conditions::XFEM_Levelset_Twophase, true, CORE::Conditions::geometry_type_volume));
 
@@ -629,10 +636,11 @@ void INPAR::XFEM::SetValidConditions(
   //*----------------*/
   // Levelset based Combustion conditions
 
-  Teuchos::RCP<ConditionDefinition> xfem_levelset_combustion = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN XFEM LEVELSET COMBUSTION VOL CONDITIONS", "XFEMLevelsetCombustion",
-      "XFEM Levelset Combustion", CORE::Conditions::XFEM_Levelset_Combustion, true,
-      CORE::Conditions::geometry_type_volume));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_levelset_combustion =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN XFEM LEVELSET COMBUSTION VOL CONDITIONS", "XFEMLevelsetCombustion",
+          "XFEM Levelset Combustion", CORE::Conditions::XFEM_Levelset_Combustion, true,
+          CORE::Conditions::geometry_type_volume));
 
   for (unsigned i = 0; i < levelsetfield_components.size(); ++i)
   {
@@ -685,9 +693,10 @@ void INPAR::XFEM::SetValidConditions(
           INPAR::XFEM::Xfluid_Sided, INPAR::XFEM::Embedded_Sided, INPAR::XFEM::Mean))));
 
 
-  Teuchos::RCP<ConditionDefinition> xfem_surf_fluidfluid = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN XFEM FLUIDFLUID SURF CONDITIONS", "XFEMSurfFluidFluid", "XFEM Surf FluidFluid",
-      CORE::Conditions::XFEM_Surf_FluidFluid, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_surf_fluidfluid =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN XFEM FLUIDFLUID SURF CONDITIONS", "XFEMSurfFluidFluid", "XFEM Surf FluidFluid",
+          CORE::Conditions::XFEM_Surf_FluidFluid, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < xfluidfluidsurfcomponents.size(); ++i)
     xfem_surf_fluidfluid->AddComponent(xfluidfluidsurfcomponents[i]);
@@ -697,9 +706,10 @@ void INPAR::XFEM::SetValidConditions(
   //*----------------*/
   // Surface partitioned XFSI boundary conditions
 
-  Teuchos::RCP<ConditionDefinition> xfem_surf_fsi_part = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN XFEM FSI PARTITIONED SURF CONDITIONS", "XFEMSurfFSIPart", "XFEM Surf FSI Part",
-      CORE::Conditions::XFEM_Surf_FSIPart, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_surf_fsi_part =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN XFEM FSI PARTITIONED SURF CONDITIONS", "XFEMSurfFSIPart", "XFEM Surf FSI Part",
+          CORE::Conditions::XFEM_Surf_FSIPart, true, CORE::Conditions::geometry_type_surface));
 
   xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("COUPLINGID")));
   xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new INPUT::IntComponent("label")));
@@ -727,9 +737,10 @@ void INPAR::XFEM::SetValidConditions(
   //*----------------*/
   // Surface monolithic XFSI coupling conditions
 
-  Teuchos::RCP<ConditionDefinition> xfem_surf_fsi_mono = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN XFEM FSI MONOLITHIC SURF CONDITIONS", "XFEMSurfFSIMono", "XFEM Surf FSI Mono",
-      CORE::Conditions::XFEM_Surf_FSIMono, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_surf_fsi_mono =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN XFEM FSI MONOLITHIC SURF CONDITIONS", "XFEMSurfFSIMono", "XFEM Surf FSI Mono",
+          CORE::Conditions::XFEM_Surf_FSIMono, true, CORE::Conditions::geometry_type_surface));
 
   xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("COUPLINGID")));
   xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new INPUT::IntComponent("label")));
@@ -764,9 +775,10 @@ void INPAR::XFEM::SetValidConditions(
   //*----------------*/
   // Surface monolithic XFPI coupling conditions
 
-  Teuchos::RCP<ConditionDefinition> xfem_surf_fpi_mono = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN XFEM FPI MONOLITHIC SURF CONDITIONS", "XFEMSurfFPIMono", "XFEM Surf FPI Mono",
-      CORE::Conditions::XFEM_Surf_FPIMono, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_surf_fpi_mono =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN XFEM FPI MONOLITHIC SURF CONDITIONS", "XFEMSurfFPIMono", "XFEM Surf FPI Mono",
+          CORE::Conditions::XFEM_Surf_FPIMono, true, CORE::Conditions::geometry_type_surface));
 
   xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("COUPLINGID")));
   xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new INPUT::IntComponent("label")));
@@ -791,8 +803,9 @@ void INPAR::XFEM::SetValidConditions(
   //*----------------*/
   // Surface Weak Dirichlet conditions
 
-  Teuchos::RCP<ConditionDefinition> xfem_surf_wdbc = Teuchos::rcp(
-      new ConditionDefinition("DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS", "XFEMSurfWeakDirichlet",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_surf_wdbc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS", "XFEMSurfWeakDirichlet",
           "XFEM Surf Weak Dirichlet", CORE::Conditions::XFEM_Surf_Weak_Dirichlet, true,
           CORE::Conditions::geometry_type_surface));
 
@@ -824,9 +837,10 @@ void INPAR::XFEM::SetValidConditions(
   //*----------------*/
   // Surface Neumann conditions
 
-  Teuchos::RCP<ConditionDefinition> xfem_surf_neumann = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN XFEM NEUMANN SURF CONDITIONS", "XFEMSurfNeumann", "XFEM Surf Neumann",
-      CORE::Conditions::XFEM_Surf_Neumann, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_surf_neumann =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN XFEM NEUMANN SURF CONDITIONS",
+          "XFEMSurfNeumann", "XFEM Surf Neumann", CORE::Conditions::XFEM_Surf_Neumann, true,
+          CORE::Conditions::geometry_type_surface));
 
   xfem_surf_neumann->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("COUPLINGID")));
   xfem_surf_neumann->AddComponent(Teuchos::rcp(new INPUT::IntComponent("label")));
@@ -847,9 +861,10 @@ void INPAR::XFEM::SetValidConditions(
   //*----------------*/
   // Surface Navier Slip conditions
 
-  Teuchos::RCP<ConditionDefinition> xfem_surf_navier_slip = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN XFEM NAVIER SLIP SURF CONDITIONS", "XFEMSurfNavierSlip", "XFEM Surf Navier Slip",
-      CORE::Conditions::XFEM_Surf_Navier_Slip, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_surf_navier_slip =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN XFEM NAVIER SLIP SURF CONDITIONS", "XFEMSurfNavierSlip", "XFEM Surf Navier Slip",
+          CORE::Conditions::XFEM_Surf_Navier_Slip, true, CORE::Conditions::geometry_type_surface));
 
   xfem_surf_navier_slip->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("COUPLINGID")));
   xfem_surf_navier_slip->AddComponent(Teuchos::rcp(new INPUT::IntComponent("label")));
@@ -895,10 +910,10 @@ void INPAR::XFEM::SetValidConditions(
   //*----------------*/
   // Surface Navier Slip conditions
 
-  Teuchos::RCP<ConditionDefinition> xfem_surf_navier_slip_tpf =
-      Teuchos::rcp(new ConditionDefinition("DESIGN XFEM NAVIER SLIP TWO PHASE SURF CONDITIONS",
-          "XFEMSurfNavierSlipTwoPhase", "XFEM Surf Navier Slip",
-          CORE::Conditions::XFEM_Surf_Navier_Slip_Twophase, true,
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_surf_navier_slip_tpf =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN XFEM NAVIER SLIP TWO PHASE SURF CONDITIONS", "XFEMSurfNavierSlipTwoPhase",
+          "XFEM Surf Navier Slip", CORE::Conditions::XFEM_Surf_Navier_Slip_Twophase, true,
           CORE::Conditions::geometry_type_surface));
 
   xfem_surf_navier_slip_tpf->AddComponent(
@@ -951,10 +966,10 @@ void INPAR::XFEM::SetValidConditions(
 
   condlist.push_back(xfem_surf_navier_slip_tpf);
 
-  Teuchos::RCP<ConditionDefinition> xfem_navier_slip_robin_dirch_surf =
-      Teuchos::rcp(new ConditionDefinition("DESIGN XFEM ROBIN DIRICHLET SURF CONDITIONS",
-          "XFEMRobinDirichletSurf", "XFEM Robin Dirichlet Volume",
-          CORE::Conditions::XFEM_Robin_Dirichlet_Surf, true,
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_navier_slip_robin_dirch_surf =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN XFEM ROBIN DIRICHLET SURF CONDITIONS", "XFEMRobinDirichletSurf",
+          "XFEM Robin Dirichlet Volume", CORE::Conditions::XFEM_Robin_Dirichlet_Surf, true,
           CORE::Conditions::geometry_type_surface));
 
   // this implementation should be reviewed at some point as it requires these conditions
@@ -988,8 +1003,9 @@ void INPAR::XFEM::SetValidConditions(
 
   condlist.push_back(xfem_navier_slip_robin_dirch_surf);
 
-  Teuchos::RCP<ConditionDefinition> xfem_navier_slip_robin_neumann_surf = Teuchos::rcp(
-      new ConditionDefinition("DESIGN XFEM ROBIN NEUMANN SURF CONDITIONS", "XFEMRobinNeumannSurf",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> xfem_navier_slip_robin_neumann_surf =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN XFEM ROBIN NEUMANN SURF CONDITIONS", "XFEMRobinNeumannSurf",
           "XFEM Robin Neumann Volume", CORE::Conditions::XFEM_Robin_Neumann_Surf, true,
           CORE::Conditions::geometry_type_surface));
 

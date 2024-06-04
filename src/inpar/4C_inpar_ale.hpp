@@ -13,16 +13,12 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-
-namespace INPUT
-{
-  class ConditionDefinition;
-}
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
@@ -66,7 +62,8 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// Defines ale specific conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist);
+    void SetValidConditions(
+        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace ALE
 

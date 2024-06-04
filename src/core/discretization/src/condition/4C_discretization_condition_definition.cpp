@@ -10,7 +10,7 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "4C_io_condition_definition.hpp"
+#include "4C_discretization_condition_definition.hpp"
 
 #include "4C_io_line_parser.hpp"
 #include "4C_io_linecomponent.hpp"
@@ -29,9 +29,9 @@ FOUR_C_NAMESPACE_OPEN
  | Class ConditionDefinition                                                                      |
  * -----------------------------------------------------------------------------------------------*/
 
-INPUT::ConditionDefinition::ConditionDefinition(std::string sectionname, std::string conditionname,
-    std::string description, CORE::Conditions::ConditionType condtype, bool buildgeometry,
-    CORE::Conditions::GeometryType gtype)
+CORE::Conditions::ConditionDefinition::ConditionDefinition(std::string sectionname,
+    std::string conditionname, std::string description, CORE::Conditions::ConditionType condtype,
+    bool buildgeometry, CORE::Conditions::GeometryType gtype)
     : sectionname_(std::move(sectionname)),
       conditionname_(std::move(conditionname)),
       description_(std::move(description)),
@@ -44,7 +44,8 @@ INPUT::ConditionDefinition::ConditionDefinition(std::string sectionname, std::st
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void INPUT::ConditionDefinition::AddComponent(const Teuchos::RCP<INPUT::LineComponent>& c)
+void CORE::Conditions::ConditionDefinition::AddComponent(
+    const Teuchos::RCP<INPUT::LineComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -52,8 +53,8 @@ void INPUT::ConditionDefinition::AddComponent(const Teuchos::RCP<INPUT::LineComp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void INPUT::ConditionDefinition::Read(
-    DatFileReader& reader, std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>>& cmap)
+void CORE::Conditions::ConditionDefinition::Read(INPUT::DatFileReader& reader,
+    std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>>& cmap)
 {
   std::vector<const char*> section = reader.Section("--" + sectionname_);
 
@@ -128,7 +129,7 @@ void INPUT::ConditionDefinition::Read(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& INPUT::ConditionDefinition::Print(
+std::ostream& CORE::Conditions::ConditionDefinition::Print(
     std::ostream& stream, const DRT::Discretization* dis)
 {
   unsigned l = sectionname_.length();

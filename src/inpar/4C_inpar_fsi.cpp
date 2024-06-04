@@ -11,7 +11,7 @@
 
 #include "4C_inpar_fsi.hpp"
 
-#include "4C_io_condition_definition.hpp"
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -467,7 +467,8 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 }
 
 /*----------------------------------------------------------------------------*/
-void INPAR::FSI::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+void INPAR::FSI::SetValidConditions(
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
@@ -475,12 +476,14 @@ void INPAR::FSI::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
 
   fsicomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
 
-  Teuchos::RCP<ConditionDefinition> linefsi = Teuchos::rcp(
-      new ConditionDefinition("DESIGN FSI COUPLING LINE CONDITIONS", "FSICoupling", "FSI Coupling",
-          CORE::Conditions::FSICoupling, true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<ConditionDefinition> surffsi = Teuchos::rcp(
-      new ConditionDefinition("DESIGN FSI COUPLING SURF CONDITIONS", "FSICoupling", "FSI Coupling",
-          CORE::Conditions::FSICoupling, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linefsi =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN FSI COUPLING LINE CONDITIONS",
+          "FSICoupling", "FSI Coupling", CORE::Conditions::FSICoupling, true,
+          CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surffsi =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN FSI COUPLING SURF CONDITIONS",
+          "FSICoupling", "FSI Coupling", CORE::Conditions::FSICoupling, true,
+          CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < fsicomponents.size(); ++i)
   {
@@ -494,12 +497,14 @@ void INPAR::FSI::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   /*--------------------------------------------------------------------*/
   // FSI without sliding
 
-  Teuchos::RCP<ConditionDefinition> linefsins = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN FSI COUPLING NO SLIDE LINE CONDITIONS", "FSICouplingNoSlide", "FSI Coupling No Slide",
-      CORE::Conditions::FSICouplingNoSlide, true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<ConditionDefinition> surffsins = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN FSI COUPLING NO SLIDE SURF CONDITIONS", "FSICouplingNoSlide", "FSI Coupling No Slide",
-      CORE::Conditions::FSICouplingNoSlide, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linefsins = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN FSI COUPLING NO SLIDE LINE CONDITIONS",
+          "FSICouplingNoSlide", "FSI Coupling No Slide", CORE::Conditions::FSICouplingNoSlide, true,
+          CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surffsins = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN FSI COUPLING NO SLIDE SURF CONDITIONS",
+          "FSICouplingNoSlide", "FSI Coupling No Slide", CORE::Conditions::FSICouplingNoSlide, true,
+          CORE::Conditions::geometry_type_surface));
 
   condlist.push_back(linefsins);
   condlist.push_back(surffsins);
@@ -507,12 +512,12 @@ void INPAR::FSI::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   /*--------------------------------------------------------------------*/
   // FSI define centerdisp for sliding interfaces
 
-  Teuchos::RCP<ConditionDefinition> linefsicd =
-      Teuchos::rcp(new ConditionDefinition("DESIGN FSI COUPLING CENTER DISP LINE CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linefsicd = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN FSI COUPLING CENTER DISP LINE CONDITIONS",
           "FSICouplingCenterDisp", "FSI Coupling Center Disp",
           CORE::Conditions::FSICouplingCenterDisp, true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<ConditionDefinition> surffsicd =
-      Teuchos::rcp(new ConditionDefinition("DESIGN FSI COUPLING CENTER DISP SURF CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surffsicd = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN FSI COUPLING CENTER DISP SURF CONDITIONS",
           "FSICouplingCenterDisp", "FSI Coupling Center Disp",
           CORE::Conditions::FSICouplingCenterDisp, true, CORE::Conditions::geometry_type_surface));
 
@@ -529,9 +534,10 @@ void INPAR::FSI::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
       Teuchos::tuple<std::string>("structure", "fluid"),
       Teuchos::tuple<std::string>("structure", "fluid"))));
 
-  Teuchos::RCP<ConditionDefinition> surfsac = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN STRUCTURE ALE COUPLING SURF CONDITIONS", "StructAleCoupling", "StructAleCoupling",
-      CORE::Conditions::StructAleCoupling, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfsac =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN STRUCTURE ALE COUPLING SURF CONDITIONS", "StructAleCoupling", "StructAleCoupling",
+          CORE::Conditions::StructAleCoupling, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < saccomponents.size(); ++i) surfsac->AddComponent(saccomponents[i]);
 
@@ -547,14 +553,16 @@ void INPAR::FSI::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
       Teuchos::tuple<std::string>("structure", "fluid"),
       Teuchos::tuple<std::string>("structure", "fluid"))));
 
-  Teuchos::RCP<ConditionDefinition> surfsfv = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN STRUCTURE FLUID VOLUME COUPLING SURF CONDITIONS", "StructFluidSurfCoupling",
-      "StructFluidSurfCoupling", CORE::Conditions::StructFluidSurfCoupling, true,
-      CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<ConditionDefinition> volsfv =
-      Teuchos::rcp(new ConditionDefinition("DESIGN STRUCTURE FLUID VOLUME COUPLING VOL CONDITIONS",
-          "StructFluidVolCoupling", "StructFluidVolCoupling",
-          CORE::Conditions::StructFluidVolCoupling, false, CORE::Conditions::geometry_type_volume));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfsfv =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN STRUCTURE FLUID VOLUME COUPLING SURF CONDITIONS", "StructFluidSurfCoupling",
+          "StructFluidSurfCoupling", CORE::Conditions::StructFluidSurfCoupling, true,
+          CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volsfv =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN STRUCTURE FLUID VOLUME COUPLING VOL CONDITIONS", "StructFluidVolCoupling",
+          "StructFluidVolCoupling", CORE::Conditions::StructFluidVolCoupling, false,
+          CORE::Conditions::geometry_type_volume));
 
   for (unsigned i = 0; i < sfvcomponents.size(); ++i)
   {

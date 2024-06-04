@@ -443,8 +443,8 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteConditionsReference(
-      std::ostream &stream, const std::vector<Teuchos::RCP<INPUT::ConditionDefinition>> &condlist)
+  void WriteConditionsReference(std::ostream &stream,
+      const std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>> &condlist)
   {
     WriteLinktarget(stream, "prescribedconditionreference");
     write_header(stream, 0, "Prescribed Condition Reference");
@@ -457,7 +457,7 @@ namespace RTD
 
 
   void WriteSingleConditionReadTheDocs(
-      std::ostream &stream, const Teuchos::RCP<INPUT::ConditionDefinition> condition)
+      std::ostream &stream, const Teuchos::RCP<CORE::Conditions::ConditionDefinition> condition)
   {
     /* Each entry consists of a number of fields:
     - Part 1: link target and header

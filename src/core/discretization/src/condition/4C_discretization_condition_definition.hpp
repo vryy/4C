@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_IO_CONDITION_DEFINITION_HPP
-#define FOUR_C_IO_CONDITION_DEFINITION_HPP
+#ifndef FOUR_C_DISCRETIZATION_CONDITION_DEFINITION_HPP
+#define FOUR_C_DISCRETIZATION_CONDITION_DEFINITION_HPP
 
 #include "4C_config.hpp"
 
@@ -35,7 +35,7 @@ namespace DRT
   class Discretization;
 }  // namespace DRT
 
-namespace INPUT
+namespace CORE::Conditions
 {
 
   //--------------------------------------------------------------
@@ -91,8 +91,8 @@ namespace INPUT
       \param reader (i) the actual dat file reader that has access to the dat file
       \param cmap (o) the conditions we read here
      */
-    void Read(
-        DatFileReader& reader, std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>>& cmap);
+    void Read(INPUT::DatFileReader& reader,
+        std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>>& cmap);
 
     /// print my dat file section and possible conditions from the discretization
     std::ostream& Print(std::ostream& stream, const DRT::Discretization* dis = nullptr);
@@ -124,7 +124,7 @@ namespace INPUT
     std::vector<Teuchos::RCP<INPUT::LineComponent>> inputline_;
   };
 
-}  // namespace INPUT
+}  // namespace CORE::Conditions
 
 
 FOUR_C_NAMESPACE_CLOSE

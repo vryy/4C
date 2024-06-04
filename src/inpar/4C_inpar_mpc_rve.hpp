@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_io_condition_definition.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -68,7 +68,8 @@ namespace INPAR::RVE_MPC
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   /// set multi point constraint specific conditions
-  void SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist);
+  void SetValidConditions(
+      std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
 }  // namespace INPAR::RVE_MPC
 
 FOUR_C_NAMESPACE_CLOSE

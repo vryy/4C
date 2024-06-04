@@ -10,10 +10,10 @@
 
 #include "4C_inpar_beampotential.hpp"
 
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_inpar_beamcontact.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_inpar_tsi.hpp"
-#include "4C_io_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -144,23 +144,23 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
 }
 
 void INPAR::BEAMPOTENTIAL::SetValidConditions(
-    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
   /*-------------------------------------------------------------------*/
   // beam potential interaction: atom/charge density per unit length on LINE
-  Teuchos::RCP<ConditionDefinition> rigidsphere_potential_charge =
-      Teuchos::rcp(new ConditionDefinition("DESIGN POINT RIGIDSPHERE POTENTIAL CHARGE CONDITIONS",
-          "RigidspherePotentialPointCharge", "Rigidsphere_Potential_Point_Charge",
-          CORE::Conditions::RigidspherePotential_PointCharge, false,
-          CORE::Conditions::geometry_type_point));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> rigidsphere_potential_charge =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN POINT RIGIDSPHERE POTENTIAL CHARGE CONDITIONS", "RigidspherePotentialPointCharge",
+          "Rigidsphere_Potential_Point_Charge", CORE::Conditions::RigidspherePotential_PointCharge,
+          false, CORE::Conditions::geometry_type_point));
 
-  Teuchos::RCP<ConditionDefinition> beam_potential_line_charge =
-      Teuchos::rcp(new ConditionDefinition("DESIGN LINE BEAM POTENTIAL CHARGE CONDITIONS",
-          "BeamPotentialLineCharge", "Beam_Potential_Line_Charge_Density",
-          CORE::Conditions::BeamPotential_LineChargeDensity, false,
-          CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> beam_potential_line_charge =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN LINE BEAM POTENTIAL CHARGE CONDITIONS", "BeamPotentialLineCharge",
+          "Beam_Potential_Line_Charge_Density", CORE::Conditions::BeamPotential_LineChargeDensity,
+          false, CORE::Conditions::geometry_type_line));
 
   rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("POTLAW")));
   rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new INPUT::IntComponent("potlaw")));

@@ -12,9 +12,9 @@
 
 #include "4C_inpar_beaminteraction.hpp"
 
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_inpar_beam_to_solid.hpp"
 #include "4C_inpar_beamcontact.hpp"
-#include "4C_io_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -171,15 +171,16 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
 }
 
 void INPAR::BEAMINTERACTION::SetValidConditions(
-    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
   /*-------------------------------------------------------------------*/
   // beam potential interaction: atom/charge density per unit length on LINE
-  Teuchos::RCP<ConditionDefinition> beam_filament_condition = Teuchos::rcp(
-      new ConditionDefinition("DESIGN LINE BEAM FILAMENT CONDITIONS", "BeamLineFilamentCondition",
-          "Beam_Line_Filament_Condition", CORE::Conditions::FilamentBeamLineCondition, false,
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> beam_filament_condition =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN LINE BEAM FILAMENT CONDITIONS",
+          "BeamLineFilamentCondition", "Beam_Line_Filament_Condition",
+          CORE::Conditions::FilamentBeamLineCondition, false,
           CORE::Conditions::geometry_type_line));
 
   beam_filament_condition->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("ID")));
@@ -197,8 +198,8 @@ void INPAR::BEAMINTERACTION::SetValidConditions(
   condlist.push_back(beam_filament_condition);
 
   /*-------------------------------------------------------------------*/
-  Teuchos::RCP<ConditionDefinition> penalty_coupling_condition =
-      Teuchos::rcp(new ConditionDefinition("DESIGN POINT PENALTY COUPLING CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> penalty_coupling_condition = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN POINT PENALTY COUPLING CONDITIONS",
           "PenaltyPointCouplingCondition", "Couples beam nodes that lie on the same position",
           CORE::Conditions::PenaltyPointCouplingCondition, false,
           CORE::Conditions::geometry_type_point));

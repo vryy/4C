@@ -10,7 +10,7 @@
 
 #include "4C_inpar_poromultiphase.hpp"
 
-#include "4C_io_condition_definition.hpp"
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_utils_parameter_list.hpp"
 

@@ -13,7 +13,7 @@
 
 #include "4C_inpar_cardiovascular0d.hpp"
 
-#include "4C_io_condition_definition.hpp"
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -521,7 +521,7 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
 
 
 void INPAR::CARDIOVASCULAR0D::SetValidConditions(
-    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
@@ -529,8 +529,9 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Monolithic coupling of structure and a four-element windkessel - mhv 11/13
 
-  Teuchos::RCP<ConditionDefinition> cardiovascular0d4elementwindkesselcondition = Teuchos::rcp(
-      new ConditionDefinition("DESIGN SURF CARDIOVASCULAR 0D 4-ELEMENT WINDKESSEL CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> cardiovascular0d4elementwindkesselcondition =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN SURF CARDIOVASCULAR 0D 4-ELEMENT WINDKESSEL CONDITIONS",
           "Cardiovascular0D4ElementWindkesselStructureCond", "Surface Cardiovascular0D",
           CORE::Conditions::Cardiovascular0D4ElementWindkessel_Structure, true,
           CORE::Conditions::geometry_type_surface));
@@ -549,8 +550,9 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
   // Monolithic coupling of structure and an arterial cardiovascular 0D flow model accounting for
   // proximal and distal arterial pressure formulation proposed by Cristobal Bertoglio - mhv 03/14
 
-  Teuchos::RCP<ConditionDefinition> cardiovascular0darterialproxdistcond = Teuchos::rcp(
-      new ConditionDefinition("DESIGN SURF CARDIOVASCULAR 0D ARTERIAL PROX DIST CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> cardiovascular0darterialproxdistcond =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN SURF CARDIOVASCULAR 0D ARTERIAL PROX DIST CONDITIONS",
           "Cardiovascular0DArterialProxDistStructureCond",
           "Surface 0D cardiovascular arterial proximal and distal",
           CORE::Conditions::Cardiovascular0DArterialProxDist_Structure, true,
@@ -586,8 +588,9 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
   // Monolithic coupling of structure and a full closed-loop 0D cardiovascular flow model
   // (closed-loop circulatory system model) mhv 02/15
 
-  Teuchos::RCP<ConditionDefinition> cardiovascular0dsyspulcirculationcond = Teuchos::rcp(
-      new ConditionDefinition("DESIGN SURF CARDIOVASCULAR 0D SYS-PUL CIRCULATION CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> cardiovascular0dsyspulcirculationcond =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN SURF CARDIOVASCULAR 0D SYS-PUL CIRCULATION CONDITIONS",
           "Cardiovascular0DSysPulCirculationStructureCond",
           "Surface cardiovascular 0D sys pul circulation condition",
           CORE::Conditions::Cardiovascular0DSysPulCirculation_Structure, true,
@@ -610,13 +613,14 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
   // Monolithic coupling of structure and a full closed-loop 0D cardiovascular flow model
   // (closed-loop circulatory system model) mhv 02/15
 
-  Teuchos::RCP<ConditionDefinition> cardiovascularrespiratory0dsyspulperiphcirculationcond =
-      Teuchos::rcp(new ConditionDefinition(
-          "DESIGN SURF CARDIOVASCULAR RESPIRATORY 0D SYS-PUL PERIPH CIRCULATION CONDITIONS",
-          "CardiovascularRespiratory0DSysPulPeriphCirculationStructureCond",
-          "Surface 0D cardiovascular respiratory sys-pul periph circulation condition",
-          CORE::Conditions::CardiovascularRespiratory0DSysPulPeriphCirculation_Structure, true,
-          CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition>
+      cardiovascularrespiratory0dsyspulperiphcirculationcond =
+          Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+              "DESIGN SURF CARDIOVASCULAR RESPIRATORY 0D SYS-PUL PERIPH CIRCULATION CONDITIONS",
+              "CardiovascularRespiratory0DSysPulPeriphCirculationStructureCond",
+              "Surface 0D cardiovascular respiratory sys-pul periph circulation condition",
+              CORE::Conditions::CardiovascularRespiratory0DSysPulPeriphCirculation_Structure, true,
+              CORE::Conditions::geometry_type_surface));
 
   INPUT::AddNamedInt(cardiovascularrespiratory0dsyspulperiphcirculationcond, "id");
   cardiovascularrespiratory0dsyspulperiphcirculationcond->AddComponent(
@@ -636,8 +640,9 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
   // Monolithic coupling of structure and 0D cardiovascular flow models: Neumann coupling surface -
   // mhv 11/13
 
-  Teuchos::RCP<ConditionDefinition> cardiovascular0dstructurecouplingcond = Teuchos::rcp(
-      new ConditionDefinition("DESIGN SURF CARDIOVASCULAR 0D-STRUCTURE COUPLING CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> cardiovascular0dstructurecouplingcond =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN SURF CARDIOVASCULAR 0D-STRUCTURE COUPLING CONDITIONS",
           "SurfaceNeumannCardiovascular0D",
           "structure 0d cardiovascular coupling surface condition",
           CORE::Conditions::Cardiovascular0DStructureCoupling, true,

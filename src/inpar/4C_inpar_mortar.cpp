@@ -12,7 +12,7 @@
 
 #include "4C_inpar_mortar.hpp"
 
-#include "4C_io_condition_definition.hpp"
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -159,7 +159,7 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 }
 
 void INPAR::MORTAR::SetValidConditions(
-    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
   /*--------------------------------------------------------------------*/
@@ -211,12 +211,14 @@ void INPAR::MORTAR::SetValidConditions(
   contactcomponents.push_back(
       Teuchos::rcp(new INPUT::IntComponent("ConstitutiveLawID", {0, false, true, true})));
 
-  Teuchos::RCP<ConditionDefinition> linecontact = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN LINE MORTAR CONTACT CONDITIONS 2D", "Contact", "Line Contact Coupling",
-      CORE::Conditions::Contact, true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<ConditionDefinition> surfcontact = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN SURF MORTAR CONTACT CONDITIONS 3D", "Contact", "Surface Contact Coupling",
-      CORE::Conditions::Contact, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linecontact =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN LINE MORTAR CONTACT CONDITIONS 2D", "Contact", "Line Contact Coupling",
+          CORE::Conditions::Contact, true, CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfcontact =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN SURF MORTAR CONTACT CONDITIONS 3D", "Contact", "Surface Contact Coupling",
+          CORE::Conditions::Contact, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < contactcomponents.size(); ++i)
   {
@@ -240,12 +242,14 @@ void INPAR::MORTAR::SetValidConditions(
       "Inactive", Teuchos::tuple<std::string>("Inactive", "Active"),
       Teuchos::tuple<std::string>("Inactive", "Active"), true)));
 
-  Teuchos::RCP<ConditionDefinition> linemortar = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN LINE MORTAR COUPLING CONDITIONS 2D", "Mortar", "Line Mortar Coupling",
-      CORE::Conditions::Mortar, true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<ConditionDefinition> surfmortar = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN SURF MORTAR COUPLING CONDITIONS 3D", "Mortar", "Surface Mortar Coupling",
-      CORE::Conditions::Mortar, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linemortar =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN LINE MORTAR COUPLING CONDITIONS 2D", "Mortar", "Line Mortar Coupling",
+          CORE::Conditions::Mortar, true, CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfmortar =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN SURF MORTAR COUPLING CONDITIONS 3D", "Mortar", "Surface Mortar Coupling",
+          CORE::Conditions::Mortar, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < mortarcomponents.size(); ++i)
   {
@@ -263,13 +267,13 @@ void INPAR::MORTAR::SetValidConditions(
   mrtrsymcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("ONOFF")));
   mrtrsymcomponents.push_back(Teuchos::rcp(new INPUT::IntVectorComponent("onoff", 3)));
 
-  Teuchos::RCP<ConditionDefinition> linemrtrsym =
-      Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR SYMMETRY CONDITIONS 3D", "mrtrsym",
-          "Symmetry plane normal for 3D contact", CORE::Conditions::LineMrtrSym, true,
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linemrtrsym = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN LINE MORTAR SYMMETRY CONDITIONS 3D",
+          "mrtrsym", "Symmetry plane normal for 3D contact", CORE::Conditions::LineMrtrSym, true,
           CORE::Conditions::geometry_type_line));
 
-  Teuchos::RCP<ConditionDefinition> pointmrtrsym =
-      Teuchos::rcp(new ConditionDefinition("DESIGN POINT MORTAR SYMMETRY CONDITIONS 2D/3D",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointmrtrsym = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN POINT MORTAR SYMMETRY CONDITIONS 2D/3D",
           "mrtrsym", "Symmetry plane normal for 2D/3D contact", CORE::Conditions::PointMrtrSym,
           true, CORE::Conditions::geometry_type_point));
 
@@ -285,12 +289,13 @@ void INPAR::MORTAR::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // mortar edge/corner condition
 
-  Teuchos::RCP<ConditionDefinition> edgemrtr = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN LINE MORTAR EDGE CONDITIONS 3D", "mrtredge", "Geometrical edge for 3D contact",
-      CORE::Conditions::EdgeMrtr, true, CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> edgemrtr =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN LINE MORTAR EDGE CONDITIONS 3D", "mrtredge", "Geometrical edge for 3D contact",
+          CORE::Conditions::EdgeMrtr, true, CORE::Conditions::geometry_type_line));
 
-  Teuchos::RCP<ConditionDefinition> cornermrtr =
-      Teuchos::rcp(new ConditionDefinition("DESIGN POINT MORTAR CORNER CONDITIONS 2D/3D",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> cornermrtr = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN POINT MORTAR CORNER CONDITIONS 2D/3D",
           "mrtrcorner", "Geometrical corner for 2D/3D contact", CORE::Conditions::CornerMrtr, true,
           CORE::Conditions::geometry_type_point));
 
@@ -311,12 +316,12 @@ void INPAR::MORTAR::SetValidConditions(
         "Inactive", Teuchos::tuple<std::string>("Inactive", "Active"),
         Teuchos::tuple<std::string>("Inactive", "Active"), true)));
 
-    Teuchos::RCP<ConditionDefinition> linemortar =
-        Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR MULTI-COUPLING CONDITIONS 2D",
+    Teuchos::RCP<CORE::Conditions::ConditionDefinition> linemortar = Teuchos::rcp(
+        new CORE::Conditions::ConditionDefinition("DESIGN LINE MORTAR MULTI-COUPLING CONDITIONS 2D",
             "MortarMulti", "Line Mortar Multi-Coupling", CORE::Conditions::MortarMulti, true,
             CORE::Conditions::geometry_type_line));
-    Teuchos::RCP<ConditionDefinition> surfmortar =
-        Teuchos::rcp(new ConditionDefinition("DESIGN SURF MORTAR MULTI-COUPLING CONDITIONS 3D",
+    Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfmortar = Teuchos::rcp(
+        new CORE::Conditions::ConditionDefinition("DESIGN SURF MORTAR MULTI-COUPLING CONDITIONS 3D",
             "MortarMulti", "Surface Mortar Multi-Coupling", CORE::Conditions::MortarMulti, true,
             CORE::Conditions::geometry_type_surface));
 

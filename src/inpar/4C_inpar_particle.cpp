@@ -13,7 +13,7 @@
  *---------------------------------------------------------------------------*/
 #include "4C_inpar_particle.hpp"
 
-#include "4C_io_condition_definition.hpp"
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -542,7 +542,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
  | set the particle conditions                                sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
 void INPAR::PARTICLE::SetValidConditions(
-    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
@@ -553,9 +553,9 @@ void INPAR::PARTICLE::SetValidConditions(
   particlewallcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("MAT")));
   particlewallcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("MAT")));
 
-  Teuchos::RCP<ConditionDefinition> surfpartwall =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE PARTICLE WALL", "ParticleWall",
-          "Wall for particle interaction with (optional) material definition",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfpartwall =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURFACE PARTICLE WALL",
+          "ParticleWall", "Wall for particle interaction with (optional) material definition",
           CORE::Conditions::ParticleWall, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < particlewallcomponents.size(); ++i)

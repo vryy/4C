@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 #include "4C_inpar_s2i.hpp"
 
-#include "4C_io_condition_definition.hpp"
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -101,7 +101,8 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 /*------------------------------------------------------------------------*
  | set valid conditions for scatra-scatra interface coupling   fang 01/16 |
  *------------------------------------------------------------------------*/
-void INPAR::S2I::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+void INPAR::S2I::SetValidConditions(
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
@@ -109,16 +110,16 @@ void INPAR::S2I::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   // scatra-scatra interface mesh tying condition
   {
     // definition of scatra-scatra interface mesh tying line condition
-    auto s2imeshtyingline =
-        Teuchos::rcp(new ConditionDefinition("DESIGN S2I MESHTYING LINE CONDITIONS", "S2IMeshtying",
-            "Scatra-scatra line interface mesh tying", CORE::Conditions::S2IMeshtying, true,
-            CORE::Conditions::geometry_type_line));
+    auto s2imeshtyingline = Teuchos::rcp(
+        new CORE::Conditions::ConditionDefinition("DESIGN S2I MESHTYING LINE CONDITIONS",
+            "S2IMeshtying", "Scatra-scatra line interface mesh tying",
+            CORE::Conditions::S2IMeshtying, true, CORE::Conditions::geometry_type_line));
 
     // definition of scatra-scatra interface mesh tying surface condition
-    auto s2imeshtyingsurf =
-        Teuchos::rcp(new ConditionDefinition("DESIGN S2I MESHTYING SURF CONDITIONS", "S2IMeshtying",
-            "Scatra-scatra surface interface mesh tying", CORE::Conditions::S2IMeshtying, true,
-            CORE::Conditions::geometry_type_surface));
+    auto s2imeshtyingsurf = Teuchos::rcp(
+        new CORE::Conditions::ConditionDefinition("DESIGN S2I MESHTYING SURF CONDITIONS",
+            "S2IMeshtying", "Scatra-scatra surface interface mesh tying",
+            CORE::Conditions::S2IMeshtying, true, CORE::Conditions::geometry_type_surface));
 
     // equip condition definitions with input file line components
     std::vector<Teuchos::RCP<INPUT::LineComponent>> s2imeshtyingcomponents;
@@ -146,17 +147,17 @@ void INPAR::S2I::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   // scatra-scatra interface no evaluation condition
   {
     // definition of scatra-scatra interface no evaluation line condition
-    auto s2inoevaluationline = Teuchos::rcp(
-        new ConditionDefinition("DESIGN S2I NO EVALUATION LINE CONDITIONS", "S2INoEvaluation",
-            "Scatra-scatra interface no evaluation line condition. This condition can be used to "
-            "deactivate the evaluation of the corresponding `S2IKinetics` condition. Another usage "
-            "is in coupled algorithms, where a specific `S2IKinetics` condition should not be "
-            "evaluated within the scalar transport framework, as it already evaluated elsewhere. "
-            "One example is the SSI contact.",
-            CORE::Conditions::S2INoEvaluation, true, CORE::Conditions::geometry_type_line));
+    auto s2inoevaluationline = Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+        "DESIGN S2I NO EVALUATION LINE CONDITIONS", "S2INoEvaluation",
+        "Scatra-scatra interface no evaluation line condition. This condition can be used to "
+        "deactivate the evaluation of the corresponding `S2IKinetics` condition. Another usage "
+        "is in coupled algorithms, where a specific `S2IKinetics` condition should not be "
+        "evaluated within the scalar transport framework, as it already evaluated elsewhere. "
+        "One example is the SSI contact.",
+        CORE::Conditions::S2INoEvaluation, true, CORE::Conditions::geometry_type_line));
 
     // definition of scatra-scatra interface no evaluation surface condition
-    auto s2inoevaluationsurf = Teuchos::rcp(new ConditionDefinition(
+    auto s2inoevaluationsurf = Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
         "DESIGN S2I NO EVALUATION SURF CONDITIONS", "S2INoEvaluation",
         "Scatra-scatra interface no evaluation surface condition. This condition can be used to "
         "deactivate the evaluation of the corresponding `S2IKinetics` condition. Another usage "
@@ -191,25 +192,25 @@ void INPAR::S2I::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   // scatra-scatra interface kinetics condition
   {
     // definition of scatra-scatra interface kinetics point condition
-    auto s2ikineticspoint =
-        Teuchos::rcp(new ConditionDefinition("DESIGN S2I KINETICS POINT CONDITIONS", "S2IKinetics",
-            "Scatra-scatra line interface kinetics", CORE::Conditions::S2IKinetics, true,
-            CORE::Conditions::geometry_type_point));
+    auto s2ikineticspoint = Teuchos::rcp(
+        new CORE::Conditions::ConditionDefinition("DESIGN S2I KINETICS POINT CONDITIONS",
+            "S2IKinetics", "Scatra-scatra line interface kinetics", CORE::Conditions::S2IKinetics,
+            true, CORE::Conditions::geometry_type_point));
 
     // definition of scatra-scatra interface kinetics line condition
-    auto s2ikineticsline =
-        Teuchos::rcp(new ConditionDefinition("DESIGN S2I KINETICS LINE CONDITIONS", "S2IKinetics",
-            "Scatra-scatra line interface kinetics", CORE::Conditions::S2IKinetics, true,
-            CORE::Conditions::geometry_type_line));
+    auto s2ikineticsline = Teuchos::rcp(
+        new CORE::Conditions::ConditionDefinition("DESIGN S2I KINETICS LINE CONDITIONS",
+            "S2IKinetics", "Scatra-scatra line interface kinetics", CORE::Conditions::S2IKinetics,
+            true, CORE::Conditions::geometry_type_line));
 
     // definition of scatra-scatra interface kinetics surface condition
-    auto s2ikineticssurf =
-        Teuchos::rcp(new ConditionDefinition("DESIGN S2I KINETICS SURF CONDITIONS", "S2IKinetics",
-            "Scatra-scatra surface interface kinetics", CORE::Conditions::S2IKinetics, true,
-            CORE::Conditions::geometry_type_surface));
+    auto s2ikineticssurf = Teuchos::rcp(
+        new CORE::Conditions::ConditionDefinition("DESIGN S2I KINETICS SURF CONDITIONS",
+            "S2IKinetics", "Scatra-scatra surface interface kinetics",
+            CORE::Conditions::S2IKinetics, true, CORE::Conditions::geometry_type_surface));
 
     // Macro-micro coupling condition for micro scale in multi-scale scalar transport problems
-    auto multiscalecouplingpoint = Teuchos::rcp(new ConditionDefinition(
+    auto multiscalecouplingpoint = Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
         "DESIGN SCATRA MULTI-SCALE COUPLING POINT CONDITIONS", "ScatraMultiScaleCoupling",
         "Scalar transport multi-scale coupling condition",
         CORE::Conditions::ScatraMultiScaleCoupling, false, CORE::Conditions::geometry_type_point));
@@ -590,15 +591,15 @@ void INPAR::S2I::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   {
     // definition of scatra-scatra interface coupling line condition involving interface layer
     // growth
-    auto s2igrowthline =
-        Teuchos::rcp(new ConditionDefinition("DESIGN S2I KINETICS GROWTH LINE CONDITIONS",
+    auto s2igrowthline = Teuchos::rcp(
+        new CORE::Conditions::ConditionDefinition("DESIGN S2I KINETICS GROWTH LINE CONDITIONS",
             "S2IKineticsGrowth", "Scatra-scatra line interface layer growth kinetics",
             CORE::Conditions::S2IKineticsGrowth, true, CORE::Conditions::geometry_type_line));
 
     // definition of scatra-scatra interface coupling surface condition involving interface layer
     // growth
-    auto s2igrowthsurf =
-        Teuchos::rcp(new ConditionDefinition("DESIGN S2I KINETICS GROWTH SURF CONDITIONS",
+    auto s2igrowthsurf = Teuchos::rcp(
+        new CORE::Conditions::ConditionDefinition("DESIGN S2I KINETICS GROWTH SURF CONDITIONS",
             "S2IKineticsGrowth", "Scatra-scatra surface interface layer growth kinetics",
             CORE::Conditions::S2IKineticsGrowth, true, CORE::Conditions::geometry_type_surface));
 
@@ -665,8 +666,8 @@ void INPAR::S2I::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   /*--------------------------------------------------------------------*/
   // scatra-scatra interface with micro-macro coupling for space-charge layers
   {
-    auto s2isclcond =
-        Teuchos::rcp(new ConditionDefinition("DESIGN S2I SCL COUPLING SURF CONDITIONS",
+    auto s2isclcond = Teuchos::rcp(
+        new CORE::Conditions::ConditionDefinition("DESIGN S2I SCL COUPLING SURF CONDITIONS",
             "S2ISCLCoupling", "Scatra-scatra surface with SCL micro-macro coupling between",
             CORE::Conditions::S2ISCLCoupling, true, CORE::Conditions::geometry_type_surface));
 

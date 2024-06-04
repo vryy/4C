@@ -13,8 +13,8 @@
 #include "4C_config.hpp"
 
 #include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_inpar_validparameters.hpp"
-#include "4C_io_condition_definition.hpp"
 #include "4C_mat_materialdefinition.hpp"
 
 #include <Teuchos_RCP.hpp>
@@ -211,8 +211,8 @@ namespace RTD
    *  @param[in] stream restructuredText file for prescribed conditions.
    *  @param[in] condlist List of prescribed conditions to be written to that file
    */
-  void WriteConditionsReference(
-      std::ostream& stream, const std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist);
+  void WriteConditionsReference(std::ostream& stream,
+      const std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
 
   /*!
    *  write a single condition including explanations (if available) to a .rst file for
@@ -222,7 +222,7 @@ namespace RTD
    *  @param[in] condition Single prescribed condition to be written to that file
    */
   void WriteSingleConditionReadTheDocs(
-      std::ostream& stream, const Teuchos::RCP<INPUT::ConditionDefinition> condition);
+      std::ostream& stream, const Teuchos::RCP<CORE::Conditions::ConditionDefinition> condition);
 
   /*!
    *  write a single contact law including explanations (if available) to a .rst file for

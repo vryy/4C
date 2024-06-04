@@ -12,8 +12,8 @@
 
 #include "4C_inpar_bio.hpp"
 
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_inpar_validparameters.hpp"
-#include "4C_io_condition_definition.hpp"
 #include "4C_io_linecomponent.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -82,15 +82,15 @@ void INPAR::ARTNET::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
 
 void INPAR::ARTNET::SetValidConditions(
-    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
   /*--------------------------------------------------------------------*/
   // 1D-Artery connector condition
 
-  Teuchos::RCP<ConditionDefinition> art_connection_bc =
-      Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY JUNCTION CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> art_connection_bc = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN NODE 1D ARTERY JUNCTION CONDITIONS",
           "ArtJunctionCond", "Artery junction boundary condition",
           CORE::Conditions::ArtJunctionCond, true, CORE::Conditions::geometry_type_point));
 
@@ -102,10 +102,11 @@ void INPAR::ARTNET::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Export 1D-Arterial nefrk in gnuplot format
 
-  Teuchos::RCP<ConditionDefinition> art_write_gnuplot_c =
-      Teuchos::rcp(new ConditionDefinition("DESIGN LINE EXPORT 1D-ARTERIAL NETWORK GNUPLOT FORMAT",
-          "ArtWriteGnuplotCond", "Artery write gnuplot format condition",
-          CORE::Conditions::ArtWriteGnuplotCond, false, CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> art_write_gnuplot_c =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN LINE EXPORT 1D-ARTERIAL NETWORK GNUPLOT FORMAT", "ArtWriteGnuplotCond",
+          "Artery write gnuplot format condition", CORE::Conditions::ArtWriteGnuplotCond, false,
+          CORE::Conditions::geometry_type_line));
 
   art_write_gnuplot_c->AddComponent(Teuchos::rcp(new INPUT::IntComponent("ArteryNumber")));
 
@@ -114,8 +115,8 @@ void INPAR::ARTNET::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // 1D artery prescribed BC
 
-  Teuchos::RCP<ConditionDefinition> art_in_bc =
-      Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY PRESCRIBED CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> art_in_bc = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN NODE 1D ARTERY PRESCRIBED CONDITIONS",
           "ArtPrescribedCond", "Artery prescribed boundary condition",
           CORE::Conditions::ArtPrescribedCond, true, CORE::Conditions::geometry_type_point));
 
@@ -138,9 +139,10 @@ void INPAR::ARTNET::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   // 1D artery reflective BC
-  Teuchos::RCP<ConditionDefinition> art_rf_bc = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN NODE 1D ARTERY REFLECTIVE CONDITIONS", "ArtRfCond", "Artery reflection condition",
-      CORE::Conditions::ArtRfCond, true, CORE::Conditions::geometry_type_point));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> art_rf_bc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN NODE 1D ARTERY REFLECTIVE CONDITIONS", "ArtRfCond", "Artery reflection condition",
+          CORE::Conditions::ArtRfCond, true, CORE::Conditions::geometry_type_point));
 
   std::vector<Teuchos::RCP<INPUT::LineComponent>> artrfcomponents;
   artrfcomponents.push_back(Teuchos::rcp(new INPUT::RealVectorComponent("val", 1)));
@@ -152,9 +154,10 @@ void INPAR::ARTNET::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   // 1D artery windkessel BC
-  Teuchos::RCP<ConditionDefinition> art_wk_bc = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN NODE 1D ARTERY WINDKESSEL CONDITIONS", "ArtWkCond", "Artery windkessel condition",
-      CORE::Conditions::ArtWkCond, true, CORE::Conditions::geometry_type_point));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> art_wk_bc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN NODE 1D ARTERY WINDKESSEL CONDITIONS", "ArtWkCond", "Artery windkessel condition",
+          CORE::Conditions::ArtWkCond, true, CORE::Conditions::geometry_type_point));
 
   std::vector<Teuchos::RCP<INPUT::LineComponent>> artwkcomponents;
 
@@ -176,8 +179,8 @@ void INPAR::ARTNET::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // 1D artery in/out condition
 
-  Teuchos::RCP<ConditionDefinition> art_in_outlet_bc =
-      Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY IN_OUTLET CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> art_in_outlet_bc = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN NODE 1D ARTERY IN_OUTLET CONDITIONS",
           "ArtInOutCond", "Artery terminal in_outlet condition", CORE::Conditions::ArtInOutletCond,
           true, CORE::Conditions::geometry_type_point));
 
@@ -188,10 +191,11 @@ void INPAR::ARTNET::SetValidConditions(
   condlist.push_back(art_in_outlet_bc);
   /*--------------------------------------------------------------------*/
   // 1D artery scalar transport condition
-  Teuchos::RCP<ConditionDefinition> art_scatra_bc =
-      Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY SCATRA PRESCRIBED CONDITIONS",
-          "ArtPrescribedScatraCond", "Artery prescribed scatra boundary condition",
-          CORE::Conditions::ArtPrescribedScatraCond, true, CORE::Conditions::geometry_type_point));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> art_scatra_bc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN NODE 1D ARTERY SCATRA PRESCRIBED CONDITIONS", "ArtPrescribedScatraCond",
+          "Artery prescribed scatra boundary condition", CORE::Conditions::ArtPrescribedScatraCond,
+          true, CORE::Conditions::geometry_type_point));
 
   std::vector<Teuchos::RCP<INPUT::LineComponent>> artscatracomponents;
   artscatracomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("val")));
@@ -205,10 +209,11 @@ void INPAR::ARTNET::SetValidConditions(
   // 1D artery-to-porofluid coupling BC
   std::vector<Teuchos::RCP<INPUT::LineComponent>> artcoupcomponents;
 
-  Teuchos::RCP<ConditionDefinition> artcoup = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN NODE 1D ARTERY TO POROFLUID COUPLING CONDITIONS", "ArtPorofluidCouplConNodebased",
-      "Artery coupling with porofluid", CORE::Conditions::ArtPorofluidCouplingCondNodebased, true,
-      CORE::Conditions::geometry_type_point));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> artcoup =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN NODE 1D ARTERY TO POROFLUID COUPLING CONDITIONS", "ArtPorofluidCouplConNodebased",
+          "Artery coupling with porofluid", CORE::Conditions::ArtPorofluidCouplingCondNodebased,
+          true, CORE::Conditions::geometry_type_point));
 
   artcoupcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("COUPID")));
   artcoupcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
@@ -223,10 +228,11 @@ void INPAR::ARTNET::SetValidConditions(
   // 1D artery-to-scatra coupling BC
   std::vector<Teuchos::RCP<INPUT::LineComponent>> artscatracoupcomponents;
 
-  Teuchos::RCP<ConditionDefinition> artscatracoup = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN NODE 1D ARTERY TO SCATRA COUPLING CONDITIONS", "ArtScatraCouplConNodebased",
-      "Artery coupling with porofluid", CORE::Conditions::ArtScatraCouplingCondNodebased, true,
-      CORE::Conditions::geometry_type_point));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> artscatracoup =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN NODE 1D ARTERY TO SCATRA COUPLING CONDITIONS", "ArtScatraCouplConNodebased",
+          "Artery coupling with porofluid", CORE::Conditions::ArtScatraCouplingCondNodebased, true,
+          CORE::Conditions::geometry_type_point));
 
   artscatracoupcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("COUPID")));
   artscatracoupcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
@@ -240,8 +246,9 @@ void INPAR::ARTNET::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   // 1D artery-to-porofluid coupling BC Node-To-Point
-  Teuchos::RCP<ConditionDefinition> artcoup_ntp = Teuchos::rcp(
-      new ConditionDefinition("DESIGN 1D ARTERY/AIRWAY TO POROFLUID NONCONF COUPLING CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> artcoup_ntp =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN 1D ARTERY/AIRWAY TO POROFLUID NONCONF COUPLING CONDITIONS",
           "ArtPorofluidCouplConNodeToPoint", "Artery coupling with porofluid nonconf",
           CORE::Conditions::ArtPorofluidCouplingCondNodeToPoint, true,
           CORE::Conditions::geometry_type_point));
@@ -260,8 +267,9 @@ void INPAR::ARTNET::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   // 1D artery-to-scatra coupling BC Node-To-Point
-  Teuchos::RCP<ConditionDefinition> artscatracoup_ntp = Teuchos::rcp(
-      new ConditionDefinition("DESIGN 1D ARTERY/AIRWAY TO SCATRA NONCONF COUPLING CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> artscatracoup_ntp =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN 1D ARTERY/AIRWAY TO SCATRA NONCONF COUPLING CONDITIONS",
           "ArtScatraCouplConNodeToPoint", "Artery coupling with scatra nonconf",
           CORE::Conditions::ArtScatraCouplingCondNodeToPoint, true,
           CORE::Conditions::geometry_type_point));
@@ -311,7 +319,7 @@ void INPAR::BIOFILM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
 
 
 void INPAR::BIOFILM::SetValidConditions(
-    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
@@ -322,12 +330,14 @@ void INPAR::BIOFILM::SetValidConditions(
 
   biogrcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
 
-  Teuchos::RCP<ConditionDefinition> linebiogr = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN BIOFILM GROWTH COUPLING LINE CONDITIONS", "BioGrCoupling", "BioGrCoupling",
-      CORE::Conditions::BioGrCoupling, true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<ConditionDefinition> surfbiogr = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN BIOFILM GROWTH COUPLING SURF CONDITIONS", "BioGrCoupling", "BioGrCoupling",
-      CORE::Conditions::BioGrCoupling, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linebiogr =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN BIOFILM GROWTH COUPLING LINE CONDITIONS", "BioGrCoupling", "BioGrCoupling",
+          CORE::Conditions::BioGrCoupling, true, CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfbiogr =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN BIOFILM GROWTH COUPLING SURF CONDITIONS", "BioGrCoupling", "BioGrCoupling",
+          CORE::Conditions::BioGrCoupling, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < biogrcomponents.size(); ++i)
   {
@@ -390,16 +400,17 @@ void INPAR::REDAIRWAYS::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
 
 
 void INPAR::REDAIRWAYS::SetValidConditions(
-    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
   /*--------------------------------------------------------------------*/
   // 3-D/reduced-D coupling boundary condition
-  Teuchos::RCP<ConditionDefinition> art_red_to_3d_bc =
-      Teuchos::rcp(new ConditionDefinition("DESIGN NODE REDUCED D To 3D FLOW COUPLING CONDITIONS",
-          "Art_redD_3D_CouplingCond", "Artery reduced D 3D coupling condition",
-          CORE::Conditions::ArtRedTo3DCouplingCond, true, CORE::Conditions::geometry_type_point));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> art_red_to_3d_bc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN NODE REDUCED D To 3D FLOW COUPLING CONDITIONS", "Art_redD_3D_CouplingCond",
+          "Artery reduced D 3D coupling condition", CORE::Conditions::ArtRedTo3DCouplingCond, true,
+          CORE::Conditions::geometry_type_point));
 
   art_red_to_3d_bc->AddComponent(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
 
@@ -417,10 +428,11 @@ void INPAR::REDAIRWAYS::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   // 3-D/reduced-D coupling boundary condition
-  Teuchos::RCP<ConditionDefinition> art_3d_to_red_bc =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SURF 3D To REDUCED D FLOW COUPLING CONDITIONS",
-          "Art_3D_redD_CouplingCond", "Artery 3D reduced D coupling condition",
-          CORE::Conditions::Art3DToRedCouplingCond, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> art_3d_to_red_bc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN SURF 3D To REDUCED D FLOW COUPLING CONDITIONS", "Art_3D_redD_CouplingCond",
+          "Artery 3D reduced D coupling condition", CORE::Conditions::Art3DToRedCouplingCond, true,
+          CORE::Conditions::geometry_type_surface));
 
   art_3d_to_red_bc->AddComponent(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
 
@@ -439,8 +451,8 @@ void INPAR::REDAIRWAYS::SetValidConditions(
 
   redairtiscomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
 
-  Teuchos::RCP<ConditionDefinition> surfredairtis =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SURF TISSUE REDAIRWAY CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfredairtis = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN SURF TISSUE REDAIRWAY CONDITIONS",
           "SurfaceNeumann", "tissue RedAirway coupling surface condition",
           CORE::Conditions::RedAirwayTissue, true, CORE::Conditions::geometry_type_surface));
 
@@ -459,8 +471,8 @@ void INPAR::REDAIRWAYS::SetValidConditions(
 
   noderedairtiscomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
 
-  Teuchos::RCP<ConditionDefinition> noderedairtis =
-      Teuchos::rcp(new ConditionDefinition("DESIGN NODE TISSUE REDAIRWAY CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> noderedairtis = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN NODE TISSUE REDAIRWAY CONDITIONS",
           "RedAirwayPrescribedCond", "tissue RedAirway coupling node condition",
           CORE::Conditions::RedAirwayNodeTissue, true, CORE::Conditions::geometry_type_point));
 
@@ -477,9 +489,10 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Prescribed BC for reduced dimensional airways
 
-  Teuchos::RCP<ConditionDefinition> raw_in_bc =
-      Teuchos::rcp(new ConditionDefinition("DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS",
-          "RedAirwayPrescribedCond", "Reduced d airway prescribed boundary condition",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> raw_in_bc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS", "RedAirwayPrescribedCond",
+          "Reduced d airway prescribed boundary condition",
           CORE::Conditions::RedAirwayPrescribedCond, true, CORE::Conditions::geometry_type_point));
 
   raw_in_bc->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent("boundarycond", "flow",
@@ -504,11 +517,13 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   // Prescribed BC for reduced dimensional airways switching between different types of boundary
   // conditions
 
-  Teuchos::RCP<ConditionDefinition> raw_in_switch_bc = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN NODE Reduced D AIRWAYS SWITCH FLOW PRESSURE CONDITIONS",
-      "RedAirwaySwitchFlowPressureCond", "Reduced d airway switch flow pressure boundary condition",
-      CORE::Conditions::RedAirwayPrescribedSwitchCond, true,
-      CORE::Conditions::geometry_type_point));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> raw_in_switch_bc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN NODE Reduced D AIRWAYS SWITCH FLOW PRESSURE CONDITIONS",
+          "RedAirwaySwitchFlowPressureCond",
+          "Reduced d airway switch flow pressure boundary condition",
+          CORE::Conditions::RedAirwayPrescribedSwitchCond, true,
+          CORE::Conditions::geometry_type_point));
 
   INPUT::AddNamedInt(raw_in_switch_bc, "FUNCT_ID_FLOW");
   INPUT::AddNamedInt(raw_in_switch_bc, "FUNCT_ID_PRESSURE");
@@ -519,12 +534,13 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Prescribed BC for reduced dimensional airways external pressure
 
-  Teuchos::RCP<ConditionDefinition> raw_pext_bc = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN LINE Reduced D AIRWAYS PRESCRIBED EXTERNAL PRESSURE CONDITIONS",
-      "RedAirwayPrescribedExternalPressure",
-      "Reduced d airway prescribed external pressure boundary condition",
-      CORE::Conditions::RedAirwayPrescribedExternalPressure, true,
-      CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> raw_pext_bc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN LINE Reduced D AIRWAYS PRESCRIBED EXTERNAL PRESSURE CONDITIONS",
+          "RedAirwayPrescribedExternalPressure",
+          "Reduced d airway prescribed external pressure boundary condition",
+          CORE::Conditions::RedAirwayPrescribedExternalPressure, true,
+          CORE::Conditions::geometry_type_line));
 
   raw_pext_bc->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent("boundarycond",
       "ExternalPressure", Teuchos::tuple<std::string>("ExternalPressure"),
@@ -545,8 +561,9 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Prescribed BC for reduced dimensional scalar transport in airways
 
-  Teuchos::RCP<ConditionDefinition> raw_in_scatra_bc = Teuchos::rcp(
-      new ConditionDefinition("DESIGN NODE Reduced D AIRWAYS PRESCRIBED SCATRA CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> raw_in_scatra_bc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN NODE Reduced D AIRWAYS PRESCRIBED SCATRA CONDITIONS",
           "RedAirwayPrescribedScatraCond", "Reduced d airway prescribed scatra boundary condition",
           CORE::Conditions::RedAirwayPrescribedScatraCond, true,
           CORE::Conditions::geometry_type_point));
@@ -565,10 +582,12 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Prescribed BC for initial values of the scalar transport in reduced dimensional airways
 
-  Teuchos::RCP<ConditionDefinition> raw_int_scatra_bc = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN LINE Reduced D AIRWAYS INITIAL SCATRA CONDITIONS", "RedAirwayInitialScatraCond",
-      "Reduced d airway initial scatra boundary condition",
-      CORE::Conditions::RedAirwayInitialScatraCond, true, CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> raw_int_scatra_bc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN LINE Reduced D AIRWAYS INITIAL SCATRA CONDITIONS", "RedAirwayInitialScatraCond",
+          "Reduced d airway initial scatra boundary condition",
+          CORE::Conditions::RedAirwayInitialScatraCond, true,
+          CORE::Conditions::geometry_type_line));
 
   raw_int_scatra_bc->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent("scalar", "O2",
       Teuchos::tuple<std::string>("O2", "CO2"), Teuchos::tuple<std::string>("O2", "CO2"), true)));
@@ -578,10 +597,11 @@ void INPAR::REDAIRWAYS::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   // Reduced D airway Scatra condition for regions of scatra exchange
-  Teuchos::RCP<ConditionDefinition> scatra_exchange_cond = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN LINE Reduced D AIRWAYS SCATRA EXCHANGE CONDITIONS", "RedAirwayScatraExchangeCond",
-      "scatra exchange condition", CORE::Conditions::RedAirwayScatraExchangeCond, true,
-      CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> scatra_exchange_cond =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN LINE Reduced D AIRWAYS SCATRA EXCHANGE CONDITIONS", "RedAirwayScatraExchangeCond",
+          "scatra exchange condition", CORE::Conditions::RedAirwayScatraExchangeCond, true,
+          CORE::Conditions::geometry_type_line));
 
   scatra_exchange_cond->AddComponent(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
 
@@ -589,18 +609,19 @@ void INPAR::REDAIRWAYS::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   // Reduced D airway Scatra condition for regions with hemoglobin
-  Teuchos::RCP<ConditionDefinition> scatra_hemoglobin_cond = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN LINE Reduced D AIRWAYS HEMOGLOBIN CONDITIONS", "RedAirwayScatraHemoglobinCond",
-      "scatra hemoglobin condition", CORE::Conditions::RedAirwayScatraHemoglobinCond, false,
-      CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> scatra_hemoglobin_cond =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN LINE Reduced D AIRWAYS HEMOGLOBIN CONDITIONS", "RedAirwayScatraHemoglobinCond",
+          "scatra hemoglobin condition", CORE::Conditions::RedAirwayScatraHemoglobinCond, false,
+          CORE::Conditions::geometry_type_line));
 
   INPUT::AddNamedReal(scatra_hemoglobin_cond, "INITIAL_CONCENTRATION");
   condlist.push_back(scatra_hemoglobin_cond);
 
   /*--------------------------------------------------------------------*/
   // Reduced D airway Scatra condition for regions with hemoglobin
-  Teuchos::RCP<ConditionDefinition> scatra_air_cond =
-      Teuchos::rcp(new ConditionDefinition("DESIGN LINE Reduced D AIRWAYS AIR CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> scatra_air_cond = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN LINE Reduced D AIRWAYS AIR CONDITIONS",
           "RedAirwayScatraAirCond", "scatra air condition",
           CORE::Conditions::RedAirwayScatraAirCond, false, CORE::Conditions::geometry_type_line));
 
@@ -609,19 +630,21 @@ void INPAR::REDAIRWAYS::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   // Reduced D airway Scatra condition for regions with hemoglobin
-  Teuchos::RCP<ConditionDefinition> scatra_capillary_cond = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN LINE Reduced D AIRWAYS CAPILLARY CONDITIONS", "RedAirwayScatraCapillaryCond",
-      "scatra capillary condition", CORE::Conditions::RedAirwayScatraCapillaryCond, false,
-      CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> scatra_capillary_cond =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN LINE Reduced D AIRWAYS CAPILLARY CONDITIONS", "RedAirwayScatraCapillaryCond",
+          "scatra capillary condition", CORE::Conditions::RedAirwayScatraCapillaryCond, false,
+          CORE::Conditions::geometry_type_line));
 
   condlist.push_back(scatra_capillary_cond);
 
   /*--------------------------------------------------------------------*/
   // Prescribed Ventilator BC for reduced dimensional airways
 
-  Teuchos::RCP<ConditionDefinition> raw_vent_bc =
-      Teuchos::rcp(new ConditionDefinition("DESIGN NODE Reduced D AIRWAYS VENTILATOR CONDITIONS",
-          "RedAirwayVentilatorCond", "Reduced d airway prescribed ventilator condition",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> raw_vent_bc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN NODE Reduced D AIRWAYS VENTILATOR CONDITIONS", "RedAirwayVentilatorCond",
+          "Reduced d airway prescribed ventilator condition",
           CORE::Conditions::RedAirwayVentilatorCond, true, CORE::Conditions::geometry_type_point));
 
   raw_vent_bc->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent("phase1", "flow",
@@ -659,12 +682,13 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Prescribed volume dependent pleural pressure for reduced dimensional airways
 
-  Teuchos::RCP<ConditionDefinition> raw_volPpl_bc = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN LINE REDUCED D AIRWAYS VOL DEPENDENT PLEURAL PRESSURE CONDITIONS",
-      "RedAirwayVolDependentPleuralPressureCond",
-      "Reduced D airways volume-dependent peural pressure condition",
-      CORE::Conditions::RedAirwayVolDependentPleuralPressureCond, true,
-      CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> raw_volPpl_bc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN LINE REDUCED D AIRWAYS VOL DEPENDENT PLEURAL PRESSURE CONDITIONS",
+          "RedAirwayVolDependentPleuralPressureCond",
+          "Reduced D airways volume-dependent peural pressure condition",
+          CORE::Conditions::RedAirwayVolDependentPleuralPressureCond, true,
+          CORE::Conditions::geometry_type_line));
 
   raw_volPpl_bc->AddComponent(
       Teuchos::rcp(new INPUT::SelectionComponent("TYPE", "Linear_Exponential",
@@ -695,8 +719,9 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Evaluate lung volume condition for reduced dimensional airways
 
-  Teuchos::RCP<ConditionDefinition> raw_eval_lungV_bc = Teuchos::rcp(
-      new ConditionDefinition("DESIGN LINE REDUCED D AIRWAYS EVALUATE LUNG VOLUME CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> raw_eval_lungV_bc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN LINE REDUCED D AIRWAYS EVALUATE LUNG VOLUME CONDITIONS",
           "RedAirwayEvalLungVolCond", "Reduced D airways evaluate lung volume condition",
           CORE::Conditions::RedAirwayEvalLungVolCond, true, CORE::Conditions::geometry_type_line));
 
@@ -707,9 +732,10 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Impedance condition
 
-  Teuchos::RCP<ConditionDefinition> impedancebc = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN SURF IMPEDANCE CONDITIONS", "ImpedanceCond", "Impedance boundary condition",
-      CORE::Conditions::ImpedanceCond, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> impedancebc =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURF IMPEDANCE CONDITIONS",
+          "ImpedanceCond", "Impedance boundary condition", CORE::Conditions::ImpedanceCond, true,
+          CORE::Conditions::geometry_type_surface));
 
   impedancebc->AddComponent(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
 

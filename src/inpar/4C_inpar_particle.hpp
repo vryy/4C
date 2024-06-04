@@ -19,17 +19,10 @@
  *---------------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
-
-/*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
-namespace INPUT
-{
-  class ConditionDefinition;
-}
 
 /*---------------------------------------------------------------------------*
  | input parameters for particle problems                     sfuchs 03/2018 |
@@ -262,7 +255,8 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     //! set the particle conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist);
+    void SetValidConditions(
+        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace PARTICLE
 

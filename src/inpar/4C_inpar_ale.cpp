@@ -11,7 +11,7 @@
 
 #include "4C_inpar_ale.hpp"
 
-#include "4C_io_condition_definition.hpp"
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -77,7 +77,8 @@ void INPAR::ALE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
 
 
-void INPAR::ALE::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+void INPAR::ALE::SetValidConditions(
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
@@ -100,12 +101,14 @@ void INPAR::ALE::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   aleupdatecomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("NODENORMALFUNCT")));
   aleupdatecomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("nodenormalfunct")));
 
-  Teuchos::RCP<ConditionDefinition> linealeupdate = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN ALE UPDATE LINE CONDITIONS", "ALEUPDATECoupling", "ALEUPDATE Coupling",
-      CORE::Conditions::ALEUPDATECoupling, true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<ConditionDefinition> surfaleupdate = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN ALE UPDATE SURF CONDITIONS", "ALEUPDATECoupling", "ALEUPDATE Coupling",
-      CORE::Conditions::ALEUPDATECoupling, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linealeupdate =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN ALE UPDATE LINE CONDITIONS",
+          "ALEUPDATECoupling", "ALEUPDATE Coupling", CORE::Conditions::ALEUPDATECoupling, true,
+          CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfaleupdate =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN ALE UPDATE SURF CONDITIONS",
+          "ALEUPDATECoupling", "ALEUPDATE Coupling", CORE::Conditions::ALEUPDATECoupling, true,
+          CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < aleupdatecomponents.size(); ++i)
   {

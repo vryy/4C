@@ -13,6 +13,7 @@
 #include "4C_comm_utils.hpp"
 #include "4C_contact_constitutivelaw_bundle.hpp"
 #include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_discretization_dofset_independent.hpp"
 #include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_legacy_module.hpp"
@@ -20,7 +21,6 @@
 #include "4C_inpar_validcontactconstitutivelaw.hpp"
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_io.hpp"
-#include "4C_io_condition_definition.hpp"
 #include "4C_io_dat_file_utils.hpp"
 #include "4C_io_elementreader.hpp"
 #include "4C_io_geometry_type.hpp"
@@ -2211,8 +2211,9 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
   nodeset[3] = &dvol_fenode;
 
   // create list of known conditions
-  Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> vc = INPUT::ValidConditions();
-  std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist = *vc;
+  Teuchos::RCP<std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>> vc =
+      INPUT::ValidConditions();
+  std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist = *vc;
 
   // test for each condition definition (input file condition section)
   // - read all conditions that match the definition

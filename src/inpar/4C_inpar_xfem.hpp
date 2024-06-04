@@ -13,16 +13,13 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_io_linecomponent.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace INPUT
-{
-  class ConditionDefinition;
-}  // namespace INPUT
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
@@ -323,7 +320,7 @@ namespace INPAR
     void SetValidConditions(
         const std::vector<Teuchos::RCP<INPUT::LineComponent>> &dirichletbundcomponents,
         const std::vector<Teuchos::RCP<INPUT::LineComponent>> &neumanncomponents,
-        std::vector<Teuchos::RCP<INPUT::ConditionDefinition>> &condlist);
+        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>> &condlist);
 
   }  // namespace XFEM
 
