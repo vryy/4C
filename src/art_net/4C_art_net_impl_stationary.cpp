@@ -44,7 +44,7 @@ FOUR_C_NAMESPACE_OPEN
 
 ART::ArtNetImplStationary::ArtNetImplStationary(Teuchos::RCP<DRT::Discretization> actdis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
-    const Teuchos::ParameterList& artparams, IO::DiscretizationWriter& output)
+    const Teuchos::ParameterList& artparams, CORE::IO::DiscretizationWriter& output)
     : TimInt(actdis, linsolvernumber, probparams, artparams, output)
 {
   //  exit(1);
@@ -528,7 +528,7 @@ void ART::ArtNetImplStationary::OutputRadius()
   }
 
   // write the output
-  output_.WriteVector("ele_radius", ele_radius_, IO::elementvector);
+  output_.WriteVector("ele_radius", ele_radius_, CORE::IO::elementvector);
 
   return;
 }
@@ -572,7 +572,7 @@ void ART::ArtNetImplStationary::OutputFlow()
   }
 
   // write the output
-  output_.WriteVector("ele_volflow", ele_volflow_, IO::elementvector);
+  output_.WriteVector("ele_volflow", ele_volflow_, CORE::IO::elementvector);
 
   return;
 }
@@ -617,7 +617,8 @@ Teuchos::RCP<CORE::UTILS::ResultTest> ART::ArtNetImplStationary::CreateFieldTest
 void ART::ArtNetImplStationary::read_restart(int step, bool coupledTo3D)
 {
   coupledTo3D_ = coupledTo3D;
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
   if (step != reader.ReadInt("step")) FOUR_C_THROW("Time step on file not equal to given step");
 

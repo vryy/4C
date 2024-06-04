@@ -46,7 +46,7 @@ namespace
       problem.SetFunctionManager(std::move(functionmanager_));
 
       // set up material to be added to problem instance
-      IO::InputParameterContainer mat_stvenant;
+      CORE::IO::InputParameterContainer mat_stvenant;
       mat_stvenant.Add("YOUNG", 1.0);
       mat_stvenant.Add("NUE", 0.3);
       mat_stvenant.Add("DENS", 1.0);

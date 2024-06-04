@@ -39,7 +39,7 @@ namespace CORE::LINALG
   class SparseMatrix;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }

@@ -470,7 +470,7 @@ std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotent
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::OutputStepState(
-    IO::DiscretizationWriter& iowriter) const
+    CORE::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
   // nothing to do (so far)
@@ -491,7 +491,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::ResetStepState() { check
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::write_restart(
-    IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const
+    CORE::IO::DiscretizationWriter& ia_writer, CORE::IO::DiscretizationWriter& bin_writer) const
 {
   // empty
 }
@@ -506,7 +506,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PreReadRestart()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::read_restart(
-    IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader)
+    CORE::IO::DiscretizationReader& ia_reader, CORE::IO::DiscretizationReader& bin_reader)
 {
   // empty
 }
@@ -566,8 +566,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::get_half_interaction_dis
     half_interaction_distance = 0.5 * beam_potential_params().CutoffRadius();
 
     if (GState().GetMyRank() == 0)
-      IO::cout(IO::verbose) << " beam potential half interaction distance "
-                            << half_interaction_distance << IO::endl;
+      CORE::IO::cout(CORE::IO::verbose) << " beam potential half interaction distance "
+                                        << half_interaction_distance << CORE::IO::endl;
   }
   else
   {
@@ -747,10 +747,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::create_beam_potential_el
 
   if (static_cast<int>(beam_potential_element_pairs_.size()) > 0)
   {
-    IO::cout(IO::standard) << "PID " << std::setw(2) << std::right << GState().GetMyRank()
-                           << " currently monitors " << std::setw(5) << std::right
-                           << beam_potential_element_pairs_.size() << " beam potential pairs"
-                           << IO::endl;
+    CORE::IO::cout(CORE::IO::standard)
+        << "PID " << std::setw(2) << std::right << GState().GetMyRank() << " currently monitors "
+        << std::setw(5) << std::right << beam_potential_element_pairs_.size()
+        << " beam potential pairs" << CORE::IO::endl;
   }
 }
 
@@ -868,9 +868,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::init_output_runtime_beam
   check_init();
 
   visualization_manager_ = Teuchos::rcp(
-      new IO::VisualizationManager(beam_potential_params()
-                                       .get_beam_potential_visualization_output_params()
-                                       ->get_visualization_parameters(),
+      new CORE::IO::VisualizationManager(beam_potential_params()
+                                             .get_beam_potential_visualization_output_params()
+                                             ->get_visualization_parameters(),
           Discret().Comm(), "beam-potential"));
 }
 
@@ -881,11 +881,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
 {
   check_init_setup();
 
-  auto [output_time, output_step] =
-      IO::GetTimeAndTimeStepIndexForOutput(beam_potential_params()
-                                               .get_beam_potential_visualization_output_params()
-                                               ->get_visualization_parameters(),
-          GState().GetTimeN(), GState().GetStepN());
+  auto [output_time, output_step] = CORE::IO::GetTimeAndTimeStepIndexForOutput(
+      beam_potential_params()
+          .get_beam_potential_visualization_output_params()
+          ->get_visualization_parameters(),
+      GState().GetTimeN(), GState().GetStepN());
   write_output_runtime_beam_potential(output_step, output_time);
 }
 
@@ -896,11 +896,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
 {
   check_init_setup();
 
-  auto [output_time, output_step] =
-      IO::GetTimeAndTimeStepIndexForOutput(beam_potential_params()
-                                               .get_beam_potential_visualization_output_params()
-                                               ->get_visualization_parameters(),
-          GState().GetTimeN(), GState().GetStepN(), iteration_number);
+  auto [output_time, output_step] = CORE::IO::GetTimeAndTimeStepIndexForOutput(
+      beam_potential_params()
+          .get_beam_potential_visualization_output_params()
+          ->get_visualization_parameters(),
+      GState().GetTimeN(), GState().GetStepN(), iteration_number);
   write_output_runtime_beam_potential(output_step, output_time);
 }
 

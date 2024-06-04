@@ -20,7 +20,7 @@ CORE::MAT::PAR::Material::Material(const int id, const CORE::Materials::Material
 }
 
 CORE::MAT::PAR::Material::Material(
-    int id, CORE::Materials::MaterialType type, const IO::InputParameterContainer& input_data)
+    int id, CORE::Materials::MaterialType type, const CORE::IO::InputParameterContainer& input_data)
     : InputParameterContainer(input_data), id_(id), type_(type)
 {
 }

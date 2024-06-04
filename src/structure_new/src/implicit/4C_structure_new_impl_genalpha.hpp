@@ -70,10 +70,10 @@ namespace STR
 
       //! [derived]
       void write_restart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! [derived]
-      void read_restart(IO::DiscretizationReader& ioreader) override;
+      void read_restart(CORE::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
       double CalcRefNormForce(const enum ::NOX::Abstract::Vector::NormType& type) const override;

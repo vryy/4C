@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   std::vector<Teuchos::RCP<DRT::Discretization>> FindDisNode(
-      const std::vector<IO::ElementReader>& element_readers, int global_node_id)
+      const std::vector<CORE::IO::ElementReader>& element_readers, int global_node_id)
   {
     std::vector<Teuchos::RCP<DRT::Discretization>> list_of_discretizations;
     for (const auto& element_reader : element_readers)
@@ -37,7 +37,7 @@ namespace
 }  // namespace
 
 
-void IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_section_name,
+void CORE::IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_section_name,
     std::vector<ElementReader>& element_readers, int& max_node_id)
 {
   // Check if there are any nodes to be read. If not, leave right away.

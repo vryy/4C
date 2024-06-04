@@ -550,7 +550,7 @@ void STR::TIMINT::Base::output_step(bool forced_writerestart)
       dataio_->is_write_current_ele_volume())
   {
     new_io_step(datawritten);
-    IO::DiscretizationWriter& iowriter = *(dataio_->GetOutputPtr());
+    CORE::IO::DiscretizationWriter& iowriter = *(dataio_->GetOutputPtr());
     output_element_volume(iowriter);
   }
 
@@ -588,7 +588,7 @@ void STR::TIMINT::Base::new_io_step(bool& datawritten)
 void STR::TIMINT::Base::output_state()
 {
   check_init_setup();
-  IO::DiscretizationWriter& iowriter = *(dataio_->GetOutputPtr());
+  CORE::IO::DiscretizationWriter& iowriter = *(dataio_->GetOutputPtr());
 
   output_state(iowriter, dataio_->IsFirstOutputOfRun());
 
@@ -597,7 +597,8 @@ void STR::TIMINT::Base::output_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::OutputDebugState(IO::DiscretizationWriter& iowriter, bool write_owner) const
+void STR::TIMINT::Base::OutputDebugState(
+    CORE::IO::DiscretizationWriter& iowriter, bool write_owner) const
 {
   output_state(iowriter, write_owner);
 
@@ -607,7 +608,8 @@ void STR::TIMINT::Base::OutputDebugState(IO::DiscretizationWriter& iowriter, boo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::output_state(IO::DiscretizationWriter& iowriter, bool write_owner) const
+void STR::TIMINT::Base::output_state(
+    CORE::IO::DiscretizationWriter& iowriter, bool write_owner) const
 {
   // owner of elements is just written once because it does not change during
   // simulation (so far)
@@ -630,20 +632,20 @@ void STR::TIMINT::Base::runtime_output_state()
 void STR::TIMINT::Base::output_reaction_forces()
 {
   check_init_setup();
-  IO::DiscretizationWriter& iowriter = *(dataio_->GetOutputPtr());
+  CORE::IO::DiscretizationWriter& iowriter = *(dataio_->GetOutputPtr());
   int_ptr_->MonitorDbc(iowriter);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::output_element_volume(IO::DiscretizationWriter& iowriter) const
+void STR::TIMINT::Base::output_element_volume(CORE::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
 
   STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
 
   iowriter.WriteVector("current_ele_volumes",
-      Teuchos::rcpFromRef(evaldata.current_element_volume_data()), IO::elementvector);
+      Teuchos::rcpFromRef(evaldata.current_element_volume_data()), CORE::IO::elementvector);
 
   evaldata.set_element_volume_data(Teuchos::null);
 }
@@ -655,7 +657,7 @@ void STR::TIMINT::Base::output_stress_strain()
   check_init_setup();
 
   STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
-  Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
 
   // ---------------------------------------------------------------------------
   // write stress output
@@ -781,7 +783,7 @@ void STR::TIMINT::Base::output_energy() const
 
     energy_output_stream << std::setw(24) << total_energy << std::endl;
 
-    IO::cout(IO::verbose) << "\n\nOutput for energy written to file!" << IO::endl;
+    CORE::IO::cout(CORE::IO::verbose) << "\n\nOutput for energy written to file!" << CORE::IO::endl;
   }
 }
 
@@ -792,7 +794,7 @@ void STR::TIMINT::Base::output_optional_quantity()
   check_init_setup();
 
   STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
-  Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
 
   // ---------------------------------------------------------------------------
   // write optional quantity output
@@ -821,7 +823,7 @@ void STR::TIMINT::Base::output_restart(bool& datawritten)
 {
   check_init_setup();
 
-  Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
   // write restart output, please
   if (dataglobalstate_->GetStepN() != 0)
     output_ptr->WriteMesh(dataglobalstate_->GetStepN(), dataglobalstate_->GetTimeN());
@@ -843,8 +845,8 @@ void STR::TIMINT::Base::output_restart(bool& datawritten)
   if ((dataglobalstate_->GetMyRank() == 0) and (dataio_->get_print2_screen_every_n_step() > 0) and
       (StepOld() % dataio_->get_print2_screen_every_n_step() == 0))
   {
-    IO::cout << "====== Restart for field 'Structure' written in step "
-             << dataglobalstate_->GetStepN() << IO::endl;
+    CORE::IO::cout << "====== Restart for field 'Structure' written in step "
+                   << dataglobalstate_->GetStepN() << CORE::IO::endl;
   }
 }
 
@@ -852,7 +854,7 @@ void STR::TIMINT::Base::output_restart(bool& datawritten)
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::add_restart_to_output_state()
 {
-  Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
 
   // force output of velocity and acceleration in case it is not written previously by the model
   // evaluators
@@ -873,8 +875,8 @@ void STR::TIMINT::Base::add_restart_to_output_state()
   if ((dataglobalstate_->GetMyRank() == 0) and (dataio_->get_print2_screen_every_n_step() > 0) and
       (StepOld() % dataio_->get_print2_screen_every_n_step() == 0))
   {
-    IO::cout << "====== Restart for field 'Structure' written in step "
-             << dataglobalstate_->GetStepN() << IO::endl;
+    CORE::IO::cout << "====== Restart for field 'Structure' written in step "
+                   << dataglobalstate_->GetStepN() << CORE::IO::endl;
   }
 }
 
@@ -885,15 +887,16 @@ void STR::TIMINT::Base::write_gmsh_struc_output_step()
   check_init_setup();
   if (!dataio_->IsGmsh()) return;
 
-  const std::string filename = IO::GMSH::GetFileName("struct", DiscWriter()->Output()->FileName(),
-      dataglobalstate_->GetStepNp(), false, dataglobalstate_->GetMyRank());
+  const std::string filename =
+      CORE::IO::GMSH::GetFileName("struct", DiscWriter()->Output()->FileName(),
+          dataglobalstate_->GetStepNp(), false, dataglobalstate_->GetMyRank());
   std::ofstream gmshfilecontent(filename.c_str());
 
   // add 'View' to Gmsh postprocessing file
   gmshfilecontent << "View \" "
                   << "struct displacement \" {" << std::endl;
   // draw vector field 'struct displacement' for every element
-  IO::GMSH::VectorFieldDofBasedToGmsh(discretization(), Dispn(), gmshfilecontent, 0, true);
+  CORE::IO::GMSH::VectorFieldDofBasedToGmsh(discretization(), Dispn(), gmshfilecontent, 0, true);
   gmshfilecontent << "};" << std::endl;
 }
 
@@ -906,7 +909,7 @@ void STR::TIMINT::Base::read_restart(const int stepn)
   isrestarting_ = true;
 
   // create an input/output reader
-  IO::DiscretizationReader ioreader(
+  CORE::IO::DiscretizationReader ioreader(
       discretization(), GLOBAL::Problem::Instance()->InputControlFile(), stepn);
   dataglobalstate_->GetStepN() = stepn;
   dataglobalstate_->GetStepNp() = stepn + 1;
@@ -947,7 +950,8 @@ void STR::TIMINT::Base::read_restart(const int stepn)
 
   // short screen output
   if (dataglobalstate_->GetMyRank() == 0)
-    IO::cout << "====== Restart of the structural simulation from step " << stepn << IO::endl;
+    CORE::IO::cout << "====== Restart of the structural simulation from step " << stepn
+                   << CORE::IO::endl;
 
   // end of restarting
   isrestarting_ = false;

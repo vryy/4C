@@ -28,7 +28,8 @@ STR::TimIntAB2::TimIntAB2(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& xparams,
     // const Teuchos::ParameterList& ab2params,
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
-    Teuchos::RCP<CORE::LINALG::Solver> contactsolver, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : TimIntExpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       fextn_(Teuchos::null),
       fintn_(Teuchos::null),
@@ -303,6 +304,9 @@ void STR::TimIntAB2::ReadRestartForce()
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void STR::TimIntAB2::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) { return; }
+void STR::TimIntAB2::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+{
+  return;
+}
 
 FOUR_C_NAMESPACE_CLOSE

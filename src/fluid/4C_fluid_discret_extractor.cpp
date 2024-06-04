@@ -425,7 +425,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         Teuchos::rcp(new CORE::Dofsets::TransparentDofSet(parentdiscret_, true)));
 
     // set discretization writer
-    childdiscret_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(childdiscret_,
+    childdiscret_->SetWriter(Teuchos::rcp(new CORE::IO::DiscretizationWriter(childdiscret_,
         GLOBAL::Problem::Instance()->OutputControlFile(),
         GLOBAL::Problem::Instance()->spatial_approximation_type())));
 

@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   /*!
    * @brief Reads and processes csv file such that a vector of column vectors is returned
@@ -43,7 +43,7 @@ namespace IO
 
   /*!
    * @brief Read a @p input_stream line by line and parse each line into an object of type @p T
-   * using `IO::StringConverter<T>::Parse(line_string)`. Return a vector containing all those
+   * using `CORE::IO::StringConverter<T>::Parse(line_string)`. Return a vector containing all those
    * objects.
    *
    * @param[in] input_stream input stream
@@ -54,8 +54,8 @@ namespace IO
 
   /*!
    * @brief Read an @p input_stream line by line and parse each line into an object of type @p T
-   * using `IO::StringConverter<T>::Parse(line_string)`. The parsed objects are then reduced into
-   * another object of @p ReturnType. This process is also known as a `fold` over the data. You
+   * using `CORE::IO::StringConverter<T>::Parse(line_string)`. The parsed objects are then reduced
+   * into another object of @p ReturnType. This process is also known as a `fold` over the data. You
    * can specify which @p operation should be performed by supplying a callable that takes the
    * already accumulated data of type @p ReturnType and the result of parsing a single line into a
    * type @p T.
@@ -83,7 +83,7 @@ namespace IO
    * @code {.cpp}
    * using ReducedType = std::map<int, int>;
    * using T = std::map<int, std::array<int, 3>>;
-   * ReducedType converted_data = IO::convert_lines<T, ReducedType>(input_stream, operator);
+   * ReducedType converted_data = CORE::IO::convert_lines<T, ReducedType>(input_stream, operator);
    * @endcode
    *
    * @param[in] input_stream input stream
@@ -124,7 +124,7 @@ namespace IO
       try
       {
         // parse line string and apply the specified operation on the parsed data
-        T parsed_data = IO::StringConverter<T>::Parse(line_str);
+        T parsed_data = CORE::IO::StringConverter<T>::Parse(line_str);
         operated_data = operation(std::forward<ReturnType>(operated_data), std::move(parsed_data));
       }
       catch (...)
@@ -137,7 +137,7 @@ namespace IO
     }
     return operated_data;
   }
-}  // namespace IO
+}  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

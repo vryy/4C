@@ -115,7 +115,7 @@ namespace XFEM
 
    protected:
     //! Output specific
-    Teuchos::RCP<IO::DiscretizationWriter> bg_output_;
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> bg_output_;
 
     //! @name fluid discretization related state vectors
 

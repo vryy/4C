@@ -65,7 +65,7 @@ void PARTICLEINTERACTION::ParticleInteractionBase::write_restart() const
 }
 
 void PARTICLEINTERACTION::ParticleInteractionBase::read_restart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
+    const std::shared_ptr<CORE::IO::DiscretizationReader> reader)
 {
   // read restart of particle interaction writer
   particleinteractionwriter_->read_restart(reader);

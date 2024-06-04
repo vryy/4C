@@ -1423,7 +1423,7 @@ void FLD::XWall::overwrite_transferred_values()
 /*----------------------------------------------------------------------*
  |  Read Restart                                               bk 01/15 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::read_restart(IO::DiscretizationReader& reader)
+void FLD::XWall::read_restart(CORE::IO::DiscretizationReader& reader)
 {
   Teuchos::RCP<Epetra_Vector> tauw =
       Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));

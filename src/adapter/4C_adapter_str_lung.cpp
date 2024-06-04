@@ -401,7 +401,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(
 void ADAPTER::StructureLung::WriteVolConRestart(Teuchos::RCP<Epetra_Vector> OldFlowRatesRed,
     Teuchos::RCP<Epetra_Vector> OldVolsRed, Teuchos::RCP<Epetra_Vector> OldLagrMultRed)
 {
-  Teuchos::RCP<IO::DiscretizationWriter> output = DiscWriter();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = DiscWriter();
   std::stringstream stream1;
   stream1 << "OldVols";
   std::stringstream stream2;
@@ -443,7 +443,7 @@ void ADAPTER::StructureLung::WriteVolConRestart(Teuchos::RCP<Epetra_Vector> OldF
 /* output of volume constraint related forces*/
 void ADAPTER::StructureLung::OutputForces(Teuchos::RCP<Epetra_Vector> Forces)
 {
-  Teuchos::RCP<IO::DiscretizationWriter> output = DiscWriter();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = DiscWriter();
   output->WriteVector("Add_Forces", Forces);
 }
 
@@ -454,7 +454,7 @@ void ADAPTER::StructureLung::ReadVolConRestart(const int step,
     Teuchos::RCP<Epetra_Vector> OldFlowRatesRed, Teuchos::RCP<Epetra_Vector> OldVolsRed,
     Teuchos::RCP<Epetra_Vector> OldLagrMultRed)
 {
-  IO::DiscretizationReader reader(
+  CORE::IO::DiscretizationReader reader(
       discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
   if (step != reader.ReadInt("step")) FOUR_C_THROW("Time step on file not equal to given step");
   std::stringstream stream1;

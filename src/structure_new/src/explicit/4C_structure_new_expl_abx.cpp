@@ -187,7 +187,7 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::add_visco_mass_contributions(
  *----------------------------------------------------------------------------*/
 template <int TOrder>
 void STR::EXPLICIT::AdamsBashforthX<TOrder>::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
   // write dynamic forces
@@ -222,7 +222,7 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::write_restart(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
-void STR::EXPLICIT::AdamsBashforthX<TOrder>::read_restart(IO::DiscretizationReader& ioreader)
+void STR::EXPLICIT::AdamsBashforthX<TOrder>::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   // read dynamic forces

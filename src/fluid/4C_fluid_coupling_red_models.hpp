@@ -53,7 +53,7 @@ namespace FLD
       \brief Standard Constructor
       */
       FluidCouplingWrapperBase(Teuchos::RCP<DRT::Discretization> dis_3D,
-          Teuchos::RCP<DRT::Discretization> dis_redD, IO::DiscretizationWriter& output,
+          Teuchos::RCP<DRT::Discretization> dis_redD, CORE::IO::DiscretizationWriter& output,
           double dt_3d, double dt_redD);
 
       /*!
@@ -89,12 +89,12 @@ namespace FLD
       /*!
       \brief Wrapper for FluidCouplingWrapper::write_restart
       */
-      void write_restart(IO::DiscretizationWriter& output);
+      void write_restart(CORE::IO::DiscretizationWriter& output);
 
       /*!
       \brief Wrapper for FluidCouplingWrapper::read_restart
       */
-      void read_restart(IO::DiscretizationReader& reader);
+      void read_restart(CORE::IO::DiscretizationReader& reader);
 
 
       virtual void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>&) = 0;
@@ -137,7 +137,7 @@ namespace FLD
 
 
       //! the output writer
-      IO::DiscretizationWriter& output_;
+      CORE::IO::DiscretizationWriter& output_;
 
       //! the fluid 3D time step size
       double dt_f3_;
@@ -154,7 +154,7 @@ namespace FLD
      public:
       FluidCouplingWrapper(Teuchos::RCP<DRT::Discretization> dis_3D,
           Teuchos::RCP<DRT::Discretization> dis_redD, Teuchos::RCP<red_D_time_int> time_intg,
-          IO::DiscretizationWriter& output, double dt_3d, double dt_rm)
+          CORE::IO::DiscretizationWriter& output, double dt_3d, double dt_rm)
           : FluidCouplingWrapperBase(dis_3D, dis_redD, output, dt_3d, dt_rm),
             reduced_d_time_integ_(time_intg)
       {
@@ -193,8 +193,8 @@ namespace FLD
       \brief Standard Constructor
       */
       FluidCouplingBc(Teuchos::RCP<DRT::Discretization> dis_3D,
-          Teuchos::RCP<DRT::Discretization> dis_reD, IO::DiscretizationWriter& output, double dt_3d,
-          double dt_rm, int condid, int numcond, int numcond2);
+          Teuchos::RCP<DRT::Discretization> dis_reD, CORE::IO::DiscretizationWriter& output,
+          double dt_3d, double dt_rm, int condid, int numcond, int numcond2);
 
       /*!
       \brief Empty Constructor
@@ -210,12 +210,12 @@ namespace FLD
       /*!
       \brief write flowrates_ and flowratespos_ to result files
       */
-      void write_restart(IO::DiscretizationWriter& output, int condnum);
+      void write_restart(CORE::IO::DiscretizationWriter& output, int condnum);
 
       /*!
       \brief read flowrates_ and flowratespos_
       */
-      void read_restart(IO::DiscretizationReader& reader, int condnum);
+      void read_restart(CORE::IO::DiscretizationReader& reader, int condnum);
 
 
       /*!
@@ -301,7 +301,7 @@ namespace FLD
       Teuchos::RCP<DRT::Discretization> discret_red_d_;
 
       //! the output writer
-      IO::DiscretizationWriter& output_;
+      CORE::IO::DiscretizationWriter& output_;
 
       //! flow rate
       double flowrate_;

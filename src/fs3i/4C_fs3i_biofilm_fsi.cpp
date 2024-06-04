@@ -927,7 +927,7 @@ void FS3I::BiofilmFSI::StructGmshOutput()
   const Teuchos::RCP<DRT::Discretization> structaledis = ale_->write_access_discretization();
   Teuchos::RCP<DRT::Discretization> struscatradis = scatravec_[1]->ScaTraField()->discretization();
 
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("struct",
+  const std::string filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles("struct",
       structdis->Writer()->Output()->FileName(), step_bio_, 701, false, structdis->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
 
@@ -937,7 +937,7 @@ void FS3I::BiofilmFSI::StructGmshOutput()
     gmshfilecontent << "View \" "
                     << "struct displacement \" {" << std::endl;
     // draw vector field 'struct displacement' for every element
-    IO::GMSH::VectorFieldDofBasedToGmsh(structdis, structdisp, gmshfilecontent);
+    CORE::IO::GMSH::VectorFieldDofBasedToGmsh(structdis, structdisp, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -947,7 +947,7 @@ void FS3I::BiofilmFSI::StructGmshOutput()
     gmshfilecontent << "View \" "
                     << "struct ale displacement \" {" << std::endl;
     // draw vector field 'struct ale displacement' for every element
-    IO::GMSH::VectorFieldDofBasedToGmsh(structaledis, structaledisp, gmshfilecontent);
+    CORE::IO::GMSH::VectorFieldDofBasedToGmsh(structaledis, structaledisp, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -957,7 +957,7 @@ void FS3I::BiofilmFSI::StructGmshOutput()
     gmshfilecontent << "View \" "
                     << "struct phi \" {" << std::endl;
     // draw vector field 'struct phi' for every element
-    IO::GMSH::ScalarFieldToGmsh(struscatradis, structphi, gmshfilecontent);
+    CORE::IO::GMSH::ScalarFieldToGmsh(struscatradis, structphi, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -975,7 +975,7 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
       fsi_->ale_field()->write_access_discretization();
   Teuchos::RCP<DRT::Discretization> fluidscatradis = scatravec_[0]->ScaTraField()->discretization();
 
-  const std::string filenamefluid = IO::GMSH::GetNewFileNameAndDeleteOldFiles("fluid",
+  const std::string filenamefluid = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles("fluid",
       fluiddis->Writer()->Output()->FileName(), step_bio_, 701, false, fluiddis->Comm().MyPID());
   std::ofstream gmshfilecontent(filenamefluid.c_str());
 
@@ -985,7 +985,7 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
     gmshfilecontent << "View \" "
                     << "fluid velocity \" {" << std::endl;
     // draw vector field 'fluid velocity' for every element
-    IO::GMSH::VectorFieldDofBasedToGmsh(fluiddis, fluidvel, gmshfilecontent);
+    CORE::IO::GMSH::VectorFieldDofBasedToGmsh(fluiddis, fluidvel, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -995,7 +995,7 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
     gmshfilecontent << "View \" "
                     << "fluid ale displacement \" {" << std::endl;
     // draw vector field 'fluid ale displacement' for every element
-    IO::GMSH::VectorFieldDofBasedToGmsh(fluidaledis, fluidaledisp, gmshfilecontent);
+    CORE::IO::GMSH::VectorFieldDofBasedToGmsh(fluidaledis, fluidaledisp, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -1005,7 +1005,7 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
     gmshfilecontent << "View \" "
                     << "fluid phi \" {" << std::endl;
     // draw vector field 'fluid phi' for every element
-    IO::GMSH::ScalarFieldToGmsh(fluidscatradis, fluidphi, gmshfilecontent);
+    CORE::IO::GMSH::ScalarFieldToGmsh(fluidscatradis, fluidphi, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 

@@ -157,7 +157,7 @@ void STR::MonitorDbc::Setup()
       GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + "_monitor_dbc");
   const std::string filename_only_prefix(
       GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix());
-  IO::create_directory(full_dirpath, comm().MyPID());
+  CORE::IO::create_directory(full_dirpath, comm().MyPID());
   // ... create files paths ...
   full_filepaths_ = create_file_paths(rconds, full_dirpath, filename_only_prefix, filetype);
   // ... clear them and write header
@@ -170,7 +170,7 @@ void STR::MonitorDbc::Setup()
     const std::string full_restart_dirpath(
         GLOBAL::Problem::Instance()->OutputControlFile()->RestartName() + "_monitor_dbc");
     const std::string filename_restart_only_prefix(
-        IO::ExtractFileName(GLOBAL::Problem::Instance()->OutputControlFile()->RestartName()));
+        CORE::IO::ExtractFileName(GLOBAL::Problem::Instance()->OutputControlFile()->RestartName()));
 
     std::vector<std::string> full_restart_filepaths =
         create_file_paths(rconds, full_restart_dirpath, filename_restart_only_prefix, filetype);
@@ -267,7 +267,7 @@ void STR::MonitorDbc::read_results_prior_restart_step_and_write_to_file(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::Execute(IO::DiscretizationWriter& writer)
+void STR::MonitorDbc::Execute(CORE::IO::DiscretizationWriter& writer)
 {
   throw_if_not_init();
   throw_if_not_setup();
@@ -326,10 +326,10 @@ void STR::MonitorDbc::write_results_to_screen(
 {
   if (comm().MyPID() != 0) return;
 
-  IO::cout << "\n\n--- Monitor Dirichlet boundary condition " << rcond_ptr->Id() + 1 << " \n";
-  write_condition_header(IO::cout.os(), OS_WIDTH);
-  write_column_header(IO::cout.os(), OS_WIDTH);
-  write_results(IO::cout.os(), OS_WIDTH, os_precision_, gstate_ptr_->GetStepN(),
+  CORE::IO::cout << "\n\n--- Monitor Dirichlet boundary condition " << rcond_ptr->Id() + 1 << " \n";
+  write_condition_header(CORE::IO::cout.os(), OS_WIDTH);
+  write_column_header(CORE::IO::cout.os(), OS_WIDTH);
+  write_results(CORE::IO::cout.os(), OS_WIDTH, os_precision_, gstate_ptr_->GetStepN(),
       gstate_ptr_->GetTimeN(), rforce, rmoment, area_ref, area_curr);
 }
 

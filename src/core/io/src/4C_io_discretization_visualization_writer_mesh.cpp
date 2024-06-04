@@ -26,7 +26,7 @@ to disk
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace IO
+namespace CORE::IO
 {
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
@@ -225,7 +225,7 @@ namespace IO
       if (!element_filter_(ele)) continue;
 
       const std::vector<int>& numbering =
-          IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
+          CORE::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
 
       for (unsigned int inode = 0; inode < (unsigned int)ele->num_node(); ++inode)
       {
@@ -359,7 +359,7 @@ namespace IO
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterMesh::append_element_ghosting_information()
   {
-    IO::append_element_ghosting_information(
+    CORE::IO::append_element_ghosting_information(
         *discretization_, *visualization_manager_, element_filter_);
   }
 
@@ -385,7 +385,7 @@ namespace IO
 
       // Add the node GIDs.
       const std::vector<int>& numbering =
-          IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
+          CORE::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
       const CORE::Nodes::Node* const* nodes = ele->Nodes();
       for (int inode = 0; inode < ele->num_node(); ++inode)
         gid_of_nodes.push_back(nodes[numbering[inode]]->Id());
@@ -455,5 +455,5 @@ namespace IO
     visualization_manager.get_visualization_data().SetCellDataVector(
         "element_ghosting", ghosted_elements, n_proc);
   }
-}  // namespace IO
+}  // namespace CORE::IO
 FOUR_C_NAMESPACE_CLOSE

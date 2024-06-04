@@ -80,7 +80,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   setStringToIntegralParameter<int>("GEOMETRY", "full", "How the geometry is specified",
       tuple<std::string>("full", "box", "file"),
-      tuple<int>(IO::geometry_full, IO::geometry_box, IO::geometry_file), &fdyn);
+      tuple<int>(CORE::IO::geometry_full, CORE::IO::geometry_box, CORE::IO::geometry_file), &fdyn);
 
   setStringToIntegralParameter<int>("NONLINITER", "fixed_point_like", "Nonlinear iteration scheme",
       tuple<std::string>("fixed_point_like", "Newton"), tuple<int>(fixed_point_like, Newton),

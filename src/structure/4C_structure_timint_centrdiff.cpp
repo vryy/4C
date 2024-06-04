@@ -27,7 +27,7 @@ STR::TimIntCentrDiff::TimIntCentrDiff(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : TimIntExpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       fextn_(Teuchos::null),
       fintn_(Teuchos::null),
@@ -289,7 +289,7 @@ void STR::TimIntCentrDiff::ReadRestartForce()
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void STR::TimIntCentrDiff::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+void STR::TimIntCentrDiff::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
 {
   return;
 }

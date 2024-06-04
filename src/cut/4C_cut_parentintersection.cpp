@@ -515,7 +515,7 @@ void CORE::GEO::CUT::ParentIntersection::Cut_Finalize(bool include_inner,
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 6/6 --- Cut_Finalize");
 
-  if (myrank_ == 0 and screenoutput) IO::cout << "\t * 6/6 Cut_Finalize ...\t";
+  if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\t * 6/6 Cut_Finalize ...\t";
 
   //  const double t_start = Teuchos::Time::wallTime();
 
@@ -532,9 +532,9 @@ void CORE::GEO::CUT::ParentIntersection::Cut_Finalize(bool include_inner,
 
     // Test:
     m.TestElementVolume(true, VCellgausstype);
-    if (myrank_ == 0 and screenoutput) IO::cout << "\n\t *     TestElementVolume ...";
+    if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\n\t *     TestElementVolume ...";
     m.TestFacetArea();
-    if (myrank_ == 0 and screenoutput) IO::cout << "\n\t *     TestFacetArea ...";
+    if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\n\t *     TestFacetArea ...";
   }
   else if (VCellgausstype == INPAR::CUT::VCellGaussPts_MomentFitting)
   {

@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   /**
    * @brief This is a base class that defines the API for how visualization data is actually written
@@ -59,7 +59,7 @@ namespace IO
     /**
      * @brief Default constructor
      */
-    VisualizationWriterBase(IO::VisualizationParameters parameters, const Epetra_Comm& comm,
+    VisualizationWriterBase(CORE::IO::VisualizationParameters parameters, const Epetra_Comm& comm,
         std::string visualization_data_name);
 
     /**
@@ -110,10 +110,11 @@ namespace IO
      * @param face_offset (in) Vector containing the offsets in the face connectivity array
      */
     virtual void WriteGeometryToDisk(const std::vector<double>& point_coordinates,
-        const std::vector<IO::index_type>& point_cell_connectivity,
-        const std::vector<IO::index_type>& cell_offset, const std::vector<uint8_t>& cell_types,
-        const std::vector<IO::index_type>& face_connectivity,
-        const std::vector<IO::index_type>& face_offset) = 0;
+        const std::vector<CORE::IO::index_type>& point_cell_connectivity,
+        const std::vector<CORE::IO::index_type>& cell_offset,
+        const std::vector<uint8_t>& cell_types,
+        const std::vector<CORE::IO::index_type>& face_connectivity,
+        const std::vector<CORE::IO::index_type>& face_offset) = 0;
 
     /**
      * @brief Write a single point data vector to disk
@@ -142,7 +143,7 @@ namespace IO
 
    protected:
     //! Visualization parameters
-    IO::VisualizationParameters parameters_;
+    CORE::IO::VisualizationParameters parameters_;
 
     // MPI communicator
     const Epetra_Comm& comm_;
@@ -150,7 +151,7 @@ namespace IO
     //! Specific name for the output data written by this object
     std::string visualization_data_name_;
   };
-}  // namespace IO
+}  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

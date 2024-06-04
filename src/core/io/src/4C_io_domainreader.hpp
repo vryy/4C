@@ -31,7 +31,7 @@ namespace DRT
   class Discretization;
 }  // namespace DRT
 
-namespace IO
+namespace CORE::IO
 {
   class LineDefinition;
 
@@ -86,7 +86,7 @@ namespace IO
     /*! \brief read input parameters from input file
        \return class holding all input parameters for rectangular cuboid domain
      */
-    IO::GRIDGENERATOR::RectangularCuboidInputs read_rectangular_cuboid_input_data() const;
+    CORE::IO::GRIDGENERATOR::RectangularCuboidInputs read_rectangular_cuboid_input_data() const;
 
     /// finalize reading. fill_complete(false,false,false), that is, do not
     /// initialize elements. This is done later after reading boundary conditions.
@@ -108,7 +108,7 @@ namespace IO
     Teuchos::RCP<DRT::Discretization> dis_;
   };
 
-}  // namespace IO
+}  // namespace CORE::IO
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -24,7 +24,7 @@ namespace
 
   void CreateMaterialInGlobalProblem()
   {
-    IO::InputParameterContainer mat_stvenant;
+    CORE::IO::InputParameterContainer mat_stvenant;
     mat_stvenant.Add("YOUNG", 1.0);
     mat_stvenant.Add("NUE", 0.1);
     mat_stvenant.Add("DENS", 2.0);
@@ -49,14 +49,14 @@ namespace
     {
       CreateMaterialInGlobalProblem();
       comm_ = Teuchos::rcp(new Epetra_SerialComm);
-      IO::cout.setup(false, false, false, IO::standard, comm_, 0, 0, "dummyFilePrefix");
+      CORE::IO::cout.setup(false, false, false, CORE::IO::standard, comm_, 0, 0, "dummyFilePrefix");
       testdis_ = Teuchos::rcp(new DRT::Discretization("dummy", comm_));
     }
 
-    void TearDown() override { IO::cout.close(); }
+    void TearDown() override { CORE::IO::cout.close(); }
 
    public:
-    IO::GRIDGENERATOR::RectangularCuboidInputs inputData_{};
+    CORE::IO::GRIDGENERATOR::RectangularCuboidInputs inputData_{};
     Teuchos::RCP<DRT::Discretization> testdis_;
     Teuchos::RCP<Epetra_Comm> comm_;
   };
@@ -67,7 +67,7 @@ namespace
     inputData_.distype_ = "HEX8";
     inputData_.elearguments_ = "MAT 1 KINEM nonlinear EAS none";
 
-    IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
+    CORE::IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
 
     testdis_->fill_complete(false, false, false);
 
@@ -89,7 +89,7 @@ namespace
     inputData_.elearguments_ = "MAT 1 KINEM nonlinear EAS none";
     inputData_.rotation_angle_ = std::array<double, 3>{30.0, 10.0, 7.0};
 
-    IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
+    CORE::IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
 
     testdis_->fill_complete(false, false, false);
 
@@ -110,7 +110,7 @@ namespace
     inputData_.distype_ = "HEX27";
     inputData_.elearguments_ = "MAT 1 KINEM nonlinear";
 
-    IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
+    CORE::IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
 
     testdis_->fill_complete(false, false, false);
 
@@ -132,7 +132,7 @@ namespace
     inputData_.elearguments_ = "MAT 1 KINEM nonlinear";
     inputData_.autopartition_ = true;
 
-    IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
+    CORE::IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
 
     testdis_->fill_complete(false, false, false);
 

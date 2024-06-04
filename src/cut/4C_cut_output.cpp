@@ -60,7 +60,7 @@ void CORE::GEO::CUT::OUTPUT::GmshEdgesOnly(const plain_edge_set& edges)
       << "_CUTFAIL.pos";
   std::string filename(CORE::GEO::CUT::OUTPUT::GenerateGmshOutputFilename(str.str()));
   std::ofstream file(filename.c_str());
-  IO::cout << "\nEdges are written to " << filename << "\n";
+  CORE::IO::cout << "\nEdges are written to " << filename << "\n";
 
   int count = 0;
   for (plain_edge_set::const_iterator it = edges.begin(); it != edges.end(); ++it)
@@ -80,7 +80,7 @@ void CORE::GEO::CUT::OUTPUT::GmshEdgesOnly(const plain_edge_set& edges)
 void CORE::GEO::CUT::OUTPUT::GmshVolumeCellsOnly(const plain_volumecell_set& vcells)
 {
   // write details of volume cells
-  IO::cout << "\nVolumeCells are written to [...].volumecells_CUTFAIL.pos\n";
+  CORE::IO::cout << "\nVolumeCells are written to [...].volumecells_CUTFAIL.pos\n";
 
   std::stringstream str;
   str << ".volumecells"

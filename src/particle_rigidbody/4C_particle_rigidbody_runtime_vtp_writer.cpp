@@ -34,15 +34,15 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::Init(
   rigidbodydatastate_ = rigidbodydatastate;
 
   // construct the writer object
-  visualization_manager_ = std::make_shared<IO::VisualizationManager>(
-      IO::VisualizationParametersFactory(
+  visualization_manager_ = std::make_shared<CORE::IO::VisualizationManager>(
+      CORE::IO::VisualizationParametersFactory(
           GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
           *GLOBAL::Problem::Instance()->OutputControlFile(), setuptime_),
       comm_, "rigidbody");
 }
 
 void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::read_restart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
+    const std::shared_ptr<CORE::IO::DiscretizationReader> reader)
 {
   // get restart time
   setuptime_ = reader->ReadDouble("time");

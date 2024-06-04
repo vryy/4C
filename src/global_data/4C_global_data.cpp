@@ -77,7 +77,7 @@ void GLOBAL::Problem::Done()
   instances_.clear();
 
   // close the parallel output environment to make sure all files are properly closed
-  IO::cout.close();
+  CORE::IO::cout.close();
 }
 
 
@@ -170,26 +170,26 @@ void GLOBAL::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string
 {
   if (Restart())
   {
-    inputcontrol_ = Teuchos::rcp(new IO::InputControl(restartkenner, comm));
+    inputcontrol_ = Teuchos::rcp(new CORE::IO::InputControl(restartkenner, comm));
 
     if (restartstep_ < 0)
     {
-      int r = IO::GetLastPossibleRestartStep(*inputcontrol_);
+      int r = CORE::IO::GetLastPossibleRestartStep(*inputcontrol_);
       SetRestartStep(r);
     }
   }
 
   outputcontrol_ = Teuchos::rcp(
-      new IO::OutputControl(comm, ProblemName(), spatial_approximation_type(), inputfile,
+      new CORE::IO::OutputControl(comm, ProblemName(), spatial_approximation_type(), inputfile,
           restartkenner, std::move(prefix), NDim(), Restart(), IOParams().get<int>("FILESTEPS"),
           CORE::UTILS::IntegralValue<bool>(IOParams(), "OUTPUT_BIN"), true));
 
   if (!CORE::UTILS::IntegralValue<int>(IOParams(), "OUTPUT_BIN") && comm.MyPID() == 0)
   {
-    IO::cout << "==================================================\n"
-             << "=== WARNING: No binary output will be written. ===\n"
-             << "==================================================\n"
-             << IO::endl;
+    CORE::IO::cout << "==================================================\n"
+                   << "=== WARNING: No binary output will be written. ===\n"
+                   << "==================================================\n"
+                   << CORE::IO::endl;
   }
 }
 

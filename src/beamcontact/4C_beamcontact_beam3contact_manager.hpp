@@ -229,13 +229,13 @@ namespace CONTACT
     /*!
     \brief Read restart
     */
-    void read_restart(IO::DiscretizationReader& reader);
+    void read_restart(CORE::IO::DiscretizationReader& reader);
 
     /*!
     \brief Write restart
     */
-    void write_restart(Teuchos::RCP<IO::DiscretizationWriter> output);
-    void write_restart(IO::DiscretizationWriter& output);
+    void write_restart(Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+    void write_restart(CORE::IO::DiscretizationWriter& output);
 
     //@}
 

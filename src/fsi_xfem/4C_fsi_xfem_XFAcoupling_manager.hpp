@@ -68,10 +68,10 @@ namespace XFEM
     void Update(double scaling) override { return; }
 
     //! Write Output -- nothing to do here
-    void Output(IO::DiscretizationWriter& writer) override { return; }
+    void Output(CORE::IO::DiscretizationWriter& writer) override { return; }
 
     //! Read Restart -- nothing to do here
-    void read_restart(IO::DiscretizationReader& reader) override { return; }
+    void read_restart(CORE::IO::DiscretizationReader& reader) override { return; }
 
    private:
     //! Ale Object

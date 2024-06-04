@@ -44,7 +44,7 @@ void THR::TimInt::Logo()
 THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : discret_(actdis),
       myrank_(actdis->Comm().MyPID()),
       solver_(solver),
@@ -314,7 +314,8 @@ void THR::TimInt::reset_step()
  *----------------------------------------------------------------------*/
 void THR::TimInt::read_restart(const int step)
 {
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   if (step != reader.ReadInt("step")) FOUR_C_THROW("Time step on file not equal to given step");
 
   step_ = step;
@@ -333,7 +334,8 @@ void THR::TimInt::read_restart(const int step)
  *----------------------------------------------------------------------*/
 void THR::TimInt::ReadRestartState()
 {
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
   reader.ReadVector(tempn_, "temperature");
   temp_->UpdateSteps(*tempn_);
   reader.ReadVector(raten_, "rate");

@@ -25,7 +25,7 @@ Kloeppel
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationReader;
 }
@@ -217,7 +217,7 @@ namespace CONSTRAINTS
     /*!
      \brief Read restart information
     */
-    void read_restart(IO::DiscretizationReader& reader, const double& time);
+    void read_restart(CORE::IO::DiscretizationReader& reader, const double& time);
 
     /*!
      \brief Return current value

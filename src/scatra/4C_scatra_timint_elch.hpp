@@ -49,7 +49,7 @@ namespace SCATRA
         Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
 
     //! initialize algorithm
     void Init() override;
@@ -113,7 +113,7 @@ namespace SCATRA
     void output_problem_specific() override;
 
     //! read problem-specific restart data
-    void read_restart_problem_specific(int step, IO::DiscretizationReader& reader) override;
+    void read_restart_problem_specific(int step, CORE::IO::DiscretizationReader& reader) override;
 
     //! output electrode domain status information to screen and file
     void output_electrode_info_domain();
@@ -422,8 +422,8 @@ namespace SCATRA
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> splitter_macro_;
 
     //! CSV writers for SOC, c-rate and cell voltage
-    std::map<int, std::optional<IO::RuntimeCsvWriter>> runtime_csvwriter_soc_;
-    std::optional<IO::RuntimeCsvWriter> runtime_csvwriter_cell_voltage_;
+    std::map<int, std::optional<CORE::IO::RuntimeCsvWriter>> runtime_csvwriter_soc_;
+    std::optional<CORE::IO::RuntimeCsvWriter> runtime_csvwriter_cell_voltage_;
   };  // class ScaTraTimIntElch
 
 

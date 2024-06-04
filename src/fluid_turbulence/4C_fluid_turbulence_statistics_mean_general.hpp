@@ -36,11 +36,11 @@ namespace DRT
 {
   class Discretization;
 }  // namespace DRT
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationReader;
   class DiscretizationWriter;
-}  // namespace IO
+}  // namespace CORE::IO
 
 
 namespace FLD
@@ -118,7 +118,7 @@ namespace FLD
     \param (in) input reader to allow restart
 
     */
-    void ReadOldStatistics(IO::DiscretizationReader& input);
+    void ReadOldStatistics(CORE::IO::DiscretizationReader& input);
 
 
     /*!
@@ -127,7 +127,7 @@ namespace FLD
     \param (in) input reader to allow restart
 
     */
-    void read_old_statistics_sca_tra(IO::DiscretizationReader& input);
+    void read_old_statistics_sca_tra(CORE::IO::DiscretizationReader& input);
 
 
     /*!
@@ -136,7 +136,7 @@ namespace FLD
     \param (in) output context
 
     */
-    void WriteOldAverageVec(IO::DiscretizationWriter& output);
+    void WriteOldAverageVec(CORE::IO::DiscretizationWriter& output);
 
     //! @name Misc
 
@@ -183,7 +183,7 @@ namespace FLD
            (statistics was already written during call of DoOutput())
 
     */
-    void DoOutputForScaTra(IO::DiscretizationWriter& output, int step);
+    void DoOutputForScaTra(CORE::IO::DiscretizationWriter& output, int step);
 
     //@}
 

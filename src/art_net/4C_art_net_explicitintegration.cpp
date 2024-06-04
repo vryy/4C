@@ -45,7 +45,7 @@ FOUR_C_NAMESPACE_OPEN
 
 ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(Teuchos::RCP<DRT::Discretization> actdis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
-    const Teuchos::ParameterList& artparams, IO::DiscretizationWriter& output)
+    const Teuchos::ParameterList& artparams, CORE::IO::DiscretizationWriter& output)
     : TimInt(actdis, linsolvernumber, probparams, artparams, output)
 {
   //  exit(1);
@@ -772,7 +772,8 @@ void ART::ArtNetExplicitTimeInt::Output(
 void ART::ArtNetExplicitTimeInt::read_restart(int step, bool coupledTo3D)
 {
   coupledTo3D_ = coupledTo3D;
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
   time_ = reader.ReadDouble("time");
 

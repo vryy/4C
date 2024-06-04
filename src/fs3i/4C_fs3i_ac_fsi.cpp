@@ -186,7 +186,7 @@ void FS3I::ACFSI::read_restart()
 
     if (not restartfrompartfsi)  // standard restart
     {
-      IO::DiscretizationReader fluidreader = IO::DiscretizationReader(
+      CORE::IO::DiscretizationReader fluidreader = CORE::IO::DiscretizationReader(
           fsi_->fluid_field()->discretization(), input_control_file, restart);
       meanmanager_->read_restart(fluidreader);
 
@@ -200,7 +200,7 @@ void FS3I::ACFSI::read_restart()
         // reconstruct WallShearStress_lp_
         const int beginnperiodstep = get_step_of_beginn_of_this_period_and_prepare_reading(
             fsi_->fluid_field()->Step(), fsi_->fluid_field()->Time(), fsi_->fluid_field()->Dt());
-        IO::DiscretizationReader fluidreaderbeginnperiod = IO::DiscretizationReader(
+        CORE::IO::DiscretizationReader fluidreaderbeginnperiod = CORE::IO::DiscretizationReader(
             fsi_->fluid_field()->discretization(), input_control_file, beginnperiodstep);
 
         // some safety check:
@@ -232,7 +232,7 @@ void FS3I::ACFSI::read_restart()
           // from a partitioned FSI
     {
       // AC-FSI specific input
-      IO::DiscretizationReader reader = IO::DiscretizationReader(
+      CORE::IO::DiscretizationReader reader = CORE::IO::DiscretizationReader(
           fsi_->fluid_field()->discretization(), input_control_file, restart);
       reader.ReadVector(wall_shear_stress_lp_, "wss");
     }
@@ -750,14 +750,14 @@ double FS3I::ACFSI::get_step_of_one_period_ago_and_prepare_reading(
     std::string filename = GetFileName(previousperiodstep);
     // we always have to recreate the InputControl() since our Inputfile (=Outputfile) has changed
     // in since the last reading (new timestep written)
-    Teuchos::RCP<IO::InputControl> inputreader =
-        Teuchos::rcp(new IO::InputControl(filename, Comm()));
+    Teuchos::RCP<CORE::IO::InputControl> inputreader =
+        Teuchos::rcp(new CORE::IO::InputControl(filename, Comm()));
     // overwrite existing InputControl()
     GLOBAL::Problem::Instance()->SetInputControlFile(inputreader);
 
     // AC-FSI specific input
-    IO::DiscretizationReader reader =
-        IO::DiscretizationReader(fsi_->fluid_field()->discretization(),
+    CORE::IO::DiscretizationReader reader =
+        CORE::IO::DiscretizationReader(fsi_->fluid_field()->discretization(),
             GLOBAL::Problem::Instance()->InputControlFile(), previousperiodstep);
 
     double previousperiodtime = reader.ReadDouble("time");
@@ -793,14 +793,14 @@ double FS3I::ACFSI::get_step_of_beginn_of_this_period_and_prepare_reading(
     std::string filename = GetFileName(teststep);
     // we always have to recreate the InputControl() since our Inputfile (=Outputfile) has changed
     // in since the last reading (new timestep written)
-    Teuchos::RCP<IO::InputControl> inputreader =
-        Teuchos::rcp(new IO::InputControl(filename, Comm()));
+    Teuchos::RCP<CORE::IO::InputControl> inputreader =
+        Teuchos::rcp(new CORE::IO::InputControl(filename, Comm()));
     // overwrite existing InputControl()
     GLOBAL::Problem::Instance()->SetInputControlFile(inputreader);
 
     // AC-FSI specific input
-    IO::DiscretizationReader reader =
-        IO::DiscretizationReader(fsi_->fluid_field()->discretization(),
+    CORE::IO::DiscretizationReader reader =
+        CORE::IO::DiscretizationReader(fsi_->fluid_field()->discretization(),
             GLOBAL::Problem::Instance()->InputControlFile(), teststep);
 
     double testtime = reader.ReadDouble("time");
@@ -972,14 +972,16 @@ void FS3I::ACFSI::FsiOutput()
   if ((step_ % upresults == 0) or (uprestart != 0 && step_ % uprestart == 0) or
       modulo_is_realtive_zero(time_, fsiperiod_, time_))
   {
-    Teuchos::RCP<IO::DiscretizationWriter> fluiddiskwriter = fsi_->fluid_field()->DiscWriter();
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> fluiddiskwriter =
+        fsi_->fluid_field()->DiscWriter();
     fluiddiskwriter->WriteVector("wss_mean", wall_shear_stress_lp_);
   }
   // AC specific fluid output iff it is a restart step or we are at the end of a fsi circle
   if ((uprestart != 0 && step_ % uprestart == 0) or
       modulo_is_realtive_zero(time_, fsiperiod_, time_))
   {
-    Teuchos::RCP<IO::DiscretizationWriter> fluiddiskwriter = fsi_->fluid_field()->DiscWriter();
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> fluiddiskwriter =
+        fsi_->fluid_field()->DiscWriter();
 
     // fluiddiskwriter->WriteVector("wss", fsi_->fluid_field()->calculate_wall_shear_stresses());
     meanmanager_->write_restart(fluiddiskwriter);

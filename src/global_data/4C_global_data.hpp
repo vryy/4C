@@ -32,11 +32,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   class OutputControl;
   class InputControl;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace CORE::COMM
 {
@@ -173,7 +173,7 @@ namespace GLOBAL
     /// set restart step which was read from the command line
     void SetRestartStep(int r);
 
-    void SetInputControlFile(Teuchos::RCP<IO::InputControl>& input) { inputcontrol_ = input; }
+    void SetInputControlFile(Teuchos::RCP<CORE::IO::InputControl>& input) { inputcontrol_ = input; }
 
     /// manipulate problem type
     void SetProblemType(GLOBAL::ProblemType targettype);
@@ -216,10 +216,10 @@ namespace GLOBAL
         const std::string& restartkenner);
 
     /// control file for restart read
-    Teuchos::RCP<IO::InputControl> InputControlFile() { return inputcontrol_; }
+    Teuchos::RCP<CORE::IO::InputControl> InputControlFile() { return inputcontrol_; }
 
     /// control file for normal output
-    Teuchos::RCP<IO::OutputControl> OutputControlFile() { return outputcontrol_; }
+    Teuchos::RCP<CORE::IO::OutputControl> OutputControlFile() { return outputcontrol_; }
 
     /// write parameters read from input file for documentation
     void write_input_parameters();
@@ -558,7 +558,7 @@ namespace GLOBAL
     CORE::UTILS::Random* Random() { return &random_; }
 
     /// Return the class that handles restart initiating -> to be extended
-    IO::RestartManager* RestartManager() { return &restartmanager_; }
+    CORE::IO::RestartManager* RestartManager() { return &restartmanager_; }
 
     /**
      * Set the @p function_manager which contains all parsed functions.
@@ -613,8 +613,8 @@ namespace GLOBAL
 
     /// @name File IO
 
-    Teuchos::RCP<IO::InputControl> inputcontrol_;
-    Teuchos::RCP<IO::OutputControl> outputcontrol_;
+    Teuchos::RCP<CORE::IO::InputControl> inputcontrol_;
+    Teuchos::RCP<CORE::IO::OutputControl> outputcontrol_;
 
     //@}
 
@@ -622,7 +622,7 @@ namespace GLOBAL
     CORE::UTILS::Random random_;
 
     /// handles restart
-    IO::RestartManager restartmanager_;
+    CORE::IO::RestartManager restartmanager_;
 
     //! The central list of all paramters read from input.
     Teuchos::RCP<Teuchos::ParameterList> parameters_;

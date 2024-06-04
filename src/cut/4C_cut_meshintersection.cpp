@@ -270,7 +270,7 @@ void CORE::GEO::CUT::MeshIntersection::Cut_SelfCut(bool include_inner, bool scre
   Teuchos::RCP<PointPool> point_pool = CutMesh().Points();
   if (CutMesh().GetOptions().Do_SelfCut())
   {
-    if (myrank_ == 0 and screenoutput) IO::cout << "\t * 2/6 Cut_SelfCut ...      ";
+    if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\t * 2/6 Cut_SelfCut ...      ";
 
     point_pool->SetMergeStrategy(PointpoolMergeStrategy::SelfCutLoad);
 
@@ -279,7 +279,7 @@ void CORE::GEO::CUT::MeshIntersection::Cut_SelfCut(bool include_inner, bool scre
     selfcut.PerformSelfCut();
   }
   else if (myrank_ == 0 and screenoutput)
-    IO::cout << "\t *2/6 (Skip Cut_SelfCut) ...";
+    CORE::IO::cout << "\t *2/6 (Skip Cut_SelfCut) ...";
 
   point_pool->SetMergeStrategy(PointpoolMergeStrategy::NormalCutLoad);
 }
@@ -293,7 +293,7 @@ void CORE::GEO::CUT::MeshIntersection::cut_collision_detection(
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 3/6 --- cut_collision_detection");
 
-  if (myrank_ == 0 and screenoutput) IO::cout << "\t * 3/6 cut_collision_detection ...";
+  if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\t * 3/6 cut_collision_detection ...";
 
   Mesh& m = NormalMesh();
 
@@ -310,7 +310,7 @@ void CORE::GEO::CUT::MeshIntersection::cut_mesh_intersection(bool screenoutput)
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection");
 
-  if (myrank_ == 0 and screenoutput) IO::cout << "\t * 4/6 cut_mesh_intersection ...";
+  if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\t * 4/6 cut_mesh_intersection ...";
 
   //----------------------------------------------------------
 
@@ -331,7 +331,7 @@ void CORE::GEO::CUT::MeshIntersection::cut_positions_dofsets(bool include_inner,
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets (serial)");
 
-  if (myrank_ == 0 and screenoutput) IO::cout << "\t * 5/6 cut_positions_dofsets ...";
+  if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\t * 5/6 cut_positions_dofsets ...";
 
   //----------------------------------------------------------
 

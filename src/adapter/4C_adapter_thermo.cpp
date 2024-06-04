@@ -84,7 +84,7 @@ void ADAPTER::ThermoBaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& p
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis->Writer();
   output->WriteMesh(0, 0.0);
 
   //  // get input parameter lists and copy them, because a few parameters are overwritten
@@ -96,7 +96,7 @@ void ADAPTER::ThermoBaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& p
   //  //  = GLOBAL::Problem::Instance()->ProblemSizeParams();
 
   // show default parameters of thermo parameter list
-  if ((actdis->Comm()).MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, *tdyn);
+  if ((actdis->Comm()).MyPID() == 0) INPUT::PrintDefaultParameters(CORE::IO::cout, *tdyn);
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());

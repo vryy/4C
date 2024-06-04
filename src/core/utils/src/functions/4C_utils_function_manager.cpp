@@ -108,7 +108,7 @@ void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& functio
           .add_optional_named_double_vector("VALUES", LengthFromIntNamed("NUMPOINTS"))
           .add_optional_named_string_vector("DESCRIPTION",
               // Special case where only NUMPOINTS-1 are taken
-              [](const IO::InputParameterContainer& already_read_line)
+              [](const CORE::IO::InputParameterContainer& already_read_line)
               {
                 try
                 {
@@ -172,8 +172,9 @@ void CORE::UTILS::FunctionManager::ReadInput(INPUT::DatFileReader& reader)
         {
           for (auto& [possible_lines, function_factory] : attached_function_data_)
           {
-            auto [parsed_lines, unparsed_lines] = IO::DatFileUtils::read_matching_lines_in_section(
-                reader, "FUNCT" + std::to_string(funct_suffix), possible_lines);
+            auto [parsed_lines, unparsed_lines] =
+                CORE::IO::DatFileUtils::read_matching_lines_in_section(
+                    reader, "FUNCT" + std::to_string(funct_suffix), possible_lines);
 
             // A convoluted way of saying that there are no lines in the section, thus, stop
             // parsing. This can only be refactored if the reading mechanism is overhauled in

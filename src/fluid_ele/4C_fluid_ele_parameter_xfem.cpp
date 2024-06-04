@@ -59,9 +59,10 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::check_parameter_consistency(int myran
       coupling_method_ == INPAR::XFEM::Hybrid_LM_viscous_stress)
   {
     if (myrank == 0)
-      IO::cout << "Be warned: the symmetric hybrid/viscous stress-based LM approach is known for "
-                  "unstable behaviour in xfluid-fluid problems."
-               << IO::endl;
+      CORE::IO::cout
+          << "Be warned: the symmetric hybrid/viscous stress-based LM approach is known for "
+             "unstable behaviour in xfluid-fluid problems."
+          << CORE::IO::endl;
   }
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -70,17 +71,19 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::check_parameter_consistency(int myran
     case INPAR::XFEM::PreviousState_only_consistency:
     {
       if (myrank == 0)
-        IO::cout << "Treatment of interface terms in case of new OST: ONLY CONSISTENCY \n"
-                 << "only standard consistency terms at t_n!\n"
-                 << "Be careful in cases of non-stationary XFEM interfaces." << IO::endl;
+        CORE::IO::cout << "Treatment of interface terms in case of new OST: ONLY CONSISTENCY \n"
+                       << "only standard consistency terms at t_n!\n"
+                       << "Be careful in cases of non-stationary XFEM interfaces."
+                       << CORE::IO::endl;
       break;
     }
     case INPAR::XFEM::PreviousState_full:
     {
       if (myrank == 0)
-        IO::cout << "Treatment of interface terms in case of new OST: FULL \n"
-                 << "all interface terms at t_n (standard + adjoint + penalty)!\n"
-                 << "Be careful in cases of non-stationary XFEM interfaces." << IO::endl;
+        CORE::IO::cout << "Treatment of interface terms in case of new OST: FULL \n"
+                       << "all interface terms at t_n (standard + adjoint + penalty)!\n"
+                       << "Be careful in cases of non-stationary XFEM interfaces."
+                       << CORE::IO::endl;
       break;
     }
     default:
@@ -143,11 +146,12 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::check_parameter_consistency_for_avera
                             ViscStabHK() == INPAR::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf))
   {
     if (myrank == 0)
-      IO::cout << "Be warned: the chosen characteristic element length definition ViscStabHK can "
-                  "become critical for xfluid-sided Nitsche method as the current definition "
-                  "either can not guarantee a sufficient estimate of the inverse inequality or can "
-                  "lead to cut position dependent error behaviour!"
-               << IO::endl;
+      CORE::IO::cout
+          << "Be warned: the chosen characteristic element length definition ViscStabHK can "
+             "become critical for xfluid-sided Nitsche method as the current definition "
+             "either can not guarantee a sufficient estimate of the inverse inequality or can "
+             "lead to cut position dependent error behaviour!"
+          << CORE::IO::endl;
   }
 }
 

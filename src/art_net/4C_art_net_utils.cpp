@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 Teuchos::RCP<ADAPTER::ArtNet> ART::UTILS::CreateAlgorithm(
     INPAR::ARTDYN::TimeIntegrationScheme timintscheme, Teuchos::RCP<DRT::Discretization> dis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
-    const Teuchos::ParameterList& artparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    const Teuchos::ParameterList& artparams, Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
 {
   // Creation of Coupled Problem algortihm.
   Teuchos::RCP<ADAPTER::ArtNet> algo = Teuchos::null;

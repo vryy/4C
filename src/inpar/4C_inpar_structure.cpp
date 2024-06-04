@@ -328,7 +328,8 @@ namespace INPAR
       // where the geometry comes from
       setStringToIntegralParameter<int>("GEOMETRY", "full", "How the geometry is specified",
           tuple<std::string>("full", "box", "file"),
-          tuple<int>(IO::geometry_full, IO::geometry_box, IO::geometry_file), &sdyn);
+          tuple<int>(CORE::IO::geometry_full, CORE::IO::geometry_box, CORE::IO::geometry_file),
+          &sdyn);
 
       setStringToIntegralParameter<int>("MIDTIME_ENERGY_TYPE", "vague",
           "Specify the mid-averaging type for the structural energy contributions",

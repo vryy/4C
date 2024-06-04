@@ -25,11 +25,11 @@ namespace CORE::LINALG
   class MultiMapExtractor;
 }  // namespace CORE::LINALG
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace XFEM
 {
@@ -69,10 +69,10 @@ namespace XFEM
     virtual void Update(double scaling) = 0;
 
     //! Write Output (For restart or write results on the interface)
-    virtual void Output(IO::DiscretizationWriter& writer) = 0;
+    virtual void Output(CORE::IO::DiscretizationWriter& writer) = 0;
 
     //! Read Restart (For quantities stored on the interface)
-    virtual void read_restart(IO::DiscretizationReader& reader) = 0;
+    virtual void read_restart(CORE::IO::DiscretizationReader& reader) = 0;
   };
 }  // namespace XFEM
 

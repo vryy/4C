@@ -39,20 +39,24 @@ namespace CORE::GEOMETRICSEARCH
 
     if (myrank == 0)
     {
-      IO::cout(IO::verbose) << "\n   Collision search:" << IO::endl;
-      IO::cout(IO::verbose) << "   +-----+------------+------------+--------------+" << IO::endl;
-      IO::cout(IO::verbose) << "   | PID | primitives | predicates |  found pairs |" << IO::endl;
-      IO::cout(IO::verbose) << "   +-----+------------+------------+--------------+" << IO::endl;
+      CORE::IO::cout(CORE::IO::verbose) << "\n   Collision search:" << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "   +-----+------------+------------+--------------+" << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "   | PID | primitives | predicates |  found pairs |" << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "   +-----+------------+------------+--------------+" << CORE::IO::endl;
 
       for (int npid = 0; npid < numproc; ++npid)
       {
-        IO::cout(IO::verbose) << "   | " << std::setw(3) << npid << " | " << std::setw(10)
-                              << primitive_size[npid] << " | " << std::setw(10)
-                              << predicate_size[npid] << " | " << std::setw(12)
-                              << coupling_pair_size[npid] << " | " << IO::endl;
-        IO::cout(IO::verbose) << "   +-----+------------+------------+--------------+" << IO::endl;
+        CORE::IO::cout(CORE::IO::verbose)
+            << "   | " << std::setw(3) << npid << " | " << std::setw(10) << primitive_size[npid]
+            << " | " << std::setw(10) << predicate_size[npid] << " | " << std::setw(12)
+            << coupling_pair_size[npid] << " | " << CORE::IO::endl;
+        CORE::IO::cout(CORE::IO::verbose)
+            << "   +-----+------------+------------+--------------+" << CORE::IO::endl;
       }
-      IO::cout(IO::verbose) << IO::endl;
+      CORE::IO::cout(CORE::IO::verbose) << CORE::IO::endl;
     }
   }
 

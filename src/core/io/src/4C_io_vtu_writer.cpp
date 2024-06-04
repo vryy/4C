@@ -95,10 +95,10 @@ const std::string& VtuWriter::writer_p_suffix() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void VtuWriter::write_geometry_unstructured_grid(const std::vector<double>& point_coordinates,
-    const std::vector<IO::index_type>& point_cell_connectivity,
-    const std::vector<IO::index_type>& cell_offset, const std::vector<uint8_t>& cell_types,
-    const std::vector<IO::index_type>& face_connectivity,
-    const std::vector<IO::index_type>& face_offset)
+    const std::vector<CORE::IO::index_type>& point_cell_connectivity,
+    const std::vector<CORE::IO::index_type>& cell_offset, const std::vector<uint8_t>& cell_types,
+    const std::vector<CORE::IO::index_type>& face_connectivity,
+    const std::vector<CORE::IO::index_type>& face_offset)
 {
   // always assume 3D for now Todo maybe use this as template to allow for 2D case
   const unsigned int num_spatial_dimensions = 3;
@@ -270,7 +270,7 @@ void VtuWriter::write_geometry_unstructured_grid(const std::vector<double>& poin
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtuWriter::write_point_data_vector(const IO::visualization_vector_type_variant& data,
+void VtuWriter::write_point_data_vector(const CORE::IO::visualization_vector_type_variant& data,
     unsigned int num_components_per_point, const std::string& name)
 {
   // start the point data section that will be written subsequently
@@ -297,12 +297,13 @@ void VtuWriter::write_point_data_vector(const IO::visualization_vector_type_vari
   this->write_data_array(data, num_components_per_point, name);
 
   if (myrank_ == 0)
-    IO::cout(IO::debug) << "\nVtuWriter: point data " << name << " written." << IO::endl;
+    CORE::IO::cout(CORE::IO::debug)
+        << "\nVtuWriter: point data " << name << " written." << CORE::IO::endl;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtuWriter::WriteCellDataVector(const IO::visualization_vector_type_variant& data,
+void VtuWriter::WriteCellDataVector(const CORE::IO::visualization_vector_type_variant& data,
     unsigned int num_components_per_cell, const std::string& name)
 {
   // if required, end the point data section
@@ -342,7 +343,8 @@ void VtuWriter::WriteCellDataVector(const IO::visualization_vector_type_variant&
   this->write_data_array(data, num_components_per_cell, name);
 
   if (myrank_ == 0)
-    IO::cout(IO::debug) << "\nVtuWriter: cell data " << name << " written." << IO::endl;
+    CORE::IO::cout(CORE::IO::debug)
+        << "\nVtuWriter: cell data " << name << " written." << CORE::IO::endl;
 }
 
 FOUR_C_NAMESPACE_CLOSE

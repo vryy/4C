@@ -522,7 +522,7 @@ void STR::ModelEvaluator::Predict(const INPAR::STR::PredEnum& pred_type) const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
   Vector::iterator me_iter;
@@ -532,7 +532,7 @@ void STR::ModelEvaluator::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::read_restart(IO::DiscretizationReader& ioreader)
+void STR::ModelEvaluator::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   Vector::iterator me_iter;
@@ -772,7 +772,7 @@ void STR::ModelEvaluator::determine_optional_quantity()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::OutputStepState(IO::DiscretizationWriter& iowriter) const
+void STR::ModelEvaluator::OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
   Vector::const_iterator me_iter;

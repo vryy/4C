@@ -82,7 +82,7 @@ namespace
 
       // set up elastic material to be added to problem instance
       const int matid_elastic(1);
-      IO::InputParameterContainer mat_elastic_neo_hooke_data;
+      CORE::IO::InputParameterContainer mat_elastic_neo_hooke_data;
       mat_elastic_neo_hooke_data.Add("YOUNG", 1.5e2);
       mat_elastic_neo_hooke_data.Add("NUE", 0.3);
 
@@ -93,7 +93,7 @@ namespace
 
       // set up inelastic material to be added to problem instance
       const int inelastic_defgrad_id(2);
-      IO::InputParameterContainer mat_inelastic_data;
+      CORE::IO::InputParameterContainer mat_inelastic_data;
       mat_inelastic_data.Add("SCALAR1", 1);
       mat_inelastic_data.Add("SCALAR1_MolarGrowthFac", 1.1);
       mat_inelastic_data.Add("SCALAR1_RefConc", 1.2);

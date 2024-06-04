@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   /**
    * \brief Add the element geometry visualization for elements that use Lagrange shape functions
@@ -374,7 +374,7 @@ namespace IO
         });
   }
 
-}  // namespace IO
+}  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 FLD::TimIntHDGWeakComp::TimIntHDGWeakComp(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid)
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntGenAlpha(actdis, solver, params, output, alefluid),
       timealgoset_(INPAR::FLUID::timeint_afgenalpha),
@@ -753,12 +753,12 @@ void FLD::TimIntHDGWeakComp::Output()
     }
 
     // write solution variables
-    output_->WriteVector("Mixedvar", interpolatedMixedVar_, IO::nodevector);
-    output_->WriteVector("Density", interpolatedDensity_, IO::nodevector);
-    output_->WriteVector("Trace_density", traceDen, IO::nodevector);
+    output_->WriteVector("Mixedvar", interpolatedMixedVar_, CORE::IO::nodevector);
+    output_->WriteVector("Density", interpolatedDensity_, CORE::IO::nodevector);
+    output_->WriteVector("Trace_density", traceDen, CORE::IO::nodevector);
 
     // write derived variables
-    output_->WriteVector("Pressure", interpolatedPressure, IO::nodevector);
+    output_->WriteVector("Pressure", interpolatedPressure, CORE::IO::nodevector);
 
     // write ALE variables
     if (alefluid_)
@@ -768,7 +768,7 @@ void FLD::TimIntHDGWeakComp::Output()
       for (int i = 0; i < interpolatedDensity_->MyLength(); ++i)
         for (unsigned int d = 0; d < nsd; ++d) (*AleDisplacement)[d][i] = (*dispnp_)[(i * nsd) + d];
 
-      output_->WriteVector("Ale_displacement", AleDisplacement, IO::nodevector);
+      output_->WriteVector("Ale_displacement", AleDisplacement, CORE::IO::nodevector);
     }
 
     if (step_ == upres_ or step_ == 0) output_->WriteElementData(true);

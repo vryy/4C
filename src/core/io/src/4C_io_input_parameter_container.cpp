@@ -15,7 +15,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-std::ostream& operator<<(std::ostream& os, const IO::InputParameterContainer& cont)
+std::ostream& operator<<(std::ostream& os, const CORE::IO::InputParameterContainer& cont)
 {
   cont.Print(os);
   return os;
@@ -62,7 +62,7 @@ namespace
 }  // namespace
 
 
-void IO::InputParameterContainer::Print(std::ostream& os) const
+void CORE::IO::InputParameterContainer::Print(std::ostream& os) const
 {
   PrintHelper printer{os};
   printer(intdata_);

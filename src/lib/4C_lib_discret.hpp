@@ -71,10 +71,10 @@ namespace CORE::UTILS
   class FunctionManager;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace GLOBAL
 {
@@ -198,10 +198,13 @@ namespace DRT
     /*!
     \brief Get output writer for this discretization
 
-    \warning This routine does not verify if a valid IO::DiscretizationWriter has
+    \warning This routine does not verify if a valid CORE::IO::DiscretizationWriter has
     been set. If not, this will cause a segmentation fault.
     */
-    [[nodiscard]] virtual Teuchos::RCP<IO::DiscretizationWriter> Writer() const { return writer_; }
+    [[nodiscard]] virtual Teuchos::RCP<CORE::IO::DiscretizationWriter> Writer() const
+    {
+      return writer_;
+    }
 
     /*!
     \brief Get flag indicating whether fill_complete() has been called
@@ -938,7 +941,10 @@ namespace DRT
     /*!
     \brief Set a DiscretizationWriter
     */
-    virtual void SetWriter(Teuchos::RCP<IO::DiscretizationWriter> writer) { writer_ = writer; }
+    virtual void SetWriter(Teuchos::RCP<CORE::IO::DiscretizationWriter> writer)
+    {
+      writer_ = writer;
+    }
 
     /*!
     \brief Add an element to the discretization (Filled()==true NOT prerequisite)
@@ -2232,7 +2238,7 @@ namespace DRT
     Teuchos::RCP<Epetra_Comm> comm_;
 
     //! DiscretizationWriter
-    Teuchos::RCP<IO::DiscretizationWriter> writer_;
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> writer_;
 
     //! Flag indicating whether fill_complete() has been called
     bool filled_;

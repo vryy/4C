@@ -66,7 +66,7 @@ void THR::TimIntGenAlpha::VerifyCoeff()
 THR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : TimIntImpl(ioparams, tdynparams, xparams, actdis, solver, output),
       midavg_(CORE::UTILS::IntegralValue<INPAR::THR::MidAverageEnum>(
           tdynparams.sublist("GENALPHA"), "GENAVG")),
@@ -429,7 +429,8 @@ void THR::TimIntGenAlpha::UpdateStepElement()
 void THR::TimIntGenAlpha::ReadRestartForce()
 {
   // read the vectors that were written in WriteRestartForce()
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
   reader.ReadVector(fext_, "fexternal");
   reader.ReadVector(fint_, "fint");
   reader.ReadVector(fcap_, "fcap");
@@ -443,7 +444,7 @@ void THR::TimIntGenAlpha::ReadRestartForce()
 /*----------------------------------------------------------------------*
  | write internal and external forces for restart            dano 07/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+void THR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
 {
   // in contrast to former implementation we save the current vectors.
   // This is required in case of materials with history.

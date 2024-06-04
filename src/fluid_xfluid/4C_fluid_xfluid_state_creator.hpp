@@ -42,7 +42,7 @@ namespace CORE::LINALG
   class MapExtractor;
 }  // namespace CORE::LINALG
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }

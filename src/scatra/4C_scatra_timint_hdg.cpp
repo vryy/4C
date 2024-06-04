@@ -34,7 +34,7 @@ SCATRA::TimIntHDG::TimIntHDG(const Teuchos::RCP<DRT::Discretization> &actdis,
     const Teuchos::RCP<CORE::LINALG::Solver> &solver,
     const Teuchos::RCP<Teuchos::ParameterList> &params,
     const Teuchos::RCP<Teuchos::ParameterList> &extraparams,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output),
       TimIntGenAlpha(actdis, solver, params, extraparams, output),
       nds_intvar_(2),
@@ -364,13 +364,13 @@ void SCATRA::TimIntHDG::output_state()
       discret_->NumDofSets());
 
   // write vector to output file
-  output_->WriteVector("phi_hdg", interpolatedPhinp_, IO::nodevector);
-  output_->WriteVector("gradphi_hdg", interpolatedGradPhi, IO::nodevector);
-  output_->WriteVector("tracephi_hdg", interpolatedtracePhi, IO::nodevector);
+  output_->WriteVector("phi_hdg", interpolatedPhinp_, CORE::IO::nodevector);
+  output_->WriteVector("gradphi_hdg", interpolatedGradPhi, CORE::IO::nodevector);
+  output_->WriteVector("tracephi_hdg", interpolatedtracePhi, CORE::IO::nodevector);
 
   write_problem_specific_output(interpolatedPhinp_);
 
-  output_->WriteVector("elementdegree", elementdegree_, IO::elementvector);
+  output_->WriteVector("elementdegree", elementdegree_, CORE::IO::elementvector);
 
 }  // output_state
 
@@ -390,9 +390,10 @@ void SCATRA::TimIntHDG::write_restart() const
 /*----------------------------------------------------------------------*
  | read restart                                          hoermann 09/15 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::read_restart(const int step, Teuchos::RCP<IO::InputControl> input)
+void SCATRA::TimIntHDG::read_restart(const int step, Teuchos::RCP<CORE::IO::InputControl> input)
 {
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");

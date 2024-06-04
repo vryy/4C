@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   /**
    * Read all nodes that are defined in section @p node_section_name in the @p reader.
@@ -32,7 +32,7 @@ namespace IO
   void ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_section_name,
       std::vector<ElementReader>& element_readers, int& max_node_id);
 
-}  // namespace IO
+}  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -62,7 +62,10 @@ namespace ADAPTER
     virtual double TimIntParam() const { return structure_->TimIntParam(); }
 
     /// Access to output object
-    virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() { return structure_->DiscWriter(); }
+    virtual Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter()
+    {
+      return structure_->DiscWriter();
+    }
 
     /// unknown displacements at \f$t_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const { return structure_->Dispnp(); }

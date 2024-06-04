@@ -46,7 +46,7 @@ namespace CORE::Dofsets
   class DofSet;
 }  // namespace CORE::Dofsets
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -76,7 +76,7 @@ namespace LUBRICATION
   class TimIntImpl
   {
    public:
-    virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() { return output_; }
+    virtual Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() { return output_; }
 
     Teuchos::RCP<Epetra_Vector>& InfGapToggle() { return inf_gap_toggle_lub_; }
 
@@ -88,7 +88,7 @@ namespace LUBRICATION
     TimIntImpl(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::Solver> solver,
         Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
 
     //! Destructor
     virtual ~TimIntImpl() = default;
@@ -452,7 +452,7 @@ namespace LUBRICATION
     Teuchos::RCP<DRT::Discretization> discret_;
 
     //! the discretization writer
-    Teuchos::RCP<IO::DiscretizationWriter> output_;
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;
 
     //! system matrix (either sparse matrix or block sparse matrix)
     Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;

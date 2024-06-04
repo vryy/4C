@@ -480,7 +480,7 @@ void PARTICLEINTERACTION::DEMAdhesion::evaluate_particle_wall_adhesion()
   if (writeinteractionoutput)
   {
     // get specific runtime output writer
-    IO::VisualizationManager* visualization_manager =
+    CORE::IO::VisualizationManager* visualization_manager =
         particleinteractionwriter_->get_specific_runtime_output_writer("particle-wall-adhesion");
     auto& visualization_data = visualization_manager->get_visualization_data();
 

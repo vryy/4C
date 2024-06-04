@@ -264,7 +264,7 @@ namespace ADAPTER
     void update_iter_incr_cardiovascular0_d(Teuchos::RCP<Epetra_Vector> presincr) override = 0;
 
     /// Access to output object
-    Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() override = 0;
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() override = 0;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     void prepare_output(bool force_prepare_timestep) override = 0;

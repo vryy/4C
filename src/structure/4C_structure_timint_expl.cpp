@@ -35,8 +35,8 @@ STR::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& timeparams,  //! time 
     const Teuchos::ParameterList& xparams,                             //!< extra flags
     Teuchos::RCP<DRT::Discretization> actdis,                          //!< current discretisation
     Teuchos::RCP<CORE::LINALG::Solver> solver,                         //!< the solver
-    Teuchos::RCP<CORE::LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
-    Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
+    Teuchos::RCP<CORE::LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< the output
     )
     : TimInt(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output)
 {

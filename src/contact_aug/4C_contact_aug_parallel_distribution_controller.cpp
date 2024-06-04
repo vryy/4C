@@ -47,7 +47,7 @@ void CONTACT::AUG::ParallelDistributionController::check(CONTACT::ParamsInterfac
   cparams.ClearEntry(CORE::GEN::AnyDataContainer::DataType::time_monitor, 0);
   cparams.ClearEntry(CORE::GEN::AnyDataContainer::DataType::any, 0);
 
-  global_timer_.write(IO::cout.os(IO::verbose));
+  global_timer_.write(CORE::IO::cout.os(CORE::IO::verbose));
 
   if (data_.GSeleEvalTimesPtr().is_null() or
       not sele_eval_times_->Map().SameAs(data_.GSeleEvalTimesPtr()->Map()))

@@ -83,7 +83,7 @@ void CONSTRAINTS::SpringDashpotManager::ResetPrestress(Teuchos::RCP<Epetra_Vecto
   return;
 }
 
-void CONSTRAINTS::SpringDashpotManager::Output(Teuchos::RCP<IO::DiscretizationWriter> output,
+void CONSTRAINTS::SpringDashpotManager::Output(Teuchos::RCP<CORE::IO::DiscretizationWriter> output,
     Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp)
 {
   // row maps for export
@@ -121,7 +121,7 @@ void CONSTRAINTS::SpringDashpotManager::Output(Teuchos::RCP<IO::DiscretizationWr
 }
 
 void CONSTRAINTS::SpringDashpotManager::output_restart(
-    Teuchos::RCP<IO::DiscretizationWriter> output, Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output, Teuchos::RCP<DRT::Discretization> discret,
     Teuchos::RCP<Epetra_Vector> disp)
 {
   // row maps for export
@@ -160,7 +160,7 @@ void CONSTRAINTS::SpringDashpotManager::output_restart(
 |Read restart information                                               |
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpotManager::read_restart(
-    IO::DiscretizationReader& reader, const double& time)
+    CORE::IO::DiscretizationReader& reader, const double& time)
 {
   Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(*actdisc_->dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> tempvecold =

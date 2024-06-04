@@ -72,7 +72,7 @@ void BINSTRATEGY::BinningStrategy::Init(
 
   // create discretization writer
   bindis_->SetWriter(Teuchos::rcp(
-      new IO::DiscretizationWriter(bindis_, GLOBAL::Problem::Instance()->OutputControlFile(),
+      new CORE::IO::DiscretizationWriter(bindis_, GLOBAL::Problem::Instance()->OutputControlFile(),
           GLOBAL::Problem::Instance()->spatial_approximation_type())));
   bindis_->fill_complete(false, false, false);
 
@@ -532,10 +532,11 @@ void BINSTRATEGY::BinningStrategy::BuildPeriodicBC()
         // output pbc bounds based on XAABB of bins
         if (myrank_ == 0)
         {
-          IO::cout(IO::verbose)
+          CORE::IO::cout(CORE::IO::verbose)
               << "INFO: PBC bounds for particles is computed automatically for direction " << dim
               << " based on XAABB of bins (left: " << domain_bounding_box_corner_positions_(dim, 0)
-              << " , right: " << domain_bounding_box_corner_positions_(dim, 1) << " )" << IO::endl;
+              << " , right: " << domain_bounding_box_corner_positions_(dim, 1) << " )"
+              << CORE::IO::endl;
         }
 
         // set flag
@@ -653,8 +654,8 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
   if (writebinstype_ == INPAR::BINSTRATEGY::none) return;
 
   if (myrank_ == 0)
-    IO::cout(IO::verbose) << "\nBinning discretization output (step " << step << ", time " << time
-                          << ") written." << IO::endl;
+    CORE::IO::cout(CORE::IO::verbose) << "\nBinning discretization output (step " << step
+                                      << ", time " << time << ") written." << CORE::IO::endl;
 
   // -------------------------------------------------------------------------
   // note: this is a debug feature only (as very expensive)
@@ -666,9 +667,9 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(bindis_->Comm().Clone());
   visbindis_ = Teuchos::rcp(new DRT::Discretization("bins", com));
   // create discretization writer
-  visbindis_->SetWriter(Teuchos::rcp(
-      new IO::DiscretizationWriter(visbindis_, GLOBAL::Problem::Instance()->OutputControlFile(),
-          GLOBAL::Problem::Instance()->spatial_approximation_type())));
+  visbindis_->SetWriter(Teuchos::rcp(new CORE::IO::DiscretizationWriter(visbindis_,
+      GLOBAL::Problem::Instance()->OutputControlFile(),
+      GLOBAL::Problem::Instance()->spatial_approximation_type())));
 
   // store gids of ghosted elements
   std::map<int, std::vector<CORE::LINALG::Matrix<3, 1>>> ghostcorners;
@@ -782,7 +783,7 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
   // write output
   visbindis_->Writer()->WriteMesh(step, time);
   visbindis_->Writer()->NewStep(step, time);
-  visbindis_->Writer()->WriteVector("owner0ghost1", ownedghostsvec, IO::elementvector);
+  visbindis_->Writer()->WriteVector("owner0ghost1", ownedghostsvec, CORE::IO::elementvector);
   visbindis_->Writer()->WriteElementData(true);
 
   visbindis_->ClearDiscret();

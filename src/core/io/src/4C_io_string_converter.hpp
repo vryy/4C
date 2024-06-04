@@ -31,7 +31,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace IO
+namespace CORE::IO
 {
   /*!
    * @brief Convert a string matching a predefined pattern into an object of type T.
@@ -44,7 +44,7 @@ namespace IO
    *
    * @code
    *   std::string str = "1: 1.0, 2.0, 3.0; 2: 4.0, 5.0, 6.0; 3: 7.0, 8.0, 9.0"
-   *   auto data = IO::StringConverter<std::map<int, std::vector<double>>>::Parse(str);
+   *   auto data = CORE::IO::StringConverter<std::map<int, std::vector<double>>>::Parse(str);
    * @endcode
    *
    * We distinguish map-compatible and list-compatible data types and the associated map-like
@@ -241,7 +241,7 @@ namespace IO
     {
       CheckDimension(split_str, N);
       for (unsigned int i = 0; i < N; ++i)
-        t[i] = IO::StringConverter<ValueType>::Parse(split_str[i]);
+        t[i] = CORE::IO::StringConverter<ValueType>::Parse(split_str[i]);
     }
 
     /**
@@ -253,7 +253,7 @@ namespace IO
     void ParseSplitString(std::pair<Key, Value> &t, const std::vector<std::string> &split_str)
     {
       CheckDimension(split_str, 2);
-      t = std::make_pair(IO::StringConverter<Key>::Parse(split_str[0]),
+      t = std::make_pair(CORE::IO::StringConverter<Key>::Parse(split_str[0]),
           StringConverter<Value>::Parse(split_str[1]));
     }
 
@@ -408,7 +408,7 @@ namespace IO
       return t;
     }
   };
-};  // namespace IO
+};  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

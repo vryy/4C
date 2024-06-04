@@ -66,8 +66,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output,
-    const int probnum)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output, const int probnum)
     : problem_(GLOBAL::Problem::Instance(probnum)),
       probnum_(probnum),
       solver_(std::move(solver)),
@@ -475,15 +475,15 @@ void SCATRA::ScaTraTimIntImpl::Setup()
     // screen output
     if (myrank_ == 0)
     {
-      IO::cout << "Flux output is performed for " << writefluxids_->size() << " scalars: ";
+      CORE::IO::cout << "Flux output is performed for " << writefluxids_->size() << " scalars: ";
       for (unsigned int i = 0; i < writefluxids_->size(); i++)
       {
         const int id = (*writefluxids_)[i];
-        IO::cout << id << " ";
+        CORE::IO::cout << id << " ";
         if ((id < 1) or (id > NumDofPerNode()))  // check validity of these numbers as well !
           FOUR_C_THROW("Received illegal scalar id for flux output: %d", id);
       }
-      IO::cout << IO::endl;
+      CORE::IO::cout << CORE::IO::endl;
     }
 
     // initialize map extractor associated with boundary segments for flux calculation
@@ -3032,7 +3032,7 @@ void SCATRA::ScaTraTimIntImpl::output_state()
     Teuchos::RCP<Epetra_MultiVector> convel_multi =
         convert_dof_vector_to_componentwise_node_vector(convel, NdsVel());
 
-    output_->WriteVector("convec_velocity", convel_multi, IO::nodevector);
+    output_->WriteVector("convec_velocity", convel_multi, CORE::IO::nodevector);
   }
 
   // displacement field
@@ -3045,7 +3045,7 @@ void SCATRA::ScaTraTimIntImpl::output_state()
     Teuchos::RCP<Epetra_MultiVector> dispnp_multi =
         convert_dof_vector_to_componentwise_node_vector(dispnp, NdsDisp());
 
-    output_->WriteVector("dispnp", dispnp_multi, IO::nodevector);
+    output_->WriteVector("dispnp", dispnp_multi, CORE::IO::nodevector);
   }
 
   if (NdsMicro() != -1)
@@ -3056,7 +3056,7 @@ void SCATRA::ScaTraTimIntImpl::output_state()
     for (int inode = 0; inode < discret_->NumMyRowNodes(); ++inode)
       (*micro_conc_multi)[0][inode] = (*phinp_micro_)[inode];
 
-    output_->WriteVector("micro_conc", micro_conc_multi, IO::nodevector);
+    output_->WriteVector("micro_conc", micro_conc_multi, CORE::IO::nodevector);
   }
 
   if (has_external_force_)
@@ -3065,12 +3065,12 @@ void SCATRA::ScaTraTimIntImpl::output_state()
         discret_->GetState(nds_vel_, "external_force");
     Teuchos::RCP<Epetra_MultiVector> output_external_force =
         convert_dof_vector_to_componentwise_node_vector(external_force, NdsVel());
-    output_->WriteVector("external_force", output_external_force, IO::nodevector);
+    output_->WriteVector("external_force", output_external_force, CORE::IO::nodevector);
 
     Teuchos::RCP<const Epetra_Vector> mobility = discret_->GetState(nds_vel_, "intrinsic_mobility");
     Teuchos::RCP<Epetra_MultiVector> output_intrinsic_mobility =
         convert_dof_vector_to_componentwise_node_vector(mobility, NdsVel());
-    output_->WriteVector("intrinsic_mobility", output_intrinsic_mobility, IO::nodevector);
+    output_->WriteVector("intrinsic_mobility", output_intrinsic_mobility, CORE::IO::nodevector);
   }
 }
 

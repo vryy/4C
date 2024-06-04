@@ -68,13 +68,13 @@ namespace GLOBAL
   class Problem;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationReader;
   class DiscretizationWriter;
   class InputControl;
   class RuntimeCsvWriter;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace CORE::LINALG
 {
@@ -139,7 +139,7 @@ namespace SCATRA
         Teuchos::RCP<CORE::LINALG::Solver> solver,              //!< linear solver
         Teuchos::RCP<Teuchos::ParameterList> params,            //!< parameter list
         Teuchos::RCP<Teuchos::ParameterList> extraparams,       //!< supplementary parameter list
-        Teuchos::RCP<IO::DiscretizationWriter> output,          //!< output writer
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output,    //!< output writer
         const int probnum = 0                                   //!< global problem number
     );
 
@@ -283,7 +283,8 @@ namespace SCATRA
     };
 
     //! read restart data
-    virtual void read_restart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    virtual void read_restart(
+        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null);
 
     //! setup natural convection
     virtual void SetupNatConv();
@@ -573,7 +574,7 @@ namespace SCATRA
     virtual Teuchos::RCP<Teuchos::ParameterList> scatra_time_parameter_list() = 0;
 
     //! Access output object: CD-Rom and DVD only - no BlueRay support!!! ;)
-    const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() const { return output_; }
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& DiscWriter() const { return output_; }
 
     //! returns map extractor used for convergence check either in ELCH or LOMA case
     Teuchos::RCP<CORE::LINALG::MapExtractor> Splitter() const { return splitter_; }
@@ -815,7 +816,8 @@ namespace SCATRA
     virtual void output_problem_specific(){};
 
     //! problem-specific restart
-    virtual void read_restart_problem_specific(const int step, IO::DiscretizationReader& reader){};
+    virtual void read_restart_problem_specific(
+        const int step, CORE::IO::DiscretizationReader& reader){};
 
     //! return time for evaluation of elements
     const double& DtEle() const { return dtele_; };
@@ -1472,7 +1474,7 @@ namespace SCATRA
     Teuchos::RCP<DRT::Discretization> discret_;
 
     //! the discretization writer
-    Teuchos::RCP<IO::DiscretizationWriter> output_;
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;
 
     //! form of convective term
     INPAR::SCATRA::ConvForm convform_;
@@ -1790,7 +1792,7 @@ namespace SCATRA
     bool output_micro_dis_;
 
     //! writes evaluated data to output
-    std::optional<IO::RuntimeCsvWriter> runtime_csvwriter_;
+    std::optional<CORE::IO::RuntimeCsvWriter> runtime_csvwriter_;
 
     //! total values of transported scalars
     std::map<const int, std::vector<double>> totalscalars_;

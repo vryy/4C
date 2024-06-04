@@ -29,7 +29,8 @@ FOUR_C_NAMESPACE_OPEN
 SCATRA::TimIntLomaGenAlpha::TimIntLomaGenAlpha(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntLoma(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntGenAlpha(actdis, solver, sctratimintparams, extraparams, output),
@@ -286,7 +287,8 @@ void SCATRA::TimIntLomaGenAlpha::write_restart() const
 /*----------------------------------------------------------------------*
  |                                                             vg 11/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::read_restart(const int step, Teuchos::RCP<IO::InputControl> input)
+void SCATRA::TimIntLomaGenAlpha::read_restart(
+    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
 {
   // do standard output
   TimIntGenAlpha::read_restart(step, input);
@@ -294,12 +296,12 @@ void SCATRA::TimIntLomaGenAlpha::read_restart(const int step, Teuchos::RCP<IO::I
   // restart data of loma problems
   // required for restart of closed systems
 
-  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
   else
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
 
   // thermodynamic pressure at time n+1
   thermpressnp_ = reader->ReadDouble("thermpressnp");

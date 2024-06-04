@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::DiscretizationReader::DiscretizationReader() /* [PROTECTED] */
+CORE::IO::DiscretizationReader::DiscretizationReader() /* [PROTECTED] */
     : dis_(Teuchos::null),
       input_(Teuchos::null),
       restart_step_(nullptr),
@@ -38,8 +38,8 @@ IO::DiscretizationReader::DiscretizationReader() /* [PROTECTED] */
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::DiscretizationReader::DiscretizationReader(
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<IO::InputControl> input, int step)
+CORE::IO::DiscretizationReader::DiscretizationReader(
+    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::IO::InputControl> input, int step)
     : dis_(dis), input_(input)
 {
   find_result_group(step, input_->ControlFile());
@@ -48,7 +48,7 @@ IO::DiscretizationReader::DiscretizationReader(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int IO::DiscretizationReader::HasInt(std::string name)
+int CORE::IO::DiscretizationReader::HasInt(std::string name)
 {
   int integer;
   return map_find_int(restart_step_, name.c_str(), &integer);
@@ -57,7 +57,7 @@ int IO::DiscretizationReader::HasInt(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> IO::DiscretizationReader::ReadVector(std::string name)
+Teuchos::RCP<Epetra_MultiVector> CORE::IO::DiscretizationReader::ReadVector(std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
   int columns;
@@ -71,7 +71,8 @@ Teuchos::RCP<Epetra_MultiVector> IO::DiscretizationReader::ReadVector(std::strin
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name)
+void CORE::IO::DiscretizationReader::ReadVector(
+    Teuchos::RCP<Epetra_MultiVector> vec, std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
   int columns;
@@ -85,7 +86,8 @@ void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_MultiVector> vec, 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> IO::DiscretizationReader::ReadMultiVector(const std::string name)
+Teuchos::RCP<Epetra_MultiVector> CORE::IO::DiscretizationReader::ReadMultiVector(
+    const std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
   const std::string id_path = map_read_string(result, "ids");
@@ -101,7 +103,7 @@ Teuchos::RCP<Epetra_MultiVector> IO::DiscretizationReader::ReadMultiVector(const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadMultiVector(
+void CORE::IO::DiscretizationReader::ReadMultiVector(
     Teuchos::RCP<Epetra_MultiVector> vec, std::string name)
 {
   // check if vec is a null pointer
@@ -125,7 +127,7 @@ void IO::DiscretizationReader::ReadMultiVector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::read_serial_dense_matrix(
+void CORE::IO::DiscretizationReader::read_serial_dense_matrix(
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> mapdata,
     std::string name)
 {
@@ -158,7 +160,7 @@ void IO::DiscretizationReader::read_serial_dense_matrix(
 /*----------------------------------------------------------------------*
  * Read the mesh from restart files                                     *
  *----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadMesh(int step)
+void CORE::IO::DiscretizationReader::ReadMesh(int step)
 {
   dis_->DeleteNodes();
   dis_->DeleteElements();
@@ -191,7 +193,7 @@ void IO::DiscretizationReader::ReadMesh(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadNodesOnly(int step)
+void CORE::IO::DiscretizationReader::ReadNodesOnly(int step)
 {
   find_mesh_group(step, input_->ControlFile());
 
@@ -207,7 +209,7 @@ void IO::DiscretizationReader::ReadNodesOnly(int step)
 /*----------------------------------------------------------------------*
  * Read history data from restart files                                 *
  *----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadHistoryData(int step)
+void CORE::IO::DiscretizationReader::ReadHistoryData(int step)
 {
   find_mesh_group(step, input_->ControlFile());
 
@@ -241,7 +243,7 @@ void IO::DiscretizationReader::ReadHistoryData(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadCharVector(
+void CORE::IO::DiscretizationReader::ReadCharVector(
     Teuchos::RCP<std::vector<char>>& charvec, const std::string name)
 {
   // read vector properties
@@ -256,7 +258,7 @@ void IO::DiscretizationReader::ReadCharVector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::read_redundant_double_vector(
+void CORE::IO::DiscretizationReader::read_redundant_double_vector(
     Teuchos::RCP<std::vector<double>>& doublevec, const std::string name)
 {
   int length;
@@ -285,7 +287,7 @@ void IO::DiscretizationReader::read_redundant_double_vector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::read_redundant_int_vector(
+void CORE::IO::DiscretizationReader::read_redundant_int_vector(
     Teuchos::RCP<std::vector<int>>& intvec, const std::string name)
 {
   int length;
@@ -314,7 +316,7 @@ void IO::DiscretizationReader::read_redundant_int_vector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int IO::DiscretizationReader::ReadInt(std::string name)
+int CORE::IO::DiscretizationReader::ReadInt(std::string name)
 {
   return map_read_int(restart_step_, name.c_str());
 }
@@ -322,7 +324,7 @@ int IO::DiscretizationReader::ReadInt(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double IO::DiscretizationReader::ReadDouble(std::string name)
+double CORE::IO::DiscretizationReader::ReadDouble(std::string name)
 {
   return map_read_real(restart_step_, name.c_str());
 }
@@ -330,7 +332,7 @@ double IO::DiscretizationReader::ReadDouble(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::find_group(int step, MAP* file, const char* caption,
+void CORE::IO::DiscretizationReader::find_group(int step, MAP* file, const char* caption,
     const char* filestring, MAP*& result_info, MAP*& file_info)
 {
   SYMBOL* symbol;
@@ -402,7 +404,7 @@ void IO::DiscretizationReader::find_group(int step, MAP* file, const char* capti
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::find_result_group(int step, MAP* file)
+void CORE::IO::DiscretizationReader::find_result_group(int step, MAP* file)
 {
   MAP* result_info = nullptr;
   MAP* file_info = nullptr;
@@ -415,11 +417,11 @@ void IO::DiscretizationReader::find_result_group(int step, MAP* file)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Comm& IO::DiscretizationReader::comm() const { return dis_->Comm(); }
+const Epetra_Comm& CORE::IO::DiscretizationReader::comm() const { return dis_->Comm(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::find_mesh_group(int step, MAP* file)
+void CORE::IO::DiscretizationReader::find_mesh_group(int step, MAP* file)
 {
   MAP* result_info = nullptr;
   MAP* file_info = nullptr;
@@ -434,7 +436,7 @@ void IO::DiscretizationReader::find_mesh_group(int step, MAP* file)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<IO::HDFReader> IO::DiscretizationReader::open_files(
+Teuchos::RCP<CORE::IO::HDFReader> CORE::IO::DiscretizationReader::open_files(
     const char* filestring, MAP* result_step)
 {
   int numoutputproc;
@@ -466,7 +468,7 @@ Teuchos::RCP<IO::HDFReader> IO::DiscretizationReader::open_files(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int IO::DiscretizationReader::GetNumOutputProc(int step)
+int CORE::IO::DiscretizationReader::GetNumOutputProc(int step)
 {
   MAP* result_info = nullptr;
   MAP* file_info = nullptr;
@@ -484,7 +486,7 @@ int IO::DiscretizationReader::GetNumOutputProc(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::DiscretizationWriter::DiscretizationWriter() /* PROTECTED */
+CORE::IO::DiscretizationWriter::DiscretizationWriter() /* PROTECTED */
     : dis_(Teuchos::null),
       step_(-1),
       time_(-1.0),
@@ -505,7 +507,7 @@ IO::DiscretizationWriter::DiscretizationWriter() /* PROTECTED */
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis,
+CORE::IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis,
     Teuchos::RCP<OutputControl> output_control,
     const CORE::FE::ShapeFunctionType shape_function_type)
     : dis_(Teuchos::rcp(dis.get(), false)),  // no ownership to break circle discretization<>writer
@@ -530,7 +532,7 @@ IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::DiscretizationWriter::DiscretizationWriter(const IO::DiscretizationWriter& writer,
+CORE::IO::DiscretizationWriter::DiscretizationWriter(const CORE::IO::DiscretizationWriter& writer,
     const Teuchos::RCP<OutputControl>& control, enum CopyType type)
     : dis_(Teuchos::rcp(writer.dis_.get(), false)),
       step_(-1),
@@ -567,7 +569,7 @@ IO::DiscretizationWriter::DiscretizationWriter(const IO::DiscretizationWriter& w
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::DiscretizationWriter::~DiscretizationWriter()
+CORE::IO::DiscretizationWriter::~DiscretizationWriter()
 {
   if (meshfile_ != -1)
   {
@@ -608,11 +610,11 @@ IO::DiscretizationWriter::~DiscretizationWriter()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Comm& IO::DiscretizationWriter::comm() const { return dis_->Comm(); }
+const Epetra_Comm& CORE::IO::DiscretizationWriter::comm() const { return dis_->Comm(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::create_mesh_file(const int step)
+void CORE::IO::DiscretizationWriter::create_mesh_file(const int step)
 {
   if (binio_)
   {
@@ -643,7 +645,7 @@ void IO::DiscretizationWriter::create_mesh_file(const int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::create_result_file(const int step)
+void CORE::IO::DiscretizationWriter::create_result_file(const int step)
 {
   if (binio_)
   {
@@ -677,7 +679,7 @@ void IO::DiscretizationWriter::create_result_file(const int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::new_result_file(int numb_run)
+void CORE::IO::DiscretizationWriter::new_result_file(int numb_run)
 {
   if (binio_)
   {
@@ -689,7 +691,7 @@ void IO::DiscretizationWriter::new_result_file(int numb_run)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::new_result_file(std::string name_appendix, int numb_run)
+void CORE::IO::DiscretizationWriter::new_result_file(std::string name_appendix, int numb_run)
 {
   if (binio_)
   {
@@ -700,7 +702,7 @@ void IO::DiscretizationWriter::new_result_file(std::string name_appendix, int nu
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::new_result_file(std::string name)
+void CORE::IO::DiscretizationWriter::new_result_file(std::string name)
 {
   if (binio_)
   {
@@ -711,7 +713,7 @@ void IO::DiscretizationWriter::new_result_file(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::OverwriteResultFile()
+void CORE::IO::DiscretizationWriter::OverwriteResultFile()
 {
   if (binio_)
   {
@@ -723,7 +725,7 @@ void IO::DiscretizationWriter::OverwriteResultFile()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::NewStep(const int step, const double time)
+void CORE::IO::DiscretizationWriter::NewStep(const int step, const double time)
 {
   if (binio_)
   {
@@ -795,7 +797,7 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
 /*----------------------------------------------------------------------*/
 /*write double to control file                                  tk 04/08*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteDouble(const std::string name, const double value)
+void CORE::IO::DiscretizationWriter::WriteDouble(const std::string name, const double value)
 {
   if (binio_)
   {
@@ -814,7 +816,7 @@ void IO::DiscretizationWriter::WriteDouble(const std::string name, const double 
 /*----------------------------------------------------------------------*/
 /*write int to control file                                     tk 04/08*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteInt(const std::string name, const int value)
+void CORE::IO::DiscretizationWriter::WriteInt(const std::string name, const int value)
 {
   if (binio_)
   {
@@ -827,7 +829,7 @@ void IO::DiscretizationWriter::WriteInt(const std::string name, const int value)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteVector(
+void CORE::IO::DiscretizationWriter::WriteVector(
     const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec, IO::VectorType vt)
 {
   if (binio_)
@@ -950,8 +952,8 @@ void IO::DiscretizationWriter::WriteVector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteVector(const std::string name, const std::vector<char>& vec,
-    const Epetra_Map& elemap, IO::VectorType vt)
+void CORE::IO::DiscretizationWriter::WriteVector(const std::string name,
+    const std::vector<char>& vec, const Epetra_Map& elemap, IO::VectorType vt)
 {
   if (binio_)
   {
@@ -1063,7 +1065,7 @@ void IO::DiscretizationWriter::WriteVector(const std::string name, const std::ve
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
+void CORE::IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 {
   if (binio_)
   {
@@ -1162,7 +1164,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteMesh(
+void CORE::IO::DiscretizationWriter::WriteMesh(
     const int step, const double time, std::string name_base_file)
 {
   if (binio_)
@@ -1207,7 +1209,7 @@ void IO::DiscretizationWriter::WriteMesh(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_control_file(
+void CORE::IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_control_file(
     const int step, const double time, const bool writerestart)
 {
   if (binio_)
@@ -1296,7 +1298,7 @@ void IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_control_fi
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteElementData(bool writeowner)
+void CORE::IO::DiscretizationWriter::WriteElementData(bool writeowner)
 {
   if (binio_)
   {
@@ -1356,7 +1358,7 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteNodeData(bool writeowner)
+void CORE::IO::DiscretizationWriter::WriteNodeData(bool writeowner)
 {
   if (binio_)
   {
@@ -1411,7 +1413,7 @@ void IO::DiscretizationWriter::WriteNodeData(bool writeowner)
         for (int j = 0; j < dimension; ++j) (*sysdata(j))[i] = nodedata[j];
       }
 
-      WriteVector(fool->first, Teuchos::rcp(&sysdata, false), IO::nodevector);
+      WriteVector(fool->first, Teuchos::rcp(&sysdata, false), CORE::IO::nodevector);
 
     }  // for (fool = names.begin(); fool!= names.end(); ++fool)
   }
@@ -1420,7 +1422,7 @@ void IO::DiscretizationWriter::WriteNodeData(bool writeowner)
 /*----------------------------------------------------------------------*
  *                                                          gammi 05/08 *
  *----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::write_knotvector() const
+void CORE::IO::DiscretizationWriter::write_knotvector() const
 {
   if (binio_)
   {
@@ -1460,7 +1462,7 @@ void IO::DiscretizationWriter::write_knotvector() const
 /*----------------------------------------------------------------------*/
 /* write a stl vector of chars                                          */
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteCharVector(
+void CORE::IO::DiscretizationWriter::WriteCharVector(
     const std::string name, Teuchos::RCP<std::vector<char>> charvec)
 {
   if (binio_)
@@ -1508,7 +1510,7 @@ void IO::DiscretizationWriter::WriteCharVector(
 /*----------------------------------------------------------------------*/
 /* write a stl vector of doubles from proc0                             */
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::write_redundant_double_vector(
+void CORE::IO::DiscretizationWriter::write_redundant_double_vector(
     const std::string name, Teuchos::RCP<std::vector<double>> doublevec)
 {
   if (binio_)
@@ -1555,7 +1557,7 @@ void IO::DiscretizationWriter::write_redundant_double_vector(
 /*----------------------------------------------------------------------*/
 /* write a stl set of integers from proc0                             */
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::write_redundant_int_vector(
+void CORE::IO::DiscretizationWriter::write_redundant_int_vector(
     const std::string name, Teuchos::RCP<std::vector<int>> vectorint)
 {
   if (binio_)
@@ -1603,7 +1605,7 @@ void IO::DiscretizationWriter::write_redundant_int_vector(
 /*----------------------------------------------------------------------*
  |  set output control                               (public) nis Jan14 |
  *----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::SetOutput(Teuchos::RCP<OutputControl> output)
+void CORE::IO::DiscretizationWriter::SetOutput(Teuchos::RCP<OutputControl> output)
 {
   output_ = output;
   binio_ = output_->WriteBinaryOutput();
@@ -1612,7 +1614,7 @@ void IO::DiscretizationWriter::SetOutput(Teuchos::RCP<OutputControl> output)
 /*----------------------------------------------------------------------*/
 /* clear all stored map data                                            */
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::ClearMapCache()
+void CORE::IO::DiscretizationWriter::ClearMapCache()
 {
   mapcache_.clear();
   mapstack_.clear();
@@ -1620,7 +1622,7 @@ void IO::DiscretizationWriter::ClearMapCache()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const DRT::Discretization& IO::DiscretizationWriter::GetDiscret() const
+const DRT::Discretization& CORE::IO::DiscretizationWriter::GetDiscret() const
 {
   if (dis_.is_null()) FOUR_C_THROW("The discretization pointer has not been initialized!");
   return *dis_;

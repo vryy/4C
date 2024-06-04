@@ -25,7 +25,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace IO
+namespace CORE::IO
 {
   /*----------------------------------------------------------------------*/
   /*!
@@ -190,7 +190,7 @@ namespace IO
     /// element type names to read
     std::set<std::string> elementtypes_;
   };
-}  // namespace IO
+}  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

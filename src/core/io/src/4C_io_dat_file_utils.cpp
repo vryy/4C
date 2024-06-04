@@ -9,7 +9,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void IO::DatFileUtils::print_section_header(std::ostream& out, const std::string& header)
+void CORE::IO::DatFileUtils::print_section_header(std::ostream& out, const std::string& header)
 {
   constexpr std::size_t max_line_width = 65ul;
   FOUR_C_THROW_UNLESS(header.length() <= max_line_width, "Header '%s' too long", header.c_str());
@@ -21,7 +21,7 @@ void IO::DatFileUtils::print_section_header(std::ostream& out, const std::string
 
 
 
-void IO::DatFileUtils::print_section(std::ostream& out, const std::string& header,
+void CORE::IO::DatFileUtils::print_section(std::ostream& out, const std::string& header,
     const std::vector<INPUT::LineDefinition>& possible_lines)
 {
   print_section_header(out, header);
@@ -35,7 +35,7 @@ void IO::DatFileUtils::print_section(std::ostream& out, const std::string& heade
 }
 
 
-std::vector<INPUT::LineDefinition> IO::DatFileUtils::read_all_lines_in_section(
+std::vector<INPUT::LineDefinition> CORE::IO::DatFileUtils::read_all_lines_in_section(
     INPUT::DatFileReader& reader, const std::string& section,
     const std::vector<INPUT::LineDefinition>& possible_lines)
 {
@@ -66,7 +66,7 @@ std::vector<INPUT::LineDefinition> IO::DatFileUtils::read_all_lines_in_section(
 
 
 std::pair<std::vector<INPUT::LineDefinition>, std::vector<std::string>>
-IO::DatFileUtils::read_matching_lines_in_section(INPUT::DatFileReader& reader,
+CORE::IO::DatFileUtils::read_matching_lines_in_section(INPUT::DatFileReader& reader,
     const std::string& section, const std::vector<INPUT::LineDefinition>& possible_lines)
 {
   const std::vector<const char*> lines_in_section = reader.Section("--" + section);

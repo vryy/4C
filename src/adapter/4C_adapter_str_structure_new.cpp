@@ -234,7 +234,7 @@ void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   // Create context for output and restart
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<IO::DiscretizationWriter> output = actdis_->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis_->Writer();
   if (CORE::UTILS::IntegralValue<int>(*ioflags, "OUTPUT_BIN"))
   {
     output->WriteMesh(0, 0.0);
@@ -640,7 +640,7 @@ void ADAPTER::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
   // ---------------------------------------------------------------------------
   // show default parameters
   // ---------------------------------------------------------------------------
-  if ((actdis_->Comm()).MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, *sdyn_);
+  if ((actdis_->Comm()).MyPID() == 0) INPUT::PrintDefaultParameters(CORE::IO::cout, *sdyn_);
 
   // ---------------------------------------------------------------------------
   // get input parameter lists and copy them,
@@ -731,13 +731,13 @@ void ADAPTER::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
 
           if (actdis_->Comm().MyPID() == 0)
           {
-            IO::cout
+            CORE::IO::cout
                 << "*** Due to FSI time step size adaptivity with structure based error "
                    "estimation,\n"
                    "algorithmic control parameters in STRUCTURAL DYNAMIC/TIMEADAPTIVITY have been\n"
                    "overwritten by those from FSI DYNAMIC/TIMEADAPTIVITY."
-                << IO::endl
-                << IO::endl;
+                << CORE::IO::endl
+                << CORE::IO::endl;
           }
         }
       }
@@ -828,7 +828,7 @@ void ADAPTER::StructureBaseAlgorithmNew::create_wrapper(Teuchos::RCP<STR::TIMINT
       if (modeltypes.find(INPAR::STR::model_lag_pen_constraint) != modeltypes.end())
       {
         if ((actdis_->Comm()).MyPID() == 0)
-          IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
+          CORE::IO::cout << "Using StructureNOXCorrectionWrapper()..." << CORE::IO::endl;
 
         if (coupling == fsi_iter_constr_monolithicstructuresplit or
             coupling == fsi_iter_constr_monolithicfluidsplit)
@@ -844,7 +844,7 @@ void ADAPTER::StructureBaseAlgorithmNew::create_wrapper(Teuchos::RCP<STR::TIMINT
             coupling == fsi_iter_lung_monolithicfluidsplit)
         {
           if ((actdis_->Comm()).MyPID() == 0)
-            IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
+            CORE::IO::cout << "Using StructureNOXCorrectionWrapper()..." << CORE::IO::endl;
           str_wrapper_ = Teuchos::rcp(
               new StructureLung(Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
         }

@@ -51,7 +51,7 @@ namespace FLD
     TimIntRedModels(const Teuchos::RCP<DRT::Discretization>& actdis,
         const Teuchos::RCP<CORE::LINALG::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
+        const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid = false);
 
 
     /*!

@@ -100,8 +100,9 @@ bool BEAMINTERACTION::GEO::PointToCurveProjection(CORE::LINALG::Matrix<3, 1, T> 
         std::abs(xi_master_previous_iteration - CORE::FADUTILS::CastToDouble(xi_master)) <
             POINT_TO_CURVE_PROJECTION_TOLERANCE_INCREMENT)
     {
-      IO::cout(IO::debug) << "\nPoint-to-Curve projection: local Newton loop "
-                          << "converged after " << iter << " iterations!" << IO::endl;
+      CORE::IO::cout(CORE::IO::debug)
+          << "\nPoint-to-Curve projection: local Newton loop "
+          << "converged after " << iter << " iterations!" << CORE::IO::endl;
 
       return true;
     }
@@ -123,14 +124,15 @@ bool BEAMINTERACTION::GEO::PointToCurveProjection(CORE::LINALG::Matrix<3, 1, T> 
   }
 
   // Newton iteration unconverged after maximum number of iterations, print debug info to screen
-  IO::cout(IO::debug) << "\n\nWARNING Point-to-Curve projection: local Newton loop "
-                      << "unconverged after " << POINT_TO_CURVE_PROJECTION_MAX_NUM_ITER
-                      << " iterations!" << IO::endl;
-  IO::cout(IO::debug) << "residual in first iteration: " << residual0 << IO::endl;
-  IO::cout(IO::debug) << "residual: " << residual << IO::endl;
-  IO::cout(IO::debug) << "xi_master: " << CORE::FADUTILS::CastToDouble(xi_master) << IO::endl;
-  IO::cout(IO::debug) << "xi_master_previous_iteration: " << xi_master_previous_iteration
-                      << IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << "\n\nWARNING Point-to-Curve projection: local Newton loop "
+                                  << "unconverged after " << POINT_TO_CURVE_PROJECTION_MAX_NUM_ITER
+                                  << " iterations!" << CORE::IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << "residual in first iteration: " << residual0 << CORE::IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << "residual: " << residual << CORE::IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << "xi_master: " << CORE::FADUTILS::CastToDouble(xi_master)
+                                  << CORE::IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << "xi_master_previous_iteration: "
+                                  << xi_master_previous_iteration << CORE::IO::endl;
 
   return false;
 }

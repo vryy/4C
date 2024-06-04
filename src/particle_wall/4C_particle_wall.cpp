@@ -86,7 +86,8 @@ void PARTICLEWALL::WallHandlerBase::Setup(
 void PARTICLEWALL::WallHandlerBase::write_restart(const int step, const double time) const
 {
   // get wall discretization writer
-  Teuchos::RCP<IO::DiscretizationWriter> walldiscretizationwriter = walldiscretization_->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> walldiscretizationwriter =
+      walldiscretization_->Writer();
 
   walldiscretizationwriter->NewStep(step, time);
 }
@@ -451,8 +452,8 @@ void PARTICLEWALL::WallHandlerBase::create_wall_discretization()
       Teuchos::rcp(new DRT::Discretization("particlewalls", Teuchos::rcp(comm_.Clone())));
 
   // create wall discretization writer
-  walldiscretization_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(walldiscretization_,
-      GLOBAL::Problem::Instance()->OutputControlFile(),
+  walldiscretization_->SetWriter(Teuchos::rcp(new CORE::IO::DiscretizationWriter(
+      walldiscretization_, GLOBAL::Problem::Instance()->OutputControlFile(),
       GLOBAL::Problem::Instance()->spatial_approximation_type())));
 }
 
@@ -614,7 +615,8 @@ void PARTICLEWALL::WallHandlerDiscretCondition::setup_wall_discretization() cons
 {
   // short screen output
   if (binstrategy_->have_periodic_boundary_conditions_applied() and myrank_ == 0)
-    IO::cout << "Warning: particle wall not transferred over periodic boundary!" << IO::endl;
+    CORE::IO::cout << "Warning: particle wall not transferred over periodic boundary!"
+                   << CORE::IO::endl;
 }
 
 PARTICLEWALL::WallHandlerBoundingBox::WallHandlerBoundingBox(

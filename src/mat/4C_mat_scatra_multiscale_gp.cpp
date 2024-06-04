@@ -395,7 +395,8 @@ void MAT::ScatraMultiScaleGP::Update()
 void MAT::ScatraMultiScaleGP::new_result_file()
 {
   // get properties from macro scale
-  Teuchos::RCP<IO::OutputControl> macrocontrol = GLOBAL::Problem::Instance()->OutputControlFile();
+  Teuchos::RCP<CORE::IO::OutputControl> macrocontrol =
+      GLOBAL::Problem::Instance()->OutputControlFile();
   std::string microprefix = macrocontrol->RestartName();
   std::string micronewprefix = macrocontrol->NewOutputFileName();
 
@@ -420,7 +421,7 @@ void MAT::ScatraMultiScaleGP::new_result_file()
     // in case of restart, the new output file name has already been adapted
     if (restart) adaptname = false;
 
-    Teuchos::RCP<IO::OutputControl> microcontrol = Teuchos::rcp(new IO::OutputControl(
+    Teuchos::RCP<CORE::IO::OutputControl> microcontrol = Teuchos::rcp(new CORE::IO::OutputControl(
         microdis->Comm(), "Scalar_Transport", microproblem->spatial_approximation_type(),
         "micro-input-file-not-known", restartname_, newfilename, ndim, restart,
         GLOBAL::Problem::Instance(microdisnum_)->IOParams().get<int>("FILESTEPS"),
@@ -428,7 +429,7 @@ void MAT::ScatraMultiScaleGP::new_result_file()
             GLOBAL::Problem::Instance(microdisnum_)->IOParams(), "OUTPUT_BIN"),
         adaptname));
 
-    micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(
+    micro_output_ = Teuchos::rcp(new CORE::IO::DiscretizationWriter(
         microdis, microcontrol, microproblem->spatial_approximation_type()));
     micro_output_->SetOutput(microcontrol);
     micro_output_->WriteMesh(
@@ -523,19 +524,19 @@ void MAT::ScatraMultiScaleGP::read_restart()
       DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->Time());
 
   // read restart on micro scale
-  auto inputcontrol = Teuchos::rcp(new IO::InputControl(restartname_, true));
+  auto inputcontrol = Teuchos::rcp(new CORE::IO::InputControl(restartname_, true));
   microtimint->read_restart(step_, inputcontrol);
 
   // safety check
   if (microtimint->Step() != step_) FOUR_C_THROW("Time step mismatch!");
 
-  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
   if (inputcontrol == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
         microtimint->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step_));
   else
     reader = Teuchos::rcp(
-        new IO::DiscretizationReader(microtimint->discretization(), inputcontrol, step_));
+        new CORE::IO::DiscretizationReader(microtimint->discretization(), inputcontrol, step_));
 
   if (is_ale_)
   {

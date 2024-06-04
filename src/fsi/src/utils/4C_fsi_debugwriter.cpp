@@ -49,7 +49,7 @@ void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
   if (name != "") s << "-" << name;
   s << "-step" << step;
 
-  control_ = Teuchos::rcp(new IO::OutputControl(dis_->Comm(),
+  control_ = Teuchos::rcp(new CORE::IO::OutputControl(dis_->Comm(),
       "none",                                   // we do not have a problem type
       CORE::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
       "debug-output",                           // no input file either
@@ -101,7 +101,7 @@ void FSI::UTILS::SimpleDebugWriter::NewLinearSystem(int step, std::string name)
   if (name != "") s << "-" << name;
   s << "-step" << step;
 
-  control_ = Teuchos::rcp(new IO::OutputControl(dis_->Comm(),
+  control_ = Teuchos::rcp(new CORE::IO::OutputControl(dis_->Comm(),
       "none",                                   // we do not have a problem type
       CORE::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
       "debug-output",                           // no input file either

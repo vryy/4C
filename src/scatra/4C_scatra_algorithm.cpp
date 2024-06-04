@@ -359,11 +359,11 @@ void SCATRA::ScaTraAlgorithm::outer_iteration_convection()
   std::string outname = temp.str();
   std::string probtype = GLOBAL::Problem::Instance()->ProblemName();
 
-  Teuchos::RCP<IO::OutputControl> myoutputcontrol =
-      Teuchos::rcp(new IO::OutputControl(ScaTraField().discretization()->Comm(), probtype,
+  Teuchos::RCP<CORE::IO::OutputControl> myoutputcontrol =
+      Teuchos::rcp(new CORE::IO::OutputControl(ScaTraField().discretization()->Comm(), probtype,
           CORE::FE::ShapeFunctionType::polynomial, "myinput", outname, numdim, 0, 1000));
   // create discretization writer with my own control settings
-  Teuchos::RCP<IO::DiscretizationWriter> myoutput = ScaTraField().discretization()->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> myoutput = ScaTraField().discretization()->Writer();
   myoutput->SetOutput(myoutputcontrol);
   // write mesh at step 0
   myoutput->WriteMesh(0, 0.0);

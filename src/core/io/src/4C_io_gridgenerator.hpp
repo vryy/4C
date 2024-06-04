@@ -23,7 +23,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace IO::GRIDGENERATOR
+namespace CORE::IO::GRIDGENERATOR
 {
   /// forward declaration
   struct RectangularCuboidInputs;
@@ -71,7 +71,7 @@ namespace IO::GRIDGENERATOR
     bool autopartition_{false};
   };
 
-}  // namespace IO::GRIDGENERATOR
+}  // namespace CORE::IO::GRIDGENERATOR
    // namespace DRT
 FOUR_C_NAMESPACE_CLOSE
 

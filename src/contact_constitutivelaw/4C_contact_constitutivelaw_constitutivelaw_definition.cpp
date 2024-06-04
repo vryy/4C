@@ -60,7 +60,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const GLOBAL::Problem& proble
       condline->seekp(0, condline->end);
       *condline << " ";
 
-      IO::LineParser parser("While reading 'CONTACT CONSTITUTIVE LAWS' section: ");
+      CORE::IO::LineParser parser("While reading 'CONTACT CONSTITUTIVE LAWS' section: ");
 
       parser.Consume(*condline, "LAW");
       const int id = parser.Read<int>(*condline);

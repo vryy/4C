@@ -240,14 +240,14 @@ void SCATRA::LevelSetAlgorithm::finish_time_loop_reinit()
   //
   //  // create Gmsh postprocessing file
   //  const std::string filename =
-  //  IO::GMSH::GetNewFileNameAndDeleteOldFiles("reinitialization_scalar", step_, 500, screen_out,
-  //  discret_->Comm().MyPID()); std::ofstream gmshfilecontent(filename.c_str());
+  //  CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles("reinitialization_scalar", step_, 500,
+  //  screen_out, discret_->Comm().MyPID()); std::ofstream gmshfilecontent(filename.c_str());
   //
   //  {
   //    // add 'View' to Gmsh postprocessing file
   //    gmshfilecontent << "View \" " << "Inital Phi \" {" << std::endl;
   //    // draw scalar field 'Phinp' for every element
-  //    IO::GMSH::ScalarFieldToGmsh(discret_,initialphireinit_,gmshfilecontent);
+  //    CORE::IO::GMSH::ScalarFieldToGmsh(discret_,initialphireinit_,gmshfilecontent);
   //    gmshfilecontent << "};" << std::endl;
   //  }
   //
@@ -255,7 +255,7 @@ void SCATRA::LevelSetAlgorithm::finish_time_loop_reinit()
   //    // add 'View' to Gmsh postprocessing file
   //    gmshfilecontent << "View \" " << "Final Phi \" {" << std::endl;
   //    // draw scalar field 'Phinp' for every element
-  //    IO::GMSH::ScalarFieldToGmsh(discret_,phinp_,gmshfilecontent);
+  //    CORE::IO::GMSH::ScalarFieldToGmsh(discret_,phinp_,gmshfilecontent);
   //    gmshfilecontent << "};" << std::endl;
   //  }
   //
@@ -263,7 +263,7 @@ void SCATRA::LevelSetAlgorithm::finish_time_loop_reinit()
   //    // add 'View' to Gmsh postprocessing file
   //    gmshfilecontent << "View \" " << "Reinit Velocity \" {" << std::endl;
   //    // draw vector field 'Convective Velocity' for every element
-  //    IO::GMSH::VectorFieldNodeBasedToGmsh(discret_,reinitvel_,gmshfilecontent);
+  //    CORE::IO::GMSH::VectorFieldNodeBasedToGmsh(discret_,reinitvel_,gmshfilecontent);
   //    gmshfilecontent << "};" << std::endl;
   //  }
   //  gmshfilecontent.close();
@@ -1429,7 +1429,8 @@ void SCATRA::LevelSetAlgorithm::correct_volume()
 
   const double voldelta = initvolminus_ - volminus;
   if (myrank_ == 0)
-    IO::cout << "Correcting volume of minus(-) domain by " << voldelta << " ... " << IO::endl;
+    CORE::IO::cout << "Correcting volume of minus(-) domain by " << voldelta << " ... "
+                   << CORE::IO::endl;
 
   // This is a guess on how thick a layer needs to be added to the surface of the minus domain.
   // Due to $ \grad \phi \approx 1 $ this also happens to be the value that needs to be subtracted
@@ -1443,7 +1444,7 @@ void SCATRA::LevelSetAlgorithm::correct_volume()
   // update phi
   phinp_->Update(thickness, *one, 1.0);
 
-  if (myrank_ == 0) IO::cout << "done" << IO::endl;
+  if (myrank_ == 0) CORE::IO::cout << "done" << CORE::IO::endl;
 
   return;
 }

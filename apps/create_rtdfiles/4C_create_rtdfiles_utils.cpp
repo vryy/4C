@@ -291,7 +291,7 @@ namespace RTD
 
     const std::vector<INPUT::LineDefinition> lines = CORE::FE::valid_cloning_material_map_lines();
     std::stringstream cloningMatStream;
-    IO::DatFileUtils::print_section(cloningMatStream, "CLONING MATERIAL MAP", lines);
+    CORE::IO::DatFileUtils::print_section(cloningMatStream, "CLONING MATERIAL MAP", lines);
     const std::vector<std::string> cloningMatList = DRT::UTILS::Split(cloningMatStream.str(), "\n");
 
     WriteCode(stream, cloningMatList);
@@ -708,7 +708,7 @@ namespace RTD
           "The result of the simulation with respect to specific quantities at concrete points "
           "can be tested against particular values with a given tolerance.");
       std::stringstream resultDescriptionStream;
-      IO::DatFileUtils::print_section(resultDescriptionStream, "RESULT DESCRIPTION", lines);
+      CORE::IO::DatFileUtils::print_section(resultDescriptionStream, "RESULT DESCRIPTION", lines);
       const std::vector<std::string> resultDescriptionList =
           DRT::UTILS::Split(resultDescriptionStream.str(), "\n");
       WriteCode(stream, resultDescriptionList);
@@ -726,7 +726,7 @@ namespace RTD
       WriteParagraph(
           stream, "Definition of functions for various cases, mainly boundary conditions");
       std::stringstream functionStream;
-      IO::DatFileUtils::print_section(functionStream, "FUNCT", lines);
+      CORE::IO::DatFileUtils::print_section(functionStream, "FUNCT", lines);
       const std::vector<std::string> functionList = DRT::UTILS::Split(functionStream.str(), "\n");
       WriteCode(stream, functionList);
     }

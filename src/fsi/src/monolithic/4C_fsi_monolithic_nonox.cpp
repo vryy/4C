@@ -211,13 +211,13 @@ void FSI::MonolithicNoNOX::newton()
   // test whether max iterations was hit
   if ((converged()) and (Comm().MyPID() == 0))
   {
-    IO::cout << IO::endl;
-    IO::cout << "  Newton Converged! " << IO::endl;
+    CORE::IO::cout << CORE::IO::endl;
+    CORE::IO::cout << "  Newton Converged! " << CORE::IO::endl;
   }
   else if (iter_ >= itermax_)
   {
-    IO::cout << IO::endl;
-    IO::cout << "  Newton unconverged in " << iter_ << " iterations " << IO::endl;
+    CORE::IO::cout << CORE::IO::endl;
+    CORE::IO::cout << "  Newton unconverged in " << iter_ << " iterations " << CORE::IO::endl;
   }
 }
 
@@ -467,36 +467,37 @@ void FSI::MonolithicNoNOX::print_newton_iter()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicNoNOX::print_newton_iter_header()
 {
-  IO::cout << "CONVTOL: " << tolfres_ << IO::endl;
+  CORE::IO::cout << "CONVTOL: " << tolfres_ << CORE::IO::endl;
 
   // open outstringstream
   // std::ostringstream oss;
 
-  IO::cout << "===================================================================================="
-              "======="
-              "========================================================================="
-           << IO::endl;
+  CORE::IO::cout
+      << "===================================================================================="
+         "======="
+         "========================================================================="
+      << CORE::IO::endl;
 
   // enter converged state etc
-  IO::cout << "|nit|";
+  CORE::IO::cout << "|nit|";
 
   // different style due relative or absolute error checking
   // displacement
   switch (normtypefres_)
   {
     case INPAR::FSI::convnorm_abs:
-      IO::cout << "            "
-               << "abs-res-norm  |";
+      CORE::IO::cout << "            "
+                     << "abs-res-norm  |";
       break;
     case INPAR::FSI::convnorm_rel:
-      IO::cout << "str-rs-l2|"
-               << "fsi-rs-l2|"
-               << "flv-rs-l2|"
-               << "flp-rs-l2|";
-      IO::cout << "str-rs-li|"
-               << "fsi-rs-li|"
-               << "flv-rs-li|"
-               << "flp-rs-li|";
+      CORE::IO::cout << "str-rs-l2|"
+                     << "fsi-rs-l2|"
+                     << "flv-rs-l2|"
+                     << "flp-rs-l2|";
+      CORE::IO::cout << "str-rs-li|"
+                     << "fsi-rs-li|"
+                     << "flv-rs-li|"
+                     << "flp-rs-li|";
       break;
     case INPAR::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented");
@@ -509,18 +510,18 @@ void FSI::MonolithicNoNOX::print_newton_iter_header()
   switch (normtypeinc_)
   {
     case INPAR::FSI::convnorm_abs:
-      IO::cout << "                  "
-               << "abs-inc-norm";
+      CORE::IO::cout << "                  "
+                     << "abs-inc-norm";
       break;
     case INPAR::FSI::convnorm_rel:
-      IO::cout << "str-in-l2|"
-               << "fsi-in-l2|"
-               << "flv-in-l2|"
-               << "flp-in-l2|";
-      IO::cout << "str-in-li|"
-               << "fsi-in-li|"
-               << "flv-in-li|"
-               << "flp-in-li|";
+      CORE::IO::cout << "str-in-l2|"
+                     << "fsi-in-l2|"
+                     << "flv-in-l2|"
+                     << "flp-in-l2|";
+      CORE::IO::cout << "str-in-li|"
+                     << "fsi-in-li|"
+                     << "flv-in-li|"
+                     << "flp-in-li|";
       break;
     case INPAR::FSI::convnorm_mix:
       FOUR_C_THROW("convnorm_mix not implemented");
@@ -531,11 +532,12 @@ void FSI::MonolithicNoNOX::print_newton_iter_header()
   }
 
   // add solution time
-  IO::cout << IO::endl;
-  IO::cout << "===================================================================================="
-              "======="
-              "========================================================================="
-           << IO::endl;
+  CORE::IO::cout << CORE::IO::endl;
+  CORE::IO::cout
+      << "===================================================================================="
+         "======="
+         "========================================================================="
+      << CORE::IO::endl;
 }
 
 /*---------------------------------------------------------------------*/
@@ -544,20 +546,20 @@ void FSI::MonolithicNoNOX::print_newton_iter_header()
 void FSI::MonolithicNoNOX::print_newton_iter_text()
 {
   // enter converged state etc
-  IO::cout << " " << iter_ << "/" << itermax_;
+  CORE::IO::cout << " " << iter_ << "/" << itermax_;
 
   // different style due relative or absolute error checking
   // displacement
   switch (normtypefres_)
   {
     case INPAR::FSI::convnorm_abs:
-      IO::cout << "             " << (normrhs_) << IO::endl;
+      CORE::IO::cout << "             " << (normrhs_) << CORE::IO::endl;
       break;
     case INPAR::FSI::convnorm_rel:
-      IO::cout << "|" << (normstrrhsL2_ / ns_) << "|" << (norminterfacerhsL2_ / ni_) << "|"
-               << (normflvelrhsL2_ / nfv_) << "|" << (normflpresrhsL2_ / nfp_) << "|"
-               << (normstrrhsInf_) << "|" << (norminterfacerhsInf_) << "|" << (normflvelrhsInf_)
-               << "|" << (normflpresrhsInf_);
+      CORE::IO::cout << "|" << (normstrrhsL2_ / ns_) << "|" << (norminterfacerhsL2_ / ni_) << "|"
+                     << (normflvelrhsL2_ / nfv_) << "|" << (normflpresrhsL2_ / nfp_) << "|"
+                     << (normstrrhsInf_) << "|" << (norminterfacerhsInf_) << "|"
+                     << (normflvelrhsInf_) << "|" << (normflpresrhsInf_);
       break;
     case INPAR::FSI::convnorm_mix:
       FOUR_C_THROW("Mixed absolute-relative residual norm not implemented for XFFSI.");
@@ -570,13 +572,13 @@ void FSI::MonolithicNoNOX::print_newton_iter_text()
   switch (normtypeinc_)
   {
     case INPAR::FSI::convnorm_abs:
-      IO::cout << "             " << (norminc_) << IO::endl;
+      CORE::IO::cout << "             " << (norminc_) << CORE::IO::endl;
       break;
     case INPAR::FSI::convnorm_rel:
-      IO::cout << "|" << (normstrincL2_ / ns_) << "|" << (norminterfaceincL2_ / ni_) << "|"
-               << (normflvelincL2_ / nfv_) << "|" << (normflpresincL2_ / nfp_) << "|"
-               << (normstrincInf_) << "|" << (norminterfaceincInf_) << "|" << (normflvelincInf_)
-               << "|" << (normflpresincInf_) << "|" << IO::endl;
+      CORE::IO::cout << "|" << (normstrincL2_ / ns_) << "|" << (norminterfaceincL2_ / ni_) << "|"
+                     << (normflvelincL2_ / nfv_) << "|" << (normflpresincL2_ / nfp_) << "|"
+                     << (normstrincInf_) << "|" << (norminterfaceincInf_) << "|"
+                     << (normflvelincInf_) << "|" << (normflpresincInf_) << "|" << CORE::IO::endl;
       break;
     case INPAR::FSI::convnorm_mix:
       FOUR_C_THROW("Mixed absolute-relative increment norm not implemented for XFFSI.");
@@ -599,7 +601,7 @@ void FSI::MonolithicNoNOX::update()
   if (fluid_->monolithic_xffsi_approach() != INPAR::XFEM::XFFSI_Full_Newton and
       fluid_->IsAleRelaxationStep(Step()))
   {
-    if (Comm().MyPID() == 0) IO::cout << "Relaxing ALE!" << IO::endl;
+    if (Comm().MyPID() == 0) CORE::IO::cout << "Relaxing ALE!" << CORE::IO::endl;
     // Set the ALE FSI-DOFs to Dirichlet and solve ALE system again
     // to obtain the true ALE displacement
     ale_field()->Solve();

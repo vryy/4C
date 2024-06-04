@@ -198,7 +198,7 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
   // write restart
   if (write_restart_data)
   {
-    if (discret_->Comm().MyPID() == 0) IO::cout << "---  write restart... " << IO::endl;
+    if (discret_->Comm().MyPID() == 0) CORE::IO::cout << "---  write restart... " << CORE::IO::endl;
 
     restart_count_++;
 
@@ -236,8 +236,8 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
   if (restart_count_ == 5)
   {
     if (discret_->Comm().MyPID() == 0)
-      IO::cout << "\t... Clear MapCache after " << restart_count_ << " written restarts."
-               << IO::endl;
+      CORE::IO::cout << "\t... Clear MapCache after " << restart_count_ << " written restarts."
+                     << CORE::IO::endl;
 
     discret_->Writer()->ClearMapCache();  // clear the output's map-cache
     restart_count_ = 0;
@@ -423,7 +423,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     filename_base_vel << filename_base << "_" << count << "_vel";
   else
     filename_base_vel << filename_base << "_vel";
-  const std::string filename_vel = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_vel = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
       filename_base_vel.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_vel(filename_vel.c_str());
@@ -435,7 +435,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     filename_base_press << filename_base << "_" << count << "_press";
   else
     filename_base_press << filename_base << "_press";
-  const std::string filename_press = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_press = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
       filename_base_press.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_press(filename_press.c_str());
@@ -447,7 +447,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     filename_base_acc << filename_base << "_" << count << "_acc";
   else
     filename_base_acc << filename_base << "_acc";
-  const std::string filename_acc = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_acc = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
       filename_base_acc.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_acc(filename_acc.c_str());
@@ -459,7 +459,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     filename_base_bound << filename_base << "_" << count << "_bound";
   else
     filename_base_bound << filename_base << "_bound";
-  const std::string filename_bound = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_bound = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
       filename_base_bound.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_bound(filename_bound.c_str());
@@ -473,7 +473,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     filename_base_vel_ghost << filename_base << "_" << count << "_vel_ghost";
   else
     filename_base_vel_ghost << filename_base << "_vel_ghost";
-  const std::string filename_vel_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_vel_ghost = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
       filename_base_vel_ghost.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_vel_ghost(filename_vel_ghost.c_str());
@@ -485,7 +485,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     filename_base_press_ghost << filename_base << "_" << count << "_press_ghost";
   else
     filename_base_press_ghost << filename_base << "_press_ghost";
-  const std::string filename_press_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_press_ghost = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
       filename_base_press_ghost.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_press_ghost(filename_press_ghost.c_str());
@@ -497,7 +497,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     filename_base_acc_ghost << filename_base << "_" << count << "_acc_ghost";
   else
     filename_base_acc_ghost << filename_base << "_acc_ghost";
-  const std::string filename_acc_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_acc_ghost = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
       filename_base_acc_ghost.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_acc_ghost(filename_acc_ghost.c_str());
@@ -1300,9 +1300,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
     FOUR_C_THROW("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
   // output for Element and Node IDs
-  const std::string filename =
-      IO::GMSH::GetNewFileNameAndDeleteOldFiles("DISCRET", discret_->Writer()->Output()->FileName(),
-          step, gmsh_step_diff_, gmsh_debug_out_screen_, discret_->Comm().MyPID());
+  const std::string filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles("DISCRET",
+      discret_->Writer()->Output()->FileName(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
+      discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
   gmshfilecontent.precision(16);
@@ -1329,9 +1329,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
     FOUR_C_THROW("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
   // output for Element and Node IDs
-  const std::string filename =
-      IO::GMSH::GetNewFileNameAndDeleteOldFiles("EOS", discret_->Writer()->Output()->FileName(),
-          step, gmsh_step_diff_, gmsh_debug_out_screen_, discret_->Comm().MyPID());
+  const std::string filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles("EOS",
+      discret_->Writer()->Output()->FileName(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
+      discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
   gmshfilecontent.precision(16);
@@ -1356,7 +1356,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
           int ghost_penalty = it->second;
 
           if (ghost_penalty)
-            IO::GMSH::elementAtInitialPositionToStream(
+            CORE::IO::GMSH::elementAtInitialPositionToStream(
                 double(ghost_penalty), actele, gmshfilecontent);
         }
         else
@@ -1384,7 +1384,8 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
           int edge_stab = it->second;
 
           if (edge_stab)
-            IO::GMSH::elementAtInitialPositionToStream(double(edge_stab), actele, gmshfilecontent);
+            CORE::IO::GMSH::elementAtInitialPositionToStream(
+                double(edge_stab), actele, gmshfilecontent);
         }
       }
       gmshfilecontent << "};\n";

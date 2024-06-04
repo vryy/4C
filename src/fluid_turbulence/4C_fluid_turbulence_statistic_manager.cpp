@@ -1091,7 +1091,7 @@ namespace FLD
 
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::DoOutput(
-      IO::DiscretizationWriter& output, int step, const bool inflow)
+      CORE::IO::DiscretizationWriter& output, int step, const bool inflow)
   {
     // sampling takes place only in the sampling period
     if (step >= samstart_ && step <= samstop_ && flow_ != no_special_flow)
@@ -1462,12 +1462,12 @@ namespace FLD
   {
     if (discret_->Comm().MyPID() == 0)
     {
-      IO::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-               << IO::endl;
-      IO::cout << "turbulence_statistic_manager: provided access to ScaTra time integration"
-               << IO::endl;
-      IO::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-               << IO::endl;
+      CORE::IO::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+                     << CORE::IO::endl;
+      CORE::IO::cout << "turbulence_statistic_manager: provided access to ScaTra time integration"
+                     << CORE::IO::endl;
+      CORE::IO::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+                     << CORE::IO::endl;
     }
 
     // store the relevant pointers to provide access
@@ -1527,7 +1527,8 @@ namespace FLD
   Write (dump) the scatra-specific mean fields to the result file
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::DoOutputForScaTra(IO::DiscretizationWriter& output, int step)
+  void TurbulenceStatisticManager::DoOutputForScaTra(
+      CORE::IO::DiscretizationWriter& output, int step)
   {
     // sampling takes place only in the sampling period
     if (step >= samstart_ && step <= samstop_ && flow_ != no_special_flow)
@@ -1553,7 +1554,7 @@ namespace FLD
   Restart statistics collection
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::read_restart(IO::DiscretizationReader& reader, int step)
+  void TurbulenceStatisticManager::read_restart(CORE::IO::DiscretizationReader& reader, int step)
   {
     if (samstart_ < step && step <= samstop_)
     {
@@ -1594,7 +1595,7 @@ namespace FLD
 
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::ReadRestartScaTra(
-      IO::DiscretizationReader& scatrareader, int step)
+      CORE::IO::DiscretizationReader& scatrareader, int step)
   {
     // we have only to read in the mean field.
     // The rest of the restart was already done during the Restart() call

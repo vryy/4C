@@ -159,7 +159,8 @@ namespace CONTACT
       void update_active_set_semi_smooth(const bool firstStepPredictor = false) override;
 
       /// function wrapper
-      void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis,
+      void DoReadRestart(CORE::IO::DiscretizationReader& reader,
+          Teuchos::RCP<const Epetra_Vector> dis,
           Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
       /// function wrapper
@@ -176,7 +177,7 @@ namespace CONTACT
           const enum NOX::NLN::MeritFunction::LinType lintype) const override;
 
       /// function wrapper
-      void WriteOutput(IO::DiscretizationWriter& writer) const override;
+      void WriteOutput(CORE::IO::DiscretizationWriter& writer) const override;
 
       /// function wrapper
       void evaluate_reference_state() override;

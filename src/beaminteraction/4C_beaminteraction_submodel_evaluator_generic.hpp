@@ -33,11 +33,11 @@ namespace BINSTRATEGY
 {
   class BinningStrategy;
 }
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace IO
+}  // namespace CORE::IO
 namespace DRT
 {
   class Discretization;
@@ -148,7 +148,7 @@ namespace BEAMINTERACTION
       virtual std::map<STR::EnergyType, double> get_energy() const = 0;
 
       //! write submodel specific output
-      virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const = 0;
+      virtual void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const = 0;
 
       //! write submodel specific output during runtime
       virtual void runtime_output_step_state() const = 0;
@@ -157,14 +157,14 @@ namespace BEAMINTERACTION
       virtual void ResetStepState() = 0;
 
       //! \brief write model specific restart
-      virtual void write_restart(
-          IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const = 0;
+      virtual void write_restart(CORE::IO::DiscretizationWriter& ia_writer,
+          CORE::IO::DiscretizationWriter& bin_writer) const = 0;
 
       /*! \brief read model specific restart information
        *
        *  \param ioreader (in) : input reader*/
-      virtual void read_restart(
-          IO::DiscretizationReader& ia_writer, IO::DiscretizationReader& bin_writer) = 0;
+      virtual void read_restart(CORE::IO::DiscretizationReader& ia_writer,
+          CORE::IO::DiscretizationReader& bin_writer) = 0;
 
       //! \brief do stuff pre reading of model specific restart information
       virtual void PreReadRestart() = 0;

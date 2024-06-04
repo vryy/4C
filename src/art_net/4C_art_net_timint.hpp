@@ -52,7 +52,7 @@ namespace ART
     //! Standard Constructor
     TimInt(Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
-        IO::DiscretizationWriter& output);
+        CORE::IO::DiscretizationWriter& output);
 
 
     //! initialize time integration
@@ -174,7 +174,7 @@ namespace ART
     //! linear solver
     Teuchos::RCP<CORE::LINALG::Solver> solver_;
     const Teuchos::ParameterList& params_;
-    IO::DiscretizationWriter& output_;
+    CORE::IO::DiscretizationWriter& output_;
     //! the processor ID from the communicator
     int myrank_;
 

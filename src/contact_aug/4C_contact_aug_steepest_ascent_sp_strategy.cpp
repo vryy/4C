@@ -130,11 +130,12 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::set_penalty_update_state(
 {
   const NOX::NLN::CorrectionType corrtype = cparams.GetCorrectionType();
 
-  IO::cout(IO::debug) << std::string(40, '*') << IO::endl;
-  IO::cout(IO::debug) << __LINE__ << " -- " << CONTACT_FUNC_NAME << IO::endl;
-  IO::cout(IO::debug) << "cparams.GetCorrectionType() = "
-                      << NOX::NLN::CorrectionType2String(corrtype).c_str() << IO::endl;
-  IO::cout(IO::debug) << std::string(40, '*') << IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << std::string(40, '*') << CORE::IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << __LINE__ << " -- " << CONTACT_FUNC_NAME << CORE::IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << "cparams.GetCorrectionType() = "
+                                  << NOX::NLN::CorrectionType2String(corrtype).c_str()
+                                  << CORE::IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << std::string(40, '*') << CORE::IO::endl;
 
   /* Set the state in the penalty update object only for full second order
    * correction steps and default solution steps. Actually the only case which
@@ -154,13 +155,14 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::set_penalty_update_state(
 void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::run_post_iterate(
     const CONTACT::ParamsInterface& cparams)
 {
-  IO::cout(IO::debug) << std::string(40, '*') << "\n";
-  IO::cout(IO::debug) << CONTACT_FUNC_NAME << IO::endl;
-  IO::cout(IO::debug) << "IsDefaultStep = " << (cparams.IsDefaultStep() ? "TRUE" : "FALSE")
-                      << IO::endl;
-  IO::cout(IO::debug) << "Number of modified Newton corrections = "
-                      << cparams.get_number_of_modified_newton_corrections() << IO::endl;
-  IO::cout(IO::debug) << std::string(40, '*') << "\n";
+  CORE::IO::cout(CORE::IO::debug) << std::string(40, '*') << "\n";
+  CORE::IO::cout(CORE::IO::debug) << CONTACT_FUNC_NAME << CORE::IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << "IsDefaultStep = "
+                                  << (cparams.IsDefaultStep() ? "TRUE" : "FALSE") << CORE::IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << "Number of modified Newton corrections = "
+                                  << cparams.get_number_of_modified_newton_corrections()
+                                  << CORE::IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << std::string(40, '*') << "\n";
 
   if (cparams.IsDefaultStep() or cparams.get_number_of_modified_newton_corrections() == 0)
     update_cn(cparams);

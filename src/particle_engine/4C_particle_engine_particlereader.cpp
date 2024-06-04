@@ -51,7 +51,8 @@ void INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
   {
     Teuchos::Time time("", true);
 
-    if (!myrank && !reader_.MyOutputFlag()) IO::cout << "Read and create particles\n" << IO::flush;
+    if (!myrank && !reader_.MyOutputFlag())
+      CORE::IO::cout << "Read and create particles\n" << CORE::IO::flush;
 
     // read in the particles block-wise:
     // EITHER one block per processor so that the number of blocks is numproc

@@ -39,7 +39,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     :  // call constructor for "nontrivial" objects
       solver_(solver),
       params_(params),
@@ -1015,7 +1016,7 @@ void LUBRICATION::TimIntImpl::output_state()
             (*dispnp)[dispnp->Map().LID(discret_->Dof(nds_disp_, node, idim))];
     }
 
-    output_->WriteVector("dispnp", dispnp_multi, IO::nodevector);
+    output_->WriteVector("dispnp", dispnp_multi, CORE::IO::nodevector);
   }
 
   return;
@@ -1135,15 +1136,16 @@ void LUBRICATION::TimIntImpl::output_to_gmsh(const int step, const double time) 
   const bool screen_out = true;
 
   // create Gmsh postprocessing file
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure",
-      discret_->Writer()->Output()->FileName(), step, 500, screen_out, discret_->Comm().MyPID());
+  const std::string filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+      "solution_field_pressure", discret_->Writer()->Output()->FileName(), step, 500, screen_out,
+      discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
                     << "Prenp \" {" << std::endl;
     // draw pressure field 'Prenp' for every element
-    IO::GMSH::ScalarFieldToGmsh(discret_, prenp_, gmshfilecontent);
+    CORE::IO::GMSH::ScalarFieldToGmsh(discret_, prenp_, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 

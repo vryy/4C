@@ -308,11 +308,11 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::update_initial_status(
       }
     }
 
-    IO::cout << std::string(60, '*') << "\n"
-             << set_init_active << " slave nodes of interface #" << ilid
-             << " have been set initially active "
-                "via condition line or INITCONTACTBYGAP.\n"
-             << std::string(60, '*') << "\n";
+    CORE::IO::cout << std::string(60, '*') << "\n"
+                   << set_init_active << " slave nodes of interface #" << ilid
+                   << " have been set initially active "
+                      "via condition line or INITCONTACTBYGAP.\n"
+                   << std::string(60, '*') << "\n";
   }
 
   return merge(new_istatus);
@@ -405,7 +405,8 @@ void CONTACT::AUG::ActiveSet::update_maps(const CONTACT::ParamsInterface& cparam
       data.g_old_active_slave_nodes_ptr() = Teuchos::rcp(new Epetra_Map(0, 0, strategy_.Comm()));
   }
   else
-    IO::cout << "This is no default step! History information stays untouched." << IO::endl;
+    CORE::IO::cout << "This is no default step! History information stays untouched."
+                   << CORE::IO::endl;
 
   // (re)setup of the global Epetra_maps
   data.g_active_node_row_map_ptr() = Teuchos::null;
@@ -446,10 +447,10 @@ void CONTACT::AUG::ActiveSet::sanity_check(
         "detected: %s",
         status2_string(gstatus).c_str());
 
-  IO::cout << "old number of active nodes:     "
-           << data.g_old_active_slave_nodes_ptr()->NumGlobalElements() << IO::endl;
-  IO::cout << "current number of active nodes: "
-           << data.g_active_node_row_map_ptr()->NumGlobalElements() << IO::endl;
+  CORE::IO::cout << "old number of active nodes:     "
+                 << data.g_old_active_slave_nodes_ptr()->NumGlobalElements() << CORE::IO::endl;
+  CORE::IO::cout << "current number of active nodes: "
+                 << data.g_active_node_row_map_ptr()->NumGlobalElements() << CORE::IO::endl;
 }
 
 FOUR_C_NAMESPACE_CLOSE

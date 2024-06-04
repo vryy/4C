@@ -204,7 +204,7 @@ void FSI::DirichletNeumannVel::Timeloop(
       Teuchos::rcp(new BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter());
   visualization_output_writer_->Init();
   visualization_output_writer_->Setup(
-      IO::VisualizationParametersFactory(
+      CORE::IO::VisualizationParametersFactory(
           GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
           *GLOBAL::Problem::Instance()->OutputControlFile(), Time()),
       Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_field(), true)->GetIOData(),

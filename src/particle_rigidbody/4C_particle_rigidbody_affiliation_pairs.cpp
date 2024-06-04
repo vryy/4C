@@ -42,7 +42,7 @@ void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::Setup(
 void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::write_restart() const
 {
   // get bin discretization writer
-  std::shared_ptr<IO::DiscretizationWriter> binwriter =
+  std::shared_ptr<CORE::IO::DiscretizationWriter> binwriter =
       particleengineinterface_->get_bin_discretization_writer();
 
   // prepare buffer
@@ -55,7 +55,7 @@ void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::write_restart() const
 }
 
 void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::read_restart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
+    const std::shared_ptr<CORE::IO::DiscretizationReader> reader)
 {
   // prepare buffer
   Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);

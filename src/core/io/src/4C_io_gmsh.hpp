@@ -26,7 +26,7 @@ documentation.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   namespace GMSH
   {
@@ -608,7 +608,7 @@ namespace IO
         const int pid = 0  ///< my processor id
     );
   }  // namespace GMSH
-}  // namespace IO
+}  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

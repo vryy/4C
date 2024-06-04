@@ -49,7 +49,7 @@ namespace SCATRA
         Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
 
     //! create result test for micro field
     Teuchos::RCP<CORE::UTILS::ResultTest> create_micro_field_test();
@@ -65,7 +65,7 @@ namespace SCATRA
 
     void prepare_time_step() override;
 
-    void read_restart_problem_specific(int step, IO::DiscretizationReader& reader) override;
+    void read_restart_problem_specific(int step, CORE::IO::DiscretizationReader& reader) override;
 
     void Setup() override;
 

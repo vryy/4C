@@ -24,13 +24,13 @@ namespace DRT
 {
   class Discretization;
 }
-namespace IO
+namespace CORE::IO
 {
   class VisualizationManager;
   struct VisualizationParameters;
-}  // namespace IO
+}  // namespace CORE::IO
 
-namespace IO
+namespace CORE::IO
 {
   /**
    * @brief This object allows to write nodal visualization output for a discretization
@@ -107,7 +107,7 @@ namespace IO
     //! The actual visualization writer object that additionally stores the geometry and result data
     Teuchos::RCP<VisualizationManager> visualization_manager_;
   };
-}  // namespace IO
+}  // namespace CORE::IO
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

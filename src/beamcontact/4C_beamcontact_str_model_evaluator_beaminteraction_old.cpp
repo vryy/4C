@@ -164,7 +164,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::assemble_jacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteractionOld::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   beamcman_->write_restart(iowriter);  // ToDo
 
@@ -176,7 +176,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::read_restart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::BeamInteractionOld::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   beamcman_->read_restart(ioreader);  // ToDo
   return;
@@ -238,7 +238,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::determine_optional_quantity()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteractionOld::OutputStepState(
-    IO::DiscretizationWriter& iowriter) const
+    CORE::IO::DiscretizationWriter& iowriter) const
 {
   return;
 }

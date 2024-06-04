@@ -71,7 +71,7 @@ void CONTACT::NitscheStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> di
 /*----------------------------------------------------------------------*
  |  read restart information for contact                     seitz 10/16|
  *----------------------------------------------------------------------*/
-void CONTACT::NitscheStrategy::DoReadRestart(IO::DiscretizationReader& reader,
+void CONTACT::NitscheStrategy::DoReadRestart(CORE::IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   // check whether this is a restart with contact of a previously

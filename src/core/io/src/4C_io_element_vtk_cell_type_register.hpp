@@ -42,7 +42,7 @@ namespace
 
 
 /* namespace */
-namespace IO
+namespace CORE::IO
 {
   std::pair<uint8_t, std::vector<int>> inline GetVtkCellTypeFromFourCElementShapeType(
       CORE::FE::CellType four_c_ele_shape_type)
@@ -141,7 +141,7 @@ namespace IO
   }
 
 
-}  // namespace IO
+}  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

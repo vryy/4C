@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
 /* constructor */
 ADAPTER::FluidFSIMsht::FluidFSIMsht(Teuchos::RCP<Fluid> fluid,
     Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::Solver> solver,
-    Teuchos::RCP<Teuchos::ParameterList> params, Teuchos::RCP<IO::DiscretizationWriter> output,
-    bool isale, bool dirichletcond)
+    Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond),
       fsiinterface_(Teuchos::rcp(new FLD::UTILS::FsiMapExtractor()))
 {

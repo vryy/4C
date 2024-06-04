@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   /// control class to manage a control file for output
   class OutputControl
@@ -181,8 +181,8 @@ namespace IO
   size_t RestartFinder(const std::string& filename);
 
   /// find the last possible restart step in the control file
-  int GetLastPossibleRestartStep(IO::InputControl& inputcontrol);
-}  // namespace IO
+  int GetLastPossibleRestartStep(CORE::IO::InputControl& inputcontrol);
+}  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

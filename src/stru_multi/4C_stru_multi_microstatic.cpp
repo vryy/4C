@@ -657,7 +657,7 @@ void STRUMULTI::MicroStatic::prepare_output()
 /*----------------------------------------------------------------------*
  |  write output (public)                                       lw 02/08|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> output,
+void STRUMULTI::MicroStatic::Output(Teuchos::RCP<CORE::IO::DiscretizationWriter> output,
     const double time, const int step, const double dt)
 {
   bool isdatawritten = false;
@@ -773,8 +773,9 @@ void STRUMULTI::MicroStatic::read_restart(int step, Teuchos::RCP<Epetra_Vector> 
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
     std::string name)
 {
-  Teuchos::RCP<IO::InputControl> inputcontrol = Teuchos::rcp(new IO::InputControl(name, true));
-  IO::DiscretizationReader reader(discret_, inputcontrol, step);
+  Teuchos::RCP<CORE::IO::InputControl> inputcontrol =
+      Teuchos::rcp(new CORE::IO::InputControl(name, true));
+  CORE::IO::DiscretizationReader reader(discret_, inputcontrol, step);
   double time = reader.ReadDouble("time");
   int rstep = reader.ReadInt("step");
   if (rstep != step) FOUR_C_THROW("Time step on file not equal to given step");

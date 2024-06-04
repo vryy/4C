@@ -497,7 +497,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<MAT::MaterialDefinition>>> INPUT::ValidMat
         return acc;
       };
 
-      return IO::convert_lines<actMapType, actMapType>(file_stream, map_reduction_operation);
+      return CORE::IO::convert_lines<actMapType, actMapType>(file_stream, map_reduction_operation);
     };
     const std::string print_string = std::string(
         "map of activation values retrieved from pattern file with rows in the format \"eleid: "
@@ -3872,7 +3872,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<MAT::MaterialDefinition>>> INPUT::ValidMat
         return acc;
       };
 
-      return IO::convert_lines<mapType, mapType>(file_stream, map_reduction_operation);
+      return CORE::IO::convert_lines<mapType, mapType>(file_stream, map_reduction_operation);
     };
     const std::string print_string = std::string(
         "map of massfraction values retrieved from pattern file with rows in the format \"eleid: "

@@ -74,9 +74,9 @@ namespace STR
           CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       void write_restart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
-      void read_restart(IO::DiscretizationReader& ioreader) override;
+      void read_restart(CORE::IO::DiscretizationReader& ioreader) override;
 
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
           const NOX::NLN::Group& curr_grp) override
@@ -104,7 +104,7 @@ namespace STR
 
       void ResetStepState() override;
 
-      void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
+      void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override;
 
       void runtime_pre_output_step_state() override;
 

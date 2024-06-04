@@ -24,7 +24,7 @@ STR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       fint_(Teuchos::null),
       fintn_(Teuchos::null),
@@ -64,9 +64,9 @@ void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
   {
     // check if we are in prestressing mode
     if (pre_stress_type == INPAR::STR::PreStress::mulf)
-      IO::cout << "with static MULF prestress" << IO::endl;
+      CORE::IO::cout << "with static MULF prestress" << CORE::IO::endl;
     else
-      IO::cout << "with statics" << IO::endl;
+      CORE::IO::cout << "with statics" << CORE::IO::endl;
   }
 
   // have a nice day
@@ -446,7 +446,7 @@ void STR::TimIntStatics::ReadRestartForce() { return; }
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
 {
   output->WriteVector("fexternal", fext_);
   output->WriteVector("fint", fint_);

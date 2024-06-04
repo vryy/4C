@@ -126,7 +126,8 @@ namespace INPUT
 
   void SeparatorComponent::DefaultLine(std::ostream& stream) { stream << separator_; }
 
-  void SeparatorComponent::Print(std::ostream& stream, const IO::InputParameterContainer& container)
+  void SeparatorComponent::Print(
+      std::ostream& stream, const CORE::IO::InputParameterContainer& container)
   {
     stream << separator_;
   }
@@ -151,7 +152,7 @@ namespace INPUT
   }
 
   Teuchos::RCP<std::stringstream> SeparatorComponent::Read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container)
+      Teuchos::RCP<std::stringstream> condline, CORE::IO::InputParameterContainer& container)
   {
     // try to find line parameter label "separator_" (with leading and trailing white spaces for
     // uniqueness) in stringstream "condline"
@@ -194,7 +195,8 @@ namespace INPUT
 
   void StringComponent::DefaultLine(std::ostream& stream) { stream << defaultvalue_; }
 
-  void StringComponent::Print(std::ostream& stream, const IO::InputParameterContainer& container)
+  void StringComponent::Print(
+      std::ostream& stream, const CORE::IO::InputParameterContainer& container)
   {
     stream << container.Get<std::string>(Name());
   }
@@ -202,7 +204,7 @@ namespace INPUT
   void StringComponent::Describe(std::ostream& stream) {}
 
   Teuchos::RCP<std::stringstream> StringComponent::Read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container)
+      Teuchos::RCP<std::stringstream> condline, CORE::IO::InputParameterContainer& container)
   {
     // initialize string parameter value to be read
     std::string str = defaultvalue_;
@@ -285,13 +287,14 @@ namespace INPUT
 
   Teuchos::Array<std::string> SelectionComponent::GetOptions() { return datfilevalues_; }
 
-  void SelectionComponent::Print(std::ostream& stream, const IO::InputParameterContainer& container)
+  void SelectionComponent::Print(
+      std::ostream& stream, const CORE::IO::InputParameterContainer& container)
   {
     stream << container.Get<std::string>(Name());
   }
 
   Teuchos::RCP<std::stringstream> SelectionComponent::Read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container)
+      Teuchos::RCP<std::stringstream> condline, CORE::IO::InputParameterContainer& container)
   {
     std::size_t position{};
     std::string selected_value{defaultvalue_};
@@ -343,7 +346,7 @@ namespace INPUT
       stream << data_.default_value;
   }
 
-  void IntComponent::Print(std::ostream& stream, const IO::InputParameterContainer& container)
+  void IntComponent::Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container)
   {
     int n = container.Get<int>(Name());
     if (data_.none_allowed and n == -1)
@@ -363,7 +366,7 @@ namespace INPUT
   void IntComponent::Describe(std::ostream& stream) {}
 
   Teuchos::RCP<std::stringstream> IntComponent::Read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container)
+      Teuchos::RCP<std::stringstream> condline, CORE::IO::InputParameterContainer& container)
   {
     // initialize integer parameter value to be read
     int nnumber = data_.default_value;
@@ -459,7 +462,8 @@ namespace INPUT
     return parameterstring;
   }
 
-  void IntVectorComponent::Print(std::ostream& stream, const IO::InputParameterContainer& container)
+  void IntVectorComponent::Print(
+      std::ostream& stream, const CORE::IO::InputParameterContainer& container)
   {
     const auto& v = container.Get<std::vector<int>>(Name());
     for (int i : v)
@@ -478,12 +482,12 @@ namespace INPUT
       int operator()(int length) { return length; }
       int operator()(const LengthDefinition& length) { return length(condition); }
 
-      const IO::InputParameterContainer& condition;
+      const CORE::IO::InputParameterContainer& condition;
     };
   }  // namespace
 
   Teuchos::RCP<std::stringstream> IntVectorComponent::Read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container)
+      Teuchos::RCP<std::stringstream> condline, CORE::IO::InputParameterContainer& container)
   {
     const int initialize_value = data_.default_value + (data_.fortran_style ? -1 : 0);
     const int dynamic_length = std::visit(LengthVisitor{container}, length_);
@@ -553,7 +557,8 @@ namespace INPUT
 
   void RealComponent::DefaultLine(std::ostream& stream) { stream << data_.default_value; }
 
-  void RealComponent::Print(std::ostream& stream, const IO::InputParameterContainer& container)
+  void RealComponent::Print(
+      std::ostream& stream, const CORE::IO::InputParameterContainer& container)
   {
     stream << container.Get<double>(Name());
   }
@@ -561,7 +566,7 @@ namespace INPUT
   void RealComponent::Describe(std::ostream& stream) {}
 
   Teuchos::RCP<std::stringstream> RealComponent::Read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container)
+      Teuchos::RCP<std::stringstream> condline, CORE::IO::InputParameterContainer& container)
   {
     // initialize double parameter value to be read
     double nnumber = data_.default_value;
@@ -620,7 +625,7 @@ namespace INPUT
   std::string RealVectorComponent::WriteReadTheDocs() { return "<real vec:" + Name() + "> "; }
 
   void RealVectorComponent::Print(
-      std::ostream& stream, const IO::InputParameterContainer& container)
+      std::ostream& stream, const CORE::IO::InputParameterContainer& container)
   {
     const auto& v = container.Get<std::vector<double>>(Name());
     for (double i : v) stream << i << " ";
@@ -629,7 +634,7 @@ namespace INPUT
   void RealVectorComponent::Describe(std::ostream& stream) {}
 
   Teuchos::RCP<std::stringstream> RealVectorComponent::Read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container)
+      Teuchos::RCP<std::stringstream> condline, CORE::IO::InputParameterContainer& container)
   {
     const int dynamic_length = std::visit(LengthVisitor{container}, length_);
     std::vector<double> nnumbers(dynamic_length, data_.default_value);
@@ -688,7 +693,8 @@ namespace INPUT
 
   void BoolComponent::DefaultLine(std::ostream& stream) { print_yes_no(stream, defaultvalue_); }
 
-  void BoolComponent::Print(std::ostream& stream, const IO::InputParameterContainer& container)
+  void BoolComponent::Print(
+      std::ostream& stream, const CORE::IO::InputParameterContainer& container)
   {
     const bool value = (bool)container.Get<int>(Name());
     print_yes_no(stream, value);
@@ -705,7 +711,7 @@ namespace INPUT
   void BoolComponent::Describe(std::ostream& stream) {}
 
   Teuchos::RCP<std::stringstream> BoolComponent::Read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container)
+      Teuchos::RCP<std::stringstream> condline, CORE::IO::InputParameterContainer& container)
   {
     // initialize boolean parameter value to be read
     bool boolean = defaultvalue_;
@@ -812,7 +818,8 @@ namespace INPUT
     return component_for_key_->GetOptions();
   }
 
-  void SwitchComponent::Print(std::ostream& stream, const IO::InputParameterContainer& container)
+  void SwitchComponent::Print(
+      std::ostream& stream, const CORE::IO::InputParameterContainer& container)
   {
     component_for_key_->Print(stream, container);
     stream << " ";
@@ -829,7 +836,7 @@ namespace INPUT
   }
 
   Teuchos::RCP<std::stringstream> SwitchComponent::Read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container)
+      Teuchos::RCP<std::stringstream> condline, CORE::IO::InputParameterContainer& container)
   {
     component_for_key_->Read(section_name, condline, container);
     const KeyType key = static_cast<KeyType>(container.Get<int>(component_for_key_->Name()));
@@ -847,13 +854,14 @@ namespace INPUT
 
   void ProcessedComponent::DefaultLine(std::ostream& stream) { stream << "none"; }
 
-  void ProcessedComponent::Print(std::ostream& stream, const IO::InputParameterContainer& container)
+  void ProcessedComponent::Print(
+      std::ostream& stream, const CORE::IO::InputParameterContainer& container)
   {
     stream << print_string_;
   }
 
   Teuchos::RCP<std::stringstream> ProcessedComponent::Read(const std::string& section_name,
-      Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container)
+      Teuchos::RCP<std::stringstream> condline, CORE::IO::InputParameterContainer& container)
   {
     // initialize string parameter value to be read
     std::string str = "";

@@ -45,7 +45,7 @@ namespace DRT
 enum class ShapeFunctionType;
 
 /// IO: input/output facility
-namespace IO
+namespace CORE::IO
 {
   class InputControl;
   class OutputControl;
@@ -76,8 +76,8 @@ namespace IO
   {
    public:
     /// construct reader for a given discretization to read a particular time step
-    DiscretizationReader(
-        Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<IO::InputControl> input, int step);
+    DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<CORE::IO::InputControl> input, int step);
 
     /// destructor
     virtual ~DiscretizationReader() = default;
@@ -212,7 +212,7 @@ namespace IO
     Teuchos::RCP<DRT::Discretization> dis_;
 
     /// my input control file
-    Teuchos::RCP<IO::InputControl> input_;
+    Teuchos::RCP<CORE::IO::InputControl> input_;
 
     /// control file entry of this step
     MAP* restart_step_;
@@ -255,7 +255,7 @@ namespace IO
      *  \parma[in] type    copy type
      *
      *  \author hiermeier \date 08/17 */
-    DiscretizationWriter(const IO::DiscretizationWriter& writer,
+    DiscretizationWriter(const CORE::IO::DiscretizationWriter& writer,
         const Teuchos::RCP<OutputControl>& control, enum CopyType type);
 
     /// cleanup, close hdf5 files
@@ -462,7 +462,7 @@ namespace IO
   };
 
 
-}  // namespace IO
+}  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

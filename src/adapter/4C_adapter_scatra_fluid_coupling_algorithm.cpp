@@ -234,7 +234,7 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::read_restart(int step)
   // read scatra-specific restart data for turbulence statistics
   if (fluid_field()->turbulence_statistic_manager() != Teuchos::null)
   {
-    IO::DiscretizationReader reader(
+    CORE::IO::DiscretizationReader reader(
         ScaTraField()->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
     fluid_field()->turbulence_statistic_manager()->ReadRestartScaTra(reader, step);
   }

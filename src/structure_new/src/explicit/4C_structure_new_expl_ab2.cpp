@@ -138,7 +138,7 @@ void STR::EXPLICIT::AdamsBashforth2::add_visco_mass_contributions(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::AdamsBashforth2::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
   // write dynamic forces
@@ -150,7 +150,7 @@ void STR::EXPLICIT::AdamsBashforth2::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::AdamsBashforth2::read_restart(IO::DiscretizationReader& ioreader)
+void STR::EXPLICIT::AdamsBashforth2::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   ioreader.ReadVector(finertian_ptr_, "finert");

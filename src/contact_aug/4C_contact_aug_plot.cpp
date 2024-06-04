@@ -143,7 +143,7 @@ bool CONTACT::AUG::Plot::Direction::extend_file_name(
   // check if the file name contains a full path or only a single file name
   if (file_name.find('/') == std::string::npos)
   {
-    const std::string path_only = IO::ExtractPath(file_path);
+    const std::string path_only = CORE::IO::ExtractPath(file_path);
     file_name = path_only + file_name;
     return true;
   }
@@ -466,11 +466,11 @@ void CONTACT::AUG::Plot::setup()
       y_(i, j) = y[j];
     }
 
-  const std::string path = IO::ExtractPath(filepath_);
-  const std::string dir_name(IO::ExtractFileName(filepath_) + "_plot");
+  const std::string path = CORE::IO::ExtractPath(filepath_);
+  const std::string dir_name(CORE::IO::ExtractFileName(filepath_) + "_plot");
 
   filepath_ = path + dir_name;
-  IO::create_directory(filepath_, strat_->Comm().MyPID());
+  CORE::IO::create_directory(filepath_, strat_->Comm().MyPID());
 
   add_file_name_to_path();
 }
@@ -599,9 +599,9 @@ void CONTACT::AUG::Plot::lin_space(
   {
     res.resize(n, a);
     if (a != b)
-      IO::cout << "WARNING: lin_space(a,b,n,res) has been called with different "
-                  "values for a and b, even though n is equal to 1! The result res is "
-                  "set to a.\n";
+      CORE::IO::cout << "WARNING: lin_space(a,b,n,res) has been called with different "
+                        "values for a and b, even though n is equal to 1! The result res is "
+                        "set to a.\n";
 
     return;
   }
@@ -819,7 +819,7 @@ void CONTACT::AUG::Plot::compute_angle_position()
 void CONTACT::AUG::Plot::plot_scalar(const NOX::NLN::CONSTRAINT::Group& ref_grp,
     const Epetra_Vector& dir, NOX::NLN::CONSTRAINT::Group& plot_grp)
 {
-  IO::cout << "Start evaluation of the scalar data...\n";
+  CORE::IO::cout << "Start evaluation of the scalar data...\n";
 
   Epetra_Vector step(dir.Map(), true);
   get_support_points(x_type_, x_);
@@ -838,7 +838,7 @@ void CONTACT::AUG::Plot::plot_scalar(const NOX::NLN::CONSTRAINT::Group& ref_grp,
 void CONTACT::AUG::Plot::plot_line(const NOX::NLN::CONSTRAINT::Group& ref_grp,
     const Epetra_Vector& dir, NOX::NLN::CONSTRAINT::Group& plot_grp)
 {
-  IO::cout << "Start evaluation of the line data...\n";
+  CORE::IO::cout << "Start evaluation of the line data...\n";
   get_support_points(x_type_, x_);
   y_.reshape(x_.numRows(), y_.numCols());
 
@@ -847,7 +847,7 @@ void CONTACT::AUG::Plot::plot_line(const NOX::NLN::CONSTRAINT::Group& ref_grp,
 
   for (int i = 0; i < x_.numRows(); ++i)
   {
-    IO::cout << "alpha = " << x_(i, 0) << IO::endl;
+    CORE::IO::cout << "alpha = " << x_(i, 0) << CORE::IO::endl;
     modify_step_length(x_type_, x_(i, 0), dir, step);
 
     double curr_norm_step = 0.0;
@@ -870,7 +870,7 @@ void CONTACT::AUG::Plot::plot_line(const NOX::NLN::CONSTRAINT::Group& ref_grp,
 void CONTACT::AUG::Plot::plot_surface(const NOX::NLN::CONSTRAINT::Group& ref_grp,
     const Epetra_Vector& dir, NOX::NLN::CONSTRAINT::Group& plot_grp)
 {
-  IO::cout << "Start evaluation of the surface data...\n";
+  CORE::IO::cout << "Start evaluation of the surface data...\n";
   get_support_points(x_type_, x_);
   get_support_points(y_type_, y_);
 
@@ -885,7 +885,7 @@ void CONTACT::AUG::Plot::plot_surface(const NOX::NLN::CONSTRAINT::Group& ref_grp
   {
     for (int j = 0; j < x_.numCols(); ++j)
     {
-      IO::cout << "( alpha, beta ) = ( " << x_(i, j) << ", " << y_(i, j) << " )\n";
+      CORE::IO::cout << "( alpha, beta ) = ( " << x_(i, j) << ", " << y_(i, j) << " )\n";
 
       modify_step_length(x_type_, x_(i, j), *x_dir_ptr, step);
       modify_step_length(y_type_, y_(i, j), *y_dir_ptr, step);
@@ -922,12 +922,12 @@ void CONTACT::AUG::Plot::plot_vector_field2_d(const NOX::NLN::CONSTRAINT::Group&
 
   std::vector<double> vec_vals;
 
-  IO::cout << "Start evaluation of the vector field data...\n";
+  CORE::IO::cout << "Start evaluation of the vector field data...\n";
   for (unsigned i = 0; i < opt_.resolution_x_; ++i)
   {
     for (unsigned j = 0; j < opt_.resolution_y_; ++j)
     {
-      IO::cout << "( alpha, beta ) = ( " << x_(i, j) << ", " << y_(i, j) << " )\n";
+      CORE::IO::cout << "( alpha, beta ) = ( " << x_(i, j) << ", " << y_(i, j) << " )\n";
 
       modify_step_length(x_type_, x_(i, j), *x_dir_ptr, step);
       modify_step_length(y_type_, y_(i, j), *y_dir_ptr, step);
@@ -974,7 +974,7 @@ void CONTACT::AUG::Plot::write_line_data_to_file() const
 {
   if (strat_->Comm().MyPID() != 0) return;
 
-  const int nlines = IO::CountLinesInFile(filepath_);
+  const int nlines = CORE::IO::CountLinesInFile(filepath_);
   std::ofstream outputfile(filepath_, file_open_mode_);
 
   switch (format_)
@@ -1132,9 +1132,9 @@ const NOX::NLN::CONSTRAINT::Group* CONTACT::AUG::Plot::get_reference_group(
     case INPAR::CONTACT::PlotReferenceType::current_solution:
     {
       if (dir_.type_ == INPAR::CONTACT::PlotDirection::current_search_direction)
-        IO::cout << "WARNING: The reference point is the current solution "
-                    "point and the direction the current search direction TO this point. "
-                    "Is this really what you want to do?\n";
+        CORE::IO::cout << "WARNING: The reference point is the current solution "
+                          "point and the direction the current search direction TO this point. "
+                          "Is this really what you want to do?\n";
 
       ref_grp = dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&solver.getSolutionGroup());
       break;

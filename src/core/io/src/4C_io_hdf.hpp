@@ -43,7 +43,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   /*!
     \brief Helper class that handles the HDF5 files while reading.
@@ -214,7 +214,7 @@ namespace IO
     //! file access property list for HDF5 files
     hid_t h5_plist_;
   };
-}  // namespace IO
+}  // namespace CORE::IO
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -29,11 +29,11 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace CORE::LINALG
 {
@@ -41,11 +41,11 @@ namespace CORE::LINALG
   class SparseMatrix;
 }  // namespace CORE::LINALG
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace STR
 {
@@ -206,16 +206,16 @@ namespace STR
 
     /*! write restart information of the different time integration schemes
      *  and model evaluators */
-    void write_restart(IO::DiscretizationWriter& iowriter) const
+    void write_restart(CORE::IO::DiscretizationWriter& iowriter) const
     {
       write_restart(iowriter, false);
     };
     virtual void write_restart(
-        IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const = 0;
+        CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const = 0;
 
     /*! read restart information of the different time integration schemes
      *  and model evaluators */
-    virtual void read_restart(IO::DiscretizationReader& ioreader) = 0;
+    virtual void read_restart(CORE::IO::DiscretizationReader& ioreader) = 0;
 
     //!@}
 
@@ -268,7 +268,7 @@ namespace STR
      *  upon object prior to writing stuff here.
      *
      *  \author mwgee (originally)                         \date 03/07 */
-    void OutputStepState(IO::DiscretizationWriter& iowriter) const;
+    void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const;
 
     /**
      * \brief Do stuff that has to be done before runtime output is written.
@@ -303,7 +303,7 @@ namespace STR
     //! things that should be done after output
     virtual void PostOutput();
 
-    void MonitorDbc(IO::DiscretizationWriter& writer) const;
+    void MonitorDbc(CORE::IO::DiscretizationWriter& writer) const;
     //!@}
 
     //! @name Accessors

@@ -60,7 +60,7 @@ void CORE::Conditions::ConditionDefinition::Read(INPUT::DatFileReader& reader,
 
   if (section.empty()) return;
 
-  IO::LineParser parser("While reading condition section '" + sectionname_ + "': ");
+  CORE::IO::LineParser parser("While reading condition section '" + sectionname_ + "': ");
 
   // First we read a header for the current section: It needs to start with the
   // geometry type followed by the number of lines:

@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   class OutputControl;
 
@@ -78,7 +78,7 @@ namespace IO
    */
   [[nodiscard]] VisualizationParameters VisualizationParametersFactory(
       const Teuchos::ParameterList& visualization_ouput_parameter_list,
-      const IO::OutputControl& output_control, double restart_time);
+      const CORE::IO::OutputControl& output_control, double restart_time);
 
   /**
    * @brief Return the total number of digits to reserve in the time step numbering
@@ -106,7 +106,7 @@ namespace IO
   [[nodiscard]] std::pair<double, int> GetTimeAndTimeStepIndexForOutput(
       const VisualizationParameters& visualization_parameters, const double time, const int step,
       const int iteration_number = 0);
-}  // namespace IO
+}  // namespace CORE::IO
 
 
 FOUR_C_NAMESPACE_CLOSE

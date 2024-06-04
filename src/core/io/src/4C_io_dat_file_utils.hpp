@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO::DatFileUtils
+namespace CORE::IO::DatFileUtils
 {
 
   /**
@@ -53,7 +53,7 @@ namespace IO::DatFileUtils
   read_matching_lines_in_section(INPUT::DatFileReader& reader, const std::string& section,
       const std::vector<INPUT::LineDefinition>& possible_lines);
 
-}  // namespace IO::DatFileUtils
+}  // namespace CORE::IO::DatFileUtils
 
 
 FOUR_C_NAMESPACE_CLOSE

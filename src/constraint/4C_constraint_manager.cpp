@@ -337,7 +337,8 @@ void CONSTRAINTS::ConstrManager::compute_error(double time, Teuchos::RCP<Epetra_
 
 /*----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstrManager::read_restart(IO::DiscretizationReader& reader, const double& time)
+void CONSTRAINTS::ConstrManager::read_restart(
+    CORE::IO::DiscretizationReader& reader, const double& time)
 {
   //  double uzawatemp = reader.ReadDouble("uzawaparameter");
   //  consolv_->SetUzawaParameter(uzawatemp);

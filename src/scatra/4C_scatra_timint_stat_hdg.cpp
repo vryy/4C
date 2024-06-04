@@ -18,7 +18,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 SCATRA::TimIntStationaryHDG::TimIntStationaryHDG(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output),
       TimIntHDG(actdis, solver, params, extraparams, output)
 {

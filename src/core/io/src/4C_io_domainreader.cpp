@@ -26,11 +26,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   /// forward declarations
   void BroadcastInputDataToAllProcs(
-      Teuchos::RCP<Epetra_Comm> comm, IO::GRIDGENERATOR::RectangularCuboidInputs& inputData);
+      Teuchos::RCP<Epetra_Comm> comm, CORE::IO::GRIDGENERATOR::RectangularCuboidInputs& inputData);
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
@@ -53,20 +53,21 @@ namespace IO
     Teuchos::Time time("", true);
 
     if (!reader_.MyOutputFlag() && myrank == 0)
-      IO::cout << "Entering domain generation mode for " << name_
-               << " discretization ...\nCreate and partition elements      in...." << IO::endl;
+      CORE::IO::cout << "Entering domain generation mode for " << name_
+                     << " discretization ...\nCreate and partition elements      in...."
+                     << CORE::IO::endl;
 
     GRIDGENERATOR::RectangularCuboidInputs inputData =
         DomainReader::read_rectangular_cuboid_input_data();
     inputData.node_gid_of_first_new_node_ = nodeGIdOfFirstNewNode;
 
-    IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(
+    CORE::IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(
         *dis_, inputData, static_cast<bool>(reader_.MyOutputFlag()));
 
     if (!myrank && reader_.MyOutputFlag() == 0)
-      IO::cout << "............................................... " << std::setw(10)
-               << std::setprecision(5) << std::scientific << time.totalElapsedTime(true) << " secs"
-               << IO::endl;
+      CORE::IO::cout << "............................................... " << std::setw(10)
+                     << std::setprecision(5) << std::scientific << time.totalElapsedTime(true)
+                     << " secs" << CORE::IO::endl;
 
     return;
   }
@@ -75,7 +76,7 @@ namespace IO
   /*----------------------------------------------------------------------*/
   GRIDGENERATOR::RectangularCuboidInputs DomainReader::read_rectangular_cuboid_input_data() const
   {
-    IO::GRIDGENERATOR::RectangularCuboidInputs inputData;
+    CORE::IO::GRIDGENERATOR::RectangularCuboidInputs inputData;
     // all reading is done on proc 0
     if (comm_->MyPID() == 0)
     {
@@ -162,7 +163,7 @@ namespace IO
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void BroadcastInputDataToAllProcs(
-      Teuchos::RCP<Epetra_Comm> comm, IO::GRIDGENERATOR::RectangularCuboidInputs& inputData)
+      Teuchos::RCP<Epetra_Comm> comm, CORE::IO::GRIDGENERATOR::RectangularCuboidInputs& inputData)
   {
     const int myrank = comm->MyPID();
 
@@ -220,18 +221,18 @@ namespace IO
     Teuchos::Time time("", true);
 
     if (!myrank && !reader_.MyOutputFlag())
-      IO::cout << "Complete discretization " << std::left << std::setw(16) << name_ << " in...."
-               << IO::flush;
+      CORE::IO::cout << "Complete discretization " << std::left << std::setw(16) << name_
+                     << " in...." << CORE::IO::flush;
 
     int err = dis_->fill_complete(false, false, false);
     if (err) FOUR_C_THROW("dis_->fill_complete() returned %d", err);
 
     if (!myrank && !reader_.MyOutputFlag())
-      IO::cout << time.totalElapsedTime(true) << " secs" << IO::endl;
+      CORE::IO::cout << time.totalElapsedTime(true) << " secs" << CORE::IO::endl;
 
     CORE::REBALANCE::UTILS::print_parallel_distribution(*dis_);
   }
 
-}  // namespace IO
+}  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE

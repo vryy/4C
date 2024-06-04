@@ -40,7 +40,7 @@ void PARTICLEINTERACTION::InteractionWriter::Setup()
 }
 
 void PARTICLEINTERACTION::InteractionWriter::read_restart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
+    const std::shared_ptr<CORE::IO::DiscretizationReader> reader)
 {
   // get restart time
   setuptime_ = reader->ReadDouble("time");
@@ -54,9 +54,9 @@ void PARTICLEINTERACTION::InteractionWriter::register_specific_runtime_output_wr
     FOUR_C_THROW("a runtime output writer for field '%s' is already stored!", fieldname.c_str());
 
   // construct and init the output writer object
-  std::shared_ptr<IO::VisualizationManager> runtime_visualization_manager =
-      std::make_shared<IO::VisualizationManager>(
-          IO::VisualizationParametersFactory(
+  std::shared_ptr<CORE::IO::VisualizationManager> runtime_visualization_manager =
+      std::make_shared<CORE::IO::VisualizationManager>(
+          CORE::IO::VisualizationParametersFactory(
               GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
               *GLOBAL::Problem::Instance()->OutputControlFile(), setuptime_),
           comm_, fieldname);
@@ -73,7 +73,7 @@ void PARTICLEINTERACTION::InteractionWriter::register_specific_runtime_csv_write
     FOUR_C_THROW("a runtime csv writer for field '%s' is already stored!", fieldname.c_str());
 
   // set the csv writer object
-  runtime_csvwriters_[fieldname] = std::make_shared<IO::RuntimeCsvWriter>(
+  runtime_csvwriters_[fieldname] = std::make_shared<CORE::IO::RuntimeCsvWriter>(
       comm_.MyPID(), *GLOBAL::Problem::Instance()->OutputControlFile(), fieldname);
 }
 
@@ -83,7 +83,7 @@ void PARTICLEINTERACTION::InteractionWriter::write_particle_interaction_runtime_
   // iterate over output writer objects
   for (auto& writerIt : runtime_visualization_managers_)
   {
-    std::shared_ptr<IO::VisualizationManager> runtime_visualization_manager = writerIt.second;
+    std::shared_ptr<CORE::IO::VisualizationManager> runtime_visualization_manager = writerIt.second;
 
     // data to be written preset in particle interaction evaluation
 
@@ -94,7 +94,7 @@ void PARTICLEINTERACTION::InteractionWriter::write_particle_interaction_runtime_
   // iterate over csv writer objects
   for (auto& writerIt : runtime_csvwriters_)
   {
-    std::shared_ptr<IO::RuntimeCsvWriter> runtime_csvwriter = writerIt.second;
+    std::shared_ptr<CORE::IO::RuntimeCsvWriter> runtime_csvwriter = writerIt.second;
 
     // reset time and time step of the writer object
     runtime_csvwriter->reset_time_and_time_step(time, step);

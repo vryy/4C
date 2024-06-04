@@ -136,7 +136,7 @@ class VtkWriterBase
 
   //! write given field data, including time and cycle for vtk file.
   void write_vtk_field_data_and_or_time_and_or_cycle(
-      const std::map<std::string, IO::visualization_vector_type_variant>& field_data_map);
+      const std::map<std::string, CORE::IO::visualization_vector_type_variant>& field_data_map);
 
   //! write field data for time and cycle for vtk file.
   void write_vtk_time_and_or_cycle();
@@ -153,8 +153,8 @@ class VtkWriterBase
  protected:
   //! write a data vector as DataArray to corresponding vtk files
   // Todo template <typename T>
-  void write_data_array(const IO::visualization_vector_type_variant& data, const int num_components,
-      const std::string& name);
+  void write_data_array(const CORE::IO::visualization_vector_type_variant& data,
+      const int num_components, const std::string& name);
 
   //! generate the part of the filename that expresses the processor ID
   const std::string& get_part_of_file_name_indicating_processor_id(unsigned int processor_id) const;

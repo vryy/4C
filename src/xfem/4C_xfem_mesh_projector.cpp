@@ -267,7 +267,7 @@ void XFEM::MeshProjector::Project(std::map<int, std::set<int>>& projection_nodeT
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (targetdis_->Comm().MyPID() == 0)
-        IO::cout << "WARNING: Found no parent for node: " << node_id << IO::endl;
+        CORE::IO::cout << "WARNING: Found no parent for node: " << node_id << CORE::IO::endl;
 #endif
       continue;
     }
@@ -538,8 +538,9 @@ void XFEM::MeshProjector::receive_block(
   exporter.ReceiveAny(frompid, tag, rblock, length);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  // IO::cout << "----receiving " << rblock.size() <<  " bytes: to proc " << myrank << " from proc "
-  // << frompid << IO::endl;
+  // CORE::IO::cout << "----receiving " << rblock.size() <<  " bytes: to proc " << myrank << " from
+  // proc "
+  // << frompid << CORE::IO::endl;
 #endif
 
   if (tag != (myrank + numproc - 1) % numproc)
@@ -568,8 +569,9 @@ void XFEM::MeshProjector::send_block(
   int topid = (myrank + 1) % numproc;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  // IO::cout << "----sending " << sblock.size() <<  " bytes: from proc " << myrank << " to proc "
-  // << topid << IO::endl;
+  // CORE::IO::cout << "----sending " << sblock.size() <<  " bytes: from proc " << myrank << " to
+  // proc "
+  // << topid << CORE::IO::endl;
 #endif
 
   exporter.i_send(frompid, topid, sblock.data(), sblock.size(), tag, request);
@@ -604,7 +606,7 @@ void XFEM::MeshProjector::GmshOutput(int step, Teuchos::RCP<const Epetra_Vector>
 {
   // output of source discretization with element numbers and target nodes together with element id
   // of source element for value projection
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("tarnode_to_src_ele",
+  const std::string filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles("tarnode_to_src_ele",
       targetdis_->Writer()->Output()->FileName(), step, 30, 0, targetdis_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   {
@@ -639,7 +641,7 @@ void XFEM::MeshProjector::GmshOutput(int step, Teuchos::RCP<const Epetra_Vector>
       if (iter != targetnode_to_parent_.end())
       {
         int id = iter->second;
-        IO::GMSH::ScalarToStream(pos, id, gmshfilecontent);
+        CORE::IO::GMSH::ScalarToStream(pos, id, gmshfilecontent);
       }
     }
     gmshfilecontent << "};\n";

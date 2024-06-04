@@ -774,7 +774,7 @@ void CONTACT::MtAbstractStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
  |  read restart information for meshtying                    popp 03/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::DoReadRestart(
-    IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis)
+    CORE::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis)
 {
   // check whether this is a restart with meshtying of a previously
   // non-meshtying simulation run

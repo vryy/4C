@@ -42,7 +42,7 @@ namespace CORE::Dofsets
 }  // namespace CORE::Dofsets
 
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -82,7 +82,7 @@ namespace POROFLUIDMULTIPHASE
     //! Standard Constructor
     TimIntImpl(Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
-        Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
 
 
     //! initialize time integration
@@ -658,7 +658,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<DRT::Discretization> discret_;
 
     //! the discretization writer
-    Teuchos::RCP<IO::DiscretizationWriter> output_;
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;
 
     //! system matrix (either sparse matrix or block sparse matrix)
     Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;

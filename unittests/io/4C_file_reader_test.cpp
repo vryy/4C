@@ -31,7 +31,7 @@ namespace
       test_csv_file_stream << std::to_string(x[i]) << "," << std::to_string(y[i]) << ","
                            << std::to_string(z[i]) << std::endl;
 
-    auto csv_values = IO::ReadCsvAsColumns(3, test_csv_file_stream);
+    auto csv_values = CORE::IO::ReadCsvAsColumns(3, test_csv_file_stream);
 
     EXPECT_EQ(csv_values[0], x);
     EXPECT_EQ(csv_values[1], y);
@@ -55,7 +55,7 @@ namespace
     // close template file
     test_csv_file.close();
 
-    auto csv_values = IO::ReadCsvAsColumns(3, csv_template_file_name);
+    auto csv_values = CORE::IO::ReadCsvAsColumns(3, csv_template_file_name);
 
     EXPECT_EQ(csv_values[0], x);
     EXPECT_EQ(csv_values[1], y);
@@ -71,7 +71,7 @@ namespace
     test_csv_file << "0.30," << std::endl;
 
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-        IO::ReadCsvAsColumns(3, test_csv_file), CORE::Exception, "same length");
+        CORE::IO::ReadCsvAsColumns(3, test_csv_file), CORE::Exception, "same length");
   }
 
   TEST(CsvReaderTest, TrailingCommaThrows)
@@ -81,7 +81,7 @@ namespace
     test_csv_file << "0.30,4.40," << std::endl;
 
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-        IO::ReadCsvAsColumns(2, test_csv_file), CORE::Exception, "trailing comma");
+        CORE::IO::ReadCsvAsColumns(2, test_csv_file), CORE::Exception, "trailing comma");
   }
 
   TEST(CsvReaderTest, WrongColumnNumberThrows)
@@ -90,7 +90,8 @@ namespace
     test_csv_file << "#x,y" << std::endl;
     test_csv_file << "0.30,4.40" << std::endl;
 
-    FOUR_C_EXPECT_THROW_WITH_MESSAGE(IO::ReadCsvAsColumns(3, test_csv_file), CORE::Exception, "");
+    FOUR_C_EXPECT_THROW_WITH_MESSAGE(
+        CORE::IO::ReadCsvAsColumns(3, test_csv_file), CORE::Exception, "");
   }
 
   TEST(CsvReaderTest, WrongHeaderStyleThrows)
@@ -100,7 +101,7 @@ namespace
     test_csv_file << "0.30,4.40" << std::endl;
 
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-        IO::ReadCsvAsColumns(2, test_csv_file), CORE::Exception, "header");
+        CORE::IO::ReadCsvAsColumns(2, test_csv_file), CORE::Exception, "header");
   }
 
   TEST(CsvReaderTest, WrongInputDataTypeThrows)
@@ -110,7 +111,7 @@ namespace
     test_csv_file << "0.30,a" << std::endl;
 
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-        IO::ReadCsvAsColumns(2, test_csv_file), CORE::Exception, "numbers");
+        CORE::IO::ReadCsvAsColumns(2, test_csv_file), CORE::Exception, "numbers");
   }
 
   TEST(CsvReaderTest, WrongSeparatorThrows)
@@ -120,7 +121,7 @@ namespace
     test_csv_file << "0.30;4.40" << std::endl;
 
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-        IO::ReadCsvAsColumns(2, test_csv_file), CORE::Exception, "separated by commas");
+        CORE::IO::ReadCsvAsColumns(2, test_csv_file), CORE::Exception, "separated by commas");
   }
 
   TEST(ConvertLines, ValidFile)
@@ -133,7 +134,7 @@ namespace
 
     std::vector<T> expected_data = {{{1, {1, 2, 3}}}, {{2, {4, 5, 6}}}, {{3, {7, 8, 9}}}};
 
-    std::vector<T> converted_data = IO::convert_lines<T>(test_file);
+    std::vector<T> converted_data = CORE::IO::convert_lines<T>(test_file);
 
     EXPECT_EQ(converted_data, expected_data);
   }
@@ -148,7 +149,7 @@ namespace
 
     std::vector<T> expected_data = {{{1, {1, 2, 3}}}, {{3, {7, 8, 9}}}};
 
-    T converted_data = IO::convert_lines<T, T>(test_file,
+    T converted_data = CORE::IO::convert_lines<T, T>(test_file,
         [](T acc, T&& next)
         {
           // add only maps that have a key != 2
@@ -168,7 +169,7 @@ namespace
     std::map<int, int> expected_data{{1, 6}, {2, 15}, {3, 24}};
 
     using ReducedType = std::map<int, int>;
-    ReducedType converted_data = IO::convert_lines<T, ReducedType>(test_file,
+    ReducedType converted_data = CORE::IO::convert_lines<T, ReducedType>(test_file,
         [](ReducedType acc, const T& next)
         {
           for (const auto& [key, value] : next)
@@ -191,7 +192,7 @@ namespace
     T expected_data = {
         {1, {{0.0, 0.0}, {0.1, 0.1}, {0.2, 0.2}}}, {2, {{0.0, 0.0}, {0.1, 0.2}, {0.2, 0.4}}}};
 
-    T converted_data = IO::convert_lines<T, T>(test_file,
+    T converted_data = CORE::IO::convert_lines<T, T>(test_file,
         [](T acc, const T& next)
         {
           for (const auto& [key, value] : next)

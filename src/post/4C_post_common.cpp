@@ -478,7 +478,7 @@ void PostProblem::read_meshes()
         FOUR_C_THROW(
             "No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
       std::string filename = fn;
-      IO::HDFReader reader = IO::HDFReader(input_dir_);
+      CORE::IO::HDFReader reader = CORE::IO::HDFReader(input_dir_);
       reader.Open(filename, num_output_procs, comm_->NumProc(), comm_->MyPID());
 
       if (currfield.num_nodes() != 0)

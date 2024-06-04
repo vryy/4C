@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -76,7 +76,7 @@ namespace STR
     void Setup();
 
     /// monitor the tensile test results and write them to a text file
-    void Execute(IO::DiscretizationWriter& writer);
+    void Execute(CORE::IO::DiscretizationWriter& writer);
 
    private:
     int get_unique_id(int tagged_id, CORE::Conditions::GeometryType gtype) const;

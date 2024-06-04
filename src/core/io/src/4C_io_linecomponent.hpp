@@ -45,13 +45,14 @@ namespace INPUT
     virtual void DefaultLine(std::ostream& stream) = 0;
 
     /// Write whatever this LineComponent owns in the given @p container.
-    virtual void Print(std::ostream& stream, const IO::InputParameterContainer& container) = 0;
+    virtual void Print(
+        std::ostream& stream, const CORE::IO::InputParameterContainer& container) = 0;
 
     /// A human-readable description of this component used in help messages.
     virtual void Describe(std::ostream& stream) {}
 
     virtual Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container) = 0;
+        Teuchos::RCP<std::stringstream> condline, CORE::IO::InputParameterContainer& container) = 0;
 
     /* write my part of a default line of the condition
      * as restructuredText for ReadTheDocs
@@ -81,7 +82,7 @@ namespace INPUT
    * @p already_parsed_container.
    */
   using LengthDefinition =
-      std::function<int(const IO::InputParameterContainer& already_parsed_container)>;
+      std::function<int(const CORE::IO::InputParameterContainer& already_parsed_container)>;
 
   struct LengthFromInt
   {
@@ -90,7 +91,7 @@ namespace INPUT
      * given @p name.
      */
     LengthFromInt(std::string name) : name_(std::move(name)) {}
-    int operator()(const IO::InputParameterContainer& already_read_line)
+    int operator()(const CORE::IO::InputParameterContainer& already_read_line)
     {
       return already_read_line.Get<int>(name_);
     }
@@ -115,7 +116,7 @@ namespace INPUT
 
     void DefaultLine(std::ostream& stream) override;
 
-    void Print(std::ostream& stream, const IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
 
     void Describe(std::ostream& stream) override;
 
@@ -124,7 +125,8 @@ namespace INPUT
     std::string WriteReadTheDocs() override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container) override;
+        Teuchos::RCP<std::stringstream> condline,
+        CORE::IO::InputParameterContainer& container) override;
 
    private:
     /// separator string, i.e. the NAME of variable in DAT input file
@@ -145,12 +147,13 @@ namespace INPUT
 
     void DefaultLine(std::ostream& stream) override;
 
-    void Print(std::ostream& stream, const IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
 
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container) override;
+        Teuchos::RCP<std::stringstream> condline,
+        CORE::IO::InputParameterContainer& container) override;
 
    private:
     /// default value
@@ -178,12 +181,13 @@ namespace INPUT
 
     std::string WriteReadTheDocs() override;
 
-    void Print(std::ostream& stream, const IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
 
     Teuchos::Array<std::string> GetOptions() override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container) override;
+        Teuchos::RCP<std::stringstream> condline,
+        CORE::IO::InputParameterContainer& container) override;
 
    private:
     std::string defaultvalue_;
@@ -216,12 +220,13 @@ namespace INPUT
 
     void DefaultLine(std::ostream& stream) override;
 
-    void Print(std::ostream& stream, const IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
 
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container) override;
+        Teuchos::RCP<std::stringstream> condline,
+        CORE::IO::InputParameterContainer& container) override;
 
     std::string WriteReadTheDocs() override;
 
@@ -245,12 +250,13 @@ namespace INPUT
 
     std::string WriteReadTheDocs() override;
 
-    void Print(std::ostream& stream, const IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
 
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container) override;
+        Teuchos::RCP<std::stringstream> condline,
+        CORE::IO::InputParameterContainer& container) override;
 
     void SetLength(int newlength);
 
@@ -282,12 +288,13 @@ namespace INPUT
 
     void DefaultLine(std::ostream& stream) override;
 
-    void Print(std::ostream& stream, const IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
 
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container) override;
+        Teuchos::RCP<std::stringstream> condline,
+        CORE::IO::InputParameterContainer& container) override;
 
    private:
     RealComponentData data_;
@@ -311,12 +318,13 @@ namespace INPUT
 
     void SetLength(int newlength);
 
-    void Print(std::ostream& stream, const IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
 
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container) override;
+        Teuchos::RCP<std::stringstream> condline,
+        CORE::IO::InputParameterContainer& container) override;
 
    private:
     std::variant<int, LengthDefinition> length_;
@@ -335,12 +343,13 @@ namespace INPUT
 
     void DefaultLine(std::ostream& stream) override;
 
-    void Print(std::ostream& stream, const IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
 
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container) override;
+        Teuchos::RCP<std::stringstream> condline,
+        CORE::IO::InputParameterContainer& container) override;
 
    private:
     void print_yes_no(std::ostream& stream,  ///< stream to add output
@@ -386,10 +395,11 @@ namespace INPUT
 
     Teuchos::Array<std::string> GetOptions() override;
 
-    void Print(std::ostream& stream, const IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container) override;
+        Teuchos::RCP<std::stringstream> condline,
+        CORE::IO::InputParameterContainer& container) override;
 
    private:
     KeyType default_key_;
@@ -429,21 +439,22 @@ namespace INPUT
         : LineComponent(name, optional),
           insert_operation_(
               [process_operation](const std::string& name, const std::string& read_string,
-                  IO::InputParameterContainer& container)
+                  CORE::IO::InputParameterContainer& container)
               { container.Add(name, process_operation(read_string)); }),
           print_string_(std::move(print_string)){};
 
     void DefaultLine(std::ostream& stream) override;
 
-    void Print(std::ostream& stream, const IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, IO::InputParameterContainer& container) override;
+        Teuchos::RCP<std::stringstream> condline,
+        CORE::IO::InputParameterContainer& container) override;
 
    private:
     //! add processed data to the container
     std::function<void(
-        const std::string&, const std::string&, IO::InputParameterContainer& container)>
+        const std::string&, const std::string&, CORE::IO::InputParameterContainer& container)>
         insert_operation_;
 
     //! string defining print out for this component

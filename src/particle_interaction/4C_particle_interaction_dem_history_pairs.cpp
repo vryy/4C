@@ -42,7 +42,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::Setup(
 void PARTICLEINTERACTION::DEMHistoryPairs::write_restart() const
 {
   // get bin discretization writer
-  std::shared_ptr<IO::DiscretizationWriter> binwriter =
+  std::shared_ptr<CORE::IO::DiscretizationWriter> binwriter =
       particleengineinterface_->get_bin_discretization_writer();
 
   // prepare buffer
@@ -110,7 +110,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::write_restart() const
 }
 
 void PARTICLEINTERACTION::DEMHistoryPairs::read_restart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
+    const std::shared_ptr<CORE::IO::DiscretizationReader> reader)
 {
   // prepare buffer
   Teuchos::RCP<std::vector<char>> buffer;

@@ -35,8 +35,8 @@ namespace MAT
    * Create material parameter object from @p input_data. This function maps the material @p type
    * to a statically known material parameter class.
    */
-  std::unique_ptr<CORE::MAT::PAR::Parameter> make_parameter(
-      int id, CORE::Materials::MaterialType type, const IO::InputParameterContainer& input_data);
+  std::unique_ptr<CORE::MAT::PAR::Parameter> make_parameter(int id,
+      CORE::Materials::MaterialType type, const CORE::IO::InputParameterContainer& input_data);
 
 }  // namespace MAT
 

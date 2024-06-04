@@ -92,7 +92,7 @@ namespace CONTACT::CONSTITUTIVELAW
    * \brief Container to pass Contact Constitutive Law parameters around
    */
 
-  class Container : public IO::InputParameterContainer
+  class Container : public CORE::IO::InputParameterContainer
   {
    public:
     /// @name life span
@@ -132,7 +132,7 @@ namespace CONTACT::CONSTITUTIVELAW
      * \brief Return quickly accessible material parameter data
      *
      * These quick access parameters are stored in separate member #params_;
-     * whereas the originally read ones are stored in IO::InputParameterContainer base
+     * whereas the originally read ones are stored in CORE::IO::InputParameterContainer base
      */
     [[nodiscard]] inline CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const
     {

@@ -232,13 +232,13 @@ int main(int argc, char** argv)
     if (datfile != "")
     {
       const std::string basename = datfile.substr(0, datfile.find_last_of(".")) + "_pre";
-      IO::cout.setup(
-          true, false, false, IO::standard, comm, 0, 0, basename);  // necessary setup of IO::cout
+      CORE::IO::cout.setup(true, false, false, CORE::IO::standard, comm, 0, 0,
+          basename);  // necessary setup of CORE::IO::cout
     }
     else
     {
-      IO::cout.setup(
-          true, false, false, IO::standard, comm, 0, 0, "xxx_pre");  // necessary setup of IO::cout
+      CORE::IO::cout.setup(true, false, false, CORE::IO::standard, comm, 0, 0,
+          "xxx_pre");  // necessary setup of CORE::IO::cout
     }
 
 
@@ -345,7 +345,7 @@ int main(int argc, char** argv)
 
       // print cloning material map default lines (right after the materials)
       const auto lines = CORE::FE::valid_cloning_material_map_lines();
-      IO::DatFileUtils::print_section(defaulthead, "CLONING MATERIAL MAP", lines);
+      CORE::IO::DatFileUtils::print_section(defaulthead, "CLONING MATERIAL MAP", lines);
 
       // print spatial functions
       defaulthead << "-------------------------------------------------------------FUNCT1"
@@ -361,7 +361,7 @@ int main(int argc, char** argv)
         CORE::UTILS::FunctionManager functionmanager;
         GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(functionmanager);
         const std::vector<INPUT::LineDefinition> flines = functionmanager.valid_function_lines();
-        IO::DatFileUtils::print_section(tmp, "FUNCT", flines);
+        CORE::IO::DatFileUtils::print_section(tmp, "FUNCT", flines);
         std::string tmpstring = tmp.str();
         std::string removeit =
             "--------------------------------------------------------------FUNCT\n";
@@ -376,7 +376,7 @@ int main(int argc, char** argv)
       // default result-test lines
       {
         const auto lines = GlobalLegacyModuleCallbacks().valid_result_description_lines();
-        IO::DatFileUtils::print_section(defaulthead, "RESULT DESCRIPTION", lines);
+        CORE::IO::DatFileUtils::print_section(defaulthead, "RESULT DESCRIPTION", lines);
       }
 
       // close default header file

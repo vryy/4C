@@ -317,7 +317,7 @@ void VtkWriterBase::WriteVtkHeaders()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void VtkWriterBase::write_vtk_field_data_and_or_time_and_or_cycle(
-    const std::map<std::string, IO::visualization_vector_type_variant>& field_data_map)
+    const std::map<std::string, CORE::IO::visualization_vector_type_variant>& field_data_map)
 {
   throw_error_if_invalid_file_stream(currentout_);
 
@@ -357,7 +357,7 @@ void VtkWriterBase::write_vtk_field_data_and_or_time_and_or_cycle(
  *----------------------------------------------------------------------*/
 void VtkWriterBase::write_vtk_time_and_or_cycle()
 {
-  std::map<std::string, IO::visualization_vector_type_variant> empty_map;
+  std::map<std::string, CORE::IO::visualization_vector_type_variant> empty_map;
   empty_map.clear();
   write_vtk_field_data_and_or_time_and_or_cycle(empty_map);
 }
@@ -426,7 +426,7 @@ void VtkWriterBase::write_field_data_array(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::write_data_array(const IO::visualization_vector_type_variant& data,
+void VtkWriterBase::write_data_array(const CORE::IO::visualization_vector_type_variant& data,
     const int num_components, const std::string& name)
 {
   std::string vtk_type_name = "";
@@ -592,10 +592,9 @@ void VtkWriterBase::write_vtk_footer_master_file()
   currentmasterout_ << std::flush;
 
   if (myrank_ == 0)
-    IO::cout(IO::verbose) << "\nVtk Files '" << filename_base_
-                          << "' written. Time: " << std::scientific
-                          << std::setprecision(std::numeric_limits<double>::digits10 - 1) << time_
-                          << IO::endl;
+    CORE::IO::cout(CORE::IO::verbose)
+        << "\nVtk Files '" << filename_base_ << "' written. Time: " << std::scientific
+        << std::setprecision(std::numeric_limits<double>::digits10 - 1) << time_ << CORE::IO::endl;
 }
 
 /*----------------------------------------------------------------------*

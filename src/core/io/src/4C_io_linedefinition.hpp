@@ -93,7 +93,7 @@ namespace INPUT
        * define how the number of vector entries should be determined from the @p already_read_line.
        */
       using LengthDefinition =
-          std::function<std::size_t(const IO::InputParameterContainer& already_read_line)>;
+          std::function<std::size_t(const CORE::IO::InputParameterContainer& already_read_line)>;
 
       /**
        * Create a new Builder.
@@ -245,12 +245,13 @@ namespace INPUT
     /**
      * If reading succeeds, returns the data. Otherwise, returns an empty std::optional.
      */
-    std::optional<IO::InputParameterContainer> Read(std::istream& stream);
+    std::optional<CORE::IO::InputParameterContainer> Read(std::istream& stream);
 
     /**
      * If reading succeeds, returns the data. Otherwise, returns an empty std::optional.
      */
-    std::optional<IO::InputParameterContainer> Read(std::istream& stream, const std::string* name);
+    std::optional<CORE::IO::InputParameterContainer> Read(
+        std::istream& stream, const std::string* name);
 
     /// tell if there is a named component with the given name
     [[nodiscard]] bool HaveNamed(const std::string& name) const;
@@ -292,7 +293,7 @@ namespace INPUT
   {
     LengthFromIntNamed(std::string definition_name);
 
-    std::size_t operator()(const IO::InputParameterContainer& already_read_line);
+    std::size_t operator()(const CORE::IO::InputParameterContainer& already_read_line);
 
    private:
     std::string definition_name_;

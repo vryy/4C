@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationReader;
 }
@@ -81,7 +81,7 @@ namespace PARTICLEINTERACTION
     void write_restart() const;
 
     //! read restart of history pair handler
-    void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader);
 
     //! get reference to particle tangential history pair data
     inline DEMHistoryPairTangentialData& get_ref_to_particle_tangential_history_data()

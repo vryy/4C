@@ -262,7 +262,7 @@ void PrintDefaultDatHeader()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::PrintDefaultParameters(IO::Pstream& stream, const Teuchos::ParameterList& list)
+void INPUT::PrintDefaultParameters(CORE::IO::Pstream& stream, const Teuchos::ParameterList& list)
 {
   bool hasDefault = false;
   for (Teuchos::ParameterList::ConstIterator i = list.begin(); i != list.end(); ++i)

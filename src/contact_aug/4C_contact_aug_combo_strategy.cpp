@@ -183,7 +183,7 @@ void CONTACT::AUG::ComboStrategy::run_pre_evaluate(CONTACT::ParamsInterface& cpa
 void CONTACT::AUG::ComboStrategy::run_post_evaluate(CONTACT::ParamsInterface& cparams)
 {
   const MORTAR::ActionType curr_eval = data_.GetCurrentEvalState();
-  IO::cout << MORTAR::ActionType2String(curr_eval) << "\n";
+  CORE::IO::cout << MORTAR::ActionType2String(curr_eval) << "\n";
   switch (curr_eval)
   {
     case MORTAR::eval_force:
@@ -377,7 +377,7 @@ void CONTACT::AUG::ComboStrategy::update_active_set_semi_smooth(const bool first
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::DoReadRestart(IO::DiscretizationReader& reader,
+void CONTACT::AUG::ComboStrategy::DoReadRestart(CORE::IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   get().DoReadRestart(reader, dis, cparams_ptr);
@@ -532,12 +532,12 @@ void CONTACT::AUG::ComboStrategy::run_post_eval_static_constraint_rhs(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::ComboStrategy::switch_update(CONTACT::ParamsInterface& cparams)
 {
-  IO::cout(IO::debug) << std::string(40, '*') << "\n";
-  IO::cout(IO::debug) << CONTACT_FUNC_NAME << IO::endl;
-  IO::cout(IO::debug) << "Correction Type = "
-                      << NOX::NLN::CorrectionType2String(cparams.GetCorrectionType()).c_str()
-                      << "\n";
-  IO::cout(IO::debug) << std::string(40, '*') << "\n";
+  CORE::IO::cout(CORE::IO::debug) << std::string(40, '*') << "\n";
+  CORE::IO::cout(CORE::IO::debug) << CONTACT_FUNC_NAME << CORE::IO::endl;
+  CORE::IO::cout(CORE::IO::debug)
+      << "Correction Type = "
+      << NOX::NLN::CorrectionType2String(cparams.GetCorrectionType()).c_str() << "\n";
+  CORE::IO::cout(CORE::IO::debug) << std::string(40, '*') << "\n";
 
   /* Do not perform a switch in case of a correction step, since this will lead
    * to an error during the potential backup evaluation. */
@@ -650,7 +650,7 @@ double CONTACT::AUG::ComboStrategy::get_linearized_potential_value_terms(const E
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::WriteOutput(IO::DiscretizationWriter& writer) const
+void CONTACT::AUG::ComboStrategy::WriteOutput(CORE::IO::DiscretizationWriter& writer) const
 {
   return get().WriteOutput(writer);
 }
@@ -679,7 +679,7 @@ bool CONTACT::AUG::ComboStrategy::dyn_redistribute_contact(
 void CONTACT::AUG::ComboStrategy::Output::initScreenOutput(bool print2screen)
 {
   if (print2screen)
-    oscreen_ = &IO::cout.os(IO::standard);
+    oscreen_ = &CORE::IO::cout.os(CORE::IO::standard);
   else
     oscreen_ = blackhole_.get();
 }

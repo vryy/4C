@@ -33,13 +33,13 @@ namespace
     GeometricSearch()
     {
       comm_ = Epetra_SerialComm();
-      verbosity_ = IO::minimal;
+      verbosity_ = CORE::IO::minimal;
     }
 
    protected:
     std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>> primitives_, predicates_;
     Epetra_SerialComm comm_;
-    IO::Verbositylevel verbosity_;
+    CORE::IO::Verbositylevel verbosity_;
   };
 
   /**

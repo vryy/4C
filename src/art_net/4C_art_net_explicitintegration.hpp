@@ -54,7 +54,7 @@ namespace ART
     */
     ArtNetExplicitTimeInt(Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
-        IO::DiscretizationWriter& output);
+        CORE::IO::DiscretizationWriter& output);
 
 
 

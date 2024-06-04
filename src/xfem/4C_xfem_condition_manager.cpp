@@ -788,7 +788,7 @@ void XFEM::ConditionManager::Output(
   // no restart as bg_phinp can be rebuild from single level-set fields
   if (levelset_coupl_.size() > 0)
   {
-    Teuchos::RCP<IO::DiscretizationWriter> output = bg_dis_->Writer();
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output = bg_dis_->Writer();
     output->WriteVector("fluid_levelset_boundary", bg_phinp_);
   }
 

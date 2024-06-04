@@ -30,7 +30,7 @@ namespace CORE::GEOMETRICSEARCH
   std::pair<std::vector<int>, std::vector<int>> CollisionSearch(
       const std::vector<std::pair<int, BoundingVolume>>& primitives,
       const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
-      const IO::Verbositylevel verbosity)
+      const CORE::IO::Verbositylevel verbosity)
   {
 #ifndef FOUR_C_WITH_ARBORX
     FOUR_C_THROW(
@@ -92,7 +92,7 @@ namespace CORE::GEOMETRICSEARCH
           offsets_final.begin(), offset_full.data(), offset_full.data() + offset_full.extent(0));
     }
 
-    if (verbosity == IO::verbose)
+    if (verbosity == CORE::IO::verbose)
     {
       CORE::GEOMETRICSEARCH::GeometricSearchInfo info = {static_cast<int>(primitives.size()),
           static_cast<int>(predicates.size()), static_cast<int>(indices_final.size())};

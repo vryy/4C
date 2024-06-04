@@ -879,14 +879,14 @@ void FSI::UTILS::SlideAleUtils::rotation(DRT::Discretization& mtrdis,  ///< flui
   return;
 }
 
-void FSI::UTILS::SlideAleUtils::output_restart(IO::DiscretizationWriter& output)
+void FSI::UTILS::SlideAleUtils::output_restart(CORE::IO::DiscretizationWriter& output)
 {
   output.WriteVector("projhist", iprojhist_);
 
   return;
 }
 
-void FSI::UTILS::SlideAleUtils::read_restart(IO::DiscretizationReader& reader)
+void FSI::UTILS::SlideAleUtils::read_restart(CORE::IO::DiscretizationReader& reader)
 {
   reader.ReadVector(iprojhist_, "projhist");
 }

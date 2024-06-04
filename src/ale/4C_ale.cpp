@@ -39,7 +39,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
-    Teuchos::RCP<Teuchos::ParameterList> params, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : discret_(actdis),
       solver_(solver),
       params_(params),
@@ -468,8 +469,8 @@ void ALE::Ale::output_state(bool& datawritten)
 
   if (elequalityyesno_)
   {
-    output_->WriteVector("det_j", eledetjac_, IO::elementvector);
-    output_->WriteVector("element_quality", elequality_, IO::elementvector);
+    output_->WriteVector("det_j", eledetjac_, CORE::IO::elementvector);
+    output_->WriteVector("element_quality", elequality_, CORE::IO::elementvector);
   }
 
   return;
@@ -493,7 +494,7 @@ void ALE::Ale::output_restart(bool& datawritten)
   if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::ale)
   {
     if (discret_->Comm().MyPID() == 0)
-      IO::cout << "====== Restart written in step " << step_ << IO::endl;
+      CORE::IO::cout << "====== Restart written in step " << step_ << CORE::IO::endl;
   }
 
   return;
@@ -503,7 +504,8 @@ void ALE::Ale::output_restart(bool& datawritten)
 /*----------------------------------------------------------------------------*/
 void ALE::Ale::read_restart(const int step)
 {
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
@@ -576,8 +578,8 @@ void ALE::Ale::TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
       case INPAR::ALE::divcont_continue:
         if (discret_->Comm().MyPID() == 0)
         {
-          IO::cout << "ALE newton not converged in " << maxiter_ << " iterations. Continue"
-                   << IO::endl;
+          CORE::IO::cout << "ALE newton not converged in " << maxiter_ << " iterations. Continue"
+                         << CORE::IO::endl;
         }
         break;
       default:
@@ -591,8 +593,8 @@ void ALE::Ale::TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
 /*----------------------------------------------------------------------------*/
 void ALE::Ale::print_time_step_header() const
 {
-  IO::cout << "TIME: " << time_ << "/" << maxtime_ << "  DT = " << dt_ << "  STEP = " << step_
-           << "/" << numstep_ << IO::endl;
+  CORE::IO::cout << "TIME: " << time_ << "/" << maxtime_ << "  DT = " << dt_ << "  STEP = " << step_
+                 << "/" << numstep_ << CORE::IO::endl;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -850,7 +852,7 @@ bool ALE::Ale::evaluate_element_quality()
 /*----------------------------------------------------------------------------*/
 ALE::AleLinear::AleLinear(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params_in,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : Ale(actdis, solver, params_in, output), validsysmat_(false), updateeverystep_(false)
 {
   updateeverystep_ = CORE::UTILS::IntegralValue<bool>(params(), "UPDATEMATRIX");

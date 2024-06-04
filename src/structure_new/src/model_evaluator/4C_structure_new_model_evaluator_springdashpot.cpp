@@ -224,7 +224,7 @@ bool STR::MODELEVALUATOR::SpringDashpot::assemble_jacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::SpringDashpot::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // row maps for export
   Teuchos::RCP<Epetra_Vector> springoffsetprestr =
@@ -253,7 +253,7 @@ void STR::MODELEVALUATOR::SpringDashpot::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::read_restart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::SpringDashpot::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> tempvecold =
@@ -304,7 +304,8 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(IO::DiscretizationWriter& iowriter) const
+void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(
+    CORE::IO::DiscretizationWriter& iowriter) const
 {
   // row maps for export
   Teuchos::RCP<Epetra_Vector> gap =

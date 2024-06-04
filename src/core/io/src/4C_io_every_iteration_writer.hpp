@@ -23,7 +23,7 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class OutputControl;
@@ -57,7 +57,8 @@ namespace IO
      *                          is written.
      *
      *  @author hiermeier @date 08/17 */
-    virtual void OutputDebugState(IO::DiscretizationWriter& iowriter, bool write_owner) const = 0;
+    virtual void OutputDebugState(
+        CORE::IO::DiscretizationWriter& iowriter, bool write_owner) const = 0;
 
     /** @brief Get the current time/load step number
      *
@@ -143,7 +144,7 @@ namespace IO
      *  @param[in] params         EVERY ITERATION parameter list.
      *
      *  @author hiermeier @date 08/17 */
-    void Init(const IO::DiscretizationWriter* parent_writer,
+    void Init(const CORE::IO::DiscretizationWriter* parent_writer,
         EveryIterationWriterInterface* interface, const Teuchos::ParameterList& params);
 
     /// Setup the class object
@@ -200,10 +201,10 @@ namespace IO
     void create_directory(const std::string& dir_path) const;
 
     /// Adjust the specified steps per file.
-    void adjust_steps_per_file(IO::OutputControl& control) const;
+    void adjust_steps_per_file(CORE::IO::OutputControl& control) const;
 
     /// Read-only access to the parent discretization writer.
-    const IO::DiscretizationWriter& parent_writer() const
+    const CORE::IO::DiscretizationWriter& parent_writer() const
     {
       if (not parent_writer_) FOUR_C_THROW("The parent writer has not been initialized correctly.");
 
@@ -232,11 +233,11 @@ namespace IO
     bool write_owner_each_newton_iteration_;
     std::string base_filename_;
 
-    const IO::DiscretizationWriter* parent_writer_;
+    const CORE::IO::DiscretizationWriter* parent_writer_;
 
     EveryIterationWriterInterface* interface_;
 
-    Teuchos::RCP<IO::DiscretizationWriter> every_iter_writer_;
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> every_iter_writer_;
 
     constexpr static unsigned MAX_NUMBER_LINE_SEARCH_ITERATIONS_ = 100;
   };
@@ -254,7 +255,7 @@ namespace IO
 
   /// Return number of lines in the given file
   int CountLinesInFile(const std::string& filepath);
-}  // namespace IO
+}  // namespace CORE::IO
 
 
 FOUR_C_NAMESPACE_CLOSE

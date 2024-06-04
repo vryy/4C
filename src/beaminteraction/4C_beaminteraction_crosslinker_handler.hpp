@@ -34,7 +34,7 @@ namespace CORE::Nodes
   class Node;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }

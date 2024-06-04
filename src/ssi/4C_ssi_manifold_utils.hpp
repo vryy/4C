@@ -297,7 +297,7 @@ namespace SSI
     //@}
 
     // writes evaluated data to output
-    std::optional<IO::RuntimeCsvWriter> runtime_csvwriter_;
+    std::optional<CORE::IO::RuntimeCsvWriter> runtime_csvwriter_;
 
     //! scatra problem
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;

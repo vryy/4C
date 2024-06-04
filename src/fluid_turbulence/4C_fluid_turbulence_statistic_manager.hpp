@@ -39,11 +39,11 @@ namespace CORE::Dofsets
   class DofSet;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationReader;
   class DiscretizationWriter;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace SCATRA
 {
@@ -143,19 +143,19 @@ namespace FLD
     \brief Write (dump) the statistics to a file
 
     */
-    void DoOutput(IO::DiscretizationWriter& output, int step, const bool inflow = false);
+    void DoOutput(CORE::IO::DiscretizationWriter& output, int step, const bool inflow = false);
 
     /*!
     \brief Restart collection of statistics
 
     */
-    void read_restart(IO::DiscretizationReader& reader, int step);
+    void read_restart(CORE::IO::DiscretizationReader& reader, int step);
 
     /*!
     \brief Restart scatra-specific collection of statistics
 
     */
-    void ReadRestartScaTra(IO::DiscretizationReader& scatrareader, int step);
+    void ReadRestartScaTra(CORE::IO::DiscretizationReader& scatrareader, int step);
 
     /*!
     \brief Provide access to scalar transport field
@@ -167,7 +167,7 @@ namespace FLD
     \brief   Write (dump) the scatra-specific mean fields to the result file
 
     */
-    void DoOutputForScaTra(IO::DiscretizationWriter& output, int step);
+    void DoOutputForScaTra(CORE::IO::DiscretizationWriter& output, int step);
 
     //@}
 

@@ -90,7 +90,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       midavg_(CORE::UTILS::IntegralValue<INPAR::STR::MidAverageEnum>(
           sdynparams.sublist("GENALPHA"), "GENAVG")),
@@ -137,7 +137,7 @@ void STR::TimIntGenAlpha::Init(const Teuchos::ParameterList& timeparams,
   // info to user about current time integration scheme and its parametrization
   if (myrank_ == 0)
   {
-    IO::cout << "with generalised-alpha" << IO::endl;
+    CORE::IO::cout << "with generalised-alpha" << CORE::IO::endl;
     VerifyCoeff();
 
     std::cout << "   p_dis = " << method_order_of_accuracy_dis() << '\n'
@@ -832,7 +832,8 @@ void STR::TimIntGenAlpha::UpdateStepElement()
 /* read and/or calculate forces for restart */
 void STR::TimIntGenAlpha::ReadRestartForce()
 {
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
   reader.ReadVector(fext_, "fexternal");
   reader.ReadVector(fint_, "fint");
   reader.ReadVector(finert_, "finert");
@@ -840,7 +841,7 @@ void STR::TimIntGenAlpha::ReadRestartForce()
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void STR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+void STR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
 {
   output->WriteVector("fexternal", fext_);
   output->WriteVector("fint", fint_);

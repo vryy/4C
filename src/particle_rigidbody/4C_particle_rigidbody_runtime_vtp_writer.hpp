@@ -27,10 +27,10 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationReader;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace PARTICLERIGIDBODY
 {
@@ -77,7 +77,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] reader discretization reader
      */
-    void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader);
 
     /*!
      * \brief set positions and states of rigid bodies
@@ -106,7 +106,7 @@ namespace PARTICLERIGIDBODY
     std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> rigidbodydatastate_;
 
     //! visualization manager
-    std::shared_ptr<IO::VisualizationManager> visualization_manager_;
+    std::shared_ptr<CORE::IO::VisualizationManager> visualization_manager_;
   };
 
 }  // namespace PARTICLERIGIDBODY

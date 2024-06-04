@@ -589,10 +589,10 @@ void XFEM::MeshCouplingFPI::zero_state_vectors_fpi()
 // -------------------------------------------------------------------
 void XFEM::MeshCouplingFPI::read_restart(const int step)
 {
-  if (myrank_) IO::cout << "read_restart for boundary discretization " << IO::endl;
+  if (myrank_) CORE::IO::cout << "read_restart for boundary discretization " << CORE::IO::endl;
 
   //-------- boundary discretization
-  IO::DiscretizationReader boundaryreader(
+  CORE::IO::DiscretizationReader boundaryreader(
       cutter_dis_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
   const double time = boundaryreader.ReadDouble("time");
@@ -600,8 +600,8 @@ void XFEM::MeshCouplingFPI::read_restart(const int step)
 
   if (myrank_ == 0)
   {
-    IO::cout << "time: " << time << IO::endl;
-    IO::cout << "step: " << step << IO::endl;
+    CORE::IO::cout << "time: " << time << CORE::IO::endl;
+    CORE::IO::cout << "step: " << step << CORE::IO::endl;
   }
 
   boundaryreader.ReadVector(iveln_, "iveln_res");
@@ -637,9 +637,9 @@ void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const i
   XFEM::UTILS::extract_node_vectors(cutter_dis_, currinterfacepositions, idispnp_);
 
 
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_fsi.str(),
-      cutter_dis_->Writer()->Output()->FileName(), step, gmsh_step_diff, gmsh_debug_out_screen,
-      myrank_);
+  const std::string filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+      filename_base_fsi.str(), cutter_dis_->Writer()->Output()->FileName(), step, gmsh_step_diff,
+      gmsh_debug_out_screen, myrank_);
 
   std::ofstream gmshfilecontent(filename.c_str());
 
@@ -648,7 +648,7 @@ void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const i
     gmshfilecontent << "View \" "
                     << "iforce \" {" << std::endl;
     // draw vector field 'force' for every node
-    IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
+    CORE::IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
         cutter_dis_, itrueresidual_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -658,7 +658,7 @@ void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const i
     gmshfilecontent << "View \" "
                     << "idispnp \" {" << std::endl;
     // draw vector field 'idispnp' for every node
-    IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
+    CORE::IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
         cutter_dis_, idispnp_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -668,7 +668,7 @@ void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const i
     gmshfilecontent << "View \" "
                     << "ivelnp \" {" << std::endl;
     // draw vector field 'ivelnp' for every node
-    IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
+    CORE::IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
         cutter_dis_, ivelnp_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }

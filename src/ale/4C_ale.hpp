@@ -44,10 +44,10 @@ namespace CORE::Conditions
 }
 
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace ALE
 {
@@ -110,10 +110,10 @@ namespace ALE
     // friend class AleResultTest;
 
    public:
-    Ale(Teuchos::RCP<DRT::Discretization> actdis,      ///< pointer to discretization
-        Teuchos::RCP<CORE::LINALG::Solver> solver,     ///< linear solver
-        Teuchos::RCP<Teuchos::ParameterList> params,   ///< parameter list
-        Teuchos::RCP<IO::DiscretizationWriter> output  ///< output writing
+    Ale(Teuchos::RCP<DRT::Discretization> actdis,            ///< pointer to discretization
+        Teuchos::RCP<CORE::LINALG::Solver> solver,           ///< linear solver
+        Teuchos::RCP<Teuchos::ParameterList> params,         ///< parameter list
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output  ///< output writing
     );
 
     /*!
@@ -363,7 +363,7 @@ namespace ALE
     Teuchos::RCP<Teuchos::ParameterList> params_;
 
     //! output writing
-    Teuchos::RCP<IO::DiscretizationWriter> output_;
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<CORE::Conditions::LocsysManager> locsysman_;
@@ -524,10 +524,10 @@ namespace ALE
     //@{
 
     //! Constructor
-    AleLinear(Teuchos::RCP<DRT::Discretization> actdis,  ///< pointer to discretization
-        Teuchos::RCP<CORE::LINALG::Solver> solver,       ///< linear solver
-        Teuchos::RCP<Teuchos::ParameterList> params_in,  ///< parameter list
-        Teuchos::RCP<IO::DiscretizationWriter> output    ///< output writing
+    AleLinear(Teuchos::RCP<DRT::Discretization> actdis,      ///< pointer to discretization
+        Teuchos::RCP<CORE::LINALG::Solver> solver,           ///< linear solver
+        Teuchos::RCP<Teuchos::ParameterList> params_in,      ///< parameter list
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output  ///< output writing
     );
 
     //@}

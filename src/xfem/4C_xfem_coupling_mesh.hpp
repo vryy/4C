@@ -190,7 +190,7 @@ namespace XFEM
     //@}
 
     //! @name output discretization writers
-    Teuchos::RCP<IO::DiscretizationWriter> cutter_output_;
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> cutter_output_;
     bool firstoutputofrun_;
 
     //@}

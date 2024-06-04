@@ -73,7 +73,7 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
   // ---------------------------------------------------------------------------
   // context for output and restart
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis->Writer();
 
   // Output for these problems are not necessary because we write
   // restart data at each time step for visualization

@@ -472,7 +472,7 @@ namespace INPUT
     {
       if (!MyOutputFlag())
       {
-        IO::cout << "Reading knot vectors for " << name << " discretization :\n";
+        CORE::IO::cout << "Reading knot vectors for " << name << " discretization :\n";
         fflush(stdout);
       }
     }
@@ -835,7 +835,7 @@ namespace INPUT
     {
       if (!MyOutputFlag())
       {
-        IO::cout << " in...." << time.totalElapsedTime(true) << " secs\n";
+        CORE::IO::cout << " in...." << time.totalElapsedTime(true) << " secs\n";
 
         time.reset();
         fflush(stdout);
@@ -1159,15 +1159,15 @@ namespace INPUT
     // now it's time to create noise on the screen
     if (printout and (Comm()->MyPID() == 0))
     {
-      IO::cout << "\nERROR!"
-               << "\n--------"
-               << "\nThe following input file sections remained unused (obsolete or typo?):"
-               << IO::endl;
+      CORE::IO::cout << "\nERROR!"
+                     << "\n--------"
+                     << "\nThe following input file sections remained unused (obsolete or typo?):"
+                     << CORE::IO::endl;
       for (const auto& [section_name, known] : knownsections_)
       {
-        if (!known) IO::cout << section_name << IO::endl;
+        if (!known) CORE::IO::cout << section_name << CORE::IO::endl;
       }
-      IO::cout << IO::endl;
+      CORE::IO::cout << CORE::IO::endl;
     }
 
     // we wait till all procs are here. Otherwise a hang up might occur where

@@ -156,7 +156,7 @@ namespace WEAR
 
     */
     void DoReadRestart(
-        IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) override;
+        CORE::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) override;
 
     /*!
     \brief Update active set and check for convergence

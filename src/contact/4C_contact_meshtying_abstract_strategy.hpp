@@ -316,7 +316,7 @@ namespace CONTACT
 
     */
     void DoReadRestart(
-        IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) override;
+        CORE::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) override;
 
     //@}
 

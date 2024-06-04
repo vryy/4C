@@ -82,10 +82,10 @@ namespace STR
 
       //! [derived]
       void write_restart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! [derived]
-      void read_restart(IO::DiscretizationReader& ioreader) override;
+      void read_restart(CORE::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
       void Predict(const INPAR::STR::PredEnum& pred_type) override{};
@@ -128,7 +128,7 @@ namespace STR
       void determine_optional_quantity() override;
 
       //! [derived]
-      void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
+      void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override;
 
       //! [derived]
       void ResetStepState() override;

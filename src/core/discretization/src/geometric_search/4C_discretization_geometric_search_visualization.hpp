@@ -25,14 +25,14 @@ namespace CORE::GEOMETRICSEARCH
   /**
    * @brief Class to write visualization output for geometric search bounding volumes
    */
-  class GeometricSearchVisualization : private IO::VisualizationManager
+  class GeometricSearchVisualization : private CORE::IO::VisualizationManager
   {
    public:
     /**
      * @brief Constructor (derived from base class), the output data fields are defined here.
      */
-    GeometricSearchVisualization(IO::VisualizationParameters parameters, const Epetra_Comm& comm,
-        std::string base_output_name);
+    GeometricSearchVisualization(CORE::IO::VisualizationParameters parameters,
+        const Epetra_Comm& comm, std::string base_output_name);
 
     /**
      * @brief Write the primitives and predicates of the geometric search to disk.

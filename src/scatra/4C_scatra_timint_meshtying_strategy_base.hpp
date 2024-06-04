@@ -23,7 +23,7 @@ strategy without meshtying)
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace IO
+namespace CORE::IO
 {
   class InputControl;
 }
@@ -205,7 +205,7 @@ namespace SCATRA
      * @param input control file manager
      */
     virtual void read_restart(
-        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) const {};
+        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) const {};
 
     //! set general parameters for element evaluation
     virtual void set_element_general_parameters(Teuchos::ParameterList& parameters) const

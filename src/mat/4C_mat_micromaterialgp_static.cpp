@@ -126,7 +126,8 @@ void MAT::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
   // OutputControl object below to act just like the macro (default)
   // OutputControl. In particular we assume that there are always micro and
   // macro control files on restart.
-  Teuchos::RCP<IO::OutputControl> macrocontrol = GLOBAL::Problem::Instance(0)->OutputControlFile();
+  Teuchos::RCP<CORE::IO::OutputControl> macrocontrol =
+      GLOBAL::Problem::Instance(0)->OutputControlFile();
   std::string microprefix = macrocontrol->RestartName();
   std::string micronewprefix = macrocontrol->NewOutputFileName();
 
@@ -178,13 +179,13 @@ void MAT::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
     // in case of restart, the new output file name is already adapted
     if (restart) adaptname = false;
 
-    Teuchos::RCP<IO::OutputControl> microcontrol =
-        Teuchos::rcp(new IO::OutputControl(microdis->Comm(), "Structure",
+    Teuchos::RCP<CORE::IO::OutputControl> microcontrol =
+        Teuchos::rcp(new CORE::IO::OutputControl(microdis->Comm(), "Structure",
             microproblem->spatial_approximation_type(), "micro-input-file-not-known", restartname_,
             newfilename, ndim, restart, macrocontrol->FileSteps(),
             CORE::UTILS::IntegralValue<bool>(microproblem->IOParams(), "OUTPUT_BIN"), adaptname));
 
-    micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(
+    micro_output_ = Teuchos::rcp(new CORE::IO::DiscretizationWriter(
         microdis, microcontrol, microproblem->spatial_approximation_type()));
     micro_output_->SetOutput(microcontrol);
 

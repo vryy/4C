@@ -36,7 +36,7 @@ namespace CORE::LINALG
   class Solver;
 }  // namespace CORE::LINALG
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationReader;
 }
@@ -88,7 +88,7 @@ namespace FLD
     }
 
     // read restart including wall stresses
-    void read_restart(IO::DiscretizationReader& reader);
+    void read_restart(CORE::IO::DiscretizationReader& reader);
 
     // fix residual at Dirichlet-inflow nodes such that the wss can be calculated
     Teuchos::RCP<Epetra_Vector> FixDirichletInflow(Teuchos::RCP<Epetra_Vector> trueresidual);

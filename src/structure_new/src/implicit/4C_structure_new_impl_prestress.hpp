@@ -32,7 +32,7 @@ namespace STR
       PreStress();
 
       void write_restart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       void UpdateStepState() override;
 

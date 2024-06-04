@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   /**
    * A helper to parse lines as defined in the dat file format into C++ data. This
@@ -66,7 +66,7 @@ namespace IO
     //! Prepend a user message for better error messages.
     std::string user_scope_{};
   };
-}  // namespace IO
+}  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

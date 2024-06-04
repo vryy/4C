@@ -1032,7 +1032,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::pre_update_step_element(b
 
   // some screen output
   if (GState().GetMyRank() == 0)
-    IO::cout(IO::debug) << " max linker movement " << gmaxdisincr << IO::endl;
+    CORE::IO::cout(CORE::IO::debug) << " max linker movement " << gmaxdisincr << CORE::IO::endl;
 
   bool linker_redist =
       ((half_interaction_distance_ + gmaxdisincr) > (0.5 * BinStrategy().BinSizeLowerBound()));
@@ -1106,7 +1106,7 @@ std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinki
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::OutputStepState(
-    IO::DiscretizationWriter& iowriter) const
+    CORE::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
   // not used, we are writing output during runtime
@@ -1132,8 +1132,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::init_output_runtime_struc
   check_init();
 
   visualization_output_writer_ptr_ =
-      Teuchos::rcp(new IO::DiscretizationVisualizationWriterNodes(BinDiscretPtr(),
-          IO::VisualizationParametersFactory(
+      Teuchos::rcp(new CORE::IO::DiscretizationVisualizationWriterNodes(BinDiscretPtr(),
+          CORE::IO::VisualizationParametersFactory(
               GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
               *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN())));
 }
@@ -1319,7 +1319,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ResetStepState() { check_
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
-    IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const
+    CORE::IO::DiscretizationWriter& ia_writer, CORE::IO::DiscretizationWriter& bin_writer) const
 {
   check_init_setup();
 
@@ -1418,7 +1418,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PreReadRestart()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
-    IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader)
+    CORE::IO::DiscretizationReader& ia_reader, CORE::IO::DiscretizationReader& bin_reader)
 {
   check_init_setup();
 
@@ -1688,8 +1688,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_half_interaction_dist
 
   // some screen output
   if (GState().GetMyRank() == 0)
-    IO::cout(IO::verbose) << " beam to beam crosslinking half interaction distance "
-                          << global_half_interaction_distance << IO::endl;
+    CORE::IO::cout(CORE::IO::verbose) << " beam to beam crosslinking half interaction distance "
+                                      << global_half_interaction_distance << CORE::IO::endl;
 
   half_interaction_distance = (half_interaction_distance_ > half_interaction_distance)
                                   ? half_interaction_distance_
@@ -1908,13 +1908,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_unbound_crosslink
     {
       double old = randvec[dim];
       randvec[dim] = (abs(randvec[dim]) / randvec[dim]) * maxmov;
-      IO::cout(IO::verbose) << "Movement of free crosslinker " << crosslinker->Id()
-                            << " was restricted by cutoff radius"
-                               " in "
-                            << dim << " direction. " << old << " to " << randvec[dim]
-                            << "\nThis should not happen to often "
-                               "to stay physical. Increase cutoff or reduce movement"
-                            << IO::endl;
+      CORE::IO::cout(CORE::IO::verbose) << "Movement of free crosslinker " << crosslinker->Id()
+                                        << " was restricted by cutoff radius"
+                                           " in "
+                                        << dim << " direction. " << old << " to " << randvec[dim]
+                                        << "\nThis should not happen to often "
+                                           "to stay physical. Increase cutoff or reduce movement"
+                                        << CORE::IO::endl;
     }
     newclpos(dim) = crosslinker->X()[dim] + randvec[dim];
   }
@@ -2236,11 +2236,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::bind_and_unbind_crosslink
       dynamic_cast<const Epetra_MpiComm*>(&(Discret().Comm()))->Comm());
   if (GState().GetMyRank() == 0)
   {
-    IO::cout(IO::standard) << "\n************************************************" << IO::endl;
-    IO::cout(IO::standard) << "Beam to Beam Links: " << num_global[0];
-    IO::cout(IO::standard) << " (New: " << num_global[1];
-    IO::cout(IO::standard) << " Dissolved: " << num_global[2];
-    IO::cout(IO::standard) << ")\n************************************************\n" << IO::endl;
+    CORE::IO::cout(CORE::IO::standard)
+        << "\n************************************************" << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::standard) << "Beam to Beam Links: " << num_global[0];
+    CORE::IO::cout(CORE::IO::standard) << " (New: " << num_global[1];
+    CORE::IO::cout(CORE::IO::standard) << " Dissolved: " << num_global[2];
+    CORE::IO::cout(CORE::IO::standard) << ")\n************************************************\n"
+                                       << CORE::IO::endl;
   }
 }
 
@@ -2638,10 +2640,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_bind_event_criteria
      * (Could be cured with additional communication)
      */
     if (Discret().Comm().NumProc() > 1)
-      IO::cout(IO::verbose)
+      CORE::IO::cout(CORE::IO::verbose)
           << " Warning: There is a minimal chance of missing a regular binding event on "
              "rank "
-          << GState().GetMyRank() << IO::endl;
+          << GState().GetMyRank() << CORE::IO::endl;
     return false;
   }
   else

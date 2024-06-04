@@ -84,13 +84,14 @@ void PARTICLERIGIDBODY::RigidBodyHandler::Setup(
 
   // short screen output
   if (particleengineinterface_->have_periodic_boundary_conditions() and myrank_ == 0)
-    IO::cout << "Warning: rigid bodies not transferred over periodic boundary!" << IO::endl;
+    CORE::IO::cout << "Warning: rigid bodies not transferred over periodic boundary!"
+                   << CORE::IO::endl;
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::write_restart() const
 {
   // get bin discretization writer
-  std::shared_ptr<IO::DiscretizationWriter> binwriter =
+  std::shared_ptr<CORE::IO::DiscretizationWriter> binwriter =
       particleengineinterface_->get_bin_discretization_writer();
 
   // write restart of unique global identifier handler
@@ -108,7 +109,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::write_restart() const
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::read_restart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
+    const std::shared_ptr<CORE::IO::DiscretizationReader> reader)
 {
   // read restart of unique global identifier handler
   rigidbodyuniqueglobalidhandler_->read_restart(reader);

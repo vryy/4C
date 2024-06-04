@@ -14,7 +14,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace IO
+namespace CORE::IO
 {
 
   /**
@@ -67,6 +67,6 @@ namespace IO
   template void AppendPolyhedronToVisualizationData(VisualizationData&,
       const std::vector<CORE::LINALG::Matrix<3, 1>>&, const std::vector<std::vector<int>>&);
 
-}  // namespace IO
+}  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE

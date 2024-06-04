@@ -285,7 +285,8 @@ void DRT::ELEMENTS::SoSh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMNO
   std::ofstream f_system("solidelement.gmsh");
   std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" One Solid Element \" {" << std::endl;
-  gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(this->thickdir_, this) << std::endl;
+  gmshfilecontent << CORE::IO::GMSH::elementAtInitialPositionToString(this->thickdir_, this)
+                  << std::endl;
   // plot vector from 1st node to 5th node which is parametric t-dir
   std::vector<double> X15(3);
   X15[0] = this->Nodes()[4]->X()[0] - this->Nodes()[0]->X()[0];

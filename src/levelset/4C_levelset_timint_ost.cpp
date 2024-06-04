@@ -28,7 +28,8 @@ SCATRA::LevelSetTimIntOneStepTheta::LevelSetTimIntOneStepTheta(
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       LevelSetAlgorithm(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntOneStepTheta(actdis, solver, sctratimintparams, extraparams, output)
@@ -256,7 +257,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::Redistribute(
  | setup problem after restart                          rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetTimIntOneStepTheta::read_restart(
-    const int step, Teuchos::RCP<IO::InputControl> input)
+    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
 {
   // do basic restart
   TimIntOneStepTheta::read_restart(step, input);

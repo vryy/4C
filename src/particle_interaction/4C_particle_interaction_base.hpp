@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationReader;
 }
@@ -80,7 +80,7 @@ namespace PARTICLEINTERACTION
     virtual void write_restart() const;
 
     //! read restart of particle interaction handler
-    virtual void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    virtual void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader);
 
     //! insert interaction dependent states of all particle types
     virtual void insert_particle_states_of_particle_types(

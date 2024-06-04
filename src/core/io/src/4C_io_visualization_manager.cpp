@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-IO::VisualizationManager::VisualizationManager(
-    IO::VisualizationParameters parameters, const Epetra_Comm& comm, std::string base_output_name)
+CORE::IO::VisualizationManager::VisualizationManager(CORE::IO::VisualizationParameters parameters,
+    const Epetra_Comm& comm, std::string base_output_name)
     : parameters_(std::move(parameters)),
       comm_(comm),
       base_output_name_(std::move(base_output_name))
@@ -32,7 +32,7 @@ IO::VisualizationManager::VisualizationManager(
 /**
  *
  */
-const IO::VisualizationData& IO::VisualizationManager::get_visualization_data(
+const CORE::IO::VisualizationData& CORE::IO::VisualizationManager::get_visualization_data(
     const std::string& visualization_data_name) const
 {
   if (visualization_map_.find(visualization_data_name) == visualization_map_.end())
@@ -46,7 +46,7 @@ const IO::VisualizationData& IO::VisualizationManager::get_visualization_data(
 /**
  *
  */
-IO::VisualizationData& IO::VisualizationManager::get_visualization_data(
+CORE::IO::VisualizationData& CORE::IO::VisualizationManager::get_visualization_data(
     const std::string& visualization_data_name)
 {
   if (visualization_map_.find(visualization_data_name) == visualization_map_.end() &&
@@ -64,7 +64,7 @@ IO::VisualizationData& IO::VisualizationManager::get_visualization_data(
 /**
  *
  */
-IO::VisualizationData& IO::VisualizationManager::register_visualization_data(
+CORE::IO::VisualizationData& CORE::IO::VisualizationManager::register_visualization_data(
     const std::string& visualization_data_name)
 {
   if (visualization_map_.find(visualization_data_name) != visualization_map_.end())
@@ -83,7 +83,7 @@ IO::VisualizationData& IO::VisualizationManager::register_visualization_data(
 /**
  *
  */
-bool IO::VisualizationManager::visualization_data_exists(
+bool CORE::IO::VisualizationManager::visualization_data_exists(
     const std::string& visualization_data_name) const
 {
   return visualization_map_.find(visualization_data_name) != visualization_map_.end();
@@ -92,7 +92,7 @@ bool IO::VisualizationManager::visualization_data_exists(
 /**
  *
  */
-void IO::VisualizationManager::clear_data()
+void CORE::IO::VisualizationManager::clear_data()
 {
   for (auto& [key, visualization_pair] : visualization_map_) visualization_pair.first.clear_data();
 }
@@ -100,7 +100,7 @@ void IO::VisualizationManager::clear_data()
 /**
  *
  */
-void IO::VisualizationManager::WriteToDisk(
+void CORE::IO::VisualizationManager::WriteToDisk(
     const double visualziation_time, const int visualization_step)
 {
   for (auto& [key, visualization_pair] : visualization_map_)
@@ -114,7 +114,7 @@ void IO::VisualizationManager::WriteToDisk(
 /**
  *
  */
-std::string IO::VisualizationManager::get_visualization_data_name_for_output_files(
+std::string CORE::IO::VisualizationManager::get_visualization_data_name_for_output_files(
     const std::string& visualization_data_name) const
 {
   if (visualization_data_name == "")

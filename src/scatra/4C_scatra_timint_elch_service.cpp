@@ -243,7 +243,7 @@ void SCATRA::CCCVCondition::reset_phase_change_observer() { phasechanged_ = fals
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::CCCVCondition::read_restart(IO::DiscretizationReader& reader)
+void SCATRA::CCCVCondition::read_restart(CORE::IO::DiscretizationReader& reader)
 {
   // extract number of current charge or discharge half-cycle
   ihalfcycle_ = reader.ReadInt("ihalfcycle");
@@ -369,7 +369,7 @@ bool SCATRA::CCCVHalfCycleCondition::is_adaptive_time_stepping_phase() const
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::CCCVHalfCycleCondition::read_restart(IO::DiscretizationReader& reader)
+void SCATRA::CCCVHalfCycleCondition::read_restart(CORE::IO::DiscretizationReader& reader)
 {
   // end time of current relaxation phase
   relaxendtime_ = reader.ReadDouble("relaxendtime");

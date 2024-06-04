@@ -69,7 +69,7 @@ namespace CORE::GEO
   }  // namespace CUT
 }  // namespace CORE::GEO
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -113,7 +113,7 @@ namespace FLD
         const Teuchos::RCP<DRT::Discretization>& levelset_coupdis,
         const Teuchos::RCP<CORE::LINALG::Solver>& solver,    ///< fluid solver
         const Teuchos::RCP<Teuchos::ParameterList>& params,  ///< xfluid params
-        const Teuchos::RCP<IO::DiscretizationWriter>&
+        const Teuchos::RCP<CORE::IO::DiscretizationWriter>&
             output,            ///< discretization writer for paraview output
         bool alefluid = false  ///< flag for alefluid
     );

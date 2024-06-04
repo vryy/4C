@@ -248,7 +248,7 @@ void CORE::LINALG::PrintMapInMatlabFormat(
 void CORE::LINALG::WriteEpetraCrsMatrixAsXpetra(
     const std::string& filename, Teuchos::RCP<Epetra_CrsMatrix> matrix)
 {
-#include <Xpetra_UseShortNames.hpp>  // Include in scope to avoid clash with namespace IO
+#include <Xpetra_UseShortNames.hpp>  // Include in scope to avoid clash with namespace CORE::IO
   using Teuchos::rcp;
   using Teuchos::RCP;
 

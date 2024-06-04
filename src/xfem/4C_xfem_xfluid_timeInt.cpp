@@ -136,8 +136,8 @@ void XFEM::XFluidTimeInt::SetAndPrintStatus(const bool screenout)
 
   if (screenout)
   {
-    IO::cout << "\n+-------------------------------------------------------+"
-             << "\nProc " << myrank_ << ": XFEM::XFluidTimeInt::Status:" << IO::endl;
+    CORE::IO::cout << "\n+-------------------------------------------------------+"
+                   << "\nProc " << myrank_ << ": XFEM::XFluidTimeInt::Status:" << CORE::IO::endl;
 
     for (int method_idx = 0; method_idx < nummethods; method_idx++)
     {
@@ -145,7 +145,8 @@ void XFEM::XFluidTimeInt::SetAndPrintStatus(const bool screenout)
           map_method_enum_to_string(INPAR::XFEM::XFluidTimeInt(method_idx)).c_str(), myrank_,
           cpu_methods[method_idx], glob_methods[method_idx]);
     }
-    IO::cout << "\n+-------------------------------------------------------+\n" << IO::endl;
+    CORE::IO::cout << "\n+-------------------------------------------------------+\n"
+                   << CORE::IO::endl;
   }
 
   return;
@@ -713,9 +714,9 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
       if (nds_old < 0)  // no set or not a unique set found
       {
 #ifdef DEBUG_TIMINT
-        IO::cout << "XFLUID-TIMINIT CASE D: node " << gid
-                 << ",\t no corresponding dofset found at time t^n for dofset " << nds_new
-                 << " at time t^(n+1)" << IO::endl;
+        CORE::IO::cout << "XFLUID-TIMINIT CASE D: node " << gid
+                       << ",\t no corresponding dofset found at time t^n for dofset " << nds_new
+                       << " at time t^(n+1)" << CORE::IO::endl;
 #endif
         if (is_std_set_np)  // std at t^(n+1)
         {
@@ -751,9 +752,10 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
         bool is_std_set_n = dof_cellsets_old[nds_old]->Is_Standard_DofSet();
 
 #ifdef DEBUG_TIMINT
-        IO::cout << "XFLUID-TIMINIT CASE D: node " << gid
-                 << ",\t corresponding std(yes/no: " << is_std_set_n << ") dofset " << nds_old
-                 << " found at time t^n for dofset " << nds_new << " at time t^(n+1)" << IO::endl;
+        CORE::IO::cout << "XFLUID-TIMINIT CASE D: node " << gid
+                       << ",\t corresponding std(yes/no: " << is_std_set_n << ") dofset " << nds_old
+                       << " found at time t^n for dofset " << nds_new << " at time t^(n+1)"
+                       << CORE::IO::endl;
 #endif
 
         if (is_std_set_np and is_std_set_n)  // std at t^n and t^(n+1)
@@ -1397,11 +1399,12 @@ int XFEM::XFluidTimeInt::identify_old_sets(
 
         if (use_old_std_set)
         {
-          IO::cout << "WARNING (xfluid_timeInt.cpp): for std-dofset (t^(n+1)) at node "
-                   << n_new->Id() << " no std dofset at t^n could be identified via common sides."
-                   << " However, there is a std-dofset (t^n) which could be used nevertheless! "
-                      "This might be unsafe! Be aware of that!"
-                   << IO::endl;
+          CORE::IO::cout
+              << "WARNING (xfluid_timeInt.cpp): for std-dofset (t^(n+1)) at node " << n_new->Id()
+              << " no std dofset at t^n could be identified via common sides."
+              << " However, there is a std-dofset (t^n) which could be used nevertheless! "
+                 "This might be unsafe! Be aware of that!"
+              << CORE::IO::endl;
 
           std::vector<int> dummy;  // dummy for common sides ( actually no common sides available! )
           identified_old_sets[setnumber] =
@@ -1477,8 +1480,9 @@ int XFEM::XFluidTimeInt::identify_old_sets(
   if (identified_old_sets.size() > 1)
   {
 #ifdef DEBUG_TIMINT
-    IO::cout << "Warning: found dofset at t^n not unique, found " << identified_old_sets.size()
-             << " dofsets, set status to not-found!" << IO::endl;
+    CORE::IO::cout << "Warning: found dofset at t^n not unique, found "
+                   << identified_old_sets.size() << " dofsets, set status to not-found!"
+                   << CORE::IO::endl;
 #endif
     return -1;
   }
@@ -1489,7 +1493,7 @@ int XFEM::XFluidTimeInt::identify_old_sets(
   if (identified_old_sets.size() <= 0)
   {
 #ifdef DEBUG_TIMINT
-    IO::cout << "Warning: no found dofset at t^n, set status to not-found!" << IO::endl;
+    CORE::IO::cout << "Warning: no found dofset at t^n, set status to not-found!" << CORE::IO::endl;
 #endif
     return -1;
   }
@@ -1502,8 +1506,8 @@ int XFEM::XFluidTimeInt::identify_old_sets(
     const int nds_old = identified_old_sets.begin()->first;
 
 #ifdef DEBUG_TIMINT
-    IO::cout << "Exactly one dofset found: nds= " << nds_old
-             << " perform further special checks:" << IO::endl;
+    CORE::IO::cout << "Exactly one dofset found: nds= " << nds_old
+                   << " perform further special checks:" << CORE::IO::endl;
 #endif
 
     bool is_std_set_n = dof_cellsets_old[nds_old]->Is_Standard_DofSet();
@@ -1546,7 +1550,7 @@ int XFEM::XFluidTimeInt::identify_old_sets(
     // if the unique candidate passed all checks we accept the value
     //---------------------------------------
 #ifdef DEBUG_TIMINT
-    IO::cout << "\t ACCEPT the unique dofset!" << IO::endl;
+    CORE::IO::cout << "\t ACCEPT the unique dofset!" << CORE::IO::endl;
 #endif
 
     return nds_old;  // all special tests passed -> accept the old value
@@ -1587,7 +1591,7 @@ bool XFEM::XFluidTimeInt::special_check_sliding_on_surface(bool& changed_side,
 
 
 #ifdef DEBUG_TIMINT
-    IO::cout << "!!WARNING point is on cut surface at time t^n and t^(n+1)" << IO::endl;
+    CORE::IO::cout << "!!WARNING point is on cut surface at time t^n and t^(n+1)" << CORE::IO::endl;
 #endif
 
 
@@ -1636,8 +1640,8 @@ bool XFEM::XFluidTimeInt::special_check_sliding_on_surface(bool& changed_side,
       else  // on_cut_sides_new.begin() == on_cut_sides_old.begin()
       {
 #ifdef DEBUG_TIMINT
-        IO::cout << "point moves within side " << *(on_cut_sides_new.begin()) << " oncutsurface!"
-                 << IO::endl;
+        CORE::IO::cout << "point moves within side " << *(on_cut_sides_new.begin())
+                       << " oncutsurface!" << CORE::IO::endl;
 #endif
 
         // no changing side
@@ -1728,10 +1732,10 @@ bool XFEM::XFluidTimeInt::special_check_interface_tips(
   {
     // TODO: currently we expect that node did not change the side around a tip
     // TODO: USE the FOUR_C_THROW, at the moment we just throw a warning
-    IO::cout
+    CORE::IO::cout
         << "WARNING: node " << n_old->Id()
         << " seems to move (background ALE?). Check the special_check_interface_tips-Check for ALE!"
-        << IO::endl;
+        << CORE::IO::endl;
 
     changed_side = false;
     return true;
@@ -1775,10 +1779,10 @@ bool XFEM::XFluidTimeInt::special_check_interface_tips(
     if (changed_side)
     {
 #ifdef DEBUG_TIMINT
-      IO::cout
+      CORE::IO::cout
           << "\t\t node " << n_new->Id()
           << " changed interface side, node within space-time side element for at least one side"
-          << IO::endl;
+          << CORE::IO::endl;
 #endif
       break;  // stop loop over sides
     }
@@ -1942,9 +1946,10 @@ bool XFEM::XFluidTimeInt::within_space_time_side(
     double perturbation = 1e-008;
 
 #ifdef DEBUG_TIMINT
-    IO::cout << "\t\t\t Not Successful! -> Apply small artificial translation in normal direction "
-                "at t^(n+1) of "
-             << perturbation << IO::endl;
+    CORE::IO::cout
+        << "\t\t\t Not Successful! -> Apply small artificial translation in normal direction "
+           "at t^(n+1) of "
+        << perturbation << CORE::IO::endl;
 #endif
 
     //------------------------------------------------------------------
@@ -2011,9 +2016,9 @@ bool XFEM::XFluidTimeInt::within_space_time_side(
 
 #ifdef DEBUG_TIMINT
     if (successful_check)
-      IO::cout << "\t\t\t Successful check!" << IO::endl;
+      CORE::IO::cout << "\t\t\t Successful check!" << CORE::IO::endl;
     else
-      IO::cout << "\t\t\t Again not successful check!" << IO::endl;
+      CORE::IO::cout << "\t\t\t Again not successful check!" << CORE::IO::endl;
 #endif
   }
 
@@ -2029,10 +2034,10 @@ bool XFEM::XFluidTimeInt::within_space_time_side(
 
   if (within_space_time_side)
   {
-    IO::cout << "rst " << rst << IO::endl;
-    IO::cout << "\t\t\t changing side found!"
-             << "new: " << xyze_new << " old: " << xyze_old << " \n global coords " << n_coord
-             << " \n local coords " << rst << IO::endl;
+    CORE::IO::cout << "rst " << rst << CORE::IO::endl;
+    CORE::IO::cout << "\t\t\t changing side found!"
+                   << "new: " << xyze_new << " old: " << xyze_old << " \n global coords " << n_coord
+                   << " \n local coords " << rst << CORE::IO::endl;
   }
 #endif
 
@@ -2078,8 +2083,9 @@ bool XFEM::XFluidTimeInt::check_st_side_volume(
   {
     successful = false;
 #ifdef DEBUG_TIMINT
-    IO::cout << "\t\t\t det for space-time side element (det == 0.0) => distorted flat st-element"
-             << IO::endl;
+    CORE::IO::cout
+        << "\t\t\t det for space-time side element (det == 0.0) => distorted flat st-element"
+        << CORE::IO::endl;
 #endif
     return successful;
   }
@@ -2092,8 +2098,8 @@ bool XFEM::XFluidTimeInt::check_st_side_volume(
   if (det < 1E-14 and det > -1E-14)
   {
 #ifdef DEBUG_TIMINT
-    IO::cout << "\t\t\t det for space-time side element (det == " << det
-             << ") => distorted flat st-element" << IO::endl;
+    CORE::IO::cout << "\t\t\t det for space-time side element (det == " << det
+                   << ") => distorted flat st-element" << CORE::IO::endl;
 #endif
     successful = false;
     return successful;
@@ -2257,7 +2263,7 @@ void XFEM::XFluidTimeInt::Output()
   int step_diff = 500;
 
   // output for all dofsets of nodes
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("TIMINT_Method",
+  const std::string filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles("TIMINT_Method",
       dis_->Writer()->Output()->FileName(), step_, step_diff, true, dis_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
@@ -2285,7 +2291,7 @@ void XFEM::XFluidTimeInt::Output()
 
       for (size_t j = 0; j < nds_methods.size(); j++)
       {
-        IO::GMSH::cellWithScalarToStream(
+        CORE::IO::GMSH::cellWithScalarToStream(
             CORE::FE::CellType::point1, (int)nds_methods[j], pos, gmshfilecontent);
       }
     }
@@ -2294,7 +2300,7 @@ void XFEM::XFluidTimeInt::Output()
 
   gmshfilecontent.close();
 
-  if (myrank_ == 0) IO::cout << IO::endl;
+  if (myrank_ == 0) CORE::IO::cout << CORE::IO::endl;
 }
 
 FOUR_C_NAMESPACE_CLOSE

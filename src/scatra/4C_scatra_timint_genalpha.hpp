@@ -26,7 +26,7 @@ namespace SCATRA
     TimIntGenAlpha(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::Solver> solver,
         Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
 
     void Setup() override;
 
@@ -53,7 +53,7 @@ namespace SCATRA
     void Update() override;
 
     void read_restart(
-        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
 
     Teuchos::RCP<Epetra_Vector> Phiaf() override { return phiaf_; }
 

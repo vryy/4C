@@ -79,7 +79,7 @@ namespace PARTICLEINTERACTION
     void write_restart() const override;
 
     //! read restart of particle interaction handler
-    void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader) override;
+    void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader) override;
 
     //! insert interaction dependent states of all particle types
     void insert_particle_states_of_particle_types(

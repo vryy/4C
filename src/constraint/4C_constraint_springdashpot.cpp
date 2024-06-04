@@ -86,7 +86,8 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
     // get geometry
     std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = spring_->Geometry();
     // calculate nodal area
-    if (!actdisc_->Comm().MyPID()) IO::cout << "Computing area for spring dashpot condition...\n";
+    if (!actdisc_->Comm().MyPID())
+      CORE::IO::cout << "Computing area for spring dashpot condition...\n";
     get_area(geom);
     initialize_cur_surf_normal();
   }

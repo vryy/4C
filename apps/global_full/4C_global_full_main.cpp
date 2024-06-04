@@ -296,13 +296,13 @@ int main(int argc, char *argv[])
       PrintContactConstitutiveLawDatHeader();
 
       const auto lines = CORE::FE::valid_cloning_material_map_lines();
-      IO::DatFileUtils::print_section(std::cout, "CLONING MATERIAL MAP", lines);
+      CORE::IO::DatFileUtils::print_section(std::cout, "CLONING MATERIAL MAP", lines);
 
       PrintElementDatHeader();
 
       const std::vector<INPUT::LineDefinition> result_lines =
           GlobalLegacyModuleCallbacks().valid_result_description_lines();
-      IO::DatFileUtils::print_section(std::cout, "RESULT DESCRIPTION", result_lines);
+      CORE::IO::DatFileUtils::print_section(std::cout, "RESULT DESCRIPTION", result_lines);
 
       printf("\n\n");
     }

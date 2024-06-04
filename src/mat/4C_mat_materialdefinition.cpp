@@ -66,7 +66,7 @@ std::vector<std::pair<int, IO::InputParameterContainer>> MAT::MaterialDefinition
       condline->seekp(0, condline->end);
       *condline << " ";
 
-      IO::LineParser parser("While reading 'MATERIALS' section: ");
+      CORE::IO::LineParser parser("While reading 'MATERIALS' section: ");
 
       parser.Consume(*condline, "MAT");
       const int matid = parser.Read<int>(*condline);

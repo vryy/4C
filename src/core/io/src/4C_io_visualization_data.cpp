@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-size_t IO::VisualizationData::get_point_coordinates_number_of_points() const
+size_t CORE::IO::VisualizationData::get_point_coordinates_number_of_points() const
 {
   // Check if number of entries is consistent
   if (point_coordinates_.size() % n_dim_ != 0)
@@ -35,7 +35,7 @@ size_t IO::VisualizationData::get_point_coordinates_number_of_points() const
 /**
  *
  */
-void IO::VisualizationData::clear_data()
+void CORE::IO::VisualizationData::clear_data()
 {
   point_coordinates_.clear();
   cell_types_.clear();
@@ -51,7 +51,7 @@ void IO::VisualizationData::clear_data()
 /**
  *
  */
-void IO::VisualizationData::ResetContainer()
+void CORE::IO::VisualizationData::ResetContainer()
 {
   clear_data();
   point_data_.clear();
@@ -62,7 +62,7 @@ void IO::VisualizationData::ResetContainer()
 /**
  *
  */
-void IO::VisualizationData::consistency_check_and_complete_data()
+void CORE::IO::VisualizationData::consistency_check_and_complete_data()
 {
   complete_cell_connectivity();
   complete_face_connectivity();
@@ -72,7 +72,7 @@ void IO::VisualizationData::consistency_check_and_complete_data()
 /**
  *
  */
-void IO::VisualizationData::ConsistencyCheck() const
+void CORE::IO::VisualizationData::ConsistencyCheck() const
 {
   // Check basic point coordinates consistency (is done with get_point_coordinates_number_of_points)
   const auto n_points = get_point_coordinates_number_of_points();
@@ -126,7 +126,7 @@ void IO::VisualizationData::ConsistencyCheck() const
 /**
  *
  */
-void IO::VisualizationData::complete_cell_connectivity()
+void CORE::IO::VisualizationData::complete_cell_connectivity()
 {
   if (cell_connectivity_.size() == 0 && cell_offsets_.size() > 0)
   {
@@ -139,7 +139,7 @@ void IO::VisualizationData::complete_cell_connectivity()
 /**
  *
  */
-void IO::VisualizationData::complete_face_connectivity()
+void CORE::IO::VisualizationData::complete_face_connectivity()
 {
   const int vtk_polyhedron_cell_id = polyhedron_cell_type;
   const size_t n_polyhedron =
@@ -188,7 +188,7 @@ void IO::VisualizationData::complete_face_connectivity()
 /**
  *
  */
-std::string IO::VisualizationData::get_data_type(
+std::string CORE::IO::VisualizationData::get_data_type(
     const std::map<std::string, std::pair<visualization_vector_type_variant, uint8_t>>& data) const
 {
   if (&point_data_ == &data) return "point data";
@@ -199,7 +199,7 @@ std::string IO::VisualizationData::get_data_type(
 /**
  *
  */
-std::string IO::VisualizationData::get_data_type(
+std::string CORE::IO::VisualizationData::get_data_type(
     const std::map<std::string, visualization_vector_type_variant>& data) const
 {
   if (&field_data_ == &data) return "field data";

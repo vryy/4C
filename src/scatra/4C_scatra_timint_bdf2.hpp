@@ -27,7 +27,7 @@ namespace SCATRA
     TimIntBDF2(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::Solver> solver,
         Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
 
     /// Setup time integration scheme
     void Setup() override;
@@ -51,7 +51,7 @@ namespace SCATRA
 
     /// read restart data
     void read_restart(
-        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
 
     /// routine to return scalar field phi at time step n+alpha_F
     Teuchos::RCP<Epetra_Vector> Phiaf() override { return Teuchos::null; }

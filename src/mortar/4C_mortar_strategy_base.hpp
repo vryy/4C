@@ -45,11 +45,11 @@ namespace CORE::LINALG
   class SparseMatrix;
 }  // namespace CORE::LINALG
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace MORTAR
 {
@@ -266,7 +266,7 @@ namespace MORTAR
     virtual Teuchos::RCP<Epetra_Vector> ContactTanForce() = 0;
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> DMatrix() = 0;
     virtual void DoReadRestart(
-        IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) = 0;
+        CORE::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart = false) const = 0;
     virtual void Evaluate(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,

@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
+CORE::IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
     const INPUT::DatFileReader& reader, std::string sectionname)
     : name_(dis->Name()),
       reader_(reader),
@@ -33,7 +33,7 @@ IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
+CORE::IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
     const INPUT::DatFileReader& reader, std::string sectionname, std::string elementtype)
     : name_(dis->Name()),
       reader_(reader),
@@ -47,7 +47,7 @@ IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
+CORE::IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
     const INPUT::DatFileReader& reader, std::string sectionname,
     const std::set<std::string>& elementtypes)
     : name_(dis->Name()),
@@ -63,7 +63,7 @@ IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::ElementReader::ReadAndDistribute()
+void CORE::IO::ElementReader::ReadAndDistribute()
 {
   const int myrank = comm_->MyPID();
   const int numproc = comm_->NumProc();
@@ -119,7 +119,7 @@ void IO::ElementReader::ReadAndDistribute()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::pair<int, std::vector<int>> IO::ElementReader::get_element_size_and_i_ds() const
+std::pair<int, std::vector<int>> CORE::IO::ElementReader::get_element_size_and_i_ds() const
 {
   // vector of all global element ids
   std::vector<int> eids;
@@ -172,7 +172,7 @@ std::pair<int, std::vector<int>> IO::ElementReader::get_element_size_and_i_ds() 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::ElementReader::get_and_distribute_elements(const int nblock, const int bsize)
+void CORE::IO::ElementReader::get_and_distribute_elements(const int nblock, const int bsize)
 {
   std::ifstream file;
   std::string inputfile_name = reader_.MyInputfileName();

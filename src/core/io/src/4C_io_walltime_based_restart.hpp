@@ -28,7 +28,7 @@ namespace CORE::LINALG
   class SparseMatrix;
 }
 
-namespace IO
+namespace CORE::IO
 {
   /*!
   \brief handles restart after a certain walltime interval, step interval or on a user signal
@@ -81,7 +81,7 @@ namespace IO
     /// signal which was caught by the signal handler
     volatile static int signal_;
   };
-}  // namespace IO
+}  // namespace CORE::IO
 
 
 FOUR_C_NAMESPACE_CLOSE

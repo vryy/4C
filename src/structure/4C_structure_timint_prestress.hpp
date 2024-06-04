@@ -47,8 +47,8 @@ namespace STR
         const Teuchos::RCP<DRT::Discretization>& actdis,       //!< current discretisation
         const Teuchos::RCP<CORE::LINALG::Solver>& solver,      //!< the solver
         const Teuchos::RCP<CORE::LINALG::Solver>&
-            contactsolver,                                    //!< the solver for contact meshtying
-        const Teuchos::RCP<IO::DiscretizationWriter>& output  //!< the output
+            contactsolver,  //!< the solver for contact meshtying
+        const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output  //!< the output
     );
 
     void Setup() override;

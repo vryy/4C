@@ -23,11 +23,11 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-IO::VisualizationParameters IO::VisualizationParametersFactory(
+CORE::IO::VisualizationParameters CORE::IO::VisualizationParametersFactory(
     const Teuchos::ParameterList& visualization_ouput_parameter_list,
-    const IO::OutputControl& output_control, const double restart_time)
+    const CORE::IO::OutputControl& output_control, const double restart_time)
 {
-  IO::VisualizationParameters parameters;
+  CORE::IO::VisualizationParameters parameters;
 
   // Data format
   parameters.data_format_ = Teuchos::getIntegralValue<OutputDataFormat>(
@@ -72,7 +72,7 @@ IO::VisualizationParameters IO::VisualizationParametersFactory(
 /*
  *
  */
-[[nodiscard]] int IO::GetTotalDigitsToReserveInTimeStep(
+[[nodiscard]] int CORE::IO::GetTotalDigitsToReserveInTimeStep(
     const VisualizationParameters& visualization_parameters)
 {
   if (visualization_parameters.every_iteration_)
@@ -89,7 +89,7 @@ IO::VisualizationParameters IO::VisualizationParametersFactory(
 /*
  *
  */
-[[nodiscard]] std::pair<double, int> IO::GetTimeAndTimeStepIndexForOutput(
+[[nodiscard]] std::pair<double, int> CORE::IO::GetTimeAndTimeStepIndexForOutput(
     const VisualizationParameters& visualization_parameters, const double time, const int step,
     const int iteration_number)
 {

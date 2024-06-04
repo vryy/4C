@@ -218,7 +218,7 @@ void FS3I::ACFSI::finish_large_time_scale_loop()
   //*-------------------------------------------------------------------------------*
   // | create new output file
   //*-------------------------------------------------------------------------------*/
-  Teuchos::RCP<IO::DiscretizationWriter> output_writer =
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output_writer =
       GLOBAL::Problem::Instance()->GetDis("structure")->Writer();
   output_writer->new_result_file(step_);
   // and write all meshes
@@ -994,7 +994,8 @@ Teuchos::RCP<const Epetra_Vector> FS3I::MeanManager::GetMeanValue(const std::str
 /*----------------------------------------------------------------------*
  | Write restart of mean manager                             Thon 10/15 |
  *----------------------------------------------------------------------*/
-void FS3I::MeanManager::write_restart(Teuchos::RCP<IO::DiscretizationWriter> fluidwriter) const
+void FS3I::MeanManager::write_restart(
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> fluidwriter) const
 {
   // first some checking
   if (abs(sum_dt_wss_ - sum_dt_phi_) > 1e-14 or abs(sum_dt_wss_ - sum_dt_pres_) > 1e-14)
@@ -1011,7 +1012,7 @@ void FS3I::MeanManager::write_restart(Teuchos::RCP<IO::DiscretizationWriter> flu
 /*----------------------------------------------------------------------*
  | Read restart of mean manager                             Thon 10/15 |
  *----------------------------------------------------------------------*/
-void FS3I::MeanManager::read_restart(IO::DiscretizationReader& fluidreader)
+void FS3I::MeanManager::read_restart(CORE::IO::DiscretizationReader& fluidreader)
 {
   // read all values...
   fluidreader.ReadVector(sum_wss_, "SumWss");

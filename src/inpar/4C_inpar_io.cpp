@@ -125,8 +125,9 @@ void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   setStringToIntegralParameter<int>("VERBOSITY", "verbose", "",
       tuple<std::string>(
           "minimal", "Minimal", "standard", "Standard", "verbose", "Verbose", "debug", "Debug"),
-      tuple<int>(FourC::IO::minimal, FourC::IO::minimal, FourC::IO::standard, FourC::IO::standard,
-          FourC::IO::verbose, FourC::IO::verbose, FourC::IO::debug, FourC::IO::debug),
+      tuple<int>(FourC::CORE::IO::minimal, FourC::CORE::IO::minimal, FourC::CORE::IO::standard,
+          FourC::CORE::IO::standard, FourC::CORE::IO::verbose, FourC::CORE::IO::verbose,
+          FourC::CORE::IO::debug, FourC::CORE::IO::debug),
       &io);
 
   CORE::UTILS::DoubleParameter("RESTARTWALLTIMEINTERVAL", -1.0,

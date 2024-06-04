@@ -156,7 +156,7 @@ void CORE::UTILS::ResultTestManager::TestAll(const Epetra_Comm& comm)
   int uneval_test_count = 0;         // number of unevaluated tests
   const int size = results_.size();  // total number of tests
 
-  if (comm.MyPID() == 0) IO::cout << "\nChecking results of " << size << " tests:\n";
+  if (comm.MyPID() == 0) CORE::IO::cout << "\nChecking results of " << size << " tests:\n";
 
   for (auto& result : results_)
   {
@@ -181,7 +181,7 @@ void CORE::UTILS::ResultTestManager::TestAll(const Epetra_Comm& comm)
   int guneval_test_count = 0;
   comm.SumAll(&uneval_test_count, &guneval_test_count, 1);
   if (guneval_test_count > 0 and comm.MyPID() == 0)
-    IO::cout << guneval_test_count << " tests stay unevaluated" << IO::endl;
+    CORE::IO::cout << guneval_test_count << " tests stay unevaluated" << CORE::IO::endl;
 
   // determine the total number of errors
   int numerr;
@@ -210,7 +210,7 @@ void CORE::UTILS::ResultTestManager::TestAll(const Epetra_Comm& comm)
     }
   }
 
-  if (comm.MyPID() == 0) IO::cout << "\nOK (" << count << ")\n";
+  if (comm.MyPID() == 0) CORE::IO::cout << "\nOK (" << count << ")\n";
 }
 
 /*----------------------------------------------------------------------*/

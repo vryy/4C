@@ -41,7 +41,7 @@ namespace DRT
   class ResultTest;
 }  // namespace DRT
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -205,7 +205,7 @@ namespace ADAPTER
     virtual void PrintStep() = 0;
 
     //! Access to output object
-    virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;
+    virtual Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() = 0;
 
     /// prepare output
     virtual void prepare_output() = 0;

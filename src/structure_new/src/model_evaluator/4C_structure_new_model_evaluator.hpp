@@ -31,11 +31,11 @@ namespace NOX
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace CORE::LINALG
 {
@@ -320,10 +320,11 @@ namespace STR
     void ResetStates(const Epetra_Vector& x, bool setstate, Vector& me_vec) const;
 
     //! Write current restart
-    void write_restart(IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const;
+    void write_restart(
+        CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const;
 
     //! Read restart information
-    void read_restart(IO::DiscretizationReader& ioreader);
+    void read_restart(CORE::IO::DiscretizationReader& ioreader);
 
     //! @name Accessors
     //!@{
@@ -368,7 +369,7 @@ namespace STR
     void determine_optional_quantity();
 
     //! Write the current step state
-    void OutputStepState(IO::DiscretizationWriter& iowriter) const;
+    void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const;
 
     /**
      * \brief Do stuff that has to be done before the runtime output is written.

@@ -55,7 +55,7 @@ CONTACT::LagrangeStrategyPoro::LagrangeStrategyPoro(
 /*----------------------------------------------------------------------*
  |  read restart information for contact                      ager 12/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategyPoro::DoReadRestart(IO::DiscretizationReader& reader,
+void CONTACT::LagrangeStrategyPoro::DoReadRestart(CORE::IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   Teuchos::RCP<DRT::Discretization> discret = GLOBAL::Problem::Instance()->GetDis("structure");

@@ -82,12 +82,12 @@ namespace THR
     void Logo();
 
     //! Constructor
-    TimInt(const Teuchos::ParameterList& ioparams,     //!< ioflags
-        const Teuchos::ParameterList& tdynparams,      //!< input parameters
-        const Teuchos::ParameterList& xparams,         //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,      //!< current discretisation
-        Teuchos::RCP<CORE::LINALG::Solver> solver,     //!< the solver
-        Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    TimInt(const Teuchos::ParameterList& ioparams,           //!< ioflags
+        const Teuchos::ParameterList& tdynparams,            //!< input parameters
+        const Teuchos::ParameterList& xparams,               //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,            //!< current discretisation
+        Teuchos::RCP<CORE::LINALG::Solver> solver,           //!< the solver
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Empty constructor
@@ -240,7 +240,7 @@ namespace THR
     void output_energy();
 
     //! Write internal and external forces (if necessary for restart)
-    virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
+    virtual void WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output) = 0;
 
     //! Check wether energy output file is attached
     bool AttachedEnergyFile()
@@ -408,7 +408,7 @@ namespace THR
     Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override { return solver_; }
 
     //! Access output object
-    Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() override { return output_; }
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() override { return output_; }
 
     //! prepare output (do nothing)
     void prepare_output() override { ; }
@@ -539,9 +539,9 @@ namespace THR
     //! @name Printing and output
     //@{
 
-    Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
-    bool printlogo_;                                 //!< true: enjoy your cuppa
-    int printscreen_;                                //!< print infos to standard out every n steps
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;  //!< binary output
+    bool printlogo_;                                       //!< true: enjoy your cuppa
+    int printscreen_;        //!< print infos to standard out every n steps
     bool printiter_;         //!< print intermediate iterations during solution
     int writerestartevery_;  //!< write restart every given step;
                              //!< if 0, restart is not written

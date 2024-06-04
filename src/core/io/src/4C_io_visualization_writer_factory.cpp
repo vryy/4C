@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-std::unique_ptr<IO::VisualizationWriterBase> IO::VisualizationWriterFactory(
+std::unique_ptr<CORE::IO::VisualizationWriterBase> CORE::IO::VisualizationWriterFactory(
     const VisualizationParameters& parameters, const Epetra_Comm& comm,
     const std::string& visualization_data_name)
 {

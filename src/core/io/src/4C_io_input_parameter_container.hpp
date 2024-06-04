@@ -28,7 +28,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   namespace INTERNAL
   {
@@ -224,10 +224,10 @@ namespace IO
     //! a map to store anything
     std::map<std::string, std::any> anydata_;
   };  // class InputParameterContainer
-}  // namespace IO
+}  // namespace CORE::IO
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const IO::InputParameterContainer& cont);
+std::ostream& operator<<(std::ostream& os, const CORE::IO::InputParameterContainer& cont);
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -127,7 +127,7 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
       Teuchos::rcp(new Teuchos::ParameterList(problem->StructuralNoxParams()));
 
   // show default parameters
-  if ((actdis->Comm()).MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, sdyn);
+  if ((actdis->Comm()).MyPID() == 0) INPUT::PrintDefaultParameters(CORE::IO::cout, sdyn);
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
@@ -259,7 +259,7 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   }
 
   // context for output and restart
-  Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis->Writer();
   if (CORE::UTILS::IntegralValue<int>(*ioflags, "OUTPUT_BIN"))
   {
     output->WriteMesh(0, 0.0);
@@ -318,12 +318,12 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
         if (actdis->Comm().MyPID() == 0)
         {
-          IO::cout
+          CORE::IO::cout
               << "*** Due to FSI time step size adaptivity with structure based error estimation,\n"
                  "algorithmic control parameters in STRUCTURAL DYNAMIC/TIMEADAPTIVITY have been\n"
                  "overwritten by those from FSI DYNAMIC/TIMEADAPTIVITY."
-              << IO::endl
-              << IO::endl;
+              << CORE::IO::endl
+              << CORE::IO::endl;
         }
       }
     }
@@ -347,7 +347,7 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
       case GLOBAL::ProblemType::fsi_redmodels:
       {
         if ((actdis->Comm()).MyPID() == 0)
-          IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
+          CORE::IO::cout << "Using StructureNOXCorrectionWrapper()..." << CORE::IO::endl;
 
         Teuchos::RCP<FSIStructureWrapper> fsiwrapperwithadaptivity =
             Teuchos::rcp(new StructureFSITimIntAda(
@@ -382,7 +382,7 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
         const int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
 
         if ((actdis->Comm()).MyPID() == 0)
-          IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
+          CORE::IO::cout << "Using StructureNOXCorrectionWrapper()..." << CORE::IO::endl;
 
         if (tmpstr->HaveConstraint())
         {

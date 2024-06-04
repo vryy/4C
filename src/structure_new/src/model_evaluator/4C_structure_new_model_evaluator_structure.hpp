@@ -23,7 +23,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationVisualizationWriterMesh;
 }
@@ -89,10 +89,10 @@ namespace STR
 
       //! derived
       void write_restart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! derived
-      void read_restart(IO::DiscretizationReader& ioreader) override;
+      void read_restart(CORE::IO::DiscretizationReader& ioreader) override;
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
@@ -151,7 +151,7 @@ namespace STR
       void ResetStepState() override;
 
       //! derived
-      void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
+      void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
       void runtime_pre_output_step_state() override;
@@ -528,9 +528,9 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> dis_incr_ptr_;
 
       //! visualization parameters
-      IO::VisualizationParameters visualization_params_;
+      CORE::IO::VisualizationParameters visualization_params_;
 
-      Teuchos::RCP<IO::DiscretizationVisualizationWriterMesh> vtu_writer_ptr_;
+      Teuchos::RCP<CORE::IO::DiscretizationVisualizationWriterMesh> vtu_writer_ptr_;
 
       //! beam discretization runtime output writer
       Teuchos::RCP<BeamDiscretizationRuntimeOutputWriter> beam_vtu_writer_ptr_;

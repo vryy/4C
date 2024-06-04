@@ -37,7 +37,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Discretization> actdis,
     std::unique_ptr<CORE::LINALG::Solver> solver, Teuchos::ParameterList& params,
-    IO::DiscretizationWriter& output)
+    CORE::IO::DiscretizationWriter& output)
     :  // Call constructor for "nontrivial" objects
       discret_(actdis),
       solver_(std::move(solver)),
@@ -2146,7 +2146,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
 void AIRWAY::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
 {
   coupledTo3D_ = coupledTo3D;
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   time_ = reader.ReadDouble("time");
 
   if (coupledTo3D_)

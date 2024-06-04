@@ -533,7 +533,7 @@ void UTILS::Cardiovascular0DManager::UpdateCv0DDof(Teuchos::RCP<Epetra_Vector> c
 |Read restart information                                               |
  *-----------------------------------------------------------------------*/
 void UTILS::Cardiovascular0DManager::read_restart(
-    IO::DiscretizationReader& reader, const double& time)
+    CORE::IO::DiscretizationReader& reader, const double& time)
 {
   // check if restart from non-Cardiovascular0D simulation is desired
   const bool restartwithcardiovascular0d =

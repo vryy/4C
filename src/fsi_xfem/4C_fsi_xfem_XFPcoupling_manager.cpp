@@ -346,7 +346,7 @@ void XFEM::XfpCouplingManager::Update(double scaling)
 /*----------------------------------------------------------------------*/
 /* Write Output                                             ager 06/2016 |
  *-----------------------------------------------------------------------*/
-void XFEM::XfpCouplingManager::Output(IO::DiscretizationWriter& writer)
+void XFEM::XfpCouplingManager::Output(CORE::IO::DiscretizationWriter& writer)
 {
   //--------------------------------
   // output for Lagrange multiplier field (ie forces onto the structure, Robin-type forces
@@ -365,7 +365,7 @@ void XFEM::XfpCouplingManager::Output(IO::DiscretizationWriter& writer)
 /*----------------------------------------------------------------------*/
 /* Read Restart on the interface                            ager 06/2016 |
  *-----------------------------------------------------------------------*/
-void XFEM::XfpCouplingManager::read_restart(IO::DiscretizationReader& reader)
+void XFEM::XfpCouplingManager::read_restart(CORE::IO::DiscretizationReader& reader)
 {
   Teuchos::RCP<Epetra_Vector> lambdafull =
       Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->FullMap(), true));

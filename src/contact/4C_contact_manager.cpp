@@ -1217,7 +1217,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
 /*----------------------------------------------------------------------*
  |  write restart information for contact (public)            popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::write_restart(IO::DiscretizationWriter& output, bool forcedrestart)
+void CONTACT::Manager::write_restart(CORE::IO::DiscretizationWriter& output, bool forcedrestart)
 {
   // clear cache of maps due to varying vector size
   output.ClearMapCache();
@@ -1243,7 +1243,7 @@ void CONTACT::Manager::write_restart(IO::DiscretizationWriter& output, bool forc
 /*----------------------------------------------------------------------*
  |  read restart information for contact (public)             popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::read_restart(IO::DiscretizationReader& reader,
+void CONTACT::Manager::read_restart(CORE::IO::DiscretizationReader& reader,
     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
 {
   // If Parent Elements are required, we need to reconnect them before contact restart!
@@ -1275,7 +1275,7 @@ void CONTACT::Manager::read_restart(IO::DiscretizationReader& reader,
 /*----------------------------------------------------------------------*
  |  write interface tractions for postprocessing (public)     popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::postprocess_quantities(IO::DiscretizationWriter& output)
+void CONTACT::Manager::postprocess_quantities(CORE::IO::DiscretizationWriter& output)
 {
   if (GetStrategy().IsNitsche()) return;
 

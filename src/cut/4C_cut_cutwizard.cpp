@@ -236,7 +236,8 @@ void CORE::GEO::CutWizard::Cut(
 
   TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CutWizard::Cut");
 
-  if (myrank_ == 0 and screenoutput_) IO::cout << "\nCORE::GEO::CutWizard::Cut:" << IO::endl;
+  if (myrank_ == 0 and screenoutput_)
+    CORE::IO::cout << "\nCORE::GEO::CutWizard::Cut:" << CORE::IO::endl;
 
   const double t_start = Teuchos::Time::wallTime();
 
@@ -255,7 +256,7 @@ void CORE::GEO::CutWizard::Cut(
   const double t_end = Teuchos::Time::wallTime() - t_start;
   if (myrank_ == 0 and screenoutput_)
   {
-    IO::cout << "\n\t\t\t\t\t\t\t... Success (" << t_end << " secs)\n" << IO::endl;
+    CORE::IO::cout << "\n\t\t\t\t\t\t\t... Success (" << t_end << " secs)\n" << CORE::IO::endl;
   }
 
   //--------------------------------------
@@ -276,9 +277,10 @@ void CORE::GEO::CutWizard::Prepare()
 
   const double t_start = Teuchos::Time::wallTime();
 
-  if (myrank_ == 0 and screenoutput_) IO::cout << "\nCORE::GEO::CutWizard::Prepare:" << IO::endl;
+  if (myrank_ == 0 and screenoutput_)
+    CORE::IO::cout << "\nCORE::GEO::CutWizard::Prepare:" << CORE::IO::endl;
 
-  if (myrank_ == 0 and screenoutput_) IO::cout << "\n\t * 1/6 Cut_Initialize ...";
+  if (myrank_ == 0 and screenoutput_) CORE::IO::cout << "\n\t * 1/6 Cut_Initialize ...";
 
   // fill the cutwizard cw with information:
   // build up the mesh_ (normal background mesh) and the cut_mesh_ (cutter mesh) created by the
@@ -310,7 +312,7 @@ void CORE::GEO::CutWizard::Prepare()
   const double t_mid = Teuchos::Time::wallTime() - t_start;
   if (myrank_ == 0 and screenoutput_)
   {
-    IO::cout << "\t\t\t... Success (" << t_mid << " secs)" << IO::endl;
+    CORE::IO::cout << "\t\t\t... Success (" << t_mid << " secs)" << CORE::IO::endl;
   }
 
   is_cut_prepare_performed_ = true;
@@ -576,7 +578,7 @@ void CORE::GEO::CutWizard::run_cut(
 
       const double t_diff = Teuchos::Time::wallTime() - t_start;
       if (myrank_ == 0 and screenoutput_)
-        IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
+        CORE::IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << CORE::IO::endl;
     }
     //----------------------------------------------------------
     // Cut Part I: Collision Detection (3/6 cut_collision_detection)
@@ -591,7 +593,7 @@ void CORE::GEO::CutWizard::run_cut(
 
       const double t_diff = Teuchos::Time::wallTime() - t_start;
       if (myrank_ == 0 and screenoutput_)
-        IO::cout << "\t\t... Success (" << t_diff << " secs)" << IO::endl;
+        CORE::IO::cout << "\t\t... Success (" << t_diff << " secs)" << CORE::IO::endl;
     }
   }
 
@@ -607,7 +609,7 @@ void CORE::GEO::CutWizard::run_cut(
 
     const double t_diff = Teuchos::Time::wallTime() - t_start;
     if (myrank_ == 0 and screenoutput_)
-      IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
+      CORE::IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << CORE::IO::endl;
   }
 
   //----------------------------------------------------------
@@ -622,7 +624,7 @@ void CORE::GEO::CutWizard::run_cut(
 
     const double t_diff = Teuchos::Time::wallTime() - t_start;
     if (myrank_ == 0 and screenoutput_)
-      IO::cout << "\t... Success (" << t_diff << " secs)" << IO::endl;
+      CORE::IO::cout << "\t... Success (" << t_diff << " secs)" << CORE::IO::endl;
   }
 
   //----------------------------------------------------------
@@ -639,7 +641,7 @@ void CORE::GEO::CutWizard::run_cut(
 
     const double t_diff = Teuchos::Time::wallTime() - t_start;
     if (myrank_ == 0 and screenoutput_)
-      IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
+      CORE::IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << CORE::IO::endl;
   }
 }
 
@@ -653,7 +655,8 @@ void CORE::GEO::CutWizard::find_position_dof_sets(bool include_inner)
 
   TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets (parallel)");
 
-  if (myrank_ == 0 and screenoutput_) IO::cout << "\t * 5/6 cut_positions_dofsets (parallel) ...";
+  if (myrank_ == 0 and screenoutput_)
+    CORE::IO::cout << "\t * 5/6 cut_positions_dofsets (parallel) ...";
 
   //  const double t_start = Teuchos::Time::wallTime();
 

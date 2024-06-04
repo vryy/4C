@@ -194,13 +194,13 @@ bool STR::MODELEVALUATOR::Constraints::assemble_jacobian(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Constraints::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // There is nothing to write for now
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::read_restart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::Constraints::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   // There is nothing to read for now
 }
@@ -247,7 +247,10 @@ void STR::MODELEVALUATOR::Constraints::ResetStepState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::OutputStepState(IO::DiscretizationWriter& iowriter) const {}
+void STR::MODELEVALUATOR::Constraints::OutputStepState(
+    CORE::IO::DiscretizationWriter& iowriter) const
+{
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

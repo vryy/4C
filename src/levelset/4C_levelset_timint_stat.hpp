@@ -30,7 +30,7 @@ namespace SCATRA
         Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
 
 
     /// initialize time-integration scheme
@@ -40,7 +40,8 @@ namespace SCATRA
     void Setup() override;
 
     /// read restart data
-    void read_restart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override
+    void read_restart(
+        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override
     {
       FOUR_C_THROW("You should not need this function!");
       return;

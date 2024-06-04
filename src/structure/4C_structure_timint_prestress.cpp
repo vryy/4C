@@ -25,7 +25,7 @@ STR::TimIntPrestress::TimIntPrestress(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& xparams, const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
     const Teuchos::RCP<CORE::LINALG::Solver>& contactsolver,
-    const Teuchos::RCP<IO::DiscretizationWriter>& output)
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output)
     : TimIntStatics(
           timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output)
 {
@@ -71,7 +71,8 @@ void STR::TimIntPrestress::UpdateStepElement()
   {
     if ((*time_)[0] <= pstime + 1e-15)
     {
-      if (!discret_->Comm().MyPID()) IO::cout << "====== Entering MULF update" << IO::endl;
+      if (!discret_->Comm().MyPID())
+        CORE::IO::cout << "====== Entering MULF update" << CORE::IO::endl;
       // action for elements
       p.set("action", "calc_struct_prestress_update");
       discret_->ClearState();

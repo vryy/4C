@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   /*!
     \brief helper class to read a mesh
@@ -85,7 +85,7 @@ namespace IO
      */
     void AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
         const INPUT::DatFileReader& reader, const std::string& sectionname,
-        const IO::GeometryType geometrysource, const std::string* geofilepath);
+        const CORE::IO::GeometryType geometrysource, const std::string* geofilepath);
 
     /// do the actual reading
     /*!
@@ -155,7 +155,7 @@ namespace IO
     /// Additional paramters for reading meshes.
     MeshReaderParameters parameters_;
   };
-}  // namespace IO
+}  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

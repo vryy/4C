@@ -441,24 +441,24 @@ void CORE::Conditions::LocsysManager::Print() const
 {
   if (Comm().MyPID() == 0)
   {
-    IO::cout << "\n-------------------------------------CORE::Conditions::LocsysManager"
-             << IO::endl;
+    CORE::IO::cout << "\n-------------------------------------CORE::Conditions::LocsysManager"
+                   << CORE::IO::endl;
     for (int i = 0; i < NumLocsys(); ++i)
     {
-      IO::cout << "*  *  *  *  *  *  *  *  *  *  *  *  *Locsys entity ID: "
-               << locsysconds_[i]->Id();
+      CORE::IO::cout << "*  *  *  *  *  *  *  *  *  *  *  *  *Locsys entity ID: "
+                     << locsysconds_[i]->Id();
       if (TypeLocsys(i) == CORE::Conditions::PointLocsys)
-        IO::cout << " Point   " << IO::endl;
+        CORE::IO::cout << " Point   " << CORE::IO::endl;
       else if (TypeLocsys(i) == CORE::Conditions::LineLocsys)
-        IO::cout << " Line    " << IO::endl;
+        CORE::IO::cout << " Line    " << CORE::IO::endl;
       else if (TypeLocsys(i) == CORE::Conditions::SurfaceLocsys)
-        IO::cout << " Surface " << IO::endl;
+        CORE::IO::cout << " Surface " << CORE::IO::endl;
       else if (TypeLocsys(i) == CORE::Conditions::VolumeLocsys)
-        IO::cout << " Volume  " << IO::endl;
+        CORE::IO::cout << " Volume  " << CORE::IO::endl;
       else
         FOUR_C_THROW("Unknown type of locsys condition!");
     }
-    IO::cout << "-------------------------------------------------------------\n\n";
+    CORE::IO::cout << "-------------------------------------------------------------\n\n";
   }
 }
 

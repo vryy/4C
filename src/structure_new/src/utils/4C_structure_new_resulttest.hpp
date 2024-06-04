@@ -33,10 +33,10 @@ namespace CORE::LINALG
   class Solver;
 }  // namespace CORE::LINALG
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace STR
 {

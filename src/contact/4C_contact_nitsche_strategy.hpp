@@ -65,7 +65,8 @@ namespace CONTACT
         Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, int step,
         int iter, bool predictor) override;
 
-    void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis,
+    void DoReadRestart(CORE::IO::DiscretizationReader& reader,
+        Teuchos::RCP<const Epetra_Vector> dis,
         Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
     bool IsSaddlePointSystem() const override { return false; }
@@ -103,12 +104,14 @@ namespace CONTACT
 
      \param dbcmaps (in): MapExtractor carrying global dbc map */
     void store_dirichlet_status(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) override{
-        /* we don't care about dirichlet for now */};
+        /* we don't care about dirichlet for now */
+    };
     void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
     void evaluate_reference_state() override;
     void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart) const override{
-        /* nothing stored in nitsche strategy that would need to be written */};
+        /* nothing stored in nitsche strategy that would need to be written */
+    };
     void compute_contact_stresses() final{/* nothing stress output in nitsche strategy yet */};
     virtual void reconnect_parent_elements();
     void set_state(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;

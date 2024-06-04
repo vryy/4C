@@ -166,9 +166,9 @@ void XFEM::MeshCoupling::prepare_cutter_output()
 
   if (!mark_geometry_)  // Do not write for marked geometry!
   {
-    cutter_dis_->SetWriter(Teuchos::rcp(
-        new IO::DiscretizationWriter(cutter_dis_, GLOBAL::Problem::Instance()->OutputControlFile(),
-            GLOBAL::Problem::Instance()->spatial_approximation_type())));
+    cutter_dis_->SetWriter(Teuchos::rcp(new CORE::IO::DiscretizationWriter(cutter_dis_,
+        GLOBAL::Problem::Instance()->OutputControlFile(),
+        GLOBAL::Problem::Instance()->spatial_approximation_type())));
     cutter_output_ = cutter_dis_->Writer();
     cutter_output_->WriteMesh(0, 0.0);
   }
@@ -915,7 +915,8 @@ void XFEM::MeshCouplingBC::evaluate_implementation(std::vector<double>& final_va
  *----------------------------------------------------------------------*/
 void XFEM::MeshCouplingBC::set_interface_displacement()
 {
-  if (myrank_ == 0) IO::cout << "\t set interface displacement, time " << time_ << IO::endl;
+  if (myrank_ == 0)
+    CORE::IO::cout << "\t set interface displacement, time " << time_ << CORE::IO::endl;
 
   std::string condname = "XFEMSurfDisplacement";
 
@@ -927,7 +928,7 @@ void XFEM::MeshCouplingBC::set_interface_displacement()
  *----------------------------------------------------------------------*/
 void XFEM::MeshCouplingBC::set_interface_velocity()
 {
-  if (myrank_ == 0) IO::cout << "\t set interface velocity, time " << time_ << IO::endl;
+  if (myrank_ == 0) CORE::IO::cout << "\t set interface velocity, time " << time_ << CORE::IO::endl;
 
   evaluate_condition(ivelnp_, cond_name_, time_, dt_);
 }
@@ -1220,7 +1221,7 @@ void XFEM::MeshCouplingNavierSlip::do_condition_specific_setup()
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingNavierSlip::set_interface_velocity()
 {
-  if (myrank_ == 0) IO::cout << "\t set interface velocity, time " << time_ << IO::endl;
+  if (myrank_ == 0) CORE::IO::cout << "\t set interface velocity, time " << time_ << CORE::IO::endl;
 
   //  evaluate_condition( ivelnp_, cond_name_, time_, dt_);
   evaluate_condition(ivelnp_, "XFEMRobinDirichletSurf", time_, dt_);
@@ -1357,7 +1358,7 @@ void XFEM::MeshCouplingNavierSlip::PrepareSolve()
 
   //  // set the initial interface velocity and possible initialization function
   //  set_interface_velocity();
-  if (myrank_ == 0) IO::cout << "\t set interface velocity, time " << time_ << IO::endl;
+  if (myrank_ == 0) CORE::IO::cout << "\t set interface velocity, time " << time_ << CORE::IO::endl;
   evaluate_condition(ivelnp_, "XFEMRobinDirichletSurf", time_, dt_);
 }
 
@@ -1644,10 +1645,10 @@ void XFEM::MeshCouplingFSI::zero_state_vectors_fsi()
 // -------------------------------------------------------------------
 void XFEM::MeshCouplingFSI::read_restart(const int step)
 {
-  if (myrank_) IO::cout << "read_restart for boundary discretization " << IO::endl;
+  if (myrank_) CORE::IO::cout << "read_restart for boundary discretization " << CORE::IO::endl;
 
   //-------- boundary discretization
-  IO::DiscretizationReader boundaryreader(
+  CORE::IO::DiscretizationReader boundaryreader(
       cutter_dis_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
   const double time = boundaryreader.ReadDouble("time");
@@ -1655,8 +1656,8 @@ void XFEM::MeshCouplingFSI::read_restart(const int step)
 
   if (myrank_ == 0)
   {
-    IO::cout << "time: " << time << IO::endl;
-    IO::cout << "step: " << step << IO::endl;
+    CORE::IO::cout << "time: " << time << CORE::IO::endl;
+    CORE::IO::cout << "step: " << step << CORE::IO::endl;
   }
 
   boundaryreader.ReadVector(iveln_, "iveln_res");
@@ -1704,9 +1705,9 @@ void XFEM::MeshCouplingFSI::GmshOutput(const std::string& filename_base, const i
   XFEM::UTILS::extract_node_vectors(cutter_dis_, currinterfacepositions, idispnp_);
 
 
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_fsi.str(),
-      cutter_dis_->Writer()->Output()->FileName(), step, gmsh_step_diff, gmsh_debug_out_screen,
-      myrank_);
+  const std::string filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+      filename_base_fsi.str(), cutter_dis_->Writer()->Output()->FileName(), step, gmsh_step_diff,
+      gmsh_debug_out_screen, myrank_);
 
   std::ofstream gmshfilecontent(filename.c_str());
 
@@ -1715,7 +1716,7 @@ void XFEM::MeshCouplingFSI::GmshOutput(const std::string& filename_base, const i
     gmshfilecontent << "View \" "
                     << "iforce \" {" << std::endl;
     // draw vector field 'force' for every node
-    IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
+    CORE::IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
         cutter_dis_, itrueresidual_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -1725,7 +1726,7 @@ void XFEM::MeshCouplingFSI::GmshOutput(const std::string& filename_base, const i
     gmshfilecontent << "View \" "
                     << "idispnp \" {" << std::endl;
     // draw vector field 'idispnp' for every node
-    IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
+    CORE::IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
         cutter_dis_, idispnp_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -1735,7 +1736,7 @@ void XFEM::MeshCouplingFSI::GmshOutput(const std::string& filename_base, const i
     gmshfilecontent << "View \" "
                     << "ivelnp \" {" << std::endl;
     // draw vector field 'ivelnp' for every node
-    IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
+    CORE::IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
         cutter_dis_, ivelnp_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -2642,10 +2643,10 @@ void XFEM::MeshCouplingFluidFluid::read_restart(const int step)
 {
   // copy from FSI!
 
-  if (myrank_) IO::cout << "read_restart for boundary discretization " << IO::endl;
+  if (myrank_) CORE::IO::cout << "read_restart for boundary discretization " << CORE::IO::endl;
 
   //-------- boundary discretization
-  IO::DiscretizationReader boundaryreader(
+  CORE::IO::DiscretizationReader boundaryreader(
       cutter_dis_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
   const double time = boundaryreader.ReadDouble("time");
@@ -2653,8 +2654,8 @@ void XFEM::MeshCouplingFluidFluid::read_restart(const int step)
 
   if (myrank_ == 0)
   {
-    IO::cout << "time: " << time << IO::endl;
-    IO::cout << "step: " << step << IO::endl;
+    CORE::IO::cout << "time: " << time << CORE::IO::endl;
+    CORE::IO::cout << "step: " << step << CORE::IO::endl;
   }
 
   boundaryreader.ReadVector(iveln_, "iveln_res");

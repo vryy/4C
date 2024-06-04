@@ -32,11 +32,11 @@ namespace CORE::LINALG
   class SparseMatrix;
 }  // namespace CORE::LINALG
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace CONSTRAINTS
 {
@@ -64,17 +64,17 @@ namespace CONSTRAINTS
     void Update();
 
     //! output of gap, normal, and nodal stiffness
-    void Output(Teuchos::RCP<IO::DiscretizationWriter> output,
+    void Output(Teuchos::RCP<CORE::IO::DiscretizationWriter> output,
         Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp);
 
     //! output of prestressing offset for restart
-    void output_restart(Teuchos::RCP<IO::DiscretizationWriter> output,
+    void output_restart(Teuchos::RCP<CORE::IO::DiscretizationWriter> output,
         Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp);
 
     /*!
      \brief Read restart information
     */
-    void read_restart(IO::DiscretizationReader& reader, const double& time);
+    void read_restart(CORE::IO::DiscretizationReader& reader, const double& time);
 
     //! reset spring after having done a MULF prestressing update (mhv 12/2015)
     void ResetPrestress(Teuchos::RCP<Epetra_Vector> disold);

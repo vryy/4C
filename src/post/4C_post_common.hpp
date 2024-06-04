@@ -490,7 +490,7 @@ class PostResult
   PostField* field_;
   int pos_;
   MAP* group_;
-  IO::HDFReader file_;
+  CORE::IO::HDFReader file_;
 };
 
 FOUR_C_NAMESPACE_CLOSE

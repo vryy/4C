@@ -71,7 +71,7 @@ namespace CORE::Conditions
     DRT::Discretization.
 
     \note In case you might wonder where this condition class actually stores
-          data necessary for the condition: This class implements IO::InputParameterContainer.
+          data necessary for the condition: This class implements CORE::IO::InputParameterContainer.
 
     \param id (in): a unique id for this condition
     \param type (in): type of the condition
@@ -163,10 +163,10 @@ namespace CORE::Conditions
     }
 
     //! Access the container that stores the input parameters.
-    [[nodiscard]] const IO::InputParameterContainer& parameters() const { return container_; }
+    [[nodiscard]] const CORE::IO::InputParameterContainer& parameters() const { return container_; }
 
     //! Access the container that stores the input parameters.
-    IO::InputParameterContainer& parameters() { return container_; }
+    CORE::IO::InputParameterContainer& parameters() { return container_; }
 
     /*!
     \brief Adjust IDs of associated elements in order to obtain global
@@ -243,7 +243,7 @@ namespace CORE::Conditions
     //! Geometry description of this condition
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::Elements::Element>>> geometry_{};
 
-    IO::InputParameterContainer container_;
+    CORE::IO::InputParameterContainer container_;
   };  // class Condition
 
   inline bool operator<(const Condition& lhs, const Condition& rhs)

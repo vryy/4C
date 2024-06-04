@@ -28,7 +28,7 @@ namespace STRUMULTI
   class MicroStatic;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -97,7 +97,7 @@ namespace MAT
     static std::map<int, int> microstaticcounter_;
 
     /// microstructure discretization writer
-    Teuchos::RCP<IO::DiscretizationWriter> micro_output_;
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> micro_output_;
 
     /// homogenized density
     double density_;

@@ -233,7 +233,7 @@ namespace SCATRA
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& P() const { return P_; };
 
     void read_restart(
-        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) const override;
+        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) const override;
 
     //! set general parameters for element evaluation
     void set_element_general_parameters(Teuchos::ParameterList& parameters) const override;
@@ -477,7 +477,7 @@ namespace SCATRA
     Teuchos::RCP<CORE::LINALG::Equilibration> equilibration_;
 
     //! output csv writer for interface flux for each slave side s2i condition
-    std::optional<IO::RuntimeCsvWriter> runtime_csvwriter_;
+    std::optional<CORE::IO::RuntimeCsvWriter> runtime_csvwriter_;
 
     //! write integrated interface flux on slave side of s2i kintetics condition to csv file
     const bool output_interface_flux_;

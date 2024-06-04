@@ -104,9 +104,9 @@ void CONTACT::AUG::PenaltyUpdate::set_state(
 {
   throw_if_not_initialized();
 
-  IO::cout(IO::debug) << std::string(40, '*') << IO::endl;
-  IO::cout(IO::debug) << __LINE__ << " -- " << CONTACT_FUNC_NAME << IO::endl;
-  IO::cout(IO::debug) << std::string(40, '*') << IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << std::string(40, '*') << CORE::IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << __LINE__ << " -- " << CONTACT_FUNC_NAME << CORE::IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << std::string(40, '*') << CORE::IO::endl;
 
   state_.Set(xold, dir, data());
 
@@ -119,7 +119,7 @@ void CONTACT::AUG::PenaltyUpdate::set_state(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::PenaltyUpdate::post_update()
 {
-  PrintUpdate(IO::cout.os(IO::standard));
+  PrintUpdate(CORE::IO::cout.os(CORE::IO::standard));
   reset();
 }
 
@@ -262,10 +262,10 @@ void CONTACT::AUG::PenaltyUpdate::Decrease(const CONTACT::ParamsInterface& cpara
 enum CONTACT::AUG::PenaltyUpdate::Status CONTACT::AUG::PenaltyUpdate::execute_decrease(
     const CONTACT::ParamsInterface& cparams)
 {
-  IO::cout(IO::standard) << std::string(80, '!') << "\n"
-                         << "WARNING: The current PenaltyUpdate strategy does "
-                            "not support a decrease of the regularization parameter!\n"
-                         << std::string(80, '!') << IO::endl;
+  CORE::IO::cout(CORE::IO::standard) << std::string(80, '!') << "\n"
+                                     << "WARNING: The current PenaltyUpdate strategy does "
+                                        "not support a decrease of the regularization parameter!\n"
+                                     << std::string(80, '!') << CORE::IO::endl;
 
   return Status::unevaluated;
 }
@@ -274,7 +274,7 @@ enum CONTACT::AUG::PenaltyUpdate::Status CONTACT::AUG::PenaltyUpdate::execute_de
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::PenaltyUpdate::post_decrease()
 {
-  PrintUpdate(IO::cout.os(IO::standard));
+  PrintUpdate(CORE::IO::cout.os(CORE::IO::standard));
   reset();
 }
 

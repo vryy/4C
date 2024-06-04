@@ -59,7 +59,7 @@ namespace STR::MODELEVALUATOR
       return mechanical_stress_state_;
     }
 
-    void OutputStepState(IO::DiscretizationWriter& iowriter) const override {}
+    void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override {}
 
     void post_evaluate() override {}
 
@@ -69,7 +69,7 @@ namespace STR::MODELEVALUATOR
 
     void pre_evaluate() override {}
 
-    void read_restart(IO::DiscretizationReader& ioreader) override {}
+    void read_restart(CORE::IO::DiscretizationReader& ioreader) override {}
 
     void Reset(const Epetra_Vector& x) override {}
 
@@ -99,7 +99,7 @@ namespace STR::MODELEVALUATOR
     void UpdateStepState(const double& timefac_n) override {}
 
     void write_restart(
-        IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override
+        CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override
     {
     }
 

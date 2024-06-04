@@ -26,7 +26,7 @@ namespace SCATRA
   class TimIntOneStepTheta;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -133,7 +133,7 @@ namespace MAT
     Teuchos::RCP<Epetra_Vector> hist_;
 
     //! micro-scale discretization writer
-    Teuchos::RCP<IO::DiscretizationWriter> micro_output_;
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> micro_output_;
 
     //! file name prefix for restart
     std::string restartname_;

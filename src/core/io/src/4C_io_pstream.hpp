@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* namespace */
-namespace IO
+namespace CORE::IO
 {
   // forward declaration
   class Level;
@@ -66,20 +66,20 @@ namespace IO
     /// Destructor
     virtual ~Pstream();
 
-    /// configure the output. Must be called before IO::cout can be used. Is
+    /// configure the output. Must be called before CORE::IO::cout can be used. Is
     /// currently called in the global problem using the params specified in the
     /// IO section of the .dat-file.
-    void setup(const bool writetoscreen,  ///< bool whether output is written to screen
-        const bool writetofile,           ///< bool whether output is written to file
-        const bool prefixgroupID,         ///< bool whether group ID is prefixed in each line
-        const IO::Verbositylevel level,   ///< verbosity level
-        Teuchos::RCP<Epetra_Comm> comm,   ///< MPI communicator
-        const int targetpid,              ///< target processor ID from which to print
-        const int groupID,                ///< the ID
-        const std::string fileprefix      ///< prefix for the output file
+    void setup(const bool writetoscreen,       ///< bool whether output is written to screen
+        const bool writetofile,                ///< bool whether output is written to file
+        const bool prefixgroupID,              ///< bool whether group ID is prefixed in each line
+        const CORE::IO::Verbositylevel level,  ///< verbosity level
+        Teuchos::RCP<Epetra_Comm> comm,        ///< MPI communicator
+        const int targetpid,                   ///< target processor ID from which to print
+        const int groupID,                     ///< the ID
+        const std::string fileprefix           ///< prefix for the output file
     );
 
-    /// must be called to close open file handles and resets the IO::cout object to a pristine
+    /// must be called to close open file handles and resets the CORE::IO::cout object to a pristine
     /// state. This is currently called by the destructor of the global problem singleton.
     void close();
 
@@ -217,7 +217,7 @@ namespace IO
   /// Imitate the std::flush behavior
   Pstream& flush(Pstream& out);
 
-  /// this is the IO::cout that everyone can refer to
+  /// this is the CORE::IO::cout that everyone can refer to
   extern Pstream cout;
 
 
@@ -283,13 +283,13 @@ namespace IO
     return out.stream(s);
   }
 
-  /// Handle special manipulators (currently only IO::endl) that are streamed to Pstream
+  /// Handle special manipulators (currently only CORE::IO::endl) that are streamed to Pstream
   Pstream& operator<<(Pstream& out, Pstream& (*pf)(Pstream&));
 
-  /// Handle special manipulators (currently only IO::endl) that are streamed to Level
+  /// Handle special manipulators (currently only CORE::IO::endl) that are streamed to Level
   Level& operator<<(Level& out, Level& (*pf)(Level&));
 
-}  // namespace IO
+}  // namespace CORE::IO
 
 /*----------------------------------------------------------------------*/
 

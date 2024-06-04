@@ -332,7 +332,7 @@ namespace ADAPTER
     }
 
     /// access to output object
-    Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() override
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() override
     {
       return structure_->DiscWriter();
     }

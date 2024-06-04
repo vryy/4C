@@ -47,7 +47,7 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis->Writer();
   output->WriteMesh(0, 0.0);
 
   // -------------------------------------------------------------------
@@ -107,7 +107,7 @@ ADAPTER::LubricationBaseAlgorithm::create_lubrication_field_test()
   return Teuchos::rcp(new LUBRICATION::ResultTest(lubrication_));
 }
 
-Teuchos::RCP<IO::DiscretizationWriter> ADAPTER::LubricationBaseAlgorithm::DiscWriter()
+Teuchos::RCP<CORE::IO::DiscretizationWriter> ADAPTER::LubricationBaseAlgorithm::DiscWriter()
 {
   return lubrication_->DiscWriter();
 }

@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 FLD::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       startalgo_(false),
       external_loadsn_(Teuchos::null),
@@ -269,7 +269,8 @@ void FLD::TimIntOneStepTheta::read_restart(int step)
   // call base class
   FLD::FluidImplicitTimeInt::read_restart(step);
 
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   // check whether external forces were written
   const int have_fexternal = reader.ReadInt("have_fexternal");
   if (have_fexternal != -1)

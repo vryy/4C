@@ -32,7 +32,7 @@ namespace DRT
   class ResultTest;
 }  // namespace DRT
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -368,7 +368,7 @@ namespace ADAPTER
     virtual void update_iter_incr_cardiovascular0_d(Teuchos::RCP<Epetra_Vector> presincr) = 0;
 
     /// Access to output object
-    virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;
+    virtual Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() = 0;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     void prepare_output(bool force_prepare_timestep) override = 0;

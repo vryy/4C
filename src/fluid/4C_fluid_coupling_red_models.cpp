@@ -31,7 +31,7 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
     Teuchos::RCP<DRT::Discretization> dis_3D, Teuchos::RCP<DRT::Discretization> dis_redD,
     //                                                         Teuchos::RCP<red_D_time_int>
     //                                                         RedD_Time_integ,
-    IO::DiscretizationWriter& output, double dt_3D, double dt_redD)
+    CORE::IO::DiscretizationWriter& output, double dt_3D, double dt_redD)
     :  // call constructor for "nontrivial" objects
       discret3_d_(dis_3D),
       discret_red_d_(dis_redD),
@@ -588,7 +588,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::evaluate_dirichlet(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidCouplingWrapperBase::write_restart(IO::DiscretizationWriter& output)
+void FLD::UTILS::FluidCouplingWrapperBase::write_restart(CORE::IO::DiscretizationWriter& output)
 {
   std::map<std::string, double>::iterator it;
   //! map of coupling variables returned by the 3-D model at time step n+1
@@ -639,7 +639,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::write_restart(IO::DiscretizationWrite
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidCouplingWrapperBase::read_restart(IO::DiscretizationReader& reader)
+void FLD::UTILS::FluidCouplingWrapperBase::read_restart(CORE::IO::DiscretizationReader& reader)
 {
   std::map<std::string, double>::iterator it;
   //! map of coupling variables returned by the 3-D model at time step n+1
@@ -697,8 +697,8 @@ void FLD::UTILS::FluidCouplingWrapperBase::read_restart(IO::DiscretizationReader
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::UTILS::FluidCouplingBc::FluidCouplingBc(Teuchos::RCP<DRT::Discretization> dis_3D,
-    Teuchos::RCP<DRT::Discretization> dis_redD, IO::DiscretizationWriter& output, double dt_3d,
-    double dt_rm, int condid, int numcond, int numcond2)
+    Teuchos::RCP<DRT::Discretization> dis_redD, CORE::IO::DiscretizationWriter& output,
+    double dt_3d, double dt_rm, int condid, int numcond, int numcond2)
     :  // call constructor for "nontrivial" objects
       condid_(condid),
       discret_3_d_(dis_3D),
@@ -798,7 +798,7 @@ FLD::UTILS::FluidCouplingBc::FluidCouplingBc(Teuchos::RCP<DRT::Discretization> d
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidCouplingBc::write_restart(IO::DiscretizationWriter& output, int condnum)
+void FLD::UTILS::FluidCouplingBc::write_restart(CORE::IO::DiscretizationWriter& output, int condnum)
 {
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
@@ -825,7 +825,7 @@ void FLD::UTILS::FluidCouplingBc::write_restart(IO::DiscretizationWriter& output
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidCouplingBc::read_restart(IO::DiscretizationReader& reader, int condnum)
+void FLD::UTILS::FluidCouplingBc::read_restart(CORE::IO::DiscretizationReader& reader, int condnum)
 {
   std::stringstream stream1, stream2, stream3;
 

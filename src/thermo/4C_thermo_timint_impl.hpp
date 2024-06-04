@@ -57,12 +57,12 @@ namespace THR
     //@{
 
     //! Constructor
-    TimIntImpl(const Teuchos::ParameterList& ioparams,  //!< ioflags
-        const Teuchos::ParameterList& tdynparams,       //!< input parameters
-        const Teuchos::ParameterList& xparams,          //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,       //!< current discretization
-        Teuchos::RCP<CORE::LINALG::Solver> solver,      //!< the solver
-        Teuchos::RCP<IO::DiscretizationWriter> output   //!< the output
+    TimIntImpl(const Teuchos::ParameterList& ioparams,       //!< ioflags
+        const Teuchos::ParameterList& tdynparams,            //!< input parameters
+        const Teuchos::ParameterList& xparams,               //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,            //!< current discretization
+        Teuchos::RCP<CORE::LINALG::Solver> solver,           //!< the solver
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Resize #TimIntMStep<T> multi-step quantities
@@ -323,7 +323,7 @@ namespace THR
     void ReadRestartForce() override = 0;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) override = 0;
+    void WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output) override = 0;
 
     //! Return residual temperatures \f$\Delta T_{n+1}^{<k>}\f$
     Teuchos::RCP<const Epetra_Vector> TempRes() const { return tempi_; }

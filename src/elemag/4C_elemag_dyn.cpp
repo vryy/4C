@@ -99,7 +99,7 @@ void electromagnetics_drt()
       Teuchos::rcp(new CORE::LINALG::Solver(problem->SolverParams(linsolvernumber_elemag), comm));
 
   // declare output writer
-  Teuchos::RCP<IO::DiscretizationWriter> output = elemagdishdg->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = elemagdishdg->Writer();
 
   // declare electromagnetic parameter list
   Teuchos::RCP<Teuchos::ParameterList> params =
@@ -205,7 +205,7 @@ void electromagnetics_drt()
         // call fill complete on discretization
         scatradis->fill_complete();
 
-        Teuchos::RCP<IO::DiscretizationWriter> output_scatra = scatradis->Writer();
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output_scatra = scatradis->Writer();
 
         // This is necessary to have the dirichlet conditions done also in the scatra problmem. It
         // might be necessary to rethink how things are handled inside the

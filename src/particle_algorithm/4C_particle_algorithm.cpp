@@ -153,7 +153,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::read_restart(const int restartstep)
   particlestodistribute_.clear();
 
   // create discretization reader
-  const std::shared_ptr<IO::DiscretizationReader> reader =
+  const std::shared_ptr<CORE::IO::DiscretizationReader> reader =
       particleengine_->BinDisReader(restartstep);
 
   // safety check
@@ -183,7 +183,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::read_restart(const int restartstep)
 
   // short screen output
   if (myrank_ == 0)
-    IO::cout << "====== restart of the particle simulation from step " << restartstep << IO::endl;
+    CORE::IO::cout << "====== restart of the particle simulation from step " << restartstep
+                   << CORE::IO::endl;
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::Timeloop()
@@ -321,8 +322,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::write_restart() const
 
     // short screen output
     if (myrank_ == 0)
-      IO::cout(IO::verbose) << "====== restart of the particle simulation written in step "
-                            << Step() << IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "====== restart of the particle simulation written in step " << Step()
+          << CORE::IO::endl;
   }
 }
 
@@ -829,7 +831,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::transfer_load_between_procs()
   if (particleinteraction_) particleinteraction_->communicate_interaction_history();
 
   // short screen output
-  if (myrank_ == 0) IO::cout(IO::verbose) << "transfer load in step " << Step() << IO::endl;
+  if (myrank_ == 0)
+    CORE::IO::cout(CORE::IO::verbose) << "transfer load in step " << Step() << CORE::IO::endl;
 }
 
 bool PARTICLEALGORITHM::ParticleAlgorithm::check_load_redistribution_needed()
@@ -886,7 +889,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::distribute_load_among_procs()
   if (particleinteraction_) particleinteraction_->communicate_interaction_history();
 
   // short screen output
-  if (myrank_ == 0) IO::cout(IO::verbose) << "distribute load in step " << Step() << IO::endl;
+  if (myrank_ == 0)
+    CORE::IO::cout(CORE::IO::verbose) << "distribute load in step " << Step() << CORE::IO::endl;
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::build_potential_neighbor_relation()

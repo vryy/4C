@@ -4703,7 +4703,7 @@ bool WEAR::LagrangeStrategyWear::RedistributeContact(
  |  read restart information for contact                      popp 03/08|
  *----------------------------------------------------------------------*/
 void WEAR::LagrangeStrategyWear::DoReadRestart(
-    IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis)
+    CORE::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis)
 {
   // check whether this is a restart with contact of a previously
   // non-contact simulation run (if yes, we have to be careful not

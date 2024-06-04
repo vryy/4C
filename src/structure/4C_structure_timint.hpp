@@ -77,7 +77,7 @@ namespace CORE::Conditions
   class LocsysManager;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -137,13 +137,13 @@ namespace STR
 
     //! Constructor
     TimInt(const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& ioparams,            //!< ioflags
-        const Teuchos::ParameterList& sdynparams,          //!< input parameters
-        const Teuchos::ParameterList& xparams,             //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,          //!< current discretisation
-        Teuchos::RCP<CORE::LINALG::Solver> solver,         //!< the solver
-        Teuchos::RCP<CORE::LINALG::Solver> contactsolver,  //!< the solver for contact/meshtying
-        Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
+        const Teuchos::ParameterList& ioparams,              //!< ioflags
+        const Teuchos::ParameterList& sdynparams,            //!< input parameters
+        const Teuchos::ParameterList& xparams,               //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,            //!< current discretisation
+        Teuchos::RCP<CORE::LINALG::Solver> solver,           //!< the solver
+        Teuchos::RCP<CORE::LINALG::Solver> contactsolver,    //!< the solver for contact/meshtying
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< the output
     );
 
     /*! \brief Initialize this object
@@ -479,7 +479,7 @@ namespace STR
     void OutputMicro();
 
     //! Write internal and external forces (if necessary for restart)
-    virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
+    virtual void WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output) = 0;
 
     //! Check whether energy output file is attached
     bool AttachedEnergyFile()
@@ -640,7 +640,7 @@ namespace STR
     Teuchos::RCP<CORE::LINALG::Solver> ContactSolver() { return contactsolver_; }
 
     //! Access output object
-    Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() override { return output_; }
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() override { return output_; }
 
     //! Read restart values
     void read_restart(const int step  //!< restart step
@@ -1064,9 +1064,9 @@ namespace STR
 
     //! @name Printing and output
     //@{
-    Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
-    int printscreen_;                                //!< print infos to standard out every n steps
-    bool printlogo_;                                 //!< print the logo (or not)?
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;  //!< binary output
+    int printscreen_;                          //!< print infos to standard out every n steps
+    bool printlogo_;                           //!< print the logo (or not)?
     bool printiter_;                           //!< print intermediate iterations during solution
     bool outputeveryiter_;                     //!< switch
     int oei_filecounter_;                      //!< filename counter

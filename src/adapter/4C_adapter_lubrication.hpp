@@ -34,7 +34,7 @@ namespace LUBRICATION
   class TimIntImpl;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -71,7 +71,7 @@ namespace ADAPTER
     /// create result test for Lubrication field
     Teuchos::RCP<CORE::UTILS::ResultTest> create_lubrication_field_test();
 
-    virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter();
+    virtual Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter();
 
    private:
     /// Lubrication field solver

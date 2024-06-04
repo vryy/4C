@@ -624,10 +624,11 @@ void CORE::GEO::MESHFREE::BoundingBox::InitRuntimeOutput()
   // the steps of the simulation that is restarted from
   const double restart_time(0.0);
 
-  visualization_output_writer_ptr_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterMesh(
-      boxdiscret_, IO::VisualizationParametersFactory(
-                       GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-                       *GLOBAL::Problem::Instance()->OutputControlFile(), restart_time)));
+  visualization_output_writer_ptr_ =
+      Teuchos::rcp(new CORE::IO::DiscretizationVisualizationWriterMesh(
+          boxdiscret_, CORE::IO::VisualizationParametersFactory(
+                           GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+                           *GLOBAL::Problem::Instance()->OutputControlFile(), restart_time)));
 }
 
 /*----------------------------------------------------------------------------*

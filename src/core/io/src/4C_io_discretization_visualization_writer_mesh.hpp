@@ -27,13 +27,13 @@ namespace CORE::Elements
   class Element;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class VisualizationManager;
   struct VisualizationParameters;
-}  // namespace IO
+}  // namespace CORE::IO
 
-namespace IO
+namespace CORE::IO
 {
   /*!
    * \brief This object allows to write visualization output for a discretization, i.e., write the
@@ -141,7 +141,7 @@ namespace IO
     /**
      * \brief Write ghosting information to the elements
      *
-     * For more details look at the documentation to IO::append_element_ghosting_information
+     * For more details look at the documentation to CORE::IO::append_element_ghosting_information
      */
     void append_element_ghosting_information();
 
@@ -195,7 +195,7 @@ namespace IO
       VisualizationManager& visualization_manager,
       const std::function<bool(const CORE::Elements::Element* ele)>& element_predicate);
 
-}  // namespace IO
+}  // namespace CORE::IO
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

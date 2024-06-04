@@ -146,12 +146,14 @@ void SCATRA::LevelSetAlgorithm::mass_conservation_check(
       // 'isnan' seems to work not reliably; error occurs in line above
       if (std::isnan(massloss)) FOUR_C_THROW("NaN detected in mass conservation check");
 
-      IO::cout << "---------------------------------------" << IO::endl;
-      IO::cout << "           mass conservation" << IO::endl;
-      IO::cout << " initial mass: " << std::setprecision(5) << initvolminus_ << IO::endl;
-      IO::cout << " final mass:   " << std::setprecision(5) << actvolminus << IO::endl;
-      IO::cout << " mass loss:    " << std::setprecision(5) << massloss << "%" << IO::endl;
-      IO::cout << "---------------------------------------" << IO::endl;
+      CORE::IO::cout << "---------------------------------------" << CORE::IO::endl;
+      CORE::IO::cout << "           mass conservation" << CORE::IO::endl;
+      CORE::IO::cout << " initial mass: " << std::setprecision(5) << initvolminus_
+                     << CORE::IO::endl;
+      CORE::IO::cout << " final mass:   " << std::setprecision(5) << actvolminus << CORE::IO::endl;
+      CORE::IO::cout << " mass loss:    " << std::setprecision(5) << massloss << "%"
+                     << CORE::IO::endl;
+      CORE::IO::cout << "---------------------------------------" << CORE::IO::endl;
 
       if (writetofile)
       {
@@ -188,8 +190,9 @@ void SCATRA::LevelSetAlgorithm::mass_conservation_check(
     else
     {
       if (step_ > 0)
-        IO::cout << " there is no 'minus domain'! -> division by zero checking mass conservation"
-                 << IO::endl;
+        CORE::IO::cout
+            << " there is no 'minus domain'! -> division by zero checking mass conservation"
+            << CORE::IO::endl;
     }
   }
 
@@ -469,7 +472,8 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   //       convect into the domain crashing the level-set algorithm.
   //       There for the convective velocity field around the interface is extended to the wall.
   if (myrank_ == 0)
-    IO::cout << "--- extension of flow field in interface region to entire domain" << IO::endl;
+    CORE::IO::cout << "--- extension of flow field in interface region to entire domain"
+                   << CORE::IO::endl;
 
   Teuchos::RCP<const Epetra_Vector> convel_col =
       discret_->GetState(NdsVel(), "convective velocity field");

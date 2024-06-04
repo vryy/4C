@@ -81,7 +81,7 @@ FOUR_C_NAMESPACE_OPEN
 FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/
     )
     : TimInt(actdis, solver, params, output),
       // call constructor for "nontrivial" objects
@@ -3787,13 +3787,13 @@ void FLD::FluidImplicitTimeInt::output_to_gmsh(
   std::string filename = "dummy";
   if (inflow)
   {
-    filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_velpres_inflow",
+    filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_velpres_inflow",
         discret_->Writer()->Output()->FileName(), step, 20, screen_out, discret_->Comm().MyPID());
     // std::ofstream gmshfilecontent(filename.c_str());
   }
   else
   {
-    filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_velpres",
+    filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_velpres",
         discret_->Writer()->Output()->FileName(), step, 20, screen_out, discret_->Comm().MyPID());
     // std::ofstream gmshfilecontent(filename.c_str());
   }
@@ -3803,14 +3803,16 @@ void FLD::FluidImplicitTimeInt::output_to_gmsh(
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
                     << "velocity solution \" {" << std::endl;
-    IO::GMSH::VelocityPressureFieldDofBasedToGmsh(discret_, velnp_, "velocity", gmshfilecontent);
+    CORE::IO::GMSH::VelocityPressureFieldDofBasedToGmsh(
+        discret_, velnp_, "velocity", gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
                     << "pressure solution\" {" << std::endl;
-    IO::GMSH::VelocityPressureFieldDofBasedToGmsh(discret_, velnp_, "pressure", gmshfilecontent);
+    CORE::IO::GMSH::VelocityPressureFieldDofBasedToGmsh(
+        discret_, velnp_, "pressure", gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -3841,7 +3843,8 @@ void FLD::FluidImplicitTimeInt::output_external_forces()
  -----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::read_restart(int step)
 {
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 

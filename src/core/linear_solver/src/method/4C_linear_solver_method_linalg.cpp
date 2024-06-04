@@ -607,25 +607,25 @@ Teuchos::ParameterList CORE::LINALG::Solver::translate_four_c_to_belos(
   Teuchos::ParameterList& beloslist = outparams.sublist("Belos Parameters");
 
   // set verbosity
-  auto verbosityLevel = CORE::UTILS::IntegralValue<IO::Verbositylevel>(
+  auto verbosityLevel = CORE::UTILS::IntegralValue<CORE::IO::Verbositylevel>(
       GLOBAL::Problem::Instance()->IOParams(), "VERBOSITY");
 
   switch (verbosityLevel)
   {
-    case IO::minimal:
+    case CORE::IO::minimal:
       beloslist.set("Output Style", Belos::OutputType::Brief);
       beloslist.set("Verbosity", Belos::MsgType::Warnings);
       break;
-    case IO::standard:
+    case CORE::IO::standard:
       beloslist.set("Output Style", Belos::OutputType::Brief);
       beloslist.set("Verbosity", Belos::MsgType::Warnings + Belos::MsgType::StatusTestDetails);
       break;
-    case IO::verbose:
+    case CORE::IO::verbose:
       beloslist.set("Output Style", Belos::OutputType::General);
       beloslist.set("Verbosity", Belos::MsgType::Warnings + Belos::MsgType::StatusTestDetails +
                                      Belos::MsgType::FinalSummary);
       break;
-    case IO::debug:
+    case CORE::IO::debug:
       beloslist.set("Output Style", Belos::OutputType::General);
       beloslist.set("Verbosity", Belos::MsgType::Debug);
     default:

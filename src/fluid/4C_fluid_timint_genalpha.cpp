@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 FLD::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       alphaM_(params_->get<double>("alpha_M")),
       alphaF_(params_->get<double>("alpha_F")),

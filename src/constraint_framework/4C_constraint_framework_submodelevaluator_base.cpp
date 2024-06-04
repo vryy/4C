@@ -72,7 +72,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_coupling_terms(
   {
     obj->EvaluateEquation(*Q_dd_, *Q_dL_, *Q_Ld_, *constraint_vector_, *dis_np);
   }
-  IO::cout(IO::verbose) << "Evaluated all constraint objects" << IO::endl;
+  CORE::IO::cout(CORE::IO::verbose) << "Evaluated all constraint objects" << CORE::IO::endl;
 
   // Complete
   Q_dd_->Complete();

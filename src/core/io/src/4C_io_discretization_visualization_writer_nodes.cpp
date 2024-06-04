@@ -21,7 +21,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace IO
+namespace CORE::IO
 {
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
@@ -29,7 +29,7 @@ namespace IO
       const Teuchos::RCP<const DRT::Discretization>& discretization,
       VisualizationParameters parameters)
       : discretization_(discretization),
-        visualization_manager_(Teuchos::rcp(new IO::VisualizationManager(
+        visualization_manager_(Teuchos::rcp(new CORE::IO::VisualizationManager(
             std::move(parameters), discretization->Comm(), discretization->Name())))
   {
   }
@@ -135,5 +135,5 @@ namespace IO
   {
     visualization_manager_->WriteToDisk(visualization_time, visualization_step);
   }
-}  // namespace IO
+}  // namespace CORE::IO
 FOUR_C_NAMESPACE_CLOSE

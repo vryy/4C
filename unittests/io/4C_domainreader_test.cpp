@@ -39,7 +39,7 @@ namespace
 
   TEST_F(DomainReaderTest, TestMyDis0)
   {
-    IO::DomainReader dr(testdis_, testreader_, "unittestsection");
+    CORE::IO::DomainReader dr(testdis_, testreader_, "unittestsection");
     EXPECT_EQ(testdis_, dr.MyDis());
   }
 

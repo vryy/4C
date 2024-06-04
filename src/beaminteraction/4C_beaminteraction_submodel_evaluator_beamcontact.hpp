@@ -102,7 +102,7 @@ namespace BEAMINTERACTION
       std::map<STR::EnergyType, double> get_energy() const override;
 
       //! derived
-      void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
+      void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
       void runtime_output_step_state() const override;
@@ -111,15 +111,15 @@ namespace BEAMINTERACTION
       void ResetStepState() override;
 
       //! derived
-      void write_restart(
-          IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const override;
+      void write_restart(CORE::IO::DiscretizationWriter& ia_writer,
+          CORE::IO::DiscretizationWriter& bin_writer) const override;
 
       //! derived
       void PreReadRestart() override;
 
       //! derived
-      void read_restart(
-          IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader) override;
+      void read_restart(CORE::IO::DiscretizationReader& ia_reader,
+          CORE::IO::DiscretizationReader& bin_reader) override;
 
       //! derived
       void PostReadRestart() override;
@@ -279,7 +279,7 @@ namespace BEAMINTERACTION
       std::map<int, std::set<CORE::Elements::Element*>> nearby_elements_map_;
 
       //! runtime visualization writer for visualization of contact forces
-      Teuchos::RCP<IO::VisualizationManager> visualization_manager_ptr_;
+      Teuchos::RCP<CORE::IO::VisualizationManager> visualization_manager_ptr_;
 
       //! This object handles all beam to solid volume related visualization output.
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>

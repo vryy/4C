@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO::GRIDGENERATOR
+namespace CORE::IO::GRIDGENERATOR
 {
   // forward declarations
   Teuchos::RCP<CORE::Elements::Element> CreateHexElement(int eleid, int nodeoffset, int myrank,
@@ -37,7 +37,7 @@ namespace IO::GRIDGENERATOR
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void CreateRectangularCuboidDiscretization(DRT::Discretization& dis,
-      const IO::GRIDGENERATOR::RectangularCuboidInputs& inputData, bool outputFlag)
+      const CORE::IO::GRIDGENERATOR::RectangularCuboidInputs& inputData, bool outputFlag)
   {
     const Epetra_Comm& comm = dis.Comm();
     const int myrank = comm.MyPID();
@@ -115,8 +115,8 @@ namespace IO::GRIDGENERATOR
       }
 
       if (myrank == 0 && outputFlag)
-        IO::cout << "Determined domain subdivision to: " << subdivisions[0] << "x"
-                 << subdivisions[1] << "x" << subdivisions[2] << "\n";
+        CORE::IO::cout << "Determined domain subdivision to: " << subdivisions[0] << "x"
+                       << subdivisions[1] << "x" << subdivisions[2] << "\n";
 
       std::vector<unsigned int> xranges(subdivisions[0] + 1ul);
       for (size_t i = 0; i < subdivisions[0] + 1ul; ++i)
@@ -166,10 +166,11 @@ namespace IO::GRIDGENERATOR
       std::istringstream eleargstream(inputData.elearguments_);
       if (not linedef->Read(eleargstream, &inputData.distype_))
       {
-        IO::cout << "\n"
-                 << eleid << " " << inputData.elementtype_ << " " << inputData.distype_ << " ";
-        linedef->Print(IO::cout.cout_replacement());
-        IO::cout << "\n";
+        CORE::IO::cout << "\n"
+                       << eleid << " " << inputData.elementtype_ << " " << inputData.distype_
+                       << " ";
+        linedef->Print(CORE::IO::cout.cout_replacement());
+        CORE::IO::cout << "\n";
         FOUR_C_THROW("failed to read element %d %s %s", eleid, inputData.elementtype_.c_str(),
             inputData.distype_.c_str());
       }
@@ -480,6 +481,6 @@ namespace IO::GRIDGENERATOR
     return ele;
   }
 
-}  // namespace IO::GRIDGENERATOR
+}  // namespace CORE::IO::GRIDGENERATOR
 
 FOUR_C_NAMESPACE_CLOSE

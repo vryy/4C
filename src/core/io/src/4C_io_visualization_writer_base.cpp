@@ -18,8 +18,9 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-IO::VisualizationWriterBase::VisualizationWriterBase(IO::VisualizationParameters parameters,
-    const Epetra_Comm& comm, std::string visualization_data_name)
+CORE::IO::VisualizationWriterBase::VisualizationWriterBase(
+    CORE::IO::VisualizationParameters parameters, const Epetra_Comm& comm,
+    std::string visualization_data_name)
     : parameters_(std::move(parameters)),
       comm_(comm),
       visualization_data_name_(std::move(visualization_data_name))
@@ -29,7 +30,7 @@ IO::VisualizationWriterBase::VisualizationWriterBase(IO::VisualizationParameters
 /**
  *
  */
-void IO::VisualizationWriterBase::write_visualization_data_to_disk(
+void CORE::IO::VisualizationWriterBase::write_visualization_data_to_disk(
     const VisualizationData& visualization_data, const double visualziation_time,
     const int visualization_step)
 {
