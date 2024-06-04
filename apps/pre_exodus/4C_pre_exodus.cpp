@@ -21,6 +21,7 @@ its parameters and conditions.
 
 #include "4C_comm_utils.hpp"
 #include "4C_discretization_condition_definition.hpp"
+#include "4C_discretization_fem_general_element_definition.hpp"
 #include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_legacy_module.hpp"
@@ -28,7 +29,6 @@ its parameters and conditions.
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_dat_file_utils.hpp"
-#include "4C_io_elementdefinition.hpp"
 #include "4C_pre_exodus_readbc.hpp"
 #include "4C_pre_exodus_reader.hpp"
 #include "4C_pre_exodus_validate.hpp"
@@ -150,7 +150,7 @@ namespace
 
     // print valid element lines as proposal (parobjects have to be registered for doing this!)
     defaultbc << std::endl << std::endl;
-    INPUT::ElementDefinition ed;
+    CORE::Elements::ElementDefinition ed;
     ed.print_element_dat_header_to_stream(defaultbc);
 
     // close default bc specification file

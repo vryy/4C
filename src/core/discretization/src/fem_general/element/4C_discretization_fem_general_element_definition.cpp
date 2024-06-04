@@ -11,7 +11,7 @@
 
 
 
-#include "4C_io_elementdefinition.hpp"
+#include "4C_discretization_fem_general_element_definition.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
 
@@ -23,13 +23,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 void PrintElementDatHeader()
 {
-  INPUT::ElementDefinition ed;
+  CORE::Elements::ElementDefinition ed;
   ed.print_element_dat_header_to_stream(std::cout);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::ElementDefinition::print_element_dat_header_to_stream(std::ostream& stream)
+void CORE::Elements::ElementDefinition::print_element_dat_header_to_stream(std::ostream& stream)
 {
   setup_valid_element_lines();
 
@@ -145,7 +145,7 @@ void INPUT::ElementDefinition::print_element_dat_header_to_stream(std::ostream& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::ElementDefinition::PrintSectionHeader(std::ostream& stream, std::string name)
+void CORE::Elements::ElementDefinition::PrintSectionHeader(std::ostream& stream, std::string name)
 {
   unsigned l = name.length();
   stream << "--";
@@ -156,12 +156,13 @@ void INPUT::ElementDefinition::PrintSectionHeader(std::ostream& stream, std::str
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::ElementDefinition::PrintElementLines(std::ostream& stream, std::string name)
+void CORE::Elements::ElementDefinition::PrintElementLines(std::ostream& stream, std::string name)
 {
   if (definitions_.find(name) != definitions_.end())
   {
-    std::map<std::string, LineDefinition>& defs = definitions_[name];
-    for (std::map<std::string, LineDefinition>::iterator i = defs.begin(); i != defs.end(); ++i)
+    std::map<std::string, INPUT::LineDefinition>& defs = definitions_[name];
+    for (std::map<std::string, INPUT::LineDefinition>::iterator i = defs.begin(); i != defs.end();
+         ++i)
     {
       stream << "// 0 " << name << " " << i->first << " ";
       i->second.Print(stream);
@@ -175,7 +176,7 @@ void INPUT::ElementDefinition::PrintElementLines(std::ostream& stream, std::stri
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::ElementDefinition::setup_valid_element_lines()
+void CORE::Elements::ElementDefinition::setup_valid_element_lines()
 {
   CORE::COMM::ParObjectFactory::Instance().setup_element_definition(definitions_);
 }
@@ -183,15 +184,16 @@ void INPUT::ElementDefinition::setup_valid_element_lines()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-INPUT::LineDefinition* INPUT::ElementDefinition::ElementLines(std::string name, std::string distype)
+INPUT::LineDefinition* CORE::Elements::ElementDefinition::ElementLines(
+    std::string name, std::string distype)
 {
   // This is ugly. But we want to access both maps just once.
-  std::map<std::string, std::map<std::string, LineDefinition>>::iterator j =
+  std::map<std::string, std::map<std::string, INPUT::LineDefinition>>::iterator j =
       definitions_.find(name);
   if (j != definitions_.end())
   {
-    std::map<std::string, LineDefinition>& defs = j->second;
-    std::map<std::string, LineDefinition>::iterator i = defs.find(distype);
+    std::map<std::string, INPUT::LineDefinition>& defs = j->second;
+    std::map<std::string, INPUT::LineDefinition>::iterator i = defs.find(distype);
     if (i != defs.end())
     {
       return &i->second;

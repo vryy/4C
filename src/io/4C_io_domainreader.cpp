@@ -12,7 +12,7 @@
 #include "4C_io_domainreader.hpp"
 
 #include "4C_comm_parobject.hpp"
-#include "4C_io_elementdefinition.hpp"
+#include "4C_discretization_fem_general_element_definition.hpp"
 #include "4C_io_gridgenerator.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_io_utils_reader.hpp"

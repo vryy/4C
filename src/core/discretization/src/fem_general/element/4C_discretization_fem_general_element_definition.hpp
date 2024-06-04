@@ -11,8 +11,8 @@
 
 
 
-#ifndef FOUR_C_IO_ELEMENTDEFINITION_HPP
-#define FOUR_C_IO_ELEMENTDEFINITION_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_ELEMENT_DEFINITION_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_ELEMENT_DEFINITION_HPP
 
 #include "4C_config.hpp"
 
@@ -28,7 +28,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace INPUT
+namespace CORE::Elements
 {
   /// Collection of valid element dat file line definitions
   /*!
@@ -54,10 +54,10 @@ namespace INPUT
 
    private:
     /// input line definitions per element type
-    std::map<std::string, std::map<std::string, LineDefinition>> definitions_;
+    std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_;
   };
 
-}  // namespace INPUT
+}  // namespace CORE::Elements
 
 
 void PrintElementDatHeader();
