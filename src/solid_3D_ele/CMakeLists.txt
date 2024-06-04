@@ -4,7 +4,6 @@ set(_dependencies
     # cmake-format: sortable
     config
     core
-    fiber
     global_data
     inpar
     io

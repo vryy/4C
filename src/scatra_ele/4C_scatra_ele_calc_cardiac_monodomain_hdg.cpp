@@ -10,12 +10,12 @@
 #include "4C_scatra_ele_calc_cardiac_monodomain_hdg.hpp"
 
 #include "4C_discretization_fem_general_element.hpp"
+#include "4C_discretization_fem_general_fiber_node.hpp"
+#include "4C_discretization_fem_general_fiber_node_holder.hpp"
+#include "4C_discretization_fem_general_fiber_node_utils.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_discretization_fem_general_utils_polynomial.hpp"
-#include "4C_fiber_nodal_fiber_holder.hpp"
-#include "4C_fiber_node.hpp"
-#include "4C_fiber_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
@@ -100,7 +100,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare
     for (unsigned int i = 0; i < this->nsd_; ++i)
       for (unsigned int j = 0; j < this->nsd_; ++j) difftensortmp(i, j) = diff(i, j);
     (*difftensor).push_back(difftensortmp);
-    DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(ele->Nodes()[0]);
+    CORE::Nodes::FiberNode* fnode = dynamic_cast<CORE::Nodes::FiberNode*>(ele->Nodes()[0]);
     if (fnode) FOUR_C_THROW("Fiber direction defined twice (nodes and elements)");
   }
   else
@@ -122,11 +122,11 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare
       }
     }
 
-    FIBER::NodalFiberHolder gpFiberHolder;
-    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<distype>(ele->Nodes(), shapefcns, gpFiberHolder);
+    CORE::Nodes::NodalFiberHolder gpFiberHolder;
+    CORE::Nodes::ProjectFibersToGaussPoints<distype>(ele->Nodes(), shapefcns, gpFiberHolder);
 
     std::vector<CORE::LINALG::Matrix<probdim, 1>> fibergp(shapes->nqpoints_);
-    DRT::FIBER::UTILS::SetupCardiacFibers<probdim>(gpFiberHolder, fibergp);
+    setup_cardiac_fibers<probdim>(gpFiberHolder, fibergp);
 
     for (unsigned int q = 0; q < shapes->nqpoints_; ++q) actmat->setup_diffusion_tensor(fibergp[q]);
 
@@ -186,7 +186,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare
     for (unsigned int i = 0; i < this->nsd_; ++i)
       for (unsigned int j = 0; j < this->nsd_; ++j) difftensortmp(i, j) = diff(i, j);
     (*difftensor).push_back(difftensortmp);
-    DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(ele->Nodes()[0]);
+    CORE::Nodes::FiberNode* fnode = dynamic_cast<CORE::Nodes::FiberNode*>(ele->Nodes()[0]);
     if (fnode) FOUR_C_THROW("Fiber direction defined twice (nodes and elements)");
   }
   else
@@ -209,12 +209,11 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare
       CORE::FE::shape_function<distype>(gp_coord, shapefcns[q]);
     }
 
-    FIBER::NodalFiberHolder gpFiberHolder;
-    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<distype>(ele->Nodes(), shapefcns, gpFiberHolder);
+    CORE::Nodes::NodalFiberHolder gpFiberHolder;
+    CORE::Nodes::ProjectFibersToGaussPoints<distype>(ele->Nodes(), shapefcns, gpFiberHolder);
 
     std::vector<CORE::LINALG::Matrix<probdim, 1>> fibergp(numgp);
-    DRT::FIBER::UTILS::SetupCardiacFibers<probdim>(gpFiberHolder, fibergp);
-
+    setup_cardiac_fibers<probdim>(gpFiberHolder, fibergp);
 
     for (unsigned int q = 0; q < numgp; ++q) actmat->setup_diffusion_tensor(fibergp[q]);
 
@@ -773,6 +772,62 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::project_
       actmat->SetInternalState(k, tempMat2(q, k), q);
 
   return 0;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+
+template <CORE::FE::CellType distype, int probdim>
+template <std::size_t dim>
+void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::setup_cardiac_fibers(
+    const CORE::Nodes::NodalFiberHolder& fibers, std::vector<CORE::LINALG::Matrix<dim, 1>>& f)
+{
+  if (fibers.FibersSize() > 0)
+  {
+    const std::vector<CORE::LINALG::Matrix<3, 1>>& fib = fibers.GetFiber(0);
+    f.resize(fib.size());
+    for (std::size_t gp = 0; gp < fib.size(); ++gp)
+    {
+      for (std::size_t i = 0; i < dim; ++i)
+      {
+        f[gp](i) = fib[gp](i);
+      }
+    }
+  }
+  else if (fibers.contains_coordinate_system_direction(
+               CORE::Nodes::CoordinateSystemDirection::Circular) &&
+           fibers.contains_coordinate_system_direction(
+               CORE::Nodes::CoordinateSystemDirection::Tangential))
+  {
+    const std::vector<CORE::LINALG::Matrix<3, 1>>& cir =
+        fibers.get_coordinate_system_direction(CORE::Nodes::CoordinateSystemDirection::Circular);
+    const std::vector<CORE::LINALG::Matrix<3, 1>>& tan =
+        fibers.get_coordinate_system_direction(CORE::Nodes::CoordinateSystemDirection::Tangential);
+    const std::vector<double>& helix = fibers.GetAngle(CORE::Nodes::AngleType::Helix);
+    const std::vector<double>& transverse = fibers.GetAngle(CORE::Nodes::AngleType::Transverse);
+    f.resize(cir.size());
+
+    double deg2rad = M_PI / 180.;
+    for (unsigned int gp = 0; gp < cir.size(); ++gp)
+    {
+      CORE::LINALG::Matrix<3, 1> rad(false);
+      rad.CrossProduct(cir[gp], tan[gp]);
+
+      double tmp1 = cos(helix[gp] * deg2rad) * cos(transverse[gp] * deg2rad);
+      double tmp2 = sin(helix[gp] * deg2rad) * cos(transverse[gp] * deg2rad);
+      double tmp3 = sin(transverse[gp] * deg2rad);
+
+      for (unsigned int i = 0; i < 3; ++i)
+      {
+        f[gp](i) = tmp1 * cir[gp](i, 0) + tmp2 * tan[gp](i, 0) + tmp3 * rad(i, 0);
+      }
+      f[gp].Scale(1.0 / f[gp].Norm2());
+    }
+  }
+  else
+  {
+    FOUR_C_THROW("You have to specify either FIBER1 or CIR, TAN, HELIX and TRANS");
+  }
 }
 
 

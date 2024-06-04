@@ -6,33 +6,31 @@
 \level 2
 *----------------------------------------------------------------------*/
 
-#include "4C_fiber_node.hpp"
+#include "4C_discretization_fem_general_fiber_node.hpp"
 
-#include "4C_fiber_nodal_fiber_holder.hpp"
+#include "4C_discretization_fem_general_fiber_node_holder.hpp"
 
 #include <utility>
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::FIBER::FiberNodeType DRT::FIBER::FiberNodeType::instance_;
+CORE::Nodes::FiberNodeType CORE::Nodes::FiberNodeType::instance_;
 
 
-CORE::COMM::ParObject* DRT::FIBER::FiberNodeType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* CORE::Nodes::FiberNodeType::Create(const std::vector<char>& data)
 {
   std::vector<double> dummy_coords(3, 999.0);
-  std::map<FIBER::CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections;
+  std::map<CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections;
   std::vector<std::array<double, 3>> fibers;
-  std::map<FIBER::AngleType, double> angles;
-  auto* object =
-      new DRT::FIBER::FiberNode(-1, dummy_coords, coordinateSystemDirections, fibers, angles, -1);
+  std::map<AngleType, double> angles;
+  auto* object = new FiberNode(-1, dummy_coords, coordinateSystemDirections, fibers, angles, -1);
   object->Unpack(data);
   return object;
 }
 
-DRT::FIBER::FiberNode::FiberNode(int id, const std::vector<double>& coords,
-    std::map<FIBER::CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections,
-    std::vector<std::array<double, 3>> fibers, std::map<FIBER::AngleType, double> angles,
-    const int owner)
+CORE::Nodes::FiberNode::FiberNode(int id, const std::vector<double>& coords,
+    std::map<CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections,
+    std::vector<std::array<double, 3>> fibers, std::map<AngleType, double> angles, const int owner)
     : CORE::Nodes::Node(id, coords, owner),
       coordinateSystemDirections_(std::move(coordinateSystemDirections)),
       fibers_(std::move(fibers)),
@@ -43,9 +41,9 @@ DRT::FIBER::FiberNode::FiberNode(int id, const std::vector<double>& coords,
 /*
   Deep copy the derived class and return pointer to it
 */
-DRT::FIBER::FiberNode* DRT::FIBER::FiberNode::Clone() const
+CORE::Nodes::FiberNode* CORE::Nodes::FiberNode::Clone() const
 {
-  auto* newfn = new DRT::FIBER::FiberNode(*this);
+  auto* newfn = new CORE::Nodes::FiberNode(*this);
 
   return newfn;
 }
@@ -56,7 +54,7 @@ DRT::FIBER::FiberNode* DRT::FIBER::FiberNode::Clone() const
   Pack and Unpack are used to communicate this fiber node
 
 */
-void DRT::FIBER::FiberNode::Pack(CORE::COMM::PackBuffer& data) const
+void CORE::Nodes::FiberNode::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -78,7 +76,7 @@ void DRT::FIBER::FiberNode::Pack(CORE::COMM::PackBuffer& data) const
 
   Pack and Unpack are used to communicate this fiber node
 */
-void DRT::FIBER::FiberNode::Unpack(const std::vector<char>& data)
+void CORE::Nodes::FiberNode::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -98,7 +96,7 @@ void DRT::FIBER::FiberNode::Unpack(const std::vector<char>& data)
 /*
   Print this fiber node
 */
-void DRT::FIBER::FiberNode::Print(std::ostream& os) const
+void CORE::Nodes::FiberNode::Print(std::ostream& os) const
 {
   os << "Fiber Node :";
   CORE::Nodes::Node::Print(os);

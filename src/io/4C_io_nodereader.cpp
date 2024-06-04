@@ -11,8 +11,8 @@
 #include "4C_io_nodereader.hpp"
 
 #include "4C_discretization_fem_general_element_definition.hpp"
+#include "4C_discretization_fem_general_fiber_node.hpp"
 #include "4C_discretization_fem_general_immersed_node.hpp"
-#include "4C_fiber_node.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_nurbs_discret_control_point.hpp"
 
@@ -190,9 +190,9 @@ void IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_s
 
           // read fiber node
           std::vector<double> coords(3, 0.0);
-          std::map<DRT::FIBER::CoordinateSystemDirection, std::array<double, 3>> cosyDirections;
+          std::map<CORE::Nodes::CoordinateSystemDirection, std::array<double, 3>> cosyDirections;
           std::vector<std::array<double, 3>> fibers;
-          std::map<DRT::FIBER::AngleType, double> angles;
+          std::map<CORE::Nodes::AngleType, double> angles;
 
           int nodeid;
           // read in the node coordinates and fiber direction
@@ -207,8 +207,8 @@ void IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_s
             // try to read new fiber direction or coordinate system
             file >> tmp2;
 
-            DRT::FIBER::CoordinateSystemDirection coordinateSystemDirection;
-            DRT::FIBER::AngleType angleType;
+            CORE::Nodes::CoordinateSystemDirection coordinateSystemDirection;
+            CORE::Nodes::AngleType angleType;
             FiberType type = FiberType::Unknown;
 
             if (tmp2 == "FIBER" + std::to_string(1 + fibers.size()))
@@ -217,27 +217,27 @@ void IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_s
             }
             else if (tmp2 == "CIR")
             {
-              coordinateSystemDirection = DRT::FIBER::CoordinateSystemDirection::Circular;
+              coordinateSystemDirection = CORE::Nodes::CoordinateSystemDirection::Circular;
               type = FiberType::CosyDirection;
             }
             else if (tmp2 == "TAN")
             {
-              coordinateSystemDirection = DRT::FIBER::CoordinateSystemDirection::Tangential;
+              coordinateSystemDirection = CORE::Nodes::CoordinateSystemDirection::Tangential;
               type = FiberType::CosyDirection;
             }
             else if (tmp2 == "RAD")
             {
-              coordinateSystemDirection = DRT::FIBER::CoordinateSystemDirection::Radial;
+              coordinateSystemDirection = CORE::Nodes::CoordinateSystemDirection::Radial;
               type = FiberType::CosyDirection;
             }
             else if (tmp2 == "HELIX")
             {
-              angleType = DRT::FIBER::AngleType::Helix;
+              angleType = CORE::Nodes::AngleType::Helix;
               type = FiberType::Angle;
             }
             else if (tmp2 == "TRANS")
             {
-              angleType = DRT::FIBER::AngleType::Transverse;
+              angleType = CORE::Nodes::AngleType::Transverse;
               type = FiberType::Angle;
             }
             else
@@ -286,7 +286,7 @@ void IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_s
           for (auto& dis : discretizations)
           {
             auto node = Teuchos::rcp(
-                new DRT::FIBER::FiberNode(nodeid, coords, cosyDirections, fibers, angles, myrank));
+                new CORE::Nodes::FiberNode(nodeid, coords, cosyDirections, fibers, angles, myrank));
             dis->AddNode(node);
           }
 

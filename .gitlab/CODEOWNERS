@@ -126,8 +126,6 @@ elemag/                    @baci/team_scatra
 
 fbi/                       @baci/team_fsi
 
-fiber/                     @baci/team_discretization
-
 fluid/                     @baci/team_fluid
 fluid/4C_fluid_timint_poro*   @baci/team_poro @baci/team_fluid
 

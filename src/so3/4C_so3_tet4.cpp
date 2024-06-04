@@ -11,10 +11,10 @@
 #include "4C_so3_tet4.hpp"
 
 #include "4C_comm_utils_factory.hpp"
+#include "4C_discretization_fem_general_fiber_node.hpp"
+#include "4C_discretization_fem_general_fiber_node_holder.hpp"
+#include "4C_discretization_fem_general_fiber_node_utils.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_fiber_nodal_fiber_holder.hpp"
-#include "4C_fiber_node.hpp"
-#include "4C_fiber_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_lib_discret.hpp"
@@ -347,7 +347,7 @@ bool DRT::ELEMENTS::SoTet4::VisData(const std::string& name, std::vector<double>
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::SoTet4::material_post_setup(Teuchos::ParameterList& params)
 {
-  if (DRT::FIBER::UTILS::HaveNodalFibers<CORE::FE::CellType::tet4>(Nodes()))
+  if (CORE::Nodes::HaveNodalFibers<CORE::FE::CellType::tet4>(Nodes()))
   {
     // This element has fiber nodes.
     // Interpolate fibers to the Gauss points and pass them to the material
@@ -359,10 +359,10 @@ void DRT::ELEMENTS::SoTet4::material_post_setup(Teuchos::ParameterList& params)
     // add fibers to the ParameterList
     // ParameterList does not allow to store a std::vector, so we have to add every gp fiber
     // with a separate key. To keep it clean, It is added to a sublist.
-    DRT::FIBER::NodalFiberHolder fiberHolder;
+    CORE::Nodes::NodalFiberHolder fiberHolder;
 
     // Do the interpolation
-    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<CORE::FE::CellType::tet4>(
+    CORE::Nodes::ProjectFibersToGaussPoints<CORE::FE::CellType::tet4>(
         Nodes(), shapefcts, fiberHolder);
 
     params.set("fiberholder", fiberHolder);

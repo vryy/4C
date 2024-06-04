@@ -6,7 +6,6 @@ set(_dependencies
     config
     core
     cut
-    fiber
     global_data
     inpar
     io
