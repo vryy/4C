@@ -39,7 +39,7 @@ namespace DRT
   }
 }  // namespace DRT
 
-namespace INPUT
+namespace CORE::IO
 {
   /*----------------------------------------------------------------------*/
   /// reading, broadcasting and storing of dat file contents
@@ -188,7 +188,7 @@ namespace INPUT
   std::pair<std::string, std::string> ReadKeyValue(const std::string& line);
 
 
-}  // namespace INPUT
+}  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

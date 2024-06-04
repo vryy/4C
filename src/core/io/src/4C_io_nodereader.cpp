@@ -37,8 +37,9 @@ namespace
 }  // namespace
 
 
-void CORE::IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_section_name,
-    std::vector<ElementReader>& element_readers, int& max_node_id)
+void CORE::IO::ReadNodes(const CORE::IO::DatFileReader& reader,
+    const std::string& node_section_name, std::vector<ElementReader>& element_readers,
+    int& max_node_id)
 {
   // Check if there are any nodes to be read. If not, leave right away.
   const int numnodes = reader.excluded_section_length(node_section_name);

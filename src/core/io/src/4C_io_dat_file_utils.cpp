@@ -36,7 +36,7 @@ void CORE::IO::DatFileUtils::print_section(std::ostream& out, const std::string&
 
 
 std::vector<INPUT::LineDefinition> CORE::IO::DatFileUtils::read_all_lines_in_section(
-    INPUT::DatFileReader& reader, const std::string& section,
+    CORE::IO::DatFileReader& reader, const std::string& section,
     const std::vector<INPUT::LineDefinition>& possible_lines)
 {
   auto [parsed_lines, unparsed_lines] =
@@ -66,7 +66,7 @@ std::vector<INPUT::LineDefinition> CORE::IO::DatFileUtils::read_all_lines_in_sec
 
 
 std::pair<std::vector<INPUT::LineDefinition>, std::vector<std::string>>
-CORE::IO::DatFileUtils::read_matching_lines_in_section(INPUT::DatFileReader& reader,
+CORE::IO::DatFileUtils::read_matching_lines_in_section(CORE::IO::DatFileReader& reader,
     const std::string& section, const std::vector<INPUT::LineDefinition>& possible_lines)
 {
   const std::vector<const char*> lines_in_section = reader.Section("--" + section);

@@ -29,7 +29,8 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-INPUT::ParticleReader::ParticleReader(const INPUT::DatFileReader& reader, std::string sectionname)
+INPUT::ParticleReader::ParticleReader(
+    const CORE::IO::DatFileReader& reader, std::string sectionname)
     : reader_(reader), comm_(reader.Comm()), sectionname_(std::move(sectionname))
 {
   // empty constructor

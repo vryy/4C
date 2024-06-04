@@ -43,7 +43,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, const bool readmesh)
+void GLOBAL::ReadFields(
+    GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader, const bool readmesh)
 {
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
@@ -1349,7 +1350,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
   }  // if(readmesh)
 }
 
-void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
 {
   // check whether micro material is specified
   const int id_struct =
@@ -1567,7 +1568,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
         subgroupcomm->Broadcast((const_cast<char*>(micro_inputfile_name.c_str())), length, 0);
 
         // start with actual reading
-        INPUT::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
+        CORE::IO::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
 
         Teuchos::RCP<DRT::Discretization> dis_micro =
             Teuchos::rcp(new DRT::Discretization(micro_dis_name, micro_reader.Comm()));
@@ -1708,7 +1709,7 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
     subgroupcomm->Broadcast((const_cast<char*>(micro_inputfile_name.c_str())), length, 0);
 
     // start with actual reading
-    INPUT::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
+    CORE::IO::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
 
     Teuchos::RCP<DRT::Discretization> structdis_micro =
         Teuchos::rcp(new DRT::Discretization("structure", micro_reader.Comm()));
@@ -1762,7 +1763,7 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadParameter(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadParameter(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
 {
   Teuchos::RCP<Teuchos::ParameterList> list = Teuchos::rcp(new Teuchos::ParameterList("DAT FILE"));
 
@@ -2035,7 +2036,7 @@ void GLOBAL::ReadParameter(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadMaterials(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadMaterials(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
 {
   // create list of known materials
   Teuchos::RCP<std::vector<Teuchos::RCP<MAT::MaterialDefinition>>> vm = INPUT::ValidMaterials();
@@ -2112,7 +2113,7 @@ void GLOBAL::ReadMaterials(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadContactConstitutiveLaws(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadContactConstitutiveLaws(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
 {
   // create list of known contact constitutive laws
   Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>> vm =
@@ -2166,7 +2167,7 @@ void GLOBAL::ReadContactConstitutiveLaws(GLOBAL::Problem& problem, INPUT::DatFil
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadCloningMaterialMap(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadCloningMaterialMap(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
 {
   const std::vector<INPUT::LineDefinition> lines = CORE::FE::valid_cloning_material_map_lines();
 
@@ -2197,7 +2198,7 @@ void GLOBAL::ReadCloningMaterialMap(GLOBAL::Problem& problem, INPUT::DatFileRead
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadResult(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadResult(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
 {
   const auto lines = GlobalLegacyModuleCallbacks().valid_result_description_lines();
 
@@ -2217,7 +2218,7 @@ void GLOBAL::ReadResult(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadConditions(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
 {
   Teuchos::Time time("", true);
   if (reader.Comm()->MyPID() == 0)
@@ -2358,7 +2359,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadKnots(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadKnots(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
 {
   // get information on the spatial approximation --- we only read knots
   // in the nurbs case
@@ -2414,7 +2415,7 @@ void GLOBAL::ReadKnots(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadParticles(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadParticles(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
 {
   // no need to read in particles in case of restart
   if (problem.Restart()) return;

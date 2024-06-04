@@ -64,7 +64,7 @@ namespace CONTACT
   }
 }  // namespace CONTACT
 
-namespace INPUT
+namespace CORE::IO
 {
   class DatFileReader;
 }

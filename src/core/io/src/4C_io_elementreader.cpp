@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CORE::IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
-    const INPUT::DatFileReader& reader, std::string sectionname)
+    const CORE::IO::DatFileReader& reader, std::string sectionname)
     : name_(dis->Name()),
       reader_(reader),
       comm_(reader.Comm()),
@@ -34,7 +34,7 @@ CORE::IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CORE::IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
-    const INPUT::DatFileReader& reader, std::string sectionname, std::string elementtype)
+    const CORE::IO::DatFileReader& reader, std::string sectionname, std::string elementtype)
     : name_(dis->Name()),
       reader_(reader),
       comm_(reader.Comm()),
@@ -48,7 +48,7 @@ CORE::IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CORE::IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
-    const INPUT::DatFileReader& reader, std::string sectionname,
+    const CORE::IO::DatFileReader& reader, std::string sectionname,
     const std::set<std::string>& elementtypes)
     : name_(dis->Name()),
       reader_(reader),

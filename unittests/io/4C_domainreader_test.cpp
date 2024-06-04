@@ -17,7 +17,7 @@ namespace
 {
   using namespace FourC;
 
-  class DatFileReaderStub : public INPUT::DatFileReader
+  class DatFileReaderStub : public CORE::IO::DatFileReader
   {
    public:
     DatFileReaderStub() = default;

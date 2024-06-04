@@ -158,7 +158,7 @@ void CORE::UTILS::FunctionManager::add_function_definition(
 }
 
 
-void CORE::UTILS::FunctionManager::ReadInput(INPUT::DatFileReader& reader)
+void CORE::UTILS::FunctionManager::ReadInput(CORE::IO::DatFileReader& reader)
 {
   functions_.clear();
 

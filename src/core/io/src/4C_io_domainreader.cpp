@@ -35,7 +35,7 @@ namespace CORE::IO
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   DomainReader::DomainReader(Teuchos::RCP<DRT::Discretization> dis,
-      const INPUT::DatFileReader& reader, std::string sectionname)
+      const CORE::IO::DatFileReader& reader, std::string sectionname)
       : name_(dis->Name()),
         reader_(reader),
         comm_(reader.Comm()),

@@ -25,14 +25,14 @@ namespace INPUT
   {
    public:
     //! construct a reader that reads a given section
-    ParticleReader(const DatFileReader& reader, std::string sectionname);
+    ParticleReader(const CORE::IO::DatFileReader& reader, std::string sectionname);
 
     //! do the actual reading of particles
     void Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles);
 
    private:
     //! the main dat file reader
-    const DatFileReader& reader_;
+    const CORE::IO::DatFileReader& reader_;
 
     //! my comm
     Teuchos::RCP<Epetra_Comm> comm_;

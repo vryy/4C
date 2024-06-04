@@ -37,7 +37,7 @@ namespace CORE::IO::DatFileUtils
    *
    * @see read_matching_lines_in_section()
    */
-  std::vector<INPUT::LineDefinition> read_all_lines_in_section(INPUT::DatFileReader& reader,
+  std::vector<INPUT::LineDefinition> read_all_lines_in_section(CORE::IO::DatFileReader& reader,
       const std::string& section, const std::vector<INPUT::LineDefinition>& possible_lines);
 
 
@@ -50,7 +50,7 @@ namespace CORE::IO::DatFileUtils
    * @see read_all_lines_in_section()
    */
   std::pair<std::vector<INPUT::LineDefinition>, std::vector<std::string>>
-  read_matching_lines_in_section(INPUT::DatFileReader& reader, const std::string& section,
+  read_matching_lines_in_section(CORE::IO::DatFileReader& reader, const std::string& section,
       const std::vector<INPUT::LineDefinition>& possible_lines);
 
 }  // namespace CORE::IO::DatFileUtils

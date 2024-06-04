@@ -58,7 +58,7 @@ namespace CORE::IO
      * Construct a mesh reader. Read nodes from the given @p reader under section
      * @p node_section_name.
      */
-    MeshReader(INPUT::DatFileReader& reader, std::string node_section_name,
+    MeshReader(CORE::IO::DatFileReader& reader, std::string node_section_name,
         MeshReaderParameters parameters = {});
 
     /// add an element reader for each discretization
@@ -84,7 +84,7 @@ namespace CORE::IO
      * \param geofilepath    [in] path to the file for the file reader (not used for the others)
      */
     void AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
-        const INPUT::DatFileReader& reader, const std::string& sectionname,
+        const CORE::IO::DatFileReader& reader, const std::string& sectionname,
         const CORE::IO::GeometryType geometrysource, const std::string* geofilepath);
 
     /// do the actual reading
@@ -147,7 +147,7 @@ namespace CORE::IO
     std::vector<DomainReader> domain_readers_;
 
     /// Input file contents
-    INPUT::DatFileReader& reader_;
+    CORE::IO::DatFileReader& reader_;
 
     /// The name of the section under which we will read the nodes.
     std::string node_section_name_;

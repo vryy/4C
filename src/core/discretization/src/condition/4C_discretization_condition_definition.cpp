@@ -53,7 +53,7 @@ void CORE::Conditions::ConditionDefinition::AddComponent(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::Conditions::ConditionDefinition::Read(INPUT::DatFileReader& reader,
+void CORE::Conditions::ConditionDefinition::Read(CORE::IO::DatFileReader& reader,
     std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>>& cmap)
 {
   std::vector<const char*> section = reader.Section("--" + sectionname_);

@@ -52,7 +52,7 @@ namespace
 
 }  // namespace
 
-namespace INPUT
+namespace CORE::IO
 {
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
@@ -1206,6 +1206,6 @@ namespace INPUT
 
     return {std::move(key), std::move(value)};
   }
-}  // namespace INPUT
+}  // namespace CORE::IO
 
 FOUR_C_NAMESPACE_CLOSE

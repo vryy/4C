@@ -42,7 +42,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::AddComponent(Teuchos::RCP<INPUT::L
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const GLOBAL::Problem& problem,
-    INPUT::DatFileReader& reader, Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> bundle)
+    CORE::IO::DatFileReader& reader, Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> bundle)
 {
   std::string name = "--CONTACT CONSTITUTIVE LAWS";
   std::vector<const char*> section = reader.Section(name);

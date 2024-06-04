@@ -31,10 +31,10 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPUT
+namespace CORE::IO
 {
   class DatFileReader;
-}  // namespace INPUT
+}  // namespace CORE::IO
 
 
 namespace CORE::UTILS
@@ -57,7 +57,7 @@ namespace CORE::UTILS
     std::vector<INPUT::LineDefinition> valid_function_lines();
 
     /// Read the 4C input file and set up all Functions.
-    void ReadInput(INPUT::DatFileReader& reader);
+    void ReadInput(CORE::IO::DatFileReader& reader);
 
     /**
      * Tell the FunctionManager how to parse a set of @p possible_lines into a Function object.

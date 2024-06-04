@@ -31,9 +31,13 @@ namespace DRT
 
 namespace INPUT
 {
-  class DatFileReader;
   class MaterialDefinition;
 }  // namespace INPUT
+
+namespace CORE::IO
+{
+  class DatFileReader;
+}
 
 namespace MAT
 {
@@ -75,7 +79,7 @@ namespace MAT
     void AddComponent(const Teuchos::RCP<INPUT::LineComponent>& c);
 
     /// Try to read all lines that fit the current material definition.
-    std::vector<std::pair<int, IO::InputParameterContainer>> Read(INPUT::DatFileReader&
+    std::vector<std::pair<int, CORE::IO::InputParameterContainer>> Read(CORE::IO::DatFileReader&
             reader  ///< the actual dat file reader that has access to the dat file
     );
 

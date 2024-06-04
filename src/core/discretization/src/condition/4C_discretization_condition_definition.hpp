@@ -91,7 +91,7 @@ namespace CORE::Conditions
       \param reader (i) the actual dat file reader that has access to the dat file
       \param cmap (o) the conditions we read here
      */
-    void Read(INPUT::DatFileReader& reader,
+    void Read(CORE::IO::DatFileReader& reader,
         std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>>& cmap);
 
     /// print my dat file section and possible conditions from the discretization

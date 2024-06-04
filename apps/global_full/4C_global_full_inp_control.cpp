@@ -38,7 +38,7 @@ void ntainp_ccadiscret(
 
 
   // and now the actual reading
-  INPUT::DatFileReader reader(inputfile_name, lcomm);
+  CORE::IO::DatFileReader reader(inputfile_name, lcomm);
 
   GLOBAL::ReadParameter(*problem, reader);
 

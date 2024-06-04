@@ -59,7 +59,7 @@ namespace CORE::IO
       \param reader (i) the dat file reader
       \param sectionname (i) the section that contains the element lines
      */
-    DomainReader(Teuchos::RCP<DRT::Discretization> dis, const INPUT::DatFileReader& reader,
+    DomainReader(Teuchos::RCP<DRT::Discretization> dis, const CORE::IO::DatFileReader& reader,
         std::string sectionname);
 
     //! Destructor
@@ -96,7 +96,7 @@ namespace CORE::IO
     std::string name_;
 
     /// the main dat file reader
-    const INPUT::DatFileReader& reader_;
+    const CORE::IO::DatFileReader& reader_;
 
     /// my comm
     Teuchos::RCP<Epetra_Comm> comm_;

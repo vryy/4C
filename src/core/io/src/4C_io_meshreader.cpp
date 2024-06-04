@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CORE::IO::MeshReader::MeshReader(
-    INPUT::DatFileReader& reader, std::string node_section_name, MeshReaderParameters parameters)
+    CORE::IO::DatFileReader& reader, std::string node_section_name, MeshReaderParameters parameters)
     : comm_(reader.Comm()),
       reader_(reader),
       node_section_name_(std::move(node_section_name)),
@@ -44,7 +44,7 @@ CORE::IO::MeshReader::MeshReader(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::IO::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
-    const INPUT::DatFileReader& reader, const std::string& sectionname,
+    const CORE::IO::DatFileReader& reader, const std::string& sectionname,
     const CORE::IO::GeometryType geometrysource, const std::string* geofilepath)
 {
   std::set<std::string> elementtypes;

@@ -46,13 +46,13 @@ void MAT::MaterialDefinition::AddComponent(const Teuchos::RCP<INPUT::LineCompone
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::vector<std::pair<int, IO::InputParameterContainer>> MAT::MaterialDefinition::Read(
-    INPUT::DatFileReader& reader)
+std::vector<std::pair<int, CORE::IO::InputParameterContainer>> MAT::MaterialDefinition::Read(
+    CORE::IO::DatFileReader& reader)
 {
   std::string name = "--MATERIALS";
   std::vector<const char*> section = reader.Section(name);
 
-  std::vector<std::pair<int, IO::InputParameterContainer>> found_materials;
+  std::vector<std::pair<int, CORE::IO::InputParameterContainer>> found_materials;
   if (!section.empty())
   {
     for (std::vector<const char*>::const_iterator i = section.begin(); i != section.end(); ++i)
@@ -79,7 +79,7 @@ std::vector<std::pair<int, IO::InputParameterContainer>> MAT::MaterialDefinition
       {
         if (matid <= -1) FOUR_C_THROW("Illegal negative ID provided");
 
-        IO::InputParameterContainer input_data;
+        CORE::IO::InputParameterContainer input_data;
         for (auto& j : inputline_) condline = j->Read(Name(), condline, input_data);
 
         // current material input line contains bad elements
