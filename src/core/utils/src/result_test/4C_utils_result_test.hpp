@@ -66,6 +66,16 @@ namespace CORE::UTILS
      */
     virtual void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count);
 
+    /*!
+     * @brief  perform nodal value test on a geometry. The operation can be e.g., sum, max and min
+     *
+     * @param[in] res         input file line containing result test specification
+     * @param[in] nerr        number of failed result tests
+     * @param[in] test_count  number of result tests
+     */
+    virtual void test_node_on_geometry(INPUT::LineDefinition& res, int& nerr, int& test_count,
+        const std::vector<std::vector<std::vector<int>>>& nodeset);
+
     /// perform special case test
     virtual void TestSpecial(
         INPUT::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count);
@@ -118,12 +128,21 @@ namespace CORE::UTILS
     /// Store the parsed @p results.
     void SetParsedLines(std::vector<INPUT::LineDefinition> results);
 
+    /// Store the node set
+    void set_node_set(const std::vector<std::vector<std::vector<int>>>& nodeset);
+
+    /// Get the node set (design topology)
+    const std::vector<std::vector<std::vector<int>>>& get_node_set() const { return nodeset_; }
+
    private:
     /// set of field specific result test objects
     std::vector<Teuchos::RCP<ResultTest>> fieldtest_;
 
     /// expected results
     std::vector<INPUT::LineDefinition> results_;
+
+    /// node set for values extraction
+    std::vector<std::vector<std::vector<int>>> nodeset_;
   };
 
 }  // namespace CORE::UTILS

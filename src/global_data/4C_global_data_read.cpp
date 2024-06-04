@@ -2158,6 +2158,16 @@ void GLOBAL::ReadResult(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
   const auto lines = GlobalLegacyModuleCallbacks().valid_result_description_lines();
 
+  // read design nodes <-> nodes, lines <-> nodes, surfaces <-> nodes, volumes <-> nodes
+  const auto get_discretization_callback = [](const std::string& name) -> decltype(auto)
+  { return *GLOBAL::Problem::Instance()->GetDis(name); };
+  std::vector<std::vector<std::vector<int>>> nodeset(4);
+  reader.ReadDesign("DNODE", nodeset[0], get_discretization_callback);
+  reader.ReadDesign("DLINE", nodeset[1], get_discretization_callback);
+  reader.ReadDesign("DSURF", nodeset[2], get_discretization_callback);
+  reader.ReadDesign("DVOL", nodeset[3], get_discretization_callback);
+  problem.get_result_test_manager().set_node_set(nodeset);
+
   problem.get_result_test_manager().SetParsedLines(
       IO::DatFileUtils::read_all_lines_in_section(reader, "RESULT DESCRIPTION", lines));
 }
@@ -2371,6 +2381,5 @@ void GLOBAL::ReadParticles(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
   // do the actual reading of particles
   particlereader.Read(problem.Particles());
 }
-
 
 FOUR_C_NAMESPACE_CLOSE

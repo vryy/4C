@@ -63,8 +63,6 @@ void ntainp_ccadiscret(
     problem->SetFunctionManager(std::move(function_manager));
   }
 
-  GLOBAL::ReadResult(*problem, reader);
-
   // input of particles
   GLOBAL::ReadParticles(*problem, reader);
 
@@ -75,6 +73,9 @@ void ntainp_ccadiscret(
     case CORE::COMM::NestedParallelismType::separate_dat_files:
       // input of fields
       GLOBAL::ReadFields(*problem, reader);
+
+      // read result tests
+      GLOBAL::ReadResult(*problem, reader);
 
       // read all types of geometry related conditions (e.g. boundary conditions)
       // Also read time and space functions and local coord systems

@@ -32,6 +32,12 @@ void CORE::UTILS::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, i
   FOUR_C_THROW("no node test available");
 }
 
+void CORE::UTILS::ResultTest::test_node_on_geometry(INPUT::LineDefinition& res, int& nerr,
+    int& test_count, const std::vector<std::vector<std::vector<int>>>& nodeset)
+{
+  FOUR_C_THROW("no geometry test available");
+}
+
 void CORE::UTILS::ResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no special case test available");
@@ -162,6 +168,9 @@ void CORE::UTILS::ResultTestManager::TestAll(const Epetra_Comm& comm)
           fieldtest->TestElement(result, nerr, test_count);
         else if (result.HaveNamed("NODE"))
           fieldtest->test_node(result, nerr, test_count);
+        else if (result.HaveNamed("LINE") || result.HaveNamed("SURFACE") ||
+                 result.HaveNamed("VOLUME"))
+          fieldtest->test_node_on_geometry(result, nerr, test_count, get_node_set());
         else
           fieldtest->TestSpecial(result, nerr, test_count, uneval_test_count);
       }
@@ -209,6 +218,14 @@ void CORE::UTILS::ResultTestManager::TestAll(const Epetra_Comm& comm)
 void CORE::UTILS::ResultTestManager::SetParsedLines(std::vector<INPUT::LineDefinition> results)
 {
   results_ = std::move(results);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void CORE::UTILS::ResultTestManager::set_node_set(
+    const std::vector<std::vector<std::vector<int>>>& nodeset)
+{
+  nodeset_ = std::move(nodeset);
 }
 
 FOUR_C_NAMESPACE_CLOSE

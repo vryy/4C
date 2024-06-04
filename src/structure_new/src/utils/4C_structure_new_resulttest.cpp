@@ -8,7 +8,6 @@
 */
 /*-----------------------------------------------------------*/
 
-
 #include "4C_structure_new_resulttest.hpp"
 
 #include "4C_global_data.hpp"
@@ -209,188 +208,351 @@ void STR::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test
     FOUR_C_THROW(
         "Node %d does not belong to discretization %s", node + 1, strudisc_->Name().c_str());
   }
-  else
+
+  std::string position;
+  res.ExtractString("QUANTITY", position);
+
+  if (strudisc_->HaveGlobalNode(node))
   {
-    if (strudisc_->HaveGlobalNode(node))
+    double result;
+    int error_code = get_nodal_result(result, node, position);
+
+    if (error_code == 0)
     {
-      const CORE::Nodes::Node* actnode = strudisc_->gNode(node);
-
-      // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->Owner() != strudisc_->Comm().MyPID()) return;
-
-      std::string position;
-      res.ExtractString("QUANTITY", position);
-      bool unknownpos = true;  // make sure the result value std::string can be handled
-      double result = 0.0;     // will hold the actual result of run
-
-      // test displacements or pressure
-      if (disn_ != Teuchos::null)
-      {
-        const Epetra_BlockMap& disnpmap = disn_->Map();
-        int idx = -1;
-        if (position == "dispx")
-          idx = 0;
-        else if (position == "dispy")
-          idx = 1;
-        else if (position == "dispz")
-          idx = 2;
-        else if (position == "press")
-          idx = 3;
-
-        if (idx >= 0)
-        {
-          unknownpos = false;
-          int lid = disnpmap.LID(strudisc_->Dof(0, actnode, idx));
-          if (lid < 0)
-            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
-                idx, actnode->Id());
-          result = (*disn_)[lid];
-        }
-      }
-
-      // test material displacements
-      if (!dismatn_.is_null())
-      {
-        const Epetra_BlockMap& dismpmap = dismatn_->Map();
-        int idx = -1;
-        if (position == "dispmx")
-          idx = 0;
-        else if (position == "dispmy")
-          idx = 1;
-        else if (position == "dispmz")
-          idx = 2;
-
-        if (idx >= 0)
-        {
-          unknownpos = false;
-          int lid = dismpmap.LID(strudisc_->Dof(0, actnode, idx));
-          if (lid < 0)
-            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
-                idx, actnode->Id());
-          result = (*dismatn_)[lid];
-        }
-      }
-
-      // test velocities
-      if (veln_ != Teuchos::null)
-      {
-        const Epetra_BlockMap& velnpmap = veln_->Map();
-        int idx = -1;
-        if (position == "velx")
-          idx = 0;
-        else if (position == "vely")
-          idx = 1;
-        else if (position == "velz")
-          idx = 2;
-
-        if (idx >= 0)
-        {
-          unknownpos = false;
-          int lid = velnpmap.LID(strudisc_->Dof(0, actnode, idx));
-          if (lid < 0)
-            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
-                idx, actnode->Id());
-          result = (*veln_)[lid];
-        }
-      }
-
-      // test accelerations
-      if (accn_ != Teuchos::null)
-      {
-        const Epetra_BlockMap& accnpmap = accn_->Map();
-        int idx = -1;
-        if (position == "accx")
-          idx = 0;
-        else if (position == "accy")
-          idx = 1;
-        else if (position == "accz")
-          idx = 2;
-
-        if (idx >= 0)
-        {
-          unknownpos = false;
-          int lid = accnpmap.LID(strudisc_->Dof(0, actnode, idx));
-          if (lid < 0)
-            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
-                idx, actnode->Id());
-          result = (*accn_)[lid];
-        }
-      }
-
-      // test nodal stresses
-      if (position.rfind("stress", 0) == 0)
-      {
-        if (data_->get_stress_data_node_postprocessed() == Teuchos::null)
-        {
-          FOUR_C_THROW(
-              "It looks like you don't write stresses. You have to specify the stress type in "
-              "IO->STRUCT_STRESS");
-        }
-        result = GetNodalStressStrainComponent(
-            "stress", position, node, *data_->get_stress_data_node_postprocessed());
-        unknownpos = false;
-      }
-
-      // test nodal strain
-      if (position.rfind("strain", 0) == 0)
-      {
-        if (data_->get_stress_data_node_postprocessed() == Teuchos::null)
-        {
-          FOUR_C_THROW(
-              "It looks like you don't write strains. You have to specify the strain type in "
-              "IO->STRUCT_STRAIN");
-        }
-        result = GetNodalStressStrainComponent(
-            "strain", position, node, *data_->get_strain_data_node_postprocessed());
-        unknownpos = false;
-      }
-
-      // test for any postprocessed gauss point data
-      if (data_->get_gauss_point_data_output_manager_ptr() != Teuchos::null)
-      {
-        std::optional<QuantityNameAndComponent> name_and_component =
-            GetGaussPointDataNameAndComponent(
-                position, data_->get_gauss_point_data_output_manager_ptr()->GetQuantities());
-        if (name_and_component.has_value())
-        {
-          result = GetGaussPointDataValue(*name_and_component, node,
-              data_->get_gauss_point_data_output_manager_ptr()->GetNodalData());
-          unknownpos = false;
-        }
-      }
-
-      // test reaction
-      if (reactn_ != Teuchos::null)
-      {
-        const Epetra_BlockMap& reactmap = reactn_->Map();
-        int idx = -1;
-        if (position == "reactx")
-          idx = 0;
-        else if (position == "reacty")
-          idx = 1;
-        else if (position == "reactz")
-          idx = 2;
-
-        if (idx >= 0)
-        {
-          unknownpos = false;
-          int lid = reactmap.LID(strudisc_->Dof(0, actnode, idx));
-          if (lid < 0)
-            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
-                idx, actnode->Id());
-          result = (*reactn_)[lid];
-        }
-      }
-
-      // catch position std::strings, which are not handled by structure result test
-      if (unknownpos)
-        FOUR_C_THROW("Quantity '%s' not supported in structure testing", position.c_str());
-
       // compare values
       const int err = compare_values(result, "NODE", res);
       nerr += err;
       test_count++;
     }
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int STR::ResultTest::get_nodal_result(
+    double& result, const int node, const std::string& position) const
+{
+  result = 0.0;
+
+  const CORE::Nodes::Node* actnode = strudisc_->gNode(node);
+
+  // Here we are just interested in the nodes that we own (i.e. a row node)!
+  if (actnode->Owner() != strudisc_->Comm().MyPID()) return -1;
+
+  bool unknownpos = true;  // make sure the result value std::string can be handled
+
+  // test displacements or pressure
+  if (disn_ != Teuchos::null)
+  {
+    const Epetra_BlockMap& disnpmap = disn_->Map();
+    int idx = -1;
+    if (position == "dispx")
+      idx = 0;
+    else if (position == "dispy")
+      idx = 1;
+    else if (position == "dispz")
+      idx = 2;
+    else if (position == "press")
+      idx = 3;
+
+    if (idx >= 0)
+    {
+      unknownpos = false;
+      int lid = disnpmap.LID(strudisc_->Dof(0, actnode, idx));
+      if (lid < 0)
+        FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+            actnode->Id());
+      result = (*disn_)[lid];
+    }
+  }
+
+  // test material displacements
+  if (!dismatn_.is_null())
+  {
+    const Epetra_BlockMap& dismpmap = dismatn_->Map();
+    int idx = -1;
+    if (position == "dispmx")
+      idx = 0;
+    else if (position == "dispmy")
+      idx = 1;
+    else if (position == "dispmz")
+      idx = 2;
+
+    if (idx >= 0)
+    {
+      unknownpos = false;
+      int lid = dismpmap.LID(strudisc_->Dof(0, actnode, idx));
+      if (lid < 0)
+        FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+            actnode->Id());
+      result = (*dismatn_)[lid];
+    }
+  }
+
+  // test velocities
+  if (veln_ != Teuchos::null)
+  {
+    const Epetra_BlockMap& velnpmap = veln_->Map();
+    int idx = -1;
+    if (position == "velx")
+      idx = 0;
+    else if (position == "vely")
+      idx = 1;
+    else if (position == "velz")
+      idx = 2;
+
+    if (idx >= 0)
+    {
+      unknownpos = false;
+      int lid = velnpmap.LID(strudisc_->Dof(0, actnode, idx));
+      if (lid < 0)
+        FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+            actnode->Id());
+      result = (*veln_)[lid];
+    }
+  }
+
+  // test accelerations
+  if (accn_ != Teuchos::null)
+  {
+    const Epetra_BlockMap& accnpmap = accn_->Map();
+    int idx = -1;
+    if (position == "accx")
+      idx = 0;
+    else if (position == "accy")
+      idx = 1;
+    else if (position == "accz")
+      idx = 2;
+
+    if (idx >= 0)
+    {
+      unknownpos = false;
+      int lid = accnpmap.LID(strudisc_->Dof(0, actnode, idx));
+      if (lid < 0)
+        FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+            actnode->Id());
+      result = (*accn_)[lid];
+    }
+  }
+
+  // test nodal stresses
+  if (position.rfind("stress", 0) == 0)
+  {
+    if (data_->get_stress_data_node_postprocessed() == Teuchos::null)
+    {
+      FOUR_C_THROW(
+          "It looks like you don't write stresses. You have to specify the stress type in "
+          "IO->STRUCT_STRESS");
+    }
+    result = GetNodalStressStrainComponent(
+        "stress", position, node, *data_->get_stress_data_node_postprocessed());
+    unknownpos = false;
+  }
+
+  // test nodal strain
+  if (position.rfind("strain", 0) == 0)
+  {
+    if (data_->get_stress_data_node_postprocessed() == Teuchos::null)
+    {
+      FOUR_C_THROW(
+          "It looks like you don't write strains. You have to specify the strain type in "
+          "IO->STRUCT_STRAIN");
+    }
+    result = GetNodalStressStrainComponent(
+        "strain", position, node, *data_->get_strain_data_node_postprocessed());
+    unknownpos = false;
+  }
+
+  // test for any postprocessed gauss point data
+  if (data_->get_gauss_point_data_output_manager_ptr() != Teuchos::null)
+  {
+    std::optional<QuantityNameAndComponent> name_and_component = GetGaussPointDataNameAndComponent(
+        position, data_->get_gauss_point_data_output_manager_ptr()->GetQuantities());
+    if (name_and_component.has_value())
+    {
+      result = GetGaussPointDataValue(*name_and_component, node,
+          data_->get_gauss_point_data_output_manager_ptr()->GetNodalData());
+      unknownpos = false;
+    }
+  }
+
+  // test reaction
+  if (reactn_ != Teuchos::null)
+  {
+    const Epetra_BlockMap& reactmap = reactn_->Map();
+    int idx = -1;
+    if (position == "reactx")
+      idx = 0;
+    else if (position == "reacty")
+      idx = 1;
+    else if (position == "reactz")
+      idx = 2;
+
+    if (idx >= 0)
+    {
+      unknownpos = false;
+      int lid = reactmap.LID(strudisc_->Dof(0, actnode, idx));
+      if (lid < 0)
+        FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+            actnode->Id());
+      result = (*reactn_)[lid];
+    }
+  }
+
+  // catch position std::strings, which are not handled by structure result test
+  if (unknownpos)
+    FOUR_C_THROW("Quantity '%s' not supported in structure testing", position.c_str());
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STR::ResultTest::test_node_on_geometry(INPUT::LineDefinition& res, int& nerr, int& test_count,
+    const std::vector<std::vector<std::vector<int>>>& nodeset)
+{
+  check_init_setup();
+
+  // care for the case of multiple discretizations of the same field type
+  std::string dis;
+  res.ExtractString("DIS", dis);
+  if (dis != strudisc_->Name()) return;
+
+  auto get_geometry_info = [res]() -> std::tuple<int, int>
+  {
+    int geometry_type = 0, geometry_id = 0;
+    if (res.HaveNamed("NODE"))
+    {
+      res.ExtractInt("NODE", geometry_id);
+      geometry_id -= 1;
+      geometry_type = 0;
+    }
+    else if (res.HaveNamed("LINE"))
+    {
+      res.ExtractInt("LINE", geometry_id);
+      geometry_id -= 1;
+      geometry_type = 1;
+    }
+    else if (res.HaveNamed("SURFACE"))
+    {
+      res.ExtractInt("SURFACE", geometry_id);
+      geometry_id -= 1;
+      geometry_type = 2;
+    }
+    else if (res.HaveNamed("VOLUME"))
+    {
+      res.ExtractInt("VOLUME", geometry_id);
+      geometry_id -= 1;
+      geometry_type = 3;
+    }
+    else
+      FOUR_C_THROW("Invalid line definition found");
+
+    return {geometry_type, geometry_id};
+  };
+  const auto [geometry_type, geometry_id] = get_geometry_info();
+
+  FOUR_C_ASSERT(geometry_type >= 0 && geometry_type <= 3, "The geometry type is invalid");
+  if (geometry_id < 0 || geometry_id >= static_cast<int>(nodeset[geometry_type].size()))
+    FOUR_C_THROW("Invalid geometry id %d", geometry_id);
+
+  const std::vector<int>& nodes = nodeset[geometry_type][geometry_id];
+
+  std::string op_str;
+  TestOp op = TestOp::unknown;
+  res.ExtractString("OP", op_str);
+  if (op_str == "sum")
+    op = TestOp::sum;
+  else if (op_str == "max")
+    op = TestOp::max;
+  else if (op_str == "min")
+    op = TestOp::min;
+  else
+    FOUR_C_THROW("Invalid operation %s", op_str.c_str());
+
+  std::string position;
+  res.ExtractString("QUANTITY", position);
+
+  // collect the local result
+  double tmp_result;
+  switch (op)
+  {
+    case TestOp::max:
+      tmp_result = -1e99;
+      break;
+    case TestOp::min:
+      tmp_result = 1e99;
+      break;
+    default:
+      tmp_result = 0.0;
+      break;
+  }
+  for (int node : nodes)
+  {
+    double tmp = 0.0;
+    if (strudisc_->HaveGlobalNode(node)) get_nodal_result(tmp, node, position);
+
+    switch (op)
+    {
+      case TestOp::sum:
+        tmp_result += tmp;
+        break;
+      case TestOp::max:
+        if (tmp > tmp_result) tmp_result = tmp;
+        break;
+      case TestOp::min:
+        if (tmp < tmp_result) tmp_result = tmp;
+        break;
+      default:
+        break;
+    }
+  }
+
+  // gather the result across processes
+  auto gather_result = [op](const DRT::Discretization& disc, const double local_result) -> double
+  {
+    double tmp_result = local_result, result = 0.0;
+    switch (op)
+    {
+      case TestOp::sum:
+        disc.Comm().SumAll(&tmp_result, &result, 1);
+        break;
+      case TestOp::max:
+        disc.Comm().MaxAll(&tmp_result, &result, 1);
+        break;
+      case TestOp::min:
+        disc.Comm().MinAll(&tmp_result, &result, 1);
+        break;
+      default:
+        break;
+    }
+    return result;
+  };
+  const double result = gather_result(*strudisc_, tmp_result);
+
+  // test the value; we only do at rank 0
+  if (strudisc_->Comm().MyPID() == 0)
+  {
+    int err = 0;
+    switch (geometry_type)
+    {
+      case 0:
+        err = compare_values(result, "NODE", res);
+        break;
+      case 1:
+        err = compare_values(result, "LINE", res);
+        break;
+      case 2:
+        err = compare_values(result, "SURFACE", res);
+        break;
+      case 3:
+        err = compare_values(result, "VOLUME", res);
+        break;
+      default:
+        break;
+    }
+    nerr += err;
+    test_count++;
   }
 }
 
