@@ -7,7 +7,6 @@ set(_dependencies
     config
     core
     global_data
-    io
     lib
     rigidsphere
     structure_new

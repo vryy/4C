@@ -7,7 +7,6 @@ set(_dependencies
     core
     global_data
     inpar
-    io
     lib
     particle_engine
     particle_interaction

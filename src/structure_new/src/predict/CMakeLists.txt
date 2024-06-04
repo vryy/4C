@@ -5,7 +5,6 @@ set(_dependencies
     config
     core
     inpar
-    io
     solver_nonlin_nox
     structure_new
     )

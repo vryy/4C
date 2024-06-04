@@ -9,7 +9,6 @@ set(_dependencies
     global_data
     immersed_problem
     inpar
-    io
     lib
     mat
     nurbs_discret

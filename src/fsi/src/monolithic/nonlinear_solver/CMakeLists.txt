@@ -14,7 +14,6 @@ set(_dependencies
     fsi_xfem
     global_data
     inpar
-    io
     lib
     mat
     mortar

@@ -9,7 +9,6 @@ set(_dependencies
     core
     global_data
     inpar
-    io
     lib
     rigidsphere
     structure

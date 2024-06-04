@@ -8,7 +8,6 @@ set(_dependencies
     cut
     global_data
     inpar
-    io
     mat
     nurbs_discret
     )
