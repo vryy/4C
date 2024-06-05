@@ -36,31 +36,31 @@ void fs3i_dyn()
   Teuchos::RCP<FS3I::FS3IBase> fs3i;
 
   // what's the current problem type?
-  GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+  CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
 
   switch (probtype)
   {
-    case GLOBAL::ProblemType::gas_fsi:
+    case CORE::ProblemType::gas_fsi:
     {
       fs3i = Teuchos::rcp(new FS3I::PartFS3I1Wc(comm));
     }
     break;
-    case GLOBAL::ProblemType::ac_fsi:
+    case CORE::ProblemType::ac_fsi:
     {
       fs3i = Teuchos::rcp(new FS3I::ACFSI(comm));
     }
     break;
-    case GLOBAL::ProblemType::thermo_fsi:
+    case CORE::ProblemType::thermo_fsi:
     {
       fs3i = Teuchos::rcp(new FS3I::PartFS3I2Wc(comm));
     }
     break;
-    case GLOBAL::ProblemType::biofilm_fsi:
+    case CORE::ProblemType::biofilm_fsi:
     {
       fs3i = Teuchos::rcp(new FS3I::BiofilmFSI(comm));
     }
     break;
-    case GLOBAL::ProblemType::fps3i:
+    case CORE::ProblemType::fps3i:
     {
       fs3i = Teuchos::rcp(new FS3I::PartFpS3I1Wc(comm));
     }

@@ -518,7 +518,7 @@ bool DRT::ELEMENTS::SoSh8Plast::ReadElement(
 
   Teuchos::ParameterList plparams = GLOBAL::Problem::Instance()->semi_smooth_plast_params();
   CORE::UTILS::AddEnumClassToParameterList(
-      "GLOBAL::ProblemType", GLOBAL::Problem::Instance()->GetProblemType(), plparams);
+      "CORE::ProblemType", GLOBAL::Problem::Instance()->GetProblemType(), plparams);
   ReadParameterList(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
 
   if (tsi_)

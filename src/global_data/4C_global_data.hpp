@@ -16,8 +16,8 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_shape_function_type.hpp"
-#include "4C_global_data_enums.hpp"
 #include "4C_io_walltime_based_restart.hpp"
+#include "4C_legacy_enum_definitions_problem_type.hpp"
 #include "4C_utils_function_manager.hpp"
 #include "4C_utils_random.hpp"
 #include "4C_utils_result_test.hpp"
@@ -176,7 +176,7 @@ namespace GLOBAL
     void SetInputControlFile(Teuchos::RCP<CORE::IO::InputControl>& input) { inputcontrol_ = input; }
 
     /// manipulate problem type
-    void SetProblemType(GLOBAL::ProblemType targettype);
+    void SetProblemType(CORE::ProblemType targettype);
 
     void set_spatial_approximation_type(CORE::FE::ShapeFunctionType shape_function_type);
 
@@ -184,7 +184,7 @@ namespace GLOBAL
     /// Once and for all definitions
 
     /// give enum of my problem type
-    GLOBAL::ProblemType GetProblemType() const;
+    CORE::ProblemType GetProblemType() const;
 
     /// give string name of my problem type
     std::string ProblemName() const;
@@ -578,7 +578,7 @@ namespace GLOBAL
     static std::vector<Problem*> instances_;
 
     /// the problem type
-    GLOBAL::ProblemType probtype_;
+    CORE::ProblemType probtype_;
 
     /// Spatial approximation type
     CORE::FE::ShapeFunctionType shapefuntype_;

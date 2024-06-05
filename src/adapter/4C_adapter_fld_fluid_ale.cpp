@@ -216,7 +216,7 @@ void ADAPTER::FluidAle::Output()
   // monolithically from an partitioned fsi scheme (e.g. fsi prestress simulation).
   // TODO (Thon): this is not the nice way, but fluid-ale and xfem problems may have now FSI
   // interface, so we can not do this in general :(
-  if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::fsi)
+  if (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::fsi)
   {
     // we want to be able to restart monolithically from an partitioned fsi scheme
     const int uprestart = timeparams_.get<int>("RESTARTEVRY");

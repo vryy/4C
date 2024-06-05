@@ -491,7 +491,7 @@ void ALE::Ale::output_restart(bool& datawritten)
   // info dedicated to user's eyes staring at standard out
   // Print restart info only in case of pure ALE problem. Coupled problems
   // print their own restart info.
-  if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::ale)
+  if (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::ale)
   {
     if (discret_->Comm().MyPID() == 0)
       CORE::IO::cout << "====== Restart written in step " << step_ << CORE::IO::endl;
@@ -522,7 +522,7 @@ void ALE::Ale::prepare_time_step()
 
   // Print time step header only in case of pure ALE problem. Coupled problems
   // print their own time step header.
-  if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::ale)
+  if (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::ale)
     print_time_step_header();
 
   // Update local coordinate systems (which may be time dependent)

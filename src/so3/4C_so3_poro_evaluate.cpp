@@ -1264,8 +1264,8 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::InitElement()
 
   scatra_coupling_ = false;
 
-  GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
-  if (probtype == GLOBAL::ProblemType::poroscatra) scatra_coupling_ = true;
+  CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+  if (probtype == CORE::ProblemType::poroscatra) scatra_coupling_ = true;
 }
 
 template <class so3_ele, CORE::FE::CellType distype>

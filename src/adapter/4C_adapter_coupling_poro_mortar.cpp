@@ -65,10 +65,10 @@ void ADAPTER::CouplingPoroMortar::read_mortar_condition(Teuchos::RCP<DRT::Discre
   // Set Problem Type to Poro
   switch (GLOBAL::Problem::Instance()->GetProblemType())
   {
-    case GLOBAL::ProblemType::poroelast:
+    case CORE::ProblemType::poroelast:
       input.set<int>("PROBTYPE", INPAR::CONTACT::poroelast);
       break;
-    case GLOBAL::ProblemType::poroscatra:
+    case CORE::ProblemType::poroscatra:
       input.set<int>("PROBTYPE", INPAR::CONTACT::poroscatra);
       break;
     default:

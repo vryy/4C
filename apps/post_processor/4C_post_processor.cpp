@@ -27,9 +27,9 @@ namespace
     // each problem type is different and writes different results
     switch (problem.Problemtype())
     {
-      case GLOBAL::ProblemType::fsi:
-      case GLOBAL::ProblemType::fsi_redmodels:
-      case GLOBAL::ProblemType::fsi_lung:
+      case CORE::ProblemType::fsi:
+      case CORE::ProblemType::fsi_redmodels:
+      case CORE::ProblemType::fsi_lung:
       {
         std::string basename = problem.outname();
         PostField* structfield = problem.get_discretization(0);
@@ -60,9 +60,9 @@ namespace
         }
         break;
       }
-      case GLOBAL::ProblemType::gas_fsi:
-      case GLOBAL::ProblemType::ac_fsi:
-      case GLOBAL::ProblemType::thermo_fsi:
+      case CORE::ProblemType::gas_fsi:
+      case CORE::ProblemType::ac_fsi:
+      case CORE::ProblemType::thermo_fsi:
       {
         std::string basename = problem.outname();
         PostField* structfield = problem.get_discretization(0);
@@ -85,7 +85,7 @@ namespace
 
         break;
       }
-      case GLOBAL::ProblemType::biofilm_fsi:
+      case CORE::ProblemType::biofilm_fsi:
       {
         std::string basename = problem.outname();
         PostField* structfield = problem.get_discretization(0);
@@ -108,7 +108,7 @@ namespace
 
         break;
       }
-      case GLOBAL::ProblemType::struct_ale:
+      case CORE::ProblemType::struct_ale:
       {
         PostField* structurefield = problem.get_discretization(0);
         StructureFilter structwriter(
@@ -120,7 +120,7 @@ namespace
         alewriter.WriteFiles();
         break;
       }
-      case GLOBAL::ProblemType::structure:
+      case CORE::ProblemType::structure:
       {
         // Regular solid/structure output
         {
@@ -150,7 +150,7 @@ namespace
 
         break;
       }
-      case GLOBAL::ProblemType::polymernetwork:
+      case CORE::ProblemType::polymernetwork:
       {
         int numdiscr = problem.num_discr();
         for (int i = 0; i < numdiscr; ++i)
@@ -187,7 +187,7 @@ namespace
         }
         break;
       }
-      case GLOBAL::ProblemType::fluid:
+      case CORE::ProblemType::fluid:
       {
         if (problem.num_discr() == 2)
         {
@@ -201,7 +201,7 @@ namespace
         }
         [[fallthrough]];
       }
-      case GLOBAL::ProblemType::fluid_redmodels:
+      case CORE::ProblemType::fluid_redmodels:
       {
         if (problem.num_discr() == 2)
         {
@@ -220,8 +220,8 @@ namespace
         }
         [[fallthrough]];
       }
-      case GLOBAL::ProblemType::fluid_ale:
-      case GLOBAL::ProblemType::freesurf:
+      case CORE::ProblemType::fluid_ale:
+      case CORE::ProblemType::freesurf:
       {
         PostField* field = problem.get_discretization(0);
         FluidFilter writer(field, problem.outname());
@@ -235,8 +235,8 @@ namespace
         }
         break;
       }
-      case GLOBAL::ProblemType::particle:
-      case GLOBAL::ProblemType::pasi:
+      case CORE::ProblemType::particle:
+      case CORE::ProblemType::pasi:
       {
         int numdiscr = problem.num_discr();
         for (int i = 0; i < numdiscr; ++i)
@@ -262,7 +262,7 @@ namespace
         }
         break;
       }
-      case GLOBAL::ProblemType::level_set:
+      case CORE::ProblemType::level_set:
       {
         std::string basename = problem.outname();
 
@@ -272,7 +272,7 @@ namespace
 
         break;
       }
-      case GLOBAL::ProblemType::redairways_tissue:
+      case CORE::ProblemType::redairways_tissue:
       {
         PostField* structfield = problem.get_discretization(0);
         StructureFilter structwriter(
@@ -285,21 +285,21 @@ namespace
         fluidwriter.WriteFiles();
         break;
       }
-      case GLOBAL::ProblemType::ale:
+      case CORE::ProblemType::ale:
       {
         PostField* field = problem.get_discretization(0);
         AleFilter writer(field, problem.outname());
         writer.WriteFiles();
         break;
       }
-      case GLOBAL::ProblemType::lubrication:
+      case CORE::ProblemType::lubrication:
       {
         PostField* lubricationfield = problem.get_discretization(0);
         LubricationFilter lubricationwriter(lubricationfield, problem.outname());
         lubricationwriter.WriteFiles();
         break;
       }
-      case GLOBAL::ProblemType::porofluidmultiphase:
+      case CORE::ProblemType::porofluidmultiphase:
       {
         std::string basename = problem.outname();
 
@@ -317,7 +317,7 @@ namespace
         }
         break;
       }
-      case GLOBAL::ProblemType::poromultiphase:
+      case CORE::ProblemType::poromultiphase:
       {
         std::string basename = problem.outname();
 
@@ -339,7 +339,7 @@ namespace
         }
         break;
       }
-      case GLOBAL::ProblemType::poromultiphasescatra:
+      case CORE::ProblemType::poromultiphasescatra:
       {
         std::string basename = problem.outname();
 
@@ -394,8 +394,8 @@ namespace
           FOUR_C_THROW("wrong number of discretizations");
         break;
       }
-      case GLOBAL::ProblemType::cardiac_monodomain:
-      case GLOBAL::ProblemType::scatra:
+      case CORE::ProblemType::cardiac_monodomain:
+      case CORE::ProblemType::scatra:
       {
         std::string basename = problem.outname();
         // do we have a fluid discretization?
@@ -421,7 +421,7 @@ namespace
 
         break;
       }
-      case GLOBAL::ProblemType::sti:
+      case CORE::ProblemType::sti:
       {
         // extract label for output files
         std::string basename = problem.outname();
@@ -455,9 +455,9 @@ namespace
 
         break;
       }
-      case GLOBAL::ProblemType::fsi_xfem:
-      case GLOBAL::ProblemType::fpsi_xfem:
-      case GLOBAL::ProblemType::fluid_xfem_ls:
+      case CORE::ProblemType::fsi_xfem:
+      case CORE::ProblemType::fpsi_xfem:
+      case CORE::ProblemType::fluid_xfem_ls:
       {
         std::cout
             << "|=============================================================================|"
@@ -521,7 +521,7 @@ namespace
             << std::endl;
         break;
       }
-      case GLOBAL::ProblemType::fluid_xfem:
+      case CORE::ProblemType::fluid_xfem:
       {
         std::cout << "Output FLUID-XFEM Problem" << std::endl;
 
@@ -566,7 +566,7 @@ namespace
         }
         break;
       }
-      case GLOBAL::ProblemType::loma:
+      case CORE::ProblemType::loma:
       {
         std::string basename = problem.outname();
 
@@ -579,7 +579,7 @@ namespace
         scatrawriter.WriteFiles();
         break;
       }
-      case GLOBAL::ProblemType::elch:
+      case CORE::ProblemType::elch:
       {
         std::string basename = problem.outname();
         int numfield = problem.num_discr();
@@ -638,7 +638,7 @@ namespace
           FOUR_C_THROW("number of fields does not match: got %d", numfield);
         break;
       }
-      case GLOBAL::ProblemType::art_net:
+      case CORE::ProblemType::art_net:
       {
         std::string basename = problem.outname();
         PostField* field = problem.get_discretization(0);
@@ -656,7 +656,7 @@ namespace
 
         break;
       }
-      case GLOBAL::ProblemType::thermo:
+      case CORE::ProblemType::thermo:
       {
         PostField* field = problem.get_discretization(0);
         ThermoFilter writer(
@@ -664,7 +664,7 @@ namespace
         writer.WriteFiles();
         break;
       }
-      case GLOBAL::ProblemType::tsi:
+      case CORE::ProblemType::tsi:
       {
         std::cout << "Output TSI Problem" << std::endl;
 
@@ -681,7 +681,7 @@ namespace
         structwriter.WriteFiles();
         break;
       }
-      case GLOBAL::ProblemType::red_airways:
+      case CORE::ProblemType::red_airways:
       {
         std::string basename = problem.outname();
         PostField* field = problem.get_discretization(0);
@@ -692,7 +692,7 @@ namespace
 
         break;
       }
-      case GLOBAL::ProblemType::poroelast:
+      case CORE::ProblemType::poroelast:
       {
         std::string basename = problem.outname();
 
@@ -706,7 +706,7 @@ namespace
         fluidwriter.WriteFiles();
         break;
       }
-      case GLOBAL::ProblemType::poroscatra:
+      case CORE::ProblemType::poroscatra:
       {
         std::string basename = problem.outname();
 
@@ -725,7 +725,7 @@ namespace
 
         break;
       }
-      case GLOBAL::ProblemType::fpsi:
+      case CORE::ProblemType::fpsi:
       {
         std::string basename = problem.outname();
 
@@ -744,8 +744,8 @@ namespace
 
         break;
       }
-      case GLOBAL::ProblemType::immersed_fsi:
-      case GLOBAL::ProblemType::fbi:
+      case CORE::ProblemType::immersed_fsi:
+      case CORE::ProblemType::fbi:
       {
         std::string basename = problem.outname();
 
@@ -760,7 +760,7 @@ namespace
 
         break;
       }
-      case GLOBAL::ProblemType::fps3i:
+      case CORE::ProblemType::fps3i:
       {
         std::string basename = problem.outname();
 
@@ -790,7 +790,7 @@ namespace
 
         break;
       }
-      case GLOBAL::ProblemType::ehl:
+      case CORE::ProblemType::ehl:
       {
         std::string basename = problem.outname();
 
@@ -805,7 +805,7 @@ namespace
 
         break;
       }
-      case GLOBAL::ProblemType::ssi:
+      case CORE::ProblemType::ssi:
       {
         std::string basename = problem.outname();
 
@@ -843,7 +843,7 @@ namespace
         break;
       }
 
-      case GLOBAL::ProblemType::ssti:
+      case CORE::ProblemType::ssti:
       {
         std::string basename = problem.outname();
 
@@ -867,14 +867,14 @@ namespace
 
         break;
       }
-      case GLOBAL::ProblemType::elemag:
+      case CORE::ProblemType::elemag:
       {
         PostField* field = problem.get_discretization(0);
         ElemagFilter writer(field, problem.outname());
         writer.WriteFiles();
         break;
       }
-      case GLOBAL::ProblemType::none:
+      case CORE::ProblemType::none:
       {
         // Special problem type that contains one discretization and any number
         // of vectors. We just want to see whatever there is.

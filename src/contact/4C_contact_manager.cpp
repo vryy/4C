@@ -672,7 +672,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
   const Teuchos::ParameterList& stru = GLOBAL::Problem::Instance()->structural_dynamic_params();
 
   // read Problem Type and Problem Dimension from GLOBAL::Problem
-  const GLOBAL::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
+  const CORE::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
   CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->spatial_approximation_type();
   const int dim = GLOBAL::Problem::Instance()->NDim();
 
@@ -702,7 +702,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
         "Maximum allowed value of load balance for dynamic parallel redistribution must be "
         ">= 1.0");
 
-  if (problemtype == GLOBAL::ProblemType::tsi &&
+  if (problemtype == CORE::ProblemType::tsi &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
           "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
     FOUR_C_THROW("Parallel redistribution not yet implemented for TSI problems");
@@ -917,7 +917,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
         CORE::UTILS::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
       FOUR_C_THROW("Frictionless first contact step with wear not yet implemented");
 
-    if (problemtype != GLOBAL::ProblemType::ehl &&
+    if (problemtype != CORE::ProblemType::ehl &&
         CORE::UTILS::IntegralValue<int>(contact, "REGULARIZED_NORMAL_CONTACT") == true)
       FOUR_C_THROW("Regularized normal contact only implemented for EHL");
 
@@ -933,18 +933,18 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
     // *********************************************************************
     // thermal-structure-interaction contact
     // *********************************************************************
-    if (problemtype == GLOBAL::ProblemType::tsi &&
+    if (problemtype == CORE::ProblemType::tsi &&
         CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
             INPAR::MORTAR::shape_standard)
       FOUR_C_THROW("Thermal contact only for dual shape functions");
 
-    if (problemtype == GLOBAL::ProblemType::tsi &&
+    if (problemtype == CORE::ProblemType::tsi &&
         CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") !=
             INPAR::CONTACT::system_condensed)
       FOUR_C_THROW("Thermal contact only for dual shape functions with condensed system");
 
     // no nodal scaling in for thermal-structure-interaction
-    if (problemtype == GLOBAL::ProblemType::tsi &&
+    if (problemtype == CORE::ProblemType::tsi &&
         tsic.get<double>("TEMP_DAMAGE") <= tsic.get<double>("TEMP_REF"))
       FOUR_C_THROW("damage temperature must be greater than reference temperature");
 
@@ -956,7 +956,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
         wearlist.get<double>("WEARCOEFF") != 0.0)
       FOUR_C_THROW("Wear coefficient only necessary in the context of wear.");
 
-    if (problemtype == GLOBAL::ProblemType::structure and
+    if (problemtype == CORE::ProblemType::structure and
         CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
             INPAR::WEAR::wear_none and
         CORE::UTILS::IntegralValue<INPAR::WEAR::WearTimInt>(wearlist, "WEARTIMINT") !=
@@ -1003,9 +1003,9 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
     // *********************************************************************
     // poroelastic contact
     // *********************************************************************
-    if (problemtype == GLOBAL::ProblemType::poroelast ||
-        problemtype == GLOBAL::ProblemType::poroscatra ||
-        problemtype == GLOBAL::ProblemType::fpsi || problemtype == GLOBAL::ProblemType::fpsi_xfem)
+    if (problemtype == CORE::ProblemType::poroelast ||
+        problemtype == CORE::ProblemType::poroscatra || problemtype == CORE::ProblemType::fpsi ||
+        problemtype == CORE::ProblemType::fpsi_xfem)
     {
       const Teuchos::ParameterList& porodyn =
           GLOBAL::Problem::Instance()->poroelast_dynamic_params();
@@ -1083,8 +1083,8 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
   else if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar, "ALGORITHM") ==
            INPAR::MORTAR::algorithm_nts)
   {
-    if (problemtype == GLOBAL::ProblemType::poroelast or problemtype == GLOBAL::ProblemType::fpsi or
-        problemtype == GLOBAL::ProblemType::tsi)
+    if (problemtype == CORE::ProblemType::poroelast or problemtype == CORE::ProblemType::fpsi or
+        problemtype == CORE::ProblemType::tsi)
       FOUR_C_THROW("NTS only for problem type: structure");
   }  // END NTS CHECKS
 
@@ -1100,10 +1100,9 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
     if (contact.get<double>("PENALTYPARAM") <= 0.0)
       FOUR_C_THROW("Penalty parameter eps = 0, must be greater than 0");
 
-    if (problemtype != GLOBAL::ProblemType::structure &&
-        problemtype != GLOBAL::ProblemType::poroelast &&
-        problemtype != GLOBAL::ProblemType::fsi_xfem &&
-        problemtype != GLOBAL::ProblemType::fpsi_xfem)
+    if (problemtype != CORE::ProblemType::structure &&
+        problemtype != CORE::ProblemType::poroelast && problemtype != CORE::ProblemType::fsi_xfem &&
+        problemtype != CORE::ProblemType::fpsi_xfem)
       FOUR_C_THROW(
           "GPTS algorithm only tested for structural, FSI-CutFEM, FPSI-CutFEM, and "
           "poroelastic problems");
@@ -1121,10 +1120,10 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
   cparams.setParameters(contact);
   cparams.setParameters(wearlist);
   cparams.setParameters(tsic);
-  if (problemtype == GLOBAL::ProblemType::tsi)
+  if (problemtype == CORE::ProblemType::tsi)
     cparams.set<double>(
         "TIMESTEP", GLOBAL::Problem::Instance()->TSIDynamicParams().get<double>("TIMESTEP"));
-  else if (problemtype != GLOBAL::ProblemType::structure)
+  else if (problemtype != CORE::ProblemType::structure)
   {
     // rauch 01/16
     if (Comm().MyPID() == 0)
@@ -1157,26 +1156,25 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
   cparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // store relevant problem types
-  if (problemtype == GLOBAL::ProblemType::structure)
+  if (problemtype == CORE::ProblemType::structure)
   {
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::structure);
   }
-  else if (problemtype == GLOBAL::ProblemType::tsi)
+  else if (problemtype == CORE::ProblemType::tsi)
   {
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::tsi);
   }
-  else if (problemtype == GLOBAL::ProblemType::struct_ale)
+  else if (problemtype == CORE::ProblemType::struct_ale)
   {
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::structalewear);
   }
-  else if (problemtype == GLOBAL::ProblemType::poroelast or
-           problemtype == GLOBAL::ProblemType::fpsi or
-           problemtype == GLOBAL::ProblemType::poroscatra)
+  else if (problemtype == CORE::ProblemType::poroelast or problemtype == CORE::ProblemType::fpsi or
+           problemtype == CORE::ProblemType::poroscatra)
   {
     const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
-    if (problemtype == GLOBAL::ProblemType::poroelast or problemtype == GLOBAL::ProblemType::fpsi)
+    if (problemtype == CORE::ProblemType::poroelast or problemtype == CORE::ProblemType::fpsi)
       cparams.set<int>("PROBTYPE", INPAR::CONTACT::poroelast);
-    else if (problemtype == GLOBAL::ProblemType::poroscatra)
+    else if (problemtype == CORE::ProblemType::poroscatra)
       cparams.set<int>("PROBTYPE", INPAR::CONTACT::poroscatra);
     // porotimefac = 1/(theta*dt) --- required for derivation of structural displacements!
     double porotimefac =
@@ -1185,11 +1183,11 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
     cparams.set<bool>("CONTACTNOPEN",
         CORE::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
   }
-  else if (problemtype == GLOBAL::ProblemType::fsi_xfem)
+  else if (problemtype == CORE::ProblemType::fsi_xfem)
   {
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::fsi);
   }
-  else if (problemtype == GLOBAL::ProblemType::fpsi_xfem)
+  else if (problemtype == CORE::ProblemType::fpsi_xfem)
   {
     const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::fpi);

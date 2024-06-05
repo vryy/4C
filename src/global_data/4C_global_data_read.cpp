@@ -79,9 +79,9 @@ void GLOBAL::ReadFields(
 
   switch (problem.GetProblemType())
   {
-    case GLOBAL::ProblemType::fsi:
-    case GLOBAL::ProblemType::fsi_redmodels:
-    case GLOBAL::ProblemType::fsi_lung:
+    case CORE::ProblemType::fsi:
+    case CORE::ProblemType::fsi_redmodels:
+    case CORE::ProblemType::fsi_lung:
     {
       if (distype == CORE::FE::ShapeFunctionType::nurbs)
       {
@@ -144,9 +144,9 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::gas_fsi:
-    case GLOBAL::ProblemType::ac_fsi:
-    case GLOBAL::ProblemType::thermo_fsi:
+    case CORE::ProblemType::gas_fsi:
+    case CORE::ProblemType::ac_fsi:
+    case CORE::ProblemType::thermo_fsi:
     {
       switch (distype)
       {
@@ -202,7 +202,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::biofilm_fsi:
+    case CORE::ProblemType::biofilm_fsi:
     {
       switch (distype)
       {
@@ -266,8 +266,8 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::fsi_xfem:
-    case GLOBAL::ProblemType::fluid_xfem:
+    case CORE::ProblemType::fsi_xfem:
+    case CORE::ProblemType::fluid_xfem:
     {
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
       // create discretization writer - in constructor set into and owned by corresponding discret
@@ -318,7 +318,7 @@ void GLOBAL::ReadFields(
       meshreader.AddElementReader(CORE::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
       break;
     }
-    case GLOBAL::ProblemType::fpsi_xfem:
+    case CORE::ProblemType::fpsi_xfem:
     {
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
       fluiddis = Teuchos::rcp(new XFEM::DiscretizationXFEM("fluid", reader.Comm(), problem.NDim()));
@@ -353,7 +353,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::ale:
+    case CORE::ProblemType::ale:
     {
       switch (distype)
       {
@@ -380,8 +380,8 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::fluid:
-    case GLOBAL::ProblemType::fluid_redmodels:
+    case CORE::ProblemType::fluid:
+    case CORE::ProblemType::fluid_redmodels:
     {
       if (distype == CORE::FE::ShapeFunctionType::hdg)
       {
@@ -431,7 +431,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::lubrication:
+    case CORE::ProblemType::lubrication:
     {
       // create empty discretizations
       lubricationdis =
@@ -448,8 +448,8 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::cardiac_monodomain:
-    case GLOBAL::ProblemType::scatra:
+    case CORE::ProblemType::cardiac_monodomain:
+    case CORE::ProblemType::scatra:
     {
       switch (distype)
       {
@@ -495,7 +495,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::sti:
+    case CORE::ProblemType::sti:
     {
       // safety checks
       if (distype == CORE::FE::ShapeFunctionType::nurbs)
@@ -521,8 +521,8 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::fluid_ale:
-    case GLOBAL::ProblemType::freesurf:
+    case CORE::ProblemType::fluid_ale:
+    case CORE::ProblemType::freesurf:
     {
       if (distype == CORE::FE::ShapeFunctionType::hdg)
       {
@@ -585,7 +585,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::tsi:
+    case CORE::ProblemType::tsi:
     {
       switch (distype)
       {
@@ -626,7 +626,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::thermo:
+    case CORE::ProblemType::thermo:
     {
       switch (distype)
       {
@@ -654,7 +654,7 @@ void GLOBAL::ReadFields(
       break;
     }
 
-    case GLOBAL::ProblemType::structure:
+    case CORE::ProblemType::structure:
     {
       switch (distype)
       {
@@ -686,7 +686,7 @@ void GLOBAL::ReadFields(
       break;
     }
 
-    case GLOBAL::ProblemType::polymernetwork:
+    case CORE::ProblemType::polymernetwork:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
@@ -709,7 +709,7 @@ void GLOBAL::ReadFields(
       break;
     }
 
-    case GLOBAL::ProblemType::loma:
+    case CORE::ProblemType::loma:
     {
       // create empty discretizations
       fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
@@ -731,11 +731,11 @@ void GLOBAL::ReadFields(
       break;
     }
 
-    case GLOBAL::ProblemType::fluid_xfem_ls:
+    case CORE::ProblemType::fluid_xfem_ls:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
-      if (problem.GetProblemType() == GLOBAL::ProblemType::fluid_xfem_ls)
+      if (problem.GetProblemType() == CORE::ProblemType::fluid_xfem_ls)
         fluiddis =
             Teuchos::rcp(new XFEM::DiscretizationXFEM("fluid", reader.Comm(), problem.NDim()));
       else
@@ -768,7 +768,7 @@ void GLOBAL::ReadFields(
       break;
     }
 
-    case GLOBAL::ProblemType::elch:
+    case CORE::ProblemType::elch:
     {
       // create empty discretizations
       switch (distype)
@@ -822,7 +822,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::art_net:  // _1D_ARTERY_
+    case CORE::ProblemType::art_net:  // _1D_ARTERY_
     {
       // create empty discretizations
       arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm(), problem.NDim()));
@@ -858,7 +858,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::red_airways:  // _reduced D airways
+    case CORE::ProblemType::red_airways:  // _reduced D airways
     {
       // create empty discretizations
       airwaydis =
@@ -875,7 +875,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::struct_ale:  // structure with ale
+    case CORE::ProblemType::struct_ale:  // structure with ale
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
@@ -896,8 +896,8 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::poroelast:
-    case GLOBAL::ProblemType::poromultiphase:
+    case CORE::ProblemType::poroelast:
+    case CORE::ProblemType::poromultiphase:
     {
       // create empty discretizations
       switch (distype)
@@ -947,7 +947,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::poromultiphasescatra:
+    case CORE::ProblemType::poromultiphasescatra:
     {
       // create empty discretizations
       switch (distype)
@@ -1014,7 +1014,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::porofluidmultiphase:
+    case CORE::ProblemType::porofluidmultiphase:
     {
       // create empty discretizations
       switch (distype)
@@ -1054,7 +1054,7 @@ void GLOBAL::ReadFields(
       }
       break;
     }
-    case GLOBAL::ProblemType::fpsi:
+    case CORE::ProblemType::fpsi:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
@@ -1084,7 +1084,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::fbi:
+    case CORE::ProblemType::fbi:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
@@ -1108,7 +1108,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::immersed_fsi:
+    case CORE::ProblemType::immersed_fsi:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
@@ -1129,7 +1129,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::fps3i:
+    case CORE::ProblemType::fps3i:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
@@ -1176,7 +1176,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::poroscatra:
+    case CORE::ProblemType::poroscatra:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
@@ -1204,7 +1204,7 @@ void GLOBAL::ReadFields(
           CORE::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
       break;
     }
-    case GLOBAL::ProblemType::ehl:
+    case CORE::ProblemType::ehl:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
@@ -1227,8 +1227,8 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::ssi:
-    case GLOBAL::ProblemType::ssti:
+    case CORE::ProblemType::ssi:
+    case CORE::ProblemType::ssti:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
@@ -1259,7 +1259,7 @@ void GLOBAL::ReadFields(
       meshreader.AddElementReader(
           CORE::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
-      if (problem.GetProblemType() == GLOBAL::ProblemType::ssti)
+      if (problem.GetProblemType() == CORE::ProblemType::ssti)
       {
         thermdis = Teuchos::rcp(new DRT::Discretization("thermo", reader.Comm(), problem.NDim()));
         thermdis->SetWriter(
@@ -1271,8 +1271,8 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::particle:
-    case GLOBAL::ProblemType::pasi:
+    case CORE::ProblemType::particle:
+    case CORE::ProblemType::pasi:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
@@ -1288,7 +1288,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::level_set:
+    case CORE::ProblemType::level_set:
     {
       // create empty discretizations
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm(), problem.NDim()));
@@ -1303,12 +1303,12 @@ void GLOBAL::ReadFields(
           CORE::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
       break;
     }
-    case GLOBAL::ProblemType::np_support:
+    case CORE::ProblemType::np_support:
     {
       // no discretizations and nodes needed for supporting procs
       break;
     }
-    case GLOBAL::ProblemType::elemag:
+    case CORE::ProblemType::elemag:
     {
       // create empty discretizations
       elemagdis = Teuchos::rcp(new DRT::DiscretizationHDG("elemag", reader.Comm(), problem.NDim()));
@@ -1328,7 +1328,7 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case GLOBAL::ProblemType::redairways_tissue:
+    case CORE::ProblemType::redairways_tissue:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
@@ -1358,10 +1358,10 @@ void GLOBAL::ReadFields(
   // add artery or airways discretizations only for the following problem types
   switch (problem.GetProblemType())
   {
-    case GLOBAL::ProblemType::fsi_redmodels:
-    case GLOBAL::ProblemType::fsi_lung:
-    case GLOBAL::ProblemType::fluid_ale:
-    case GLOBAL::ProblemType::fluid_redmodels:
+    case CORE::ProblemType::fsi_redmodels:
+    case CORE::ProblemType::fsi_lung:
+    case CORE::ProblemType::fluid_ale:
+    case CORE::ProblemType::fluid_redmodels:
     {
       if (distype == CORE::FE::ShapeFunctionType::polynomial)
       {
@@ -1397,19 +1397,19 @@ void GLOBAL::ReadFields(
     // care for special applications
     switch (problem.GetProblemType())
     {
-      case GLOBAL::ProblemType::elch:
-      case GLOBAL::ProblemType::fsi:
-      case GLOBAL::ProblemType::fsi_redmodels:
-      case GLOBAL::ProblemType::fsi_lung:
-      case GLOBAL::ProblemType::scatra:
-      case GLOBAL::ProblemType::structure:
+      case CORE::ProblemType::elch:
+      case CORE::ProblemType::fsi:
+      case CORE::ProblemType::fsi_redmodels:
+      case CORE::ProblemType::fsi_lung:
+      case CORE::ProblemType::scatra:
+      case CORE::ProblemType::structure:
       {
         // read microscale fields from second, third, ... input file if necessary
         // (in case of multi-scale material models)
         ReadMicroFields(problem, reader);
         break;
       }
-      case GLOBAL::ProblemType::np_support:
+      case CORE::ProblemType::np_support:
       {
         // read microscale fields from second, third, ... inputfile for supporting processors
         ReadMicrofieldsNPsupport(problem);
@@ -2061,7 +2061,7 @@ void GLOBAL::ReadParameter(GLOBAL::Problem& problem, CORE::IO::DatFileReader& re
 
   // 1) get the problem type
   const Teuchos::ParameterList& type = problem.ProblemTypeParams();
-  problem.SetProblemType(CORE::UTILS::IntegralValue<GLOBAL::ProblemType>(type, "PROBLEMTYP"));
+  problem.SetProblemType(CORE::UTILS::IntegralValue<CORE::ProblemType>(type, "PROBLEMTYP"));
 
   // 2) get the spatial approximation type
   problem.set_spatial_approximation_type(

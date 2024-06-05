@@ -316,15 +316,15 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   if (Comm().MyPID() == 0)
     std::cout << "Building meshtying strategy object............" << std::endl;
 
-  const GLOBAL::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
+  const CORE::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
 
   INPAR::CONTACT::SolvingStrategy stype =
       CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mtparams, "STRATEGY");
   if (stype == INPAR::CONTACT::solution_lagmult)
   {
     // finally we should use another criteria to decide which strategy
-    if (problemtype != GLOBAL::ProblemType::poroelast && problemtype != GLOBAL::ProblemType::fpsi &&
-        problemtype != GLOBAL::ProblemType::fpsi_xfem && problemtype != GLOBAL::ProblemType::fps3i)
+    if (problemtype != CORE::ProblemType::poroelast && problemtype != CORE::ProblemType::fpsi &&
+        problemtype != CORE::ProblemType::fpsi_xfem && problemtype != CORE::ProblemType::fps3i)
     {
       strategy_ = Teuchos::rcp(new MtLagrangeStrategy(discret.dof_row_map(), discret.NodeRowMap(),
           mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
@@ -368,7 +368,7 @@ bool CONTACT::MtManager::read_and_check_input(
   const Teuchos::ParameterList& wearlist = GLOBAL::Problem::Instance()->WearParams();
 
   // read Problem Type and Problem Dimension from GLOBAL::Problem
-  const GLOBAL::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
+  const CORE::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
   const int spatialDim = GLOBAL::Problem::Instance()->NDim();
   CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->spatial_approximation_type();
 
@@ -571,16 +571,16 @@ bool CONTACT::MtManager::read_and_check_input(
   // *********************************************************************
   // poroelastic meshtying
   // *********************************************************************
-  if ((problemtype == GLOBAL::ProblemType::poroelast || problemtype == GLOBAL::ProblemType::fpsi ||
-          problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
+  if ((problemtype == CORE::ProblemType::poroelast || problemtype == CORE::ProblemType::fpsi ||
+          problemtype == CORE::ProblemType::fpsi_xfem) &&
       (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
               INPAR::MORTAR::shape_dual &&
           CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
               INPAR::MORTAR::shape_petrovgalerkin))
     FOUR_C_THROW("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
-  if ((problemtype == GLOBAL::ProblemType::poroelast || problemtype == GLOBAL::ProblemType::fpsi ||
-          problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
+  if ((problemtype == CORE::ProblemType::poroelast || problemtype == CORE::ProblemType::fpsi ||
+          problemtype == CORE::ProblemType::fpsi_xfem) &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
           "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
     FOUR_C_THROW(
@@ -588,20 +588,20 @@ bool CONTACT::MtManager::read_and_check_input(
                                                                        // Parent Elements, which are
                                                                        // not copied to other procs!
 
-  if ((problemtype == GLOBAL::ProblemType::poroelast || problemtype == GLOBAL::ProblemType::fpsi ||
-          problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
+  if ((problemtype == CORE::ProblemType::poroelast || problemtype == CORE::ProblemType::fpsi ||
+          problemtype == CORE::ProblemType::fpsi_xfem) &&
       CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") !=
           INPAR::CONTACT::solution_lagmult)
     FOUR_C_THROW("POROCONTACT: Use Lagrangean Strategy for poro meshtying!");
 
-  if ((problemtype == GLOBAL::ProblemType::poroelast || problemtype == GLOBAL::ProblemType::fpsi ||
-          problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
+  if ((problemtype == CORE::ProblemType::poroelast || problemtype == CORE::ProblemType::fpsi ||
+          problemtype == CORE::ProblemType::fpsi_xfem) &&
       CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(meshtying, "SYSTEM") !=
           INPAR::CONTACT::system_condensed_lagmult)
     FOUR_C_THROW("POROCONTACT: Just lagrange multiplier should be condensed for poro meshtying!");
 
-  if ((problemtype == GLOBAL::ProblemType::poroelast || problemtype == GLOBAL::ProblemType::fpsi ||
-          problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
+  if ((problemtype == CORE::ProblemType::poroelast || problemtype == CORE::ProblemType::fpsi ||
+          problemtype == CORE::ProblemType::fpsi_xfem) &&
       (spatialDim != 3) && (spatialDim != 2))
   {
     const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();

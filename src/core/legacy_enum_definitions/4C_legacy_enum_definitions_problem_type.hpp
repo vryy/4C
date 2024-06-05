@@ -5,14 +5,14 @@
 */
 /*--------------------------------------------------------------------*/
 
-#ifndef FOUR_C_GLOBAL_DATA_ENUMS_HPP
-#define FOUR_C_GLOBAL_DATA_ENUMS_HPP
+#ifndef FOUR_C_LEGACY_ENUM_DEFINITIONS_PROBLEM_TYPE_HPP
+#define FOUR_C_LEGACY_ENUM_DEFINITIONS_PROBLEM_TYPE_HPP
 
 #include "4C_config.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace GLOBAL
+namespace CORE
 {
   /**
    * A global definition of available problem types.
@@ -69,8 +69,7 @@ namespace GLOBAL
     thermo_fsi,            // thermo-fluid-structure-interaction problem
     tsi,                   // thermal structure interaction
   };
-
-}  // namespace GLOBAL
+}  // namespace CORE
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -530,9 +530,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   }
 
   // what's the current problem type?
-  GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+  CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
   double Lp = 0.0;
-  if (probtype == GLOBAL::ProblemType::fps3i)
+  if (probtype == CORE::ProblemType::fps3i)
   {
     // get the conductivity of membrane at the interface
     Lp = params.get<double>("membrane conductivity");
@@ -1318,7 +1318,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
                             ) *
                     pfunct(inode) * tangentialfac * Base::fac_ * timefac;
 
-                if (probtype == GLOBAL::ProblemType::fps3i)
+                if (probtype == CORE::ProblemType::fps3i)
                 {
                   /*
                             d(w o n,(u-vs) o n) / d(ds)
@@ -1375,7 +1375,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
                   (tangential1(idof2) * tangential1(idof3) +
                       tangential2(idof2) * tangential2(idof3)) *
                   pfunct(nnod) * pfunct(inode) * tangentialfac * Base::fac_ * timefac;
-              if (probtype == GLOBAL::ProblemType::fps3i)
+              if (probtype == CORE::ProblemType::fps3i)
               {
                 /*
                      d(w o n,(u-vs) o n) / d(u)
@@ -1660,7 +1660,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
           // permeability of biological membranes to non-electrolytes." Biochimica et biophysica
           // Acta 27 (1958): 229-246.
           // One could think of not using this equation, i.e. having L_p -> inf (Thon)
-          if (probtype == GLOBAL::ProblemType::fps3i)
+          if (probtype == CORE::ProblemType::fps3i)
           {
             // evaluated on fluid field --> no sign flip
             elevec1(inode * Base::numdofpernode_ + idof2) -=

@@ -124,8 +124,8 @@ void STR::MODELEVALUATOR::Contact::post_setup(Teuchos::ParameterList& cparams)
 void STR::MODELEVALUATOR::Contact::check_pseudo2_d() const
 {
   // print messages for multifield problems (e.g FSI)
-  const GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
-  if ((probtype != GLOBAL::ProblemType::structure) and (GState().GetMyRank() == 0))
+  const CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+  if ((probtype != CORE::ProblemType::structure) and (GState().GetMyRank() == 0))
   {
     // warnings
 #ifdef CONTACTPSEUDO2D

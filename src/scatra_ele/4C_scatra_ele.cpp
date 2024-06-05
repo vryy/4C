@@ -70,7 +70,7 @@ void DRT::ELEMENTS::TransportType::nodal_block_information(
   dimns = numdf;
   nv = numdf;
 
-  if (GLOBAL::Problem::Instance(0)->GetProblemType() == GLOBAL::ProblemType::elch)
+  if (GLOBAL::Problem::Instance(0)->GetProblemType() == CORE::ProblemType::elch)
   {
     if (nv > 1)  // only when we have more than 1 dof per node!
     {
@@ -339,7 +339,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(const int index, Teuchos::RCP<CORE::M
 
     // for problem type ELCH we have one additional degree of freedom per node
     // for the electric potential
-    if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::elch)
+    if (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::elch)
     {
       for (int ii = 0; ii < numdofpernode_; ++ii)
       {

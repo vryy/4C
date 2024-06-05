@@ -212,7 +212,7 @@ void electromagnetics_drt()
         // This is necessary to have the dirichlet conditions done also in the scatra problmem. It
         // might be necessary to rethink how things are handled inside the
         // DRT::UTILS::DbcHDG::do_dirichlet_condition.
-        problem->SetProblemType(GLOBAL::ProblemType::scatra);
+        problem->SetProblemType(CORE::ProblemType::scatra);
 
         // access the problem-specific parameter list
         const Teuchos::ParameterList& scatradyn =
@@ -338,7 +338,7 @@ void electromagnetics_drt()
             elemagalgo->set_initial_electric_field(phi, scatradis);
 
             // Once work is done change back to problem elemag
-            problem->SetProblemType(GLOBAL::ProblemType::elemag);
+            problem->SetProblemType(CORE::ProblemType::elemag);
 
             break;
           }

@@ -3158,9 +3158,9 @@ void STR::TimIntImpl::CmtLinearSolve()
       Teuchos::RCP<CONTACT::AbstractStrategy> costrat =
           Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strat);
       if (costrat != Teuchos::null)
-        mueluParams.set<std::string>("GLOBAL::ProblemType", "contact");
+        mueluParams.set<std::string>("CORE::ProblemType", "contact");
       else
-        mueluParams.set<std::string>("GLOBAL::ProblemType", "meshtying");
+        mueluParams.set<std::string>("CORE::ProblemType", "meshtying");
       mueluParams.set<int>("time step", step_);
       mueluParams.set<int>("iter", iter_);
     }
@@ -3593,7 +3593,7 @@ void STR::TimIntImpl::update_iter_incrementally(
 
   // recover contact / meshtying Lagrange multipliers (monolithic FSI)
   // not in the case of TSI with contact
-  if (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::tsi)
+  if (GLOBAL::Problem::Instance()->GetProblemType() != CORE::ProblemType::tsi)
     if (have_contact_meshtying() && disi != Teuchos::null) cmtbridge_->Recover(disi_);
 
   // Update using #disi_
@@ -4577,9 +4577,9 @@ int STR::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
       Teuchos::RCP<CONTACT::AbstractStrategy> costrat =
           Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strat);
       if (costrat != Teuchos::null)
-        mueluParams.set<std::string>("GLOBAL::ProblemType", "contact");
+        mueluParams.set<std::string>("CORE::ProblemType", "contact");
       else
-        mueluParams.set<std::string>("GLOBAL::ProblemType", "meshtying");
+        mueluParams.set<std::string>("CORE::ProblemType", "meshtying");
       mueluParams.set<int>("time step", step_);
       mueluParams.set<int>("iter", iter_);
     }

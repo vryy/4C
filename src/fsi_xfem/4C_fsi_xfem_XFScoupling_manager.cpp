@@ -136,14 +136,14 @@ void XFEM::XfsCouplingManager::AddCouplingMatrix(
   C_ss_block.Add(*xfluid_->C_ss_Matrix(cond_name_), false, scaling * scaling_FSI, 1.0);
 
 
-  GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+  CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
 
   // Todo: Need to eighter split fluid matrixes in the fsi algo or change the maps of the coupling
   // matrixes(merged)
   bool is_xfluidfluid =
       Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(xfluid_, false) != Teuchos::null;
 
-  if (probtype == GLOBAL::ProblemType::fsi_xfem &&
+  if (probtype == CORE::ProblemType::fsi_xfem &&
       !is_xfluidfluid)  // use assign for off diagonal blocks
   {
     // scale the off diagonal coupling blocks
@@ -156,7 +156,7 @@ void XFEM::XfsCouplingManager::AddCouplingMatrix(
     systemmatrix.Assign(idx_[0], idx_[1], CORE::LINALG::View, *xfluid_->C_sx_Matrix(cond_name_));
     systemmatrix.Assign(idx_[1], idx_[0], CORE::LINALG::View, *xfluid_->C_xs_Matrix(cond_name_));
   }
-  else if (probtype == GLOBAL::ProblemType::fpsi_xfem || is_xfluidfluid)
+  else if (probtype == CORE::ProblemType::fpsi_xfem || is_xfluidfluid)
   {
     CORE::LINALG::SparseMatrix& C_fs_block = (systemmatrix)(idx_[1], idx_[0]);
     CORE::LINALG::SparseMatrix& C_sf_block = (systemmatrix)(idx_[0], idx_[1]);

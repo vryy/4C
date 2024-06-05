@@ -89,12 +89,12 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::build_explicit_strategy(
   Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
 
   // what's the current problem type?
-  GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+  CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
 
-  if (probtype == GLOBAL::ProblemType::fsi or probtype == GLOBAL::ProblemType::fsi_redmodels or
-      probtype == GLOBAL::ProblemType::fsi_lung or probtype == GLOBAL::ProblemType::gas_fsi or
-      probtype == GLOBAL::ProblemType::ac_fsi or probtype == GLOBAL::ProblemType::biofilm_fsi or
-      probtype == GLOBAL::ProblemType::thermo_fsi)
+  if (probtype == CORE::ProblemType::fsi or probtype == CORE::ProblemType::fsi_redmodels or
+      probtype == CORE::ProblemType::fsi_lung or probtype == CORE::ProblemType::gas_fsi or
+      probtype == CORE::ProblemType::ac_fsi or probtype == CORE::ProblemType::biofilm_fsi or
+      probtype == CORE::ProblemType::thermo_fsi)
     FOUR_C_THROW("No explicit time integration with fsi");
 
   const enum INPAR::STR::DynamicType dyntype =
