@@ -65,7 +65,7 @@ STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : TimInt(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       pred_(CORE::UTILS::IntegralValue<INPAR::STR::PredEnum>(sdynparams, "PREDICT")),
       itertype_(CORE::UTILS::IntegralValue<INPAR::STR::NonlinSolTech>(sdynparams, "NLNSOL")),
@@ -1783,7 +1783,8 @@ int STR::TimIntImpl::newton_full_error_check(int linerror, int eleerror)
     else if ((iter_ >= itermax_) and (divcontype_ == INPAR::STR::divcont_continue))
     {
       if (myrank_ == 0)
-        IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing" << IO::endl;
+        CORE::IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing"
+                       << CORE::IO::endl;
       return 0;
     }
     else if ((iter_ >= itermax_) and
@@ -1795,7 +1796,8 @@ int STR::TimIntImpl::newton_full_error_check(int linerror, int eleerror)
                  divcontype_ == INPAR::STR::divcont_repeat_simulation or
                  divcontype_ == INPAR::STR::divcont_adapt_penaltycontact))
     {
-      if (myrank_ == 0) IO::cout << "Newton unconverged in " << iter_ << " iterations " << IO::endl;
+      if (myrank_ == 0)
+        CORE::IO::cout << "Newton unconverged in " << iter_ << " iterations " << CORE::IO::endl;
       return 1;
     }
   }
@@ -1817,7 +1819,7 @@ int STR::TimIntImpl::LinSolveErrorCheck(int linerror)
                        divcontype_ == INPAR::STR::divcont_adapt_penaltycontact or
                        divcontype_ == INPAR::STR::divcont_adapt_3D0Dptc_ele_err))
   {
-    if (myrank_ == 0) IO::cout << "Linear solver is having trouble " << IO::endl;
+    if (myrank_ == 0) CORE::IO::cout << "Linear solver is having trouble " << CORE::IO::endl;
     return 2;
   }
   else
@@ -1836,7 +1838,8 @@ int STR::TimIntImpl::ElementErrorCheck(bool evalerr)
                       divcontype_ == INPAR::STR::divcont_adapt_3D0Dptc_ele_err))
   {
     if (myrank_ == 0)
-      IO::cout << "Element error in form of a negative Jacobian determinant " << IO::endl;
+      CORE::IO::cout << "Element error in form of a negative Jacobian determinant "
+                     << CORE::IO::endl;
     return 3;
   }
   else
@@ -2693,7 +2696,7 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
       // modify stiffness matrix with dti
       if (ptc_3D0D)
       {
-        if (myrank_ == 0 and dti > 0.0) IO::cout << "k_ptc = " << dti << IO::endl;
+        if (myrank_ == 0 and dti > 0.0) CORE::IO::cout << "k_ptc = " << dti << CORE::IO::endl;
       }
 
       // uncomplete stiffness matrix, so stuff can be inserted again
@@ -2912,7 +2915,8 @@ int STR::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror, int elee
     else if ((iter_ >= itermax_) and (divcontype_ == INPAR::STR::divcont_continue))
     {
       if (myrank_ == 0)
-        IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing" << IO::endl;
+        CORE::IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing"
+                       << CORE::IO::endl;
       if (conman_->HaveMonitor()) conman_->compute_monitor_values(disn_);
       return 0;
     }
@@ -2926,7 +2930,8 @@ int STR::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror, int elee
                  divcontype_ == INPAR::STR::divcont_adapt_penaltycontact or
                  divcontype_ == INPAR::STR::divcont_adapt_3D0Dptc_ele_err))
     {
-      if (myrank_ == 0) IO::cout << "Newton unconverged in " << iter_ << " iterations " << IO::endl;
+      if (myrank_ == 0)
+        CORE::IO::cout << "Newton unconverged in " << iter_ << " iterations " << CORE::IO::endl;
       return 1;
     }
   }
@@ -3606,23 +3611,24 @@ void STR::TimIntImpl::print_predictor()
   // only master processor
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
   {
-    IO::cout << "Structural predictor for field '" << discret_->Name() << "' "
-             << INPAR::STR::PredEnumString(pred_) << " yields ";
+    CORE::IO::cout << "Structural predictor for field '" << discret_->Name() << "' "
+                   << INPAR::STR::PredEnumString(pred_) << " yields ";
 
     // relative check of force residual
     if (normtypefres_ == INPAR::STR::convnorm_rel)
     {
-      IO::cout << "scaled res-norm " << normfres_ / normcharforce_ << IO::endl;
+      CORE::IO::cout << "scaled res-norm " << normfres_ / normcharforce_ << CORE::IO::endl;
     }
     // absolute check of force residual
     else if (normtypefres_ == INPAR::STR::convnorm_abs)
     {
-      IO::cout << "absolute res-norm " << normfres_ << IO::endl;
+      CORE::IO::cout << "absolute res-norm " << normfres_ << CORE::IO::endl;
     }
     // mixed absolute-relative check of force residual
     else if (normtypefres_ == INPAR::STR::convnorm_mix)
     {
-      IO::cout << "mixed res-norm " << std::min(normfres_, normfres_ / normcharforce_) << IO::endl;
+      CORE::IO::cout << "mixed res-norm " << std::min(normfres_, normfres_ / normcharforce_)
+                     << CORE::IO::endl;
     }
     // default
     else
@@ -4645,7 +4651,7 @@ void STR::TimIntImpl::check_for_time_step_increase(INPAR::STR::ConvergenceStatus
       // increase the step size if the remaining number of steps is a even number
       if (((stepmax_ - stepn_) % 2) == 0 and stepmax_ != stepn_)
       {
-        IO::cout << "Nonlinear solver successful. Double timestep size!" << IO::endl;
+        CORE::IO::cout << "Nonlinear solver successful. Double timestep size!" << CORE::IO::endl;
 
         divconrefinementlevel_--;
         divconnumfinestep_ = 0;
@@ -4679,7 +4685,8 @@ void STR::TimIntImpl::check_for3_d0_dptc_reset(INPAR::STR::ConvergenceStatus& st
     {
       if (myrank_ == 0)
       {
-        IO::cout << "Nonlinear solver successful. Reset 3D-0D PTC to normal Newton!" << IO::endl;
+        CORE::IO::cout << "Nonlinear solver successful. Reset 3D-0D PTC to normal Newton!"
+                       << CORE::IO::endl;
       }
       divconrefinementlevel_ = 0;
       divconnumfinestep_ = 0;

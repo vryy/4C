@@ -621,7 +621,7 @@ bool CONTACT::MtManager::read_and_check_input(
 /*----------------------------------------------------------------------*
  |  write restart information for meshtying (public)          popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtManager::write_restart(IO::DiscretizationWriter& output, bool forcedrestart)
+void CONTACT::MtManager::write_restart(CORE::IO::DiscretizationWriter& output, bool forcedrestart)
 {
   output.WriteVector("mt_lagrmultold", GetStrategy().LagrMultOld());
 
@@ -631,7 +631,7 @@ void CONTACT::MtManager::write_restart(IO::DiscretizationWriter& output, bool fo
 /*----------------------------------------------------------------------*
  |  read restart information for meshtying (public)           popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtManager::read_restart(IO::DiscretizationReader& reader,
+void CONTACT::MtManager::read_restart(CORE::IO::DiscretizationReader& reader,
     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
 {
   // this is meshtying, thus we need zeros for restart
@@ -644,7 +644,7 @@ void CONTACT::MtManager::read_restart(IO::DiscretizationReader& reader,
 /*----------------------------------------------------------------------*
  |  write interface tractions for postprocessing (public)     popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtManager::postprocess_quantities(IO::DiscretizationWriter& output)
+void CONTACT::MtManager::postprocess_quantities(CORE::IO::DiscretizationWriter& output)
 {
   // evaluate interface tractions
   Teuchos::RCP<Epetra_Map> problem = GetStrategy().ProblemDofs();

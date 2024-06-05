@@ -13,11 +13,11 @@
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
 #include "4C_discretization_fem_general_element.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_discretization_fem_general_fiber_node_holder.hpp"
+#include "4C_discretization_fem_general_fiber_node_utils.hpp"
 #include "4C_discretization_fem_general_utils_gauss_point_postprocess.hpp"
 #include "4C_discretization_fem_general_utils_gausspoints.hpp"
 #include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
-#include "4C_fiber_nodal_fiber_holder.hpp"
-#include "4C_fiber_utils.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix_generators.hpp"
@@ -884,7 +884,7 @@ namespace DRT::ELEMENTS
       const CORE::FE::GaussIntegration& stiffness_matrix_integration,
       const CORE::Elements::Element& ele, Teuchos::ParameterList& params)
   {
-    if (DRT::FIBER::UTILS::HaveNodalFibers<celltype>(ele.Nodes()))
+    if (CORE::Nodes::HaveNodalFibers<celltype>(ele.Nodes()))
     {
       // This element has fiber nodes.
       // Interpolate fibers to the Gauss points and add them to the parameter list
@@ -906,10 +906,10 @@ namespace DRT::ELEMENTS
               });
 
       // add fibers to the ParameterList
-      DRT::FIBER::NodalFiberHolder fiberHolder;
+      CORE::Nodes::NodalFiberHolder fiberHolder;
 
       // Do the interpolation
-      DRT::FIBER::UTILS::ProjectFibersToGaussPoints<celltype>(ele.Nodes(), shapefcts, fiberHolder);
+      CORE::Nodes::ProjectFibersToGaussPoints<celltype>(ele.Nodes(), shapefcts, fiberHolder);
 
       params.set("fiberholder", fiberHolder);
     }

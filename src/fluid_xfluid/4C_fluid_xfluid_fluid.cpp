@@ -954,64 +954,72 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
   {
     {
       std::cout.precision(8);
-      IO::cout << IO::endl
-               << "---- error norm for analytical solution Nr. "
-               << CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(*params_, "calculate error")
-               << " ----------" << IO::endl;
-      IO::cout << "-------------- domain error norms (background)------------" << IO::endl;
-      IO::cout << "|| u - u_b ||_L2(Omega)                        =  " << dom_bg_err_vel_L2
-               << IO::endl;
-      IO::cout << "|| grad( u - u_b ) ||_L2(Omega)                =  " << dom_bg_err_vel_H1_semi
-               << IO::endl;
-      IO::cout << "|| u - u_b ||_H1(Omega)                        =  " << dom_bg_err_vel_H1
-               << IO::endl;
-      IO::cout << "|| p - p_b ||_L2(Omega)                        =  " << dom_bg_err_pre_L2
-               << IO::endl;
-      IO::cout << "-------------- domain error norms (embedded)  ------------" << IO::endl;
-      IO::cout << "|| u - u_e ||_L2(Omega)                        =  " << dom_emb_err_vel_L2
-               << IO::endl;
-      IO::cout << "|| grad( u_ - u_h ) ||_L2(Omega)               =  " << dom_emb_err_vel_H1_semi
-               << IO::endl;
-      IO::cout << "|| u - u_e ||_H1(Omega)                        =  " << dom_emb_err_vel_H1
-               << IO::endl;
-      IO::cout << "|| p - p_e ||_L2(Omega)                        =  " << dom_emb_err_pre_L2
-               << IO::endl;
-      IO::cout << "----viscosity-scaled domain error norms (background)------" << IO::endl;
-      IO::cout << "|| nu^(+1/2) grad( u - u_b ) ||_L2(Omega)      =  "
-               << dom_bg_err_vel_H1_semi_nu_scaled << IO::endl;
-      IO::cout << "|| nu^(-1/2) (p - p_b) ||_L2(Omega)            =  "
-               << dom_bg_err_pre_L2_nu_scaled << IO::endl;
-      IO::cout << "|| sigma^(+1/2) ( u - u_h ) ||_L2(Omega)       =  "
-               << dom_bg_err_vel_L2_sigma_scaled << IO::endl;
-      IO::cout << "|| Phi^(+1/2) (p - p_h) ||_L2(Omega)           =  "
-               << dom_bg_err_pre_L2_Phi_scaled << IO::endl;
-      IO::cout << "----viscosity-scaled domain error norms (embedded) ------" << IO::endl;
-      IO::cout << "|| nu^(+1/2) grad( u - u_e ) ||_L2(Omega)      =  "
-               << dom_emb_err_vel_H1_semi_nu_scaled << IO::endl;
-      IO::cout << "|| nu^(-1/2) (p - p_e) ||_L2(Omega)            =  "
-               << dom_emb_err_pre_L2_nu_scaled << IO::endl;
-      IO::cout << "|| sigma^(+1/2) ( u - u_h ) ||_L2(Omega)       =  "
-               << dom_emb_err_vel_L2_sigma_scaled << IO::endl;
-      IO::cout << "|| Phi^(+1/2) (p - p_h) ||_L2(Omega)           =  "
-               << dom_emb_err_pre_L2_Phi_scaled << IO::endl;
-      IO::cout << "---------------------------------------------------------" << IO::endl;
-      IO::cout << "-------------- interface/boundary error norms -----------" << IO::endl;
-      IO::cout << "|| nu^(+1/2) (u_b - u_e) ||_H1/2(Gamma)            =  " << interf_err_Honehalf
-               << IO::endl;
-      IO::cout << "|| nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)   =  " << interf_err_Hmonehalf_u
-               << IO::endl;
-      IO::cout << "|| nu^(-1/2) (p_b - p_e)*n ||_H-1/2(Gamma)         =  " << interf_err_Hmonehalf_p
-               << IO::endl;
-      IO::cout << "|| (u*n)_inflow (u_b - u_e) ||_L2(Gamma)           =  " << interf_err_inflow
-               << IO::endl;
-      IO::cout << "|| (sigma*h+|u|+nu/h)^(+1/2) (u_b - u_e)*n ||_L2(Gamma)  =  "
-               << interf_err_mass_cons << IO::endl;
-      IO::cout << "---------------------------------------------------------" << IO::endl;
-      IO::cout << "-------------- Error on Functionals from solution  ------------" << IO::endl;
-      IO::cout << " | sin(x) ( u,x - u,x exact ) | (background)        = " << functional_bg
-               << IO::endl;
-      IO::cout << " | sin(x) ( u,x - u,x exact ) | (embedded)          = " << functional_emb
-               << IO::endl;
+      CORE::IO::cout << CORE::IO::endl
+                     << "---- error norm for analytical solution Nr. "
+                     << CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(*params_, "calculate error")
+                     << " ----------" << CORE::IO::endl;
+      CORE::IO::cout << "-------------- domain error norms (background)------------"
+                     << CORE::IO::endl;
+      CORE::IO::cout << "|| u - u_b ||_L2(Omega)                        =  " << dom_bg_err_vel_L2
+                     << CORE::IO::endl;
+      CORE::IO::cout << "|| grad( u - u_b ) ||_L2(Omega)                =  "
+                     << dom_bg_err_vel_H1_semi << CORE::IO::endl;
+      CORE::IO::cout << "|| u - u_b ||_H1(Omega)                        =  " << dom_bg_err_vel_H1
+                     << CORE::IO::endl;
+      CORE::IO::cout << "|| p - p_b ||_L2(Omega)                        =  " << dom_bg_err_pre_L2
+                     << CORE::IO::endl;
+      CORE::IO::cout << "-------------- domain error norms (embedded)  ------------"
+                     << CORE::IO::endl;
+      CORE::IO::cout << "|| u - u_e ||_L2(Omega)                        =  " << dom_emb_err_vel_L2
+                     << CORE::IO::endl;
+      CORE::IO::cout << "|| grad( u_ - u_h ) ||_L2(Omega)               =  "
+                     << dom_emb_err_vel_H1_semi << CORE::IO::endl;
+      CORE::IO::cout << "|| u - u_e ||_H1(Omega)                        =  " << dom_emb_err_vel_H1
+                     << CORE::IO::endl;
+      CORE::IO::cout << "|| p - p_e ||_L2(Omega)                        =  " << dom_emb_err_pre_L2
+                     << CORE::IO::endl;
+      CORE::IO::cout << "----viscosity-scaled domain error norms (background)------"
+                     << CORE::IO::endl;
+      CORE::IO::cout << "|| nu^(+1/2) grad( u - u_b ) ||_L2(Omega)      =  "
+                     << dom_bg_err_vel_H1_semi_nu_scaled << CORE::IO::endl;
+      CORE::IO::cout << "|| nu^(-1/2) (p - p_b) ||_L2(Omega)            =  "
+                     << dom_bg_err_pre_L2_nu_scaled << CORE::IO::endl;
+      CORE::IO::cout << "|| sigma^(+1/2) ( u - u_h ) ||_L2(Omega)       =  "
+                     << dom_bg_err_vel_L2_sigma_scaled << CORE::IO::endl;
+      CORE::IO::cout << "|| Phi^(+1/2) (p - p_h) ||_L2(Omega)           =  "
+                     << dom_bg_err_pre_L2_Phi_scaled << CORE::IO::endl;
+      CORE::IO::cout << "----viscosity-scaled domain error norms (embedded) ------"
+                     << CORE::IO::endl;
+      CORE::IO::cout << "|| nu^(+1/2) grad( u - u_e ) ||_L2(Omega)      =  "
+                     << dom_emb_err_vel_H1_semi_nu_scaled << CORE::IO::endl;
+      CORE::IO::cout << "|| nu^(-1/2) (p - p_e) ||_L2(Omega)            =  "
+                     << dom_emb_err_pre_L2_nu_scaled << CORE::IO::endl;
+      CORE::IO::cout << "|| sigma^(+1/2) ( u - u_h ) ||_L2(Omega)       =  "
+                     << dom_emb_err_vel_L2_sigma_scaled << CORE::IO::endl;
+      CORE::IO::cout << "|| Phi^(+1/2) (p - p_h) ||_L2(Omega)           =  "
+                     << dom_emb_err_pre_L2_Phi_scaled << CORE::IO::endl;
+      CORE::IO::cout << "---------------------------------------------------------"
+                     << CORE::IO::endl;
+      CORE::IO::cout << "-------------- interface/boundary error norms -----------"
+                     << CORE::IO::endl;
+      CORE::IO::cout << "|| nu^(+1/2) (u_b - u_e) ||_H1/2(Gamma)            =  "
+                     << interf_err_Honehalf << CORE::IO::endl;
+      CORE::IO::cout << "|| nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)   =  "
+                     << interf_err_Hmonehalf_u << CORE::IO::endl;
+      CORE::IO::cout << "|| nu^(-1/2) (p_b - p_e)*n ||_H-1/2(Gamma)         =  "
+                     << interf_err_Hmonehalf_p << CORE::IO::endl;
+      CORE::IO::cout << "|| (u*n)_inflow (u_b - u_e) ||_L2(Gamma)           =  "
+                     << interf_err_inflow << CORE::IO::endl;
+      CORE::IO::cout << "|| (sigma*h+|u|+nu/h)^(+1/2) (u_b - u_e)*n ||_L2(Gamma)  =  "
+                     << interf_err_mass_cons << CORE::IO::endl;
+      CORE::IO::cout << "---------------------------------------------------------"
+                     << CORE::IO::endl;
+      CORE::IO::cout << "-------------- Error on Functionals from solution  ------------"
+                     << CORE::IO::endl;
+      CORE::IO::cout << " | sin(x) ( u,x - u,x exact ) | (background)        = " << functional_bg
+                     << CORE::IO::endl;
+      CORE::IO::cout << " | sin(x) ( u,x - u,x exact ) | (embedded)          = " << functional_emb
+                     << CORE::IO::endl;
     }
 
     // append error of the last time step to the error file

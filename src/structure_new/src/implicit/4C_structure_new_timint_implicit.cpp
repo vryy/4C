@@ -268,9 +268,10 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
     {
       if (myrank == 0)
       {
-        IO::cout << "\n WARNING: You are continuing your simulation although the nonlinear solver\n"
-                    " did not converge in the current time step.\n"
-                 << IO::endl;
+        CORE::IO::cout
+            << "\n WARNING: You are continuing your simulation although the nonlinear solver\n"
+               " did not converge in the current time step.\n"
+            << CORE::IO::endl;
       }
       return INPAR::STR::conv_success;
       break;
@@ -278,7 +279,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
     case INPAR::STR::divcont_repeat_step:
     {
       if (myrank == 0)
-        IO::cout << "Nonlinear solver failed to converge repeat time step" << IO::endl;
+        CORE::IO::cout << "Nonlinear solver failed to converge repeat time step" << CORE::IO::endl;
 
       // reset step (e.g. quantities on element level or model specific stuff)
       reset_step();
@@ -290,11 +291,11 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
     {
       if (myrank == 0)
       {
-        IO::cout << "Nonlinear solver failed to converge at time t= " << GetTimeNp()
-                 << ". Divide timestep in half. "
-                 << "Old time step: " << GetDeltaTime() << IO::endl
-                 << "New time step: " << 0.5 * GetDeltaTime() << IO::endl
-                 << IO::endl;
+        CORE::IO::cout << "Nonlinear solver failed to converge at time t= " << GetTimeNp()
+                       << ". Divide timestep in half. "
+                       << "Old time step: " << GetDeltaTime() << CORE::IO::endl
+                       << "New time step: " << 0.5 * GetDeltaTime() << CORE::IO::endl
+                       << CORE::IO::endl;
       }
 
       // halve the time step size
@@ -319,11 +320,11 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
     {
       if (myrank == 0)
       {
-        IO::cout << "Nonlinear solver failed to converge at time t= " << GetTimeNp()
-                 << ". Divide timestep in half. "
-                 << "Old time step: " << GetDeltaTime() << IO::endl
-                 << "New time step: " << 0.5 * GetDeltaTime() << IO::endl
-                 << IO::endl;
+        CORE::IO::cout << "Nonlinear solver failed to converge at time t= " << GetTimeNp()
+                       << ". Divide timestep in half. "
+                       << "Old time step: " << GetDeltaTime() << CORE::IO::endl
+                       << "New time step: " << 0.5 * GetDeltaTime() << CORE::IO::endl
+                       << CORE::IO::endl;
       }
 
       // halve the time step size
@@ -374,9 +375,9 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
 
       if (myrank == 0)
       {
-        IO::cout << "Nonlinear solver failed to converge: modifying time-step size by random "
-                    "number between 0.51 and 1.99 -> here: "
-                 << get_random_time_step_factor() << " !" << IO::endl;
+        CORE::IO::cout << "Nonlinear solver failed to converge: modifying time-step size by random "
+                          "number between 0.51 and 1.99 -> here: "
+                       << get_random_time_step_factor() << " !" << CORE::IO::endl;
       }
       // multiply time-step size by random number
       SetDeltaTime(GetDeltaTime() * get_random_time_step_factor());
@@ -406,21 +407,22 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
     {
       if (nonlinsoldiv == INPAR::STR::conv_nonlin_fail and myrank == 0)
       {
-        IO::cout << "Nonlinear solver failed to converge and DIVERCONT = "
-                    "repeat_simulation, hence leaving structural time integration "
-                 << IO::endl;
+        CORE::IO::cout << "Nonlinear solver failed to converge and DIVERCONT = "
+                          "repeat_simulation, hence leaving structural time integration "
+                       << CORE::IO::endl;
       }
       else if (nonlinsoldiv == INPAR::STR::conv_lin_fail and myrank == 0)
       {
-        IO::cout << "Linear solver failed to converge and DIVERCONT = "
-                    "repeat_simulation, hence leaving structural time integration "
-                 << IO::endl;
+        CORE::IO::cout << "Linear solver failed to converge and DIVERCONT = "
+                          "repeat_simulation, hence leaving structural time integration "
+                       << CORE::IO::endl;
       }
       else if (nonlinsoldiv == INPAR::STR::conv_ele_fail and myrank == 0)
       {
-        IO::cout << "Element failure in form of a negative Jacobian determinant and DIVERCONT = "
-                    "repeat_simulation, hence leaving structural time integration "
-                 << IO::endl;
+        CORE::IO::cout
+            << "Element failure in form of a negative Jacobian determinant and DIVERCONT = "
+               "repeat_simulation, hence leaving structural time integration "
+            << CORE::IO::endl;
       }
       return nonlinsoldiv;  // so that time loop will be aborted
       break;
@@ -455,7 +457,7 @@ void STR::TIMINT::Implicit::check_for_time_step_increase(INPAR::STR::Convergence
       if (((GetStepEnd() - GetStepNp()) % 2) == 0 and GetStepEnd() != GetStepNp())
       {
         if (data_global_state().GetMyRank() == 0)
-          IO::cout << "Nonlinear solver successful. Double timestep size!" << IO::endl;
+          CORE::IO::cout << "Nonlinear solver successful. Double timestep size!" << CORE::IO::endl;
 
         set_div_con_refine_level(get_div_con_refine_level() - 1);
         set_div_con_num_fine_step(0);

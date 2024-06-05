@@ -44,7 +44,7 @@ FOUR_C_NAMESPACE_OPEN
 POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
     const Teuchos::ParameterList& poroparams,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     :  // call constructor for "nontrivial" objects
       solver_(Teuchos::null),
       linsolvernumber_(linsolvernumber),
@@ -591,8 +591,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Output()
       output_->WriteElementData(true);
       // write output of blood vessel volume fraction
       if (output_bloodvesselvolfrac_)
-        output_->WriteVector(
-            "bloodvesselvolfrac", strategy_->blood_vessel_volume_fraction(), IO::elementvector);
+        output_->WriteVector("bloodvesselvolfrac", strategy_->blood_vessel_volume_fraction(),
+            CORE::IO::elementvector);
     }
 
     // reconstruct porosity for output; porosity is only needed for output and does not have to be
@@ -1640,7 +1640,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
         POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToNodeBasedMultiVector(
             *discret_, *solidpressure_, nds_solidpressure_, 1);
 
-    output_->WriteVector("solidpressure", solidpressure_multi, IO::nodevector);
+    output_->WriteVector("solidpressure", solidpressure_multi, CORE::IO::nodevector);
   }
 
   // displacement field
@@ -1655,7 +1655,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
         POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToNodeBasedMultiVector(
             *discret_, *dispnp, nds_disp_, nsd_);
 
-    output_->WriteVector("dispnp", dispnp_multi, IO::nodevector);
+    output_->WriteVector("dispnp", dispnp_multi, CORE::IO::nodevector);
   }
   // fluxes
   if (flux_ != Teuchos::null)
@@ -1685,7 +1685,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
           if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
         }
       }
-      output_->WriteVector(name, flux_k, IO::nodevector);
+      output_->WriteVector(name, flux_k, CORE::IO::nodevector);
     }
   }
 
@@ -1712,7 +1712,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
       }
 
       std::string output_name = "velocity_" + std::to_string(k + 1);
-      output_->WriteVector(output_name, velocity_k, IO::elementvector);
+      output_->WriteVector(output_name, velocity_k, CORE::IO::elementvector);
     }
   }
 
@@ -1724,7 +1724,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
         POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToNodeBasedMultiVector(
             *discret_, *porosity_, nds_solidpressure_, 1);
 
-    output_->WriteVector("porosity", porosity_multi, IO::nodevector);
+    output_->WriteVector("porosity", porosity_multi, CORE::IO::nodevector);
   }
 
   return;

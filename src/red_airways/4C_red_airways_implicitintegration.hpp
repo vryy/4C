@@ -64,7 +64,7 @@ namespace AIRWAY
     */
     RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Discretization> dis,
         std::unique_ptr<CORE::LINALG::Solver> solver, Teuchos::ParameterList& params,
-        IO::DiscretizationWriter& output);
+        CORE::IO::DiscretizationWriter& output);
 
 
     /*!
@@ -279,12 +279,12 @@ namespace AIRWAY
     void ExtractPressure(Teuchos::RCP<Epetra_Vector> couppres);
 
     /// Hand over outputwriter to redairway_tissue
-    IO::DiscretizationWriter& GetOutputWriter() { return output_; }
+    CORE::IO::DiscretizationWriter& GetOutputWriter() { return output_; }
 
     /// Hand over restartreader to redairway_tissue
-    Teuchos::RCP<IO::DiscretizationReader> GetRestartReader(int step)
+    Teuchos::RCP<CORE::IO::DiscretizationReader> GetRestartReader(int step)
     {
-      return Teuchos::rcp(new IO::DiscretizationReader(
+      return Teuchos::rcp(new CORE::IO::DiscretizationReader(
           discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
     }
 
@@ -296,7 +296,7 @@ namespace AIRWAY
     Teuchos::RCP<DRT::Discretization> discret_;
     std::unique_ptr<CORE::LINALG::Solver> solver_;
     Teuchos::ParameterList params_;
-    IO::DiscretizationWriter& output_;
+    CORE::IO::DiscretizationWriter& output_;
     //! the processor ID from the communicator
     int myrank_;
 

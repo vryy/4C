@@ -49,11 +49,11 @@ namespace CORE::LINALG
   class SparseMatrix;
 }  // namespace CORE::LINALG
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace DRT
 {
@@ -249,7 +249,7 @@ namespace STR
        *  \param forced_writerestart (in) : special treatment is necessary, if the restart is forced
        */
       virtual void write_restart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const = 0;
+          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const = 0;
 
       /*! \brief read model specific restart information
        *
@@ -257,7 +257,7 @@ namespace STR
        *
        *  \date 07/2016
        *  \author hiermeier */
-      virtual void read_restart(IO::DiscretizationReader& ioreader) = 0;
+      virtual void read_restart(CORE::IO::DiscretizationReader& ioreader) = 0;
 
       /*! \brief Predict the values for DoFs that are defined in
        *         the respective model evaluators, e.g. condensed variables.*/
@@ -389,7 +389,7 @@ namespace STR
        *
        * @param iowriter discretization writer that actually writes binary output to the disk
        */
-      virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const = 0;
+      virtual void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const = 0;
 
       /**
        * \brief This method is called before the runtime output method is called.

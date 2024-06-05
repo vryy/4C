@@ -204,7 +204,7 @@ namespace ADAPTER
       FOUR_C_THROW("not implemented!");
       return;
     }
-    const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() override
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& DiscWriter() override
     {
       return fluid_->DiscWriter();
     }

@@ -45,7 +45,8 @@ namespace
     SetupCompareParallelVectorsTest()
     {
       communicators_ = MockUpCommunicators();
-      IO::cout.setup(false, false, false, IO::standard, communicators_->LocalComm(), 0, 0, "dummy");
+      CORE::IO::cout.setup(
+          false, false, false, CORE::IO::standard, communicators_->LocalComm(), 0, 0, "dummy");
 
       // create arbitrary distributed map within each group
       Teuchos::RCP<Epetra_Map> map = Teuchos::rcp(
@@ -64,7 +65,7 @@ namespace
       epetraVector_->ReplaceMyValues(numMyEles, values, indices);
     }
 
-    void TearDown() override { IO::cout.close(); }
+    void TearDown() override { CORE::IO::cout.close(); }
 
    public:
     Teuchos::RCP<CORE::COMM::Communicators> communicators_;
@@ -85,7 +86,8 @@ namespace
     SetupCompareParallelMatricesTest()
     {
       communicators_ = MockUpCommunicators();
-      IO::cout.setup(false, false, false, IO::standard, communicators_->LocalComm(), 0, 0, "dummy");
+      CORE::IO::cout.setup(
+          false, false, false, CORE::IO::standard, communicators_->LocalComm(), 0, 0, "dummy");
 
       // create arbitrary distributed map within each group
       Teuchos::RCP<Epetra_Map> rowmap = Teuchos::rcp(
@@ -131,7 +133,7 @@ namespace
       epetraCrsMatrix_->FillComplete(false);
     }
 
-    void TearDown() override { IO::cout.close(); }
+    void TearDown() override { CORE::IO::cout.close(); }
 
    public:
     Teuchos::RCP<CORE::COMM::Communicators> communicators_;

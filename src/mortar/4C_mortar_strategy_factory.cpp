@@ -241,10 +241,10 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
   {
     if (soltype == INPAR::CONTACT::solution_lagmult)
     {
-      IO::cout << "================================================================\n";
-      IO::cout << "===== Lagrange Multiplier Strategy =============================\n";
-      IO::cout << "===== NONSMOOTH - GEOMETRIES ===================================\n";
-      IO::cout << "================================================================\n\n";
+      CORE::IO::cout << "================================================================\n";
+      CORE::IO::cout << "===== Lagrange Multiplier Strategy =============================\n";
+      CORE::IO::cout << "===== NONSMOOTH - GEOMETRIES ===================================\n";
+      CORE::IO::cout << "================================================================\n\n";
     }
     else
       FOUR_C_THROW("Invalid system type for contact/meshtying interface smoothing");
@@ -259,85 +259,85 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
         if (soltype == INPAR::CONTACT::solution_lagmult &&
             shapefcn == INPAR::MORTAR::shape_standard)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Standard Lagrange multiplier strategy ====================\n";
-          IO::cout << "===== (Saddle point formulation) ===============================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Standard Lagrange multiplier strategy ====================\n";
+          CORE::IO::cout << "===== (Saddle point formulation) ===============================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_lagmult &&
                  shapefcn == INPAR::MORTAR::shape_dual)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Dual Lagrange multiplier strategy ========================\n";
-          IO::cout << "===== (Saddle point formulation) ===============================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Dual Lagrange multiplier strategy ========================\n";
+          CORE::IO::cout << "===== (Saddle point formulation) ===============================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_lagmult &&
                  shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============\n";
-          IO::cout << "===== (Saddle point formulation) ===============================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============\n";
+          CORE::IO::cout << "===== (Saddle point formulation) ===============================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_penalty &&
                  shapefcn == INPAR::MORTAR::shape_standard)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Standard Penalty strategy ================================\n";
-          IO::cout << "===== (Pure displacement formulation) ==========================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Standard Penalty strategy ================================\n";
+          CORE::IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_penalty &&
                  shapefcn == INPAR::MORTAR::shape_dual)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Dual Penalty strategy ====================================\n";
-          IO::cout << "===== (Pure displacement formulation) ==========================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Dual Penalty strategy ====================================\n";
+          CORE::IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_uzawa &&
                  shapefcn == INPAR::MORTAR::shape_standard)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Uzawa Augmented Lagrange strategy ========================\n";
-          IO::cout << "===== (Pure displacement formulation) ==========================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Uzawa Augmented Lagrange strategy ========================\n";
+          CORE::IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_dual)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Dual Uzawa Augmented Lagrange strategy ===================\n";
-          IO::cout << "===== (Pure displacement formulation) ==========================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Dual Uzawa Augmented Lagrange strategy ===================\n";
+          CORE::IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_combo)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Combination of different Solving Strategies ==============\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Combination of different Solving Strategies ==============\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_augmented)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Augmented Lagrange strategy ==============================\n";
-          IO::cout << "===== (Saddle point formulation) ===============================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Augmented Lagrange strategy ==============================\n";
+          CORE::IO::cout << "===== (Saddle point formulation) ===============================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_std_lagrange)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Standard Lagrange strategy ===============================\n";
-          IO::cout << "===== Derived from the Augmented formulation ===================\n";
-          IO::cout << "===== (Saddle point formulation) ===============================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Standard Lagrange strategy ===============================\n";
+          CORE::IO::cout << "===== Derived from the Augmented formulation ===================\n";
+          CORE::IO::cout << "===== (Saddle point formulation) ===============================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_steepest_ascent)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Steepest Ascent strategy =================================\n";
-          IO::cout << "===== (Condensed formulation) ==================================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Steepest Ascent strategy =================================\n";
+          CORE::IO::cout << "===== (Condensed formulation) ==================================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else
           FOUR_C_THROW("Invalid strategy or shape function type for contact/meshtying");
@@ -349,59 +349,59 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
       {
         if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Dual Lagrange multiplier strategy ========================\n";
-          IO::cout << "===== (Condensed formulation) ==================================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Dual Lagrange multiplier strategy ========================\n";
+          CORE::IO::cout << "===== (Condensed formulation) ==================================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_lagmult &&
                  shapefcn == INPAR::MORTAR::shape_standard &&
                  CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(smortar, "LM_QUAD") ==
                      INPAR::MORTAR::lagmult_const)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== const Lagrange multiplier strategy =======================\n";
-          IO::cout << "===== (Condensed formulation) ==================================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== const Lagrange multiplier strategy =======================\n";
+          CORE::IO::cout << "===== (Condensed formulation) ==================================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_lagmult &&
                  shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============\n";
-          IO::cout << "===== (Condensed formulation) ==================================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============\n";
+          CORE::IO::cout << "===== (Condensed formulation) ==================================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_penalty &&
                  shapefcn == INPAR::MORTAR::shape_standard)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Standard Penalty strategy ================================\n";
-          IO::cout << "===== (Pure displacement formulation) ==========================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Standard Penalty strategy ================================\n";
+          CORE::IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_penalty &&
                  shapefcn == INPAR::MORTAR::shape_dual)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Dual Penalty strategy ====================================\n";
-          IO::cout << "===== (Pure displacement formulation) ==========================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Dual Penalty strategy ====================================\n";
+          CORE::IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_uzawa &&
                  shapefcn == INPAR::MORTAR::shape_standard)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Uzawa Augmented Lagrange strategy ========================\n";
-          IO::cout << "===== (Pure displacement formulation) ==========================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Uzawa Augmented Lagrange strategy ========================\n";
+          CORE::IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_dual)
         {
-          IO::cout << "================================================================\n";
-          IO::cout << "===== Dual Uzawa Augmented Lagrange strategy ===================\n";
-          IO::cout << "===== (Pure displacement formulation) ==========================\n";
-          IO::cout << "================================================================\n\n";
+          CORE::IO::cout << "================================================================\n";
+          CORE::IO::cout << "===== Dual Uzawa Augmented Lagrange strategy ===================\n";
+          CORE::IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          CORE::IO::cout << "================================================================\n\n";
         }
         else
           FOUR_C_THROW("Invalid strategy or shape function type for contact/meshtying");
@@ -409,27 +409,27 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
     }
     else if (algorithm == INPAR::MORTAR::algorithm_nts)
     {
-      IO::cout << "================================================================\n";
-      IO::cout << "===== Node-To-Segment approach =================================\n";
-      IO::cout << "================================================================\n\n";
+      CORE::IO::cout << "================================================================\n";
+      CORE::IO::cout << "===== Node-To-Segment approach =================================\n";
+      CORE::IO::cout << "================================================================\n\n";
     }
     else if (algorithm == INPAR::MORTAR::algorithm_lts)
     {
-      IO::cout << "================================================================\n";
-      IO::cout << "===== Line-To-Segment approach =================================\n";
-      IO::cout << "================================================================\n\n";
+      CORE::IO::cout << "================================================================\n";
+      CORE::IO::cout << "===== Line-To-Segment approach =================================\n";
+      CORE::IO::cout << "================================================================\n\n";
     }
     else if (algorithm == INPAR::MORTAR::algorithm_stl)
     {
-      IO::cout << "================================================================\n";
-      IO::cout << "===== Segment-To-Line approach =================================\n";
-      IO::cout << "================================================================\n\n";
+      CORE::IO::cout << "================================================================\n";
+      CORE::IO::cout << "===== Segment-To-Line approach =================================\n";
+      CORE::IO::cout << "================================================================\n\n";
     }
     else if (algorithm == INPAR::MORTAR::algorithm_gpts)
     {
-      IO::cout << "================================================================\n";
-      IO::cout << "===== Gauss-Point-To-Segment approach ==========================\n";
-      IO::cout << "================================================================\n\n";
+      CORE::IO::cout << "================================================================\n";
+      CORE::IO::cout << "===== Gauss-Point-To-Segment approach ==========================\n";
+      CORE::IO::cout << "================================================================\n\n";
     }
     // invalid system type
     else

@@ -23,7 +23,8 @@ FOUR_C_NAMESPACE_OPEN
 SCATRA::ScaTraTimIntElchOST::ScaTraTimIntElchOST(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntOneStepTheta(actdis, solver, sctratimintparams, extraparams, output)
@@ -147,16 +148,17 @@ void SCATRA::ScaTraTimIntElchOST::write_restart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::read_restart(const int step, Teuchos::RCP<IO::InputControl> input)
+void SCATRA::ScaTraTimIntElchOST::read_restart(
+    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
 {
   TimIntOneStepTheta::read_restart(step, input);
 
-  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
   else
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
   init_nernst_bc();
@@ -339,7 +341,8 @@ void SCATRA::ScaTraTimIntElchOST::set_old_part_of_righthandside()
 SCATRA::ScaTraTimIntElchBDF2::ScaTraTimIntElchBDF2(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntBDF2(actdis, solver, sctratimintparams, extraparams, output)
@@ -432,16 +435,16 @@ void SCATRA::ScaTraTimIntElchBDF2::write_restart() const
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElchBDF2::read_restart(
-    const int step, Teuchos::RCP<IO::InputControl> input)
+    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
 {
   TimIntBDF2::read_restart(step, input);
 
-  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
   else
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
   init_nernst_bc();
@@ -611,7 +614,8 @@ void SCATRA::ScaTraTimIntElchBDF2::set_old_part_of_righthandside()
 SCATRA::ScaTraTimIntElchGenAlpha::ScaTraTimIntElchGenAlpha(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntGenAlpha(actdis, solver, sctratimintparams, extraparams, output)
@@ -726,16 +730,16 @@ void SCATRA::ScaTraTimIntElchGenAlpha::write_restart() const
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElchGenAlpha::read_restart(
-    const int step, Teuchos::RCP<IO::InputControl> input)
+    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
 {
   TimIntGenAlpha::read_restart(step, input);
 
-  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
   else
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
   init_nernst_bc();
@@ -877,7 +881,8 @@ SCATRA::ScaTraTimIntElchStationary::ScaTraTimIntElchStationary(
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntStationary(actdis, solver, sctratimintparams, extraparams, output)
@@ -960,16 +965,16 @@ void SCATRA::ScaTraTimIntElchStationary::write_restart() const
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElchStationary::read_restart(
-    const int step, Teuchos::RCP<IO::InputControl> input)
+    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
 {
   TimIntStationary::read_restart(step, input);
 
-  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
   else
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
   init_nernst_bc();
@@ -1050,7 +1055,8 @@ void SCATRA::ScaTraTimIntElchStationary::compute_time_deriv_pot0(const bool init
 SCATRA::ScaTraTimIntElchSCLOST::ScaTraTimIntElchSCLOST(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       ScaTraTimIntElchSCL(actdis, solver, params, sctratimintparams, extraparams, output),
@@ -1130,7 +1136,7 @@ void SCATRA::ScaTraTimIntElchSCLOST::write_restart() const
 /*----------------------------------------------------------------------*
  -----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElchSCLOST::read_restart(
-    const int step, Teuchos::RCP<IO::InputControl> input)
+    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
 {
   FOUR_C_THROW("Restart is not implemented for coupled space-charge layers.");
 }

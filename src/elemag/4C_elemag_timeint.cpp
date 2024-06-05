@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
 ELEMAG::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG> &actdis,
     const Teuchos::RCP<CORE::LINALG::Solver> &solver,
     const Teuchos::RCP<Teuchos::ParameterList> &params,
-    const Teuchos::RCP<IO::DiscretizationWriter> &output)
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter> &output)
     : discret_(actdis),
       solver_(solver),
       params_(params),
@@ -979,10 +979,10 @@ void ELEMAG::ElemagTimeInt::Output()
   }
 
   // Output the reuslts
-  output_->WriteVector("magnetic", magnetic, IO::nodevector);
-  output_->WriteVector("trace", trace, IO::nodevector);
-  output_->WriteVector("electric", electric, IO::nodevector);
-  output_->WriteVector("electric_post", electric_post, IO::nodevector);
+  output_->WriteVector("magnetic", magnetic, CORE::IO::nodevector);
+  output_->WriteVector("trace", trace, CORE::IO::nodevector);
+  output_->WriteVector("electric", electric, CORE::IO::nodevector);
+  output_->WriteVector("electric_post", electric_post, CORE::IO::nodevector);
 
   // add restart data
 
@@ -1038,7 +1038,8 @@ void ELEMAG::ElemagTimeInt::write_restart()
  *----------------------------------------------------------------------*/
 void ELEMAG::ElemagTimeInt::read_restart(int step)
 {
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
   Teuchos::RCP<Epetra_Vector> intVar = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map(1))));

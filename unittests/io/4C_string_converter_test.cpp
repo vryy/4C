@@ -21,23 +21,23 @@ namespace
 {
   using namespace FourC;
 
-  TEST(ParseTests, ParseInt) { EXPECT_EQ(IO::StringConverter<int>::Parse("5"), 5); }
+  TEST(ParseTests, ParseInt) { EXPECT_EQ(CORE::IO::StringConverter<int>::Parse("5"), 5); }
 
-  TEST(ParseTests, ParseDouble) { EXPECT_EQ(IO::StringConverter<double>::Parse("5.5"), 5.5); }
+  TEST(ParseTests, ParseDouble) { EXPECT_EQ(CORE::IO::StringConverter<double>::Parse("5.5"), 5.5); }
 
-  TEST(ParseTests, ParseChar) { EXPECT_EQ(IO::StringConverter<char>::Parse("a"), 'a'); }
+  TEST(ParseTests, ParseChar) { EXPECT_EQ(CORE::IO::StringConverter<char>::Parse("a"), 'a'); }
 
   TEST(ParseTests, ParseBool)
   {
-    EXPECT_EQ(IO::StringConverter<bool>::Parse("true"), true);
-    EXPECT_EQ(IO::StringConverter<bool>::Parse("false"), false);
-    EXPECT_THROW(IO::StringConverter<bool>::Parse("abc"), CORE::Exception);
+    EXPECT_EQ(CORE::IO::StringConverter<bool>::Parse("true"), true);
+    EXPECT_EQ(CORE::IO::StringConverter<bool>::Parse("false"), false);
+    EXPECT_THROW(CORE::IO::StringConverter<bool>::Parse("abc"), CORE::Exception);
   }
 
   TEST(ParseTests, ParseArray)
   {
     const std::string str = "1.1,2.2,3.3, 4.4,5.5";
-    std::array<double, 5> arr = IO::StringConverter<std::array<double, 5>>::Parse(str);
+    std::array<double, 5> arr = CORE::IO::StringConverter<std::array<double, 5>>::Parse(str);
     std::array<double, 5> expected_arr = {1.1, 2.2, 3.3, 4.4, 5.5};
     EXPECT_EQ(arr, expected_arr);
   }
@@ -45,13 +45,13 @@ namespace
   TEST(ParseTests, ParseArrayWrongArrayDimension)
   {
     const std::string str = "1.1,2.2,  3.3,4.4,5.5,6.6";
-    EXPECT_THROW((IO::StringConverter<std::array<double, 5>>::Parse(str)), CORE::Exception);
+    EXPECT_THROW((CORE::IO::StringConverter<std::array<double, 5>>::Parse(str)), CORE::Exception);
   }
 
   TEST(ParseTests, ParseArrayOfArrayOfArrayOfArrays)
   {
     const std::string str = "1.1,2.2;1.1,2.2 |1.1,2.2;1.1,2.2% 1.1,2.2; 1.1,2.2| 1.1,2.2;1.1,2.2";
-    auto arr = IO::StringConverter<
+    auto arr = CORE::IO::StringConverter<
         std::array<std::array<std::array<std::array<double, 2>, 2>, 2>, 2>>::Parse(str);
     std::array<std::array<std::array<std::array<double, 2>, 2>, 2>, 2> expected_arr;
     for (auto& arr1 : expected_arr)
@@ -70,7 +70,7 @@ namespace
   TEST(ParseTests, ParseVector)
   {
     const std::string str = "1,2,3";
-    auto vec = IO::StringConverter<std::vector<double>>::Parse(str);
+    auto vec = CORE::IO::StringConverter<std::vector<double>>::Parse(str);
     std::vector<double> expected_vec = {1, 2, 3};
     EXPECT_EQ(vec, expected_vec);
   }
@@ -78,7 +78,7 @@ namespace
   TEST(ParseTests, ParseVectorOfVectorsOfVectors)
   {
     const std::string str = "1,2,3;4,5,6;7,8,9|1,2,3;4,5 ,6;7,8,9|1,2,3;4,5,6;7,8,9";
-    auto vec = IO::StringConverter<std::vector<std::vector<std::vector<double>>>>::Parse(str);
+    auto vec = CORE::IO::StringConverter<std::vector<std::vector<std::vector<double>>>>::Parse(str);
     std::vector<std::vector<std::vector<double>>> expected_vec = {{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}},
         {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}};
     EXPECT_EQ(vec, expected_vec);
@@ -87,7 +87,7 @@ namespace
   TEST(ParseTests, ParseMap)
   {
     const std::string str = "100 :2.2,200 :4.4";
-    std::map<int, double> map = IO::StringConverter<std::map<int, double>>::Parse(str);
+    std::map<int, double> map = CORE::IO::StringConverter<std::map<int, double>>::Parse(str);
     std::map<int, double> expected_map;
     expected_map[100] = 2.2;
     expected_map[200] = 4.4;
@@ -99,7 +99,7 @@ namespace
   {
     const std::string str = "1.1:10,20,30; 2.2:1,2,3";
     std::map<double, std::array<int, 3>> map =
-        IO::StringConverter<std::map<double, std::array<int, 3>>>::Parse(str);
+        CORE::IO::StringConverter<std::map<double, std::array<int, 3>>>::Parse(str);
     std::map<double, std::array<int, 3>> expected_map;
     std::array<int, 3> array_val_1 = {10, 20, 30};
     std::array<int, 3> array_val_2 = {1, 2, 3};
@@ -112,7 +112,7 @@ namespace
   {
     const std::string str = "1,2,3: 2.2;4,5,6:7.7";
     std::map<std::array<int, 3>, double> map =
-        IO::StringConverter<std::map<std::array<int, 3>, double>>::Parse(str);
+        CORE::IO::StringConverter<std::map<std::array<int, 3>, double>>::Parse(str);
     std::map<std::array<int, 3>, double> expected_map;
     std::array<int, 3> array_key = {1, 2, 3};
     std::array<int, 3> array_key_2 = {4, 5, 6};
@@ -126,7 +126,7 @@ namespace
   TEST(ParseTests, ParseMapPairValues)
   {
     const std::string str = "100:2.2,200:4.4";
-    std::map<int, double> map = IO::StringConverter<std::map<int, double>>::Parse(str);
+    std::map<int, double> map = CORE::IO::StringConverter<std::map<int, double>>::Parse(str);
     std::map<int, double> expected_map;
     expected_map[100] = 2.2;
     expected_map[200] = 4.4;
@@ -138,23 +138,23 @@ namespace
   {
     const std::string str = "1,2,3.3";
     std::tuple<int, int, double> tuple =
-        IO::StringConverter<std::tuple<int, int, double>>::Parse(str);
+        CORE::IO::StringConverter<std::tuple<int, int, double>>::Parse(str);
     std::tuple<int, int, double> expected_tuple = std::make_tuple(1, 2, 3.3);
     EXPECT_EQ(tuple, expected_tuple);
   }
 
   TEST(ParseTests, ParseTupleWrongDimension)
   {
+    EXPECT_THROW((CORE::IO::StringConverter<std::tuple<int, int, double>>::Parse("1,2,3.3,9.0")),
+        CORE::Exception);
     EXPECT_THROW(
-        (IO::StringConverter<std::tuple<int, int, double>>::Parse("1,2,3.3,9.0")), CORE::Exception);
-    EXPECT_THROW(
-        (IO::StringConverter<std::tuple<int, int, double>>::Parse("1,2")), CORE::Exception);
+        (CORE::IO::StringConverter<std::tuple<int, int, double>>::Parse("1,2")), CORE::Exception);
   }
 
   TEST(ParseTests, ParsePair)
   {
     const std::string str = "1,2.2";
-    std::pair<int, double> pair = IO::StringConverter<std::pair<int, double>>::Parse(str);
+    std::pair<int, double> pair = CORE::IO::StringConverter<std::pair<int, double>>::Parse(str);
     std::pair<int, double> expected_pair = std::make_pair(1, 2.2);
     EXPECT_EQ(pair, expected_pair);
   }
@@ -162,8 +162,9 @@ namespace
   TEST(ParseTests, ParsePairWrongDimension)
   {
     EXPECT_THROW(
-        (IO::StringConverter<std::pair<int, double>>::Parse("1,2.2,3.3")), CORE::Exception);
-    EXPECT_THROW((IO::StringConverter<std::pair<int, double>>::Parse("1;7")), CORE::Exception);
+        (CORE::IO::StringConverter<std::pair<int, double>>::Parse("1,2.2,3.3")), CORE::Exception);
+    EXPECT_THROW(
+        (CORE::IO::StringConverter<std::pair<int, double>>::Parse("1;7")), CORE::Exception);
   }
 
   TEST(ParseTests, ComplexExample)
@@ -187,7 +188,7 @@ namespace
     std::tuple<std::map<int, std::vector<double>>, std::pair<std::string, std::list<char>>,
         std::vector<std::vector<std::vector<int>>>>
         type;
-    auto tuple = IO::StringConverter<
+    auto tuple = CORE::IO::StringConverter<
         std::tuple<std::map<int, std::vector<double>>, std::pair<double, std::list<char>>,
             std::vector<std::vector<std::vector<int>>>>>::Parse(str);
     std::tuple<std::map<int, std::vector<double>>, std::pair<double, std::list<char>>,

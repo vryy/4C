@@ -43,11 +43,11 @@ namespace ALE
   class Ale;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationReader;
   class DiscretizationWriter;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace FSI
 {
@@ -106,10 +106,10 @@ namespace FSI
       );
 
       /// write history vectors for restart
-      void output_restart(IO::DiscretizationWriter& output);
+      void output_restart(CORE::IO::DiscretizationWriter& output);
 
       /// read history values for restart
-      void read_restart(IO::DiscretizationReader& reader);
+      void read_restart(CORE::IO::DiscretizationReader& reader);
 
      protected:
       /// compute average interface displacement

@@ -64,7 +64,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   }
 
   // 2. Context for output and restart
-  Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis->Writer();
   output->WriteMesh(0, 0.0);
 
   // 3. Set pointers and variables for ParameterList rawdyn
@@ -74,7 +74,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   // Print default parameters
   if (actdis->Comm().MyPID() == 0)
   {
-    INPUT::PrintDefaultParameters(IO::cout, rawdyn);
+    INPUT::PrintDefaultParameters(CORE::IO::cout, rawdyn);
   }
 
   // 4. Create a linear solver

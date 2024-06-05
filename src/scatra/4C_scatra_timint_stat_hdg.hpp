@@ -25,7 +25,7 @@ namespace SCATRA
     TimIntStationaryHDG(Teuchos::RCP<DRT::Discretization> dis,
         Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
 
     /// initialize time integration scheme
     void Init() override;

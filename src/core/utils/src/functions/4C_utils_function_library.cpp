@@ -109,7 +109,7 @@ double CORE::UTILS::FastPolynomialFunction::EvaluateDerivative(
 
 CORE::UTILS::CubicSplineFromCSV::CubicSplineFromCSV(const std::string& csv_file)
 {
-  auto vector_of_csv_columns = IO::ReadCsvAsColumns(2, csv_file);
+  auto vector_of_csv_columns = CORE::IO::ReadCsvAsColumns(2, csv_file);
 
   cubic_spline_ = std::make_unique<CORE::UTILS::CubicSplineInterpolation>(
       CORE::UTILS::CubicSplineInterpolation(vector_of_csv_columns[0], vector_of_csv_columns[1]));

@@ -94,7 +94,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   {
     geometric_search_visualization_ptr_ =
         Teuchos::rcp(new CORE::GEOMETRICSEARCH::GeometricSearchVisualization(
-            IO::VisualizationParametersFactory(
+            CORE::IO::VisualizationParametersFactory(
                 GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
                 *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN()),
             DiscretPtr()->Comm(), "beam-interaction-geometric-search"));
@@ -162,7 +162,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ =
           Teuchos::rcp<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>(
               new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter(
-                  IO::VisualizationParametersFactory(
+                  CORE::IO::VisualizationParametersFactory(
                       GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
                       *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN())));
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->Init();
@@ -193,7 +193,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
       beam_to_solid_surface_visualization_output_writer_ptr_ =
           Teuchos::rcp<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>(
               new BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter(
-                  IO::VisualizationParametersFactory(
+                  CORE::IO::VisualizationParametersFactory(
                       GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
                       *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN())));
       beam_to_solid_surface_visualization_output_writer_ptr_->Init();
@@ -342,7 +342,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::evaluate_force_stiff()
         beam_interaction_data_state_ptr()->GetForceNp(),
         beam_interaction_data_state_ptr()->GetStiff());
 
-  print_active_beam_contact_set(IO::cout.os(IO::verbose));
+  print_active_beam_contact_set(CORE::IO::cout.os(CORE::IO::verbose));
 
   return true;
 }
@@ -445,7 +445,7 @@ std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamContac
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::OutputStepState(
-    IO::DiscretizationWriter& iowriter) const
+    CORE::IO::DiscretizationWriter& iowriter) const
 {
 }
 
@@ -460,9 +460,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_output_runtime_beam_c
   check_init();
 
   visualization_manager_ptr_ = Teuchos::rcp(
-      new IO::VisualizationManager(beam_contact_params()
-                                       .beam_contact_runtime_visualization_output_params()
-                                       ->get_visualization_parameters(),
+      new CORE::IO::VisualizationManager(beam_contact_params()
+                                             .beam_contact_runtime_visualization_output_params()
+                                             ->get_visualization_parameters(),
           Discret().Comm(), "beam-contact"));
 }
 
@@ -473,11 +473,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_time_step_output_run
 {
   check_init_setup();
 
-  auto [output_time, output_step] =
-      IO::GetTimeAndTimeStepIndexForOutput(beam_contact_params()
-                                               .beam_contact_runtime_visualization_output_params()
-                                               ->get_visualization_parameters(),
-          GState().GetTimeN(), GState().GetStepN());
+  auto [output_time, output_step] = CORE::IO::GetTimeAndTimeStepIndexForOutput(
+      beam_contact_params()
+          .beam_contact_runtime_visualization_output_params()
+          ->get_visualization_parameters(),
+      GState().GetTimeN(), GState().GetStepN());
   write_output_runtime_beam_contact(output_step, output_time);
 }
 
@@ -488,11 +488,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_iteration_output_run
 {
   check_init_setup();
 
-  auto [output_time, output_step] =
-      IO::GetTimeAndTimeStepIndexForOutput(beam_contact_params()
-                                               .beam_contact_runtime_visualization_output_params()
-                                               ->get_visualization_parameters(),
-          GState().GetTimeN(), GState().GetStepN(), iteration_number);
+  auto [output_time, output_step] = CORE::IO::GetTimeAndTimeStepIndexForOutput(
+      beam_contact_params()
+          .beam_contact_runtime_visualization_output_params()
+          ->get_visualization_parameters(),
+      GState().GetTimeN(), GState().GetStepN(), iteration_number);
   write_output_runtime_beam_contact(output_step, output_time);
 }
 
@@ -614,7 +614,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::ResetStepState() { check_i
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_restart(
-    IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const
+    CORE::IO::DiscretizationWriter& ia_writer, CORE::IO::DiscretizationWriter& bin_writer) const
 {
   // empty
 }
@@ -629,7 +629,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PreReadRestart()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::read_restart(
-    IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader)
+    CORE::IO::DiscretizationReader& ia_reader, CORE::IO::DiscretizationReader& bin_reader)
 {
   // empty
 }
@@ -766,8 +766,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
 
     // some screen output
     if (GState().GetMyRank() == 0)
-      IO::cout(IO::verbose) << " sphere to beam contact half interaction distance "
-                            << spherebeamlinking_half_interaction_distance_global << IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << " sphere to beam contact half interaction distance "
+          << spherebeamlinking_half_interaction_distance_global << CORE::IO::endl;
   }
 
   // iii) beam to solid contact
@@ -1026,9 +1027,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
   beam_interaction_conditions_ptr_->create_indirect_assembly_managers(
       DiscretPtr(), assembly_managers_);
 
-  IO::cout(IO::standard) << "PID " << std::setw(2) << std::right << GState().GetMyRank()
-                         << " currently monitors " << std::setw(5) << std::right
-                         << contact_elepairs_.size() << " beam contact pairs" << IO::endl;
+  CORE::IO::cout(CORE::IO::standard)
+      << "PID " << std::setw(2) << std::right << GState().GetMyRank() << " currently monitors "
+      << std::setw(5) << std::right << contact_elepairs_.size() << " beam contact pairs"
+      << CORE::IO::endl;
 }
 
 /*----------------------------------------------------------------------------*

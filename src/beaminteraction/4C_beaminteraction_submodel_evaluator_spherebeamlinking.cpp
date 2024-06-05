@@ -408,11 +408,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateStepElement(
 
   if (GState().GetMyRank() == 0)
   {
-    IO::cout(IO::standard) << "\n************************************************" << IO::endl;
-    IO::cout(IO::standard) << "Sphere Beam Links: " << num_global[0];
-    IO::cout(IO::standard) << " (New: " << num_global[1];
-    IO::cout(IO::standard) << " Dissolved: " << num_global[2];
-    IO::cout(IO::standard) << ")\n************************************************\n" << IO::endl;
+    CORE::IO::cout(CORE::IO::standard)
+        << "\n************************************************" << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::standard) << "Sphere Beam Links: " << num_global[0];
+    CORE::IO::cout(CORE::IO::standard) << " (New: " << num_global[1];
+    CORE::IO::cout(CORE::IO::standard) << " Dissolved: " << num_global[2];
+    CORE::IO::cout(CORE::IO::standard) << ")\n************************************************\n"
+                                       << CORE::IO::endl;
   }
 }
 
@@ -472,7 +474,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::get_energy() const
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::OutputStepState(
-    IO::DiscretizationWriter& iowriter) const
+    CORE::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
 }
@@ -499,7 +501,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::ResetStepState()
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_restart(
-    IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const
+    CORE::IO::DiscretizationWriter& ia_writer, CORE::IO::DiscretizationWriter& bin_writer) const
 {
   check_init_setup();
 
@@ -516,7 +518,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::PreReadRestart()
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::read_restart(
-    IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader)
+    CORE::IO::DiscretizationReader& ia_reader, CORE::IO::DiscretizationReader& bin_reader)
 {
   check_init_setup();
 
@@ -583,8 +585,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::get_half_interaction
 
   // some screen output
   if (GState().GetMyRank() == 0)
-    IO::cout(IO::verbose) << "\n spherebeamlinking half interaction distance "
-                          << spherebeamlinking_half_interaction_distance_global << IO::endl;
+    CORE::IO::cout(CORE::IO::verbose)
+        << "\n spherebeamlinking half interaction distance "
+        << spherebeamlinking_half_interaction_distance_global << CORE::IO::endl;
 
 
   half_interaction_distance =
@@ -599,8 +602,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_output_runtime(
 {
   check_init();
 
-  visualization_manager_ptr_ = Teuchos::rcp(new IO::VisualizationManager(
-      IO::VisualizationParametersFactory(
+  visualization_manager_ptr_ = Teuchos::rcp(new CORE::IO::VisualizationManager(
+      CORE::IO::VisualizationParametersFactory(
           GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
           *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN()),
       BinDiscretPtr()->Comm(), "spherebeamlinker"));

@@ -376,13 +376,14 @@ void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int inte
 
   static std::vector<std::string> done_prefixes;
 
-  const std::string path(IO::ExtractPath(ofile_path));
-  const std::string dir_name(IO::RemoveRestartStepFromFileName(IO::ExtractFileName(ofile_path),
-                                 GLOBAL::Problem::Instance()->Restart()) +
-                             "_conservation");
+  const std::string path(CORE::IO::ExtractPath(ofile_path));
+  const std::string dir_name(
+      CORE::IO::RemoveRestartStepFromFileName(
+          CORE::IO::ExtractFileName(ofile_path), GLOBAL::Problem::Instance()->Restart()) +
+      "_conservation");
 
   std::string full_filepath(path + dir_name);
-  IO::create_directory(full_filepath, mypid);
+  CORE::IO::create_directory(full_filepath, mypid);
   full_filepath += "/" + prefix + "_" + "conservation.data";
 
   bool is_done = false;

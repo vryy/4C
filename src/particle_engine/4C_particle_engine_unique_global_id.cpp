@@ -40,7 +40,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::Setup()
 }
 
 void PARTICLEENGINE::UniqueGlobalIdHandler::write_restart(
-    std::shared_ptr<IO::DiscretizationWriter> writer) const
+    std::shared_ptr<CORE::IO::DiscretizationWriter> writer) const
 {
   // write maximum global id in restart
   writer->WriteInt(objectname_ + "maxglobalid", maxglobalid_);
@@ -61,7 +61,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::write_restart(
 }
 
 void PARTICLEENGINE::UniqueGlobalIdHandler::read_restart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
+    const std::shared_ptr<CORE::IO::DiscretizationReader> reader)
 {
   // get maximum global id from restart
   maxglobalid_ = reader->ReadInt(objectname_ + "maxglobalid");

@@ -24,9 +24,13 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace INPUT
 {
-  class DatFileReader;
   class LineDefinition;
 }  // namespace INPUT
+
+namespace CORE::IO
+{
+  class DatFileReader;
+}
 
 namespace CORE::UTILS
 {

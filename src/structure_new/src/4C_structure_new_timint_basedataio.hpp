@@ -36,12 +36,12 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class EveryIterationWriterInterface;
   class EveryIterationWriter;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace STR
 {
@@ -68,7 +68,8 @@ namespace STR
 
       /// initialize the class variables
       void Init(const Teuchos::ParameterList& IOParams, const Teuchos::ParameterList& sDynParams,
-          const Teuchos::ParameterList& xParams, Teuchos::RCP<IO::DiscretizationWriter> output);
+          const Teuchos::ParameterList& xParams,
+          Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
 
       /// setup new class variables
       void Setup();
@@ -85,14 +86,14 @@ namespace STR
 
      public:
       /// get the binary output writer
-      Teuchos::RCP<IO::DiscretizationWriter> GetOutputPtr()
+      Teuchos::RCP<CORE::IO::DiscretizationWriter> GetOutputPtr()
       {
         check_init_setup();
         return output_;
       };
 
       /// get the binary output writer
-      Teuchos::RCP<const IO::DiscretizationWriter> GetOutputPtr() const
+      Teuchos::RCP<const CORE::IO::DiscretizationWriter> GetOutputPtr() const
       {
         check_init_setup();
         return output_;
@@ -326,7 +327,7 @@ namespace STR
 
       /// Initialize and setup the every iteration output writer
       void init_setup_every_iteration_writer(
-          IO::EveryIterationWriterInterface* interface, Teuchos::ParameterList& p_nox);
+          CORE::IO::EveryIterationWriterInterface* interface, Teuchos::ParameterList& p_nox);
 
       /// initialize the output of system energy
       void setup_energy_output_file();
@@ -345,10 +346,10 @@ namespace STR
       ///@{
 
       /// binary output
-      Teuchos::RCP<IO::DiscretizationWriter> output_;
+      Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;
 
       /// additional output writer for the Newton steps
-      Teuchos::RCP<IO::EveryIterationWriter> writer_every_iter_;
+      Teuchos::RCP<CORE::IO::EveryIterationWriter> writer_every_iter_;
 
       /// data container for input parameters related to VTK output at runtime
       Teuchos::RCP<ParamsRuntimeOutput> params_runtime_vtk_output_;
@@ -459,7 +460,7 @@ namespace NOX
           {
            public:
             /// constructor
-            WriteOutputEveryIteration(IO::EveryIterationWriter& every_iter_writer);
+            WriteOutputEveryIteration(CORE::IO::EveryIterationWriter& every_iter_writer);
 
 
             /// called at the very beginning of a Newton loop
@@ -473,7 +474,7 @@ namespace NOX
                 const ::NOX::LineSearch::Generic& linesearch) override;
 
            private:
-            IO::EveryIterationWriter& every_iter_writer_;
+            CORE::IO::EveryIterationWriter& every_iter_writer_;
           };
         }  // namespace TIMINT
       }    // namespace PrePostOp

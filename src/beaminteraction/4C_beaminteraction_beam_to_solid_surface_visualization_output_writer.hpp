@@ -51,7 +51,7 @@ namespace BEAMINTERACTION
      * \brief Constructor.
      */
     explicit BeamToSolidSurfaceVisualizationOutputWriter(
-        IO::VisualizationParameters visualization_params);
+        CORE::IO::VisualizationParameters visualization_params);
 
     /**
      * \brief Destructor.
@@ -129,7 +129,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase> output_writer_base_ptr_;
 
     //! visualization parameters
-    const IO::VisualizationParameters visualization_params_;
+    const CORE::IO::VisualizationParameters visualization_params_;
   };
 
 }  // namespace BEAMINTERACTION

@@ -1112,7 +1112,7 @@ void ADAPTER::CouplingEhlMortar::create_active_slip_toggle(Teuchos::RCP<Epetra_V
   }
 }
 
-void ADAPTER::CouplingEhlMortar::write_restart(IO::DiscretizationWriter& output)
+void ADAPTER::CouplingEhlMortar::write_restart(CORE::IO::DiscretizationWriter& output)
 {
   if (!contact_regularization_) return;
 
@@ -1127,7 +1127,7 @@ void ADAPTER::CouplingEhlMortar::write_restart(IO::DiscretizationWriter& output)
   output.WriteVector("slip_toggle", slip_toggle);
 }
 
-void ADAPTER::CouplingEhlMortar::read_restart(IO::DiscretizationReader& reader)
+void ADAPTER::CouplingEhlMortar::read_restart(CORE::IO::DiscretizationReader& reader)
 {
   if (!contact_regularization_) return;
 

@@ -51,7 +51,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Init()
  *
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
-    const IO::VisualizationParameters& visualization_params,
+    const CORE::IO::VisualizationParameters& visualization_params,
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr)
 {
@@ -113,7 +113,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_runtime(
   check_init_setup();
 
   auto [output_time, output_step] =
-      IO::GetTimeAndTimeStepIndexForOutput(visualization_params_, time, i_step);
+      CORE::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_, time, i_step);
   write_output_beam_to_fluid_mesh_tying(couplingenforcer, output_step, output_time);
 }
 

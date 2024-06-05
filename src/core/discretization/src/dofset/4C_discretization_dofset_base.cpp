@@ -141,36 +141,37 @@ void CORE::Dofsets::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
       availspace = 0;
     }
 
-    IO::cout << "All registered dofsets:" << IO::endl;
+    CORE::IO::cout << "All registered dofsets:" << CORE::IO::endl;
 
-    if (min[0] > 0) IO::cout << "| ";
+    if (min[0] > 0) CORE::IO::cout << "| ";
     for (unsigned int i = 0; i < min.size(); ++i)
     {
       // left bar
       if (i > 0 and max[i - 1] > min[i])
-        IO::cout << "X";
+        CORE::IO::cout << "X";
       else
-        IO::cout << "|";
+        CORE::IO::cout << "|";
 
       // number
-      IO::cout << std::left << std::setw(6) << min[i];
-      for (int j = 0; j < (int)(max[i] - min[i]) * 1.0 * availspace / allmax; ++j) IO::cout << " ";
-      IO::cout << std::right << std::setw(6) << max[i];
+      CORE::IO::cout << std::left << std::setw(6) << min[i];
+      for (int j = 0; j < (int)(max[i] - min[i]) * 1.0 * availspace / allmax; ++j)
+        CORE::IO::cout << " ";
+      CORE::IO::cout << std::right << std::setw(6) << max[i];
 
       // right bar
       if (i + 1 < min.size())
       {
-        if (max[i] + 1 < min[i + 1]) IO::cout << "| ";
+        if (max[i] + 1 < min[i + 1]) CORE::IO::cout << "| ";
       }
       else
       {
-        IO::cout << "|";
+        CORE::IO::cout << "|";
       }
     }
 
-    IO::cout << IO::endl << "+";
-    for (int i = 0; i < arrowlen; ++i) IO::cout << "-";
-    IO::cout << "> DofGID" << IO::endl;
+    CORE::IO::cout << CORE::IO::endl << "+";
+    for (int i = 0; i < arrowlen; ++i) CORE::IO::cout << "-";
+    CORE::IO::cout << "> DofGID" << CORE::IO::endl;
   }
   return;
 }

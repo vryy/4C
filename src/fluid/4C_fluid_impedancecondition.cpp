@@ -135,7 +135,7 @@ void FLD::UTILS::FluidImpedanceWrapper::time_update_impedances(const double time
 /*----------------------------------------------------------------------*
  |  Wrap restart writing                                     Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::write_restart(IO::DiscretizationWriter& output)
+void FLD::UTILS::FluidImpedanceWrapper::write_restart(CORE::IO::DiscretizationWriter& output)
 {
   std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
 
@@ -149,7 +149,7 @@ void FLD::UTILS::FluidImpedanceWrapper::write_restart(IO::DiscretizationWriter& 
 /*----------------------------------------------------------------------*
  |  Wrap restart reading                                     Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::read_restart(IO::DiscretizationReader& reader)
+void FLD::UTILS::FluidImpedanceWrapper::read_restart(CORE::IO::DiscretizationReader& reader)
 {
   std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
 
@@ -497,7 +497,7 @@ void FLD::UTILS::FluidImpedanceBc::time_update_impedance(const double time, cons
  |  Restart writing                                          Thon 07/16 |
  *----------------------------------------------------------------------*/
 void FLD::UTILS::FluidImpedanceBc::write_restart(
-    IO::DiscretizationWriter& output, const int condnum)
+    CORE::IO::DiscretizationWriter& output, const int condnum)
 {
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
@@ -532,7 +532,8 @@ void FLD::UTILS::FluidImpedanceBc::write_restart(
 /*----------------------------------------------------------------------*
  |  Restart reading                                          Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceBc::read_restart(IO::DiscretizationReader& reader, const int condnum)
+void FLD::UTILS::FluidImpedanceBc::read_restart(
+    CORE::IO::DiscretizationReader& reader, const int condnum)
 {
   std::stringstream stream1, stream2, stream3, stream4, stream5, stream6;
 

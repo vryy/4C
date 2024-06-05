@@ -29,7 +29,8 @@ FOUR_C_NAMESPACE_OPEN
 SCATRA::TimIntCardiacMonodomain::TimIntCardiacMonodomain(Teuchos::RCP<DRT::Discretization> dis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output),
       // Initialization of electrophysiology variables
       activation_time_np_(Teuchos::null),
@@ -117,8 +118,8 @@ void SCATRA::TimIntCardiacMonodomain::output_state()
       temp << k + 1;
       material_internal_state_np_component_ =
           Teuchos::rcp((*material_internal_state_np_)(k), false);
-      output_->WriteVector(
-          "mat_int_state_" + temp.str(), material_internal_state_np_component_, IO::elementvector);
+      output_->WriteVector("mat_int_state_" + temp.str(), material_internal_state_np_component_,
+          CORE::IO::elementvector);
     }
   }
 
@@ -141,7 +142,7 @@ void SCATRA::TimIntCardiacMonodomain::output_state()
       material_ionic_currents_np_component_ =
           Teuchos::rcp((*material_ionic_currents_np_)(k), false);
       output_->WriteVector("mat_ionic_currents_" + temp.str(),
-          material_ionic_currents_np_component_, IO::elementvector);
+          material_ionic_currents_np_component_, CORE::IO::elementvector);
     }
   }
 }  // TimIntCardiacMonodomain::output_state

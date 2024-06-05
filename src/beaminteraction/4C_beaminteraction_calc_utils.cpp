@@ -294,21 +294,23 @@ namespace BEAMINTERACTION
           if (numbspot == 0) continue;
 
           // print number of binding spots for current filament
-          IO::cout(IO::debug) << "\n---------------------------------------------------------------"
-                              << IO::endl;
-          IO::cout(IO::debug) << numbspot << " binding spots of type "
-                              << INPAR::BEAMINTERACTION::CrosslinkerType2String(
-                                     linkertypes[linkertype_i])
-                              << " on filament " << filiter << " (consists of "
-                              << static_cast<int>(sortedfilamenteles.size()) << " elements)"
-                              << " with: " << IO::endl;
+          CORE::IO::cout(CORE::IO::debug)
+              << "\n---------------------------------------------------------------"
+              << CORE::IO::endl;
+          CORE::IO::cout(CORE::IO::debug)
+              << numbspot << " binding spots of type "
+              << INPAR::BEAMINTERACTION::CrosslinkerType2String(linkertypes[linkertype_i])
+              << " on filament " << filiter << " (consists of "
+              << static_cast<int>(sortedfilamenteles.size()) << " elements)"
+              << " with: " << CORE::IO::endl;
 
           // set xis on element level
           SetBindingSpotsPositionsOnFilament(sortedfilamenteles, start, linkertypes[linkertype_i],
               numbspot, filamentbspotinterval, tol);
 
-          IO::cout(IO::debug) << "---------------------------------------------------------------\n"
-                              << IO::endl;
+          CORE::IO::cout(CORE::IO::debug)
+              << "---------------------------------------------------------------\n"
+              << CORE::IO::endl;
         }
       }
     }
@@ -478,9 +480,9 @@ namespace BEAMINTERACTION
           bspotposxi.push_back(xi);
 
           // print to screen
-          IO::cout(IO::debug) << bspotcounter + 1 << ". binding spot: "
-                              << "xi = " << xi << " on element " << se_iter << " (gid "
-                              << beamele->Id() << ")" << IO::endl;
+          CORE::IO::cout(CORE::IO::debug) << bspotcounter + 1 << ". binding spot: "
+                                          << "xi = " << xi << " on element " << se_iter << " (gid "
+                                          << beamele->Id() << ")" << CORE::IO::endl;
 
           ++bspotcounter;
           currbspotarcparam += filamentbspotinterval;

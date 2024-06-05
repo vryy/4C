@@ -37,7 +37,8 @@ FOUR_C_NAMESPACE_OPEN
 SCATRA::ScaTraTimIntElchSCL::ScaTraTimIntElchSCL(Teuchos::RCP<DRT::Discretization> dis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntElch(dis, solver, params, sctratimintparams, extraparams, output),
       matrixtype_elch_scl_(
           Teuchos::getIntegralValue<CORE::LINALG::MatrixType>(params->sublist("SCL"), "MATRIXTYPE"))
@@ -367,7 +368,7 @@ void SCATRA::ScaTraTimIntElchSCL::create_meshtying_strategy()
 /*----------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElchSCL::read_restart_problem_specific(
-    int step, IO::DiscretizationReader& reader)
+    int step, CORE::IO::DiscretizationReader& reader)
 {
   FOUR_C_THROW("Restart is not implemented for Elch with SCL.");
 }

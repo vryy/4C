@@ -12,9 +12,9 @@
 
 #include "4C_inpar_immersed.hpp"
 
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_inpar_fsi.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_io_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -107,16 +107,17 @@ void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
 
 void INPAR::IMMERSED::SetValidConditions(
-    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
   /*--------------------------------------------------------------------*/
   // IMMERSED FSI
 
-  Teuchos::RCP<ConditionDefinition> immersedsearchbox = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN VOLUME IMMERSED SEARCHBOX", "ImmersedSearchbox", "Immersed Searchbox",
-      CORE::Conditions::ImmersedSearchbox, true, CORE::Conditions::geometry_type_volume));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> immersedsearchbox =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN VOLUME IMMERSED SEARCHBOX",
+          "ImmersedSearchbox", "Immersed Searchbox", CORE::Conditions::ImmersedSearchbox, true,
+          CORE::Conditions::geometry_type_volume));
 
   condlist.push_back(immersedsearchbox);
 
@@ -127,12 +128,14 @@ void INPAR::IMMERSED::SetValidConditions(
 
   immersedcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
 
-  Teuchos::RCP<ConditionDefinition> lineimmersed = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN IMMERSED COUPLING LINE CONDITIONS", "IMMERSEDCoupling", "IMMERSED Coupling",
-      CORE::Conditions::IMMERSEDCoupling, true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<ConditionDefinition> surfimmersed = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN IMMERSED COUPLING SURF CONDITIONS", "IMMERSEDCoupling", "IMMERSED Coupling",
-      CORE::Conditions::IMMERSEDCoupling, true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> lineimmersed =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN IMMERSED COUPLING LINE CONDITIONS", "IMMERSEDCoupling", "IMMERSED Coupling",
+          CORE::Conditions::IMMERSEDCoupling, true, CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfimmersed =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN IMMERSED COUPLING SURF CONDITIONS", "IMMERSEDCoupling", "IMMERSED Coupling",
+          CORE::Conditions::IMMERSEDCoupling, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < immersedcomponents.size(); ++i)
   {

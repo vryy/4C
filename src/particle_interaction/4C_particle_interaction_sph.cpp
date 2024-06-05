@@ -166,7 +166,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
       particleengineinterface_->have_periodic_boundary_conditions())
   {
     if (myrank_ == 0)
-      IO::cout << "Warning: periodic boundary and open boundary conditions applied!" << IO::endl;
+      CORE::IO::cout << "Warning: periodic boundary and open boundary conditions applied!"
+                     << CORE::IO::endl;
   }
 }
 
@@ -177,7 +178,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::write_restart() const
 }
 
 void PARTICLEINTERACTION::ParticleInteractionSPH::read_restart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
+    const std::shared_ptr<CORE::IO::DiscretizationReader> reader)
 {
   // call base class function
   ParticleInteractionBase::read_restart(reader);

@@ -26,7 +26,7 @@ namespace
 
   void CreateMaterialInGlobalProblem()
   {
-    IO::InputParameterContainer mat_stvenant;
+    CORE::IO::InputParameterContainer mat_stvenant;
     mat_stvenant.Add("YOUNG", 1.0);
     mat_stvenant.Add("NUE", 0.1);
     mat_stvenant.Add("DENS", 2.0);
@@ -46,7 +46,7 @@ namespace
       comm_ = Teuchos::rcp(new Epetra_SerialComm());
       test_discretization_ = Teuchos::rcp(new DRT::Discretization("dummy", comm_));
 
-      IO::cout.setup(false, false, false, IO::standard, comm_, 0, 0, "dummyFilePrefix");
+      CORE::IO::cout.setup(false, false, false, CORE::IO::standard, comm_, 0, 0, "dummyFilePrefix");
 
       // results in 27 nodes
       inputData_.bottom_corner_point_ = std::array<double, 3>{0.0, 0.0, 0.0};
@@ -58,16 +58,16 @@ namespace
       inputData_.distype_ = "HEX8";
       inputData_.elearguments_ = "MAT 1 KINEM nonlinear EAS none";
 
-      IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(
+      CORE::IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(
           *test_discretization_, inputData_, true);
 
       test_discretization_->fill_complete(false, false, false);
     }
 
-    void TearDown() override { IO::cout.close(); }
+    void TearDown() override { CORE::IO::cout.close(); }
 
    protected:
-    IO::GRIDGENERATOR::RectangularCuboidInputs inputData_{};
+    CORE::IO::GRIDGENERATOR::RectangularCuboidInputs inputData_{};
     Teuchos::RCP<DRT::Discretization> test_discretization_;
     Teuchos::RCP<Epetra_SerialComm> comm_;
   };

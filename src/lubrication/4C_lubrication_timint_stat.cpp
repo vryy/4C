@@ -25,7 +25,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 LUBRICATION::TimIntStationary::TimIntStationary(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : TimIntImpl(actdis, solver, params, extraparams, output)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
@@ -118,7 +119,8 @@ void LUBRICATION::TimIntStationary::Update(const int num)
  -----------------------------------------------------------------------*/
 void LUBRICATION::TimIntStationary::read_restart(int step)
 {
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 

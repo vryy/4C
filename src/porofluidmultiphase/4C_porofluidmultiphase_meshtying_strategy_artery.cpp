@@ -44,7 +44,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
   INPAR::ARTDYN::TimeIntegrationScheme timintscheme =
       CORE::UTILS::IntegralValue<INPAR::ARTDYN::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
 
-  Teuchos::RCP<IO::DiscretizationWriter> artery_output = arterydis_->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> artery_output = arterydis_->Writer();
   artery_output->WriteMesh(0, 0.0);
 
   // build art net time integrator

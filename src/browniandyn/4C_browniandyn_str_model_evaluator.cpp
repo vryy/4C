@@ -423,14 +423,14 @@ void STR::MODELEVALUATOR::BrownianDyn::evaluate_neumann_brownian_dyn(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BrownianDyn::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // nothing to do
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::read_restart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::BrownianDyn::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   // nothing to do
 }
@@ -500,7 +500,8 @@ void STR::MODELEVALUATOR::BrownianDyn::determine_optional_quantity()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::OutputStepState(IO::DiscretizationWriter& iowriter) const
+void STR::MODELEVALUATOR::BrownianDyn::OutputStepState(
+    CORE::IO::DiscretizationWriter& iowriter) const
 {
   // nothing to do
   return;

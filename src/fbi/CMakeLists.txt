@@ -13,7 +13,6 @@ set(_dependencies
     geometry_pair
     global_data
     inpar
-    io
     lib
     )
 

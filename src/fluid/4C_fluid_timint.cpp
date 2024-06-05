@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<IO::DiscretizationWriter>& output)
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output)
     : discret_(discret),
       solver_(solver),
       params_(params),
@@ -69,8 +69,8 @@ FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
     // However, this is called before the restart is read and someone with knowledge on the module
     // has to refactor the code. The only implication is that in restarted simulations the .pvd file
     // does not contain the steps of the simulation that is restarted from
-    runtime_output_writer_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterMesh(
-        discret_, IO::VisualizationParametersFactory(
+    runtime_output_writer_ = Teuchos::rcp(new CORE::IO::DiscretizationVisualizationWriterMesh(
+        discret_, CORE::IO::VisualizationParametersFactory(
                       GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
                       *GLOBAL::Problem::Instance()->OutputControlFile(), time_)));
   }

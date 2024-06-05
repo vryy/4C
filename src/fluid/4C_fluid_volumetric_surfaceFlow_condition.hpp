@@ -76,12 +76,12 @@ namespace FLD
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::Output
       */
-      void Output(IO::DiscretizationWriter& output);
+      void Output(CORE::IO::DiscretizationWriter& output);
 
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::read_restart
       */
-      void read_restart(IO::DiscretizationReader& reader);
+      void read_restart(CORE::IO::DiscretizationReader& reader);
 
 
      private:
@@ -134,12 +134,12 @@ namespace FLD
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::Output
       */
-      void Output(IO::DiscretizationWriter& output);
+      void Output(CORE::IO::DiscretizationWriter& output);
 
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::read_restart
       */
-      void read_restart(IO::DiscretizationReader& reader);
+      void read_restart(CORE::IO::DiscretizationReader& reader);
 
 
      private:
@@ -309,12 +309,13 @@ namespace FLD
       /*!
       \brief output
       */
-      void output(IO::DiscretizationWriter& output, std::string ds_condname, int condnum);
+      void output(CORE::IO::DiscretizationWriter& output, std::string ds_condname, int condnum);
 
       /*!
       \brief Read restart
       */
-      void read_restart(IO::DiscretizationReader& reader, std::string ds_condname, int condnum);
+      void read_restart(
+          CORE::IO::DiscretizationReader& reader, std::string ds_condname, int condnum);
 
       /*!
       \brief Bessel function of orders 0 and 1

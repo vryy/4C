@@ -8,7 +8,7 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "4C_io_utils_reader.hpp"
+#include "4C_utils_string.hpp"
 
 #include <map>
 #include <stdexcept>
@@ -20,7 +20,7 @@
 namespace
 {
   using namespace FourC;
-  using namespace DRT::UTILS;
+  using namespace CORE::UTILS;
 
   TEST(UtilsReaderTests, SplitStringSeparatorInString)
   {

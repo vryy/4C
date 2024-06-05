@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 FLD::TimIntRedModels::TimIntRedModels(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       traction_vel_comp_adder_bc_(Teuchos::null),
       coupled3D_redDbc_art_(Teuchos::null),
@@ -79,7 +79,7 @@ void FLD::TimIntRedModels::Init()
     // Check if one-dimensional artery network problem exist
     if (ART_timeInt_ != Teuchos::null)
     {
-      IO::DiscretizationWriter output_redD(ART_timeInt_->discretization(),
+      CORE::IO::DiscretizationWriter output_redD(ART_timeInt_->discretization(),
           GLOBAL::Problem::Instance()->OutputControlFile(),
           GLOBAL::Problem::Instance()->spatial_approximation_type());
       discret_->ClearState();
@@ -98,7 +98,7 @@ void FLD::TimIntRedModels::Init()
     // Check if one-dimensional artery network problem exist
     if (airway_imp_timeInt_ != Teuchos::null)
     {
-      IO::DiscretizationWriter output_redD(airway_imp_timeInt_->discretization(),
+      CORE::IO::DiscretizationWriter output_redD(airway_imp_timeInt_->discretization(),
           GLOBAL::Problem::Instance()->OutputControlFile(),
           GLOBAL::Problem::Instance()->spatial_approximation_type());
       discret_->ClearState();
@@ -267,7 +267,8 @@ void FLD::TimIntRedModels::OutputReducedD()
  *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::read_restart(int step)
 {
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
   vol_surf_flow_bc_->read_restart(reader);
 

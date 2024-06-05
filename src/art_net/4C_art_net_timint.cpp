@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 ART::TimInt::TimInt(Teuchos::RCP<DRT::Discretization> actdis, const int linsolvernumber,
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
-    IO::DiscretizationWriter& output)
+    CORE::IO::DiscretizationWriter& output)
     : discret_(actdis),
       solver_(Teuchos::null),
       params_(probparams),

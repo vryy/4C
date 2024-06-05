@@ -44,7 +44,7 @@ namespace SCATRA
         Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
 
 
     // -----------------------------------------------------------------
@@ -64,7 +64,7 @@ namespace SCATRA
 
     /// read restart data
     void read_restart(
-        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override = 0;
+        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override = 0;
 
     //! set the velocity field (zero or field by function) (pure level-set problems)
     void set_velocity_field(bool init = false);

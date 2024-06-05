@@ -5,12 +5,10 @@ set(_dependencies
     config
     contact
     core
-    fiber
     fluid_ele
     global_data
     immersed_problem
     inpar
-    io
     lib
     mat
     nurbs_discret

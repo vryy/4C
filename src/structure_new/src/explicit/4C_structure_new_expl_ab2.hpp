@@ -57,11 +57,11 @@ namespace STR
 
       //! (derived)
       void write_restart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       /*! read restart information of the different time integration schemes
        *  and model evaluators (derived) */
-      void read_restart(IO::DiscretizationReader& ioreader) override;
+      void read_restart(CORE::IO::DiscretizationReader& ioreader) override;
 
       //! @name Attribute access functions
       //@{

@@ -145,28 +145,29 @@ namespace CORE::GEO
 
       virtual void Cut_SelfCut(bool include_inner, bool screenoutput)
       {
-        if (myrank_ == 0 and screenoutput) IO::cout << "\t * 2/6 Cut_SelfCut ... not performed";
+        if (myrank_ == 0 and screenoutput)
+          CORE::IO::cout << "\t * 2/6 Cut_SelfCut ... not performed";
         return;
       };
 
       virtual void cut_collision_detection(bool include_inner, bool screenoutput)
       {
         if (myrank_ == 0 and screenoutput)
-          IO::cout << "\t * 3/6 cut_collision_detection ... not performed";
+          CORE::IO::cout << "\t * 3/6 cut_collision_detection ... not performed";
         return;
       };
 
       virtual void Cut_Mesh(bool screenoutput)
       {
         if (myrank_ == 0 and screenoutput)
-          IO::cout << "\t * 4/6 Cut_Mesh (LevelSet-Cut) ... not performed";
+          CORE::IO::cout << "\t * 4/6 Cut_Mesh (LevelSet-Cut) ... not performed";
         return;
       };
 
       virtual void cut_mesh_intersection(bool screenoutput)
       {
         if (myrank_ == 0 and screenoutput)
-          IO::cout << "\t * 4/6 cut_mesh_intersection (Mesh-Cut) ... not performed";
+          CORE::IO::cout << "\t * 4/6 cut_mesh_intersection (Mesh-Cut) ... not performed";
         return;
       };
 

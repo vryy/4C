@@ -853,9 +853,10 @@ void FSI::MonolithicXFEM::solve()
     {
       if (Comm().MyPID() == 0)
       {
-        IO::cout << "-------------------------------------- Outer loop finished with converged "
-                    "newton_loop ---------------------------------------"
-                 << IO::endl;
+        CORE::IO::cout
+            << "-------------------------------------- Outer loop finished with converged "
+               "newton_loop ---------------------------------------"
+            << CORE::IO::endl;
       }
       break;
     }
@@ -863,9 +864,10 @@ void FSI::MonolithicXFEM::solve()
     {
       if (Comm().MyPID() == 0)
       {
-        IO::cout << "---------------------------------------- Restart Newton-Raphson - DOF-sets "
-                    "changed -----------------------------------------"
-                 << IO::endl;
+        CORE::IO::cout
+            << "---------------------------------------- Restart Newton-Raphson - DOF-sets "
+               "changed -----------------------------------------"
+            << CORE::IO::endl;
       }
     }
 
@@ -876,9 +878,10 @@ void FSI::MonolithicXFEM::solve()
   {
     if (Comm().MyPID() == 0)
     {
-      IO::cout << "-------------------------- Maximum number of restarts reached - Fluid DOF-sets "
-                  "have changed too often ----------------------"
-               << IO::endl;
+      CORE::IO::cout
+          << "-------------------------- Maximum number of restarts reached - Fluid DOF-sets "
+             "have changed too often ----------------------"
+          << CORE::IO::endl;
     }
   }
 }
@@ -1281,9 +1284,9 @@ bool FSI::MonolithicXFEM::newton()
   {
     if (Comm().MyPID() == 0)
     {
-      IO::cout << "-------------------------------------------------------Newton Converged ! "
-                  "--------------------------------------------------"
-               << IO::endl;
+      CORE::IO::cout << "-------------------------------------------------------Newton Converged ! "
+                        "--------------------------------------------------"
+                     << CORE::IO::endl;
     }
     return true;
   }
@@ -1291,14 +1294,15 @@ bool FSI::MonolithicXFEM::newton()
   {
     if (Comm().MyPID() == 0)
     {
-      IO::cout << "----------------------------------------- Newton not converged in ITEMAX "
-                  "iterations ! --------------------------------------"
-               << IO::endl;
+      CORE::IO::cout << "----------------------------------------- Newton not converged in ITEMAX "
+                        "iterations ! --------------------------------------"
+                     << CORE::IO::endl;
 
       if (iter_outer_ < itermax_outer_)  // just in case that another restart will be performed!
-        IO::cout << "- WARNING: increase the number nonlinear Newton-iterations, the additional "
-                    "restart does not help but solves the same system twice!!! -"
-                 << IO::endl;
+        CORE::IO::cout
+            << "- WARNING: increase the number nonlinear Newton-iterations, the additional "
+               "restart does not help but solves the same system twice!!! -"
+            << CORE::IO::endl;
     }
     return false;
   }
@@ -1584,9 +1588,9 @@ bool FSI::MonolithicXFEM::evaluate()
         fluid_field()->Set_EvaluateCut(false);
 
         if (Comm().MyPID() == 0)
-          IO::cout << "==| Do not evaluate CUT for this iteration as disp_inc: "
-                   << normstrincdisp_inf_ / std::min(nd_act_scaling_, nd_inc_scaling_) << " < "
-                   << cut_evaluate_mintol_ << " |==" << IO::endl;
+          CORE::IO::cout << "==| Do not evaluate CUT for this iteration as disp_inc: "
+                         << normstrincdisp_inf_ / std::min(nd_act_scaling_, nd_inc_scaling_)
+                         << " < " << cut_evaluate_mintol_ << " |==" << CORE::IO::endl;
       }
       else
         fluid_field()->Set_EvaluateCut(true);
@@ -1594,7 +1598,8 @@ bool FSI::MonolithicXFEM::evaluate()
 
     fluid_field()->Evaluate();
 
-    if (Comm().MyPID() == 0) IO::cout << "fluid time : " << tf.totalElapsedTime(true) << IO::endl;
+    if (Comm().MyPID() == 0)
+      CORE::IO::cout << "fluid time : " << tf.totalElapsedTime(true) << CORE::IO::endl;
 
     // Assign the Unphysical Boundary Elements to all procs (only for contact)
     if (have_contact_)
@@ -1622,7 +1627,7 @@ bool FSI::MonolithicXFEM::evaluate()
     StructurePoro()->Evaluate(Teuchos::null, iter_ == 1);
 
     if (Comm().MyPID() == 0)
-      IO::cout << "structure time: " << ts.totalElapsedTime(true) << IO::endl;
+      CORE::IO::cout << "structure time: " << ts.totalElapsedTime(true) << CORE::IO::endl;
   }
 
   //--------------------------------------------------------
@@ -2403,31 +2408,32 @@ void FSI::MonolithicXFEM::print_newton_iter()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::print_newton_iter_header()
 {
-  IO::cout << "CONVTOL: " << tolfres_ << IO::endl;
+  CORE::IO::cout << "CONVTOL: " << tolfres_ << CORE::IO::endl;
 
-  IO::cout << "===================================================================================="
-              "========================================="
-           << IO::endl;
+  CORE::IO::cout
+      << "===================================================================================="
+         "========================================="
+      << CORE::IO::endl;
 
   // enter converged state etc
-  IO::cout << "|outerit";
-  IO::cout << "|  nit  |";
+  CORE::IO::cout << "|outerit";
+  CORE::IO::cout << "|  nit  |";
 
   // different style due relative or absolute error checking
   // displacement
   switch (normtypefres_)
   {
     case INPAR::FSI::convnorm_abs:
-      IO::cout << "            "
-               << "abs-res-norm  |";
+      CORE::IO::cout << "            "
+                     << "abs-res-norm  |";
       break;
     case INPAR::FSI::convnorm_rel:
-      IO::cout << "str-rs-l2|"
-               << "flv-rs-l2|"
-               << "flp-rs-l2|";
-      IO::cout << "str-rs-li|"
-               << "flv-rs-li|"
-               << "flp-rs-li|";
+      CORE::IO::cout << "str-rs-l2|"
+                     << "flv-rs-l2|"
+                     << "flp-rs-l2|";
+      CORE::IO::cout << "str-rs-li|"
+                     << "flv-rs-li|"
+                     << "flp-rs-li|";
       break;
     case INPAR::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented");
@@ -2440,16 +2446,16 @@ void FSI::MonolithicXFEM::print_newton_iter_header()
   switch (normtypeinc_)
   {
     case INPAR::FSI::convnorm_abs:
-      IO::cout << "                  "
-               << "abs-inc-norm";
+      CORE::IO::cout << "                  "
+                     << "abs-inc-norm";
       break;
     case INPAR::FSI::convnorm_rel:
-      IO::cout << "str-in-l2|"
-               << "flv-in-l2|"
-               << "flp-in-l2|";
-      IO::cout << "str-in-li|"
-               << "flv-in-li|"
-               << "flp-in-li|";
+      CORE::IO::cout << "str-in-l2|"
+                     << "flv-in-l2|"
+                     << "flp-in-l2|";
+      CORE::IO::cout << "str-in-li|"
+                     << "flv-in-li|"
+                     << "flp-in-li|";
       break;
     case INPAR::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented");
@@ -2460,10 +2466,11 @@ void FSI::MonolithicXFEM::print_newton_iter_header()
   }
 
   // add solution time
-  IO::cout << IO::endl;
-  IO::cout << "===================================================================================="
-              "========================================="
-           << IO::endl;
+  CORE::IO::cout << CORE::IO::endl;
+  CORE::IO::cout
+      << "===================================================================================="
+         "========================================="
+      << CORE::IO::endl;
 }
 
 /*---------------------------------------------------------------------*/
@@ -2483,20 +2490,20 @@ void FSI::MonolithicXFEM::print_newton_iter_text()
   // TODO: komplette Ueberarbeitung von Rel vs Abs notwendig!!! siehe abs vs rel z.B. in Fluid-Code
 
 
-  IO::cout << " " << iter_outer_ << "/" << itermax_outer_;
-  IO::cout << " " << iter_ << "/" << itermax_;
+  CORE::IO::cout << " " << iter_outer_ << "/" << itermax_outer_;
+  CORE::IO::cout << " " << iter_ << "/" << itermax_;
 
   // different style due relative or absolute error checking
   // displacement
   switch (normtypefres_)
   {
     case INPAR::FSI::convnorm_abs:
-      IO::cout << "             " << (normrhs_) << IO::endl;
+      CORE::IO::cout << "             " << (normrhs_) << CORE::IO::endl;
       break;
     case INPAR::FSI::convnorm_rel:
-      IO::cout << "|" << (normstrrhs_l2_ / ns_) << "|" << (normflvelrhs_l2_ / nfv_) << "|"
-               << (normflpresrhs_l2_ / nfp_) << "|" << (normstrrhs_inf_) << "|"
-               << (normflvelrhs_inf_) << "|" << (normflpresrhs_inf_);
+      CORE::IO::cout << "|" << (normstrrhs_l2_ / ns_) << "|" << (normflvelrhs_l2_ / nfv_) << "|"
+                     << (normflpresrhs_l2_ / nfp_) << "|" << (normstrrhs_inf_) << "|"
+                     << (normflvelrhs_inf_) << "|" << (normflpresrhs_inf_);
       break;
     case INPAR::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
@@ -2509,12 +2516,12 @@ void FSI::MonolithicXFEM::print_newton_iter_text()
   switch (normtypeinc_)
   {
     case INPAR::FSI::convnorm_abs:
-      IO::cout << "             " << (norminc_) << IO::endl;
+      CORE::IO::cout << "             " << (norminc_) << CORE::IO::endl;
       break;
     case INPAR::FSI::convnorm_rel:
-      IO::cout << "|" << (normstrinc_l2_ / ns_) << "|" << (normflvelinc_l2_ / nfv_) << "|"
-               << (normflpresinc_l2_ / nfp_) << "|" << (normstrinc_inf_) << "|"
-               << (normflvelinc_inf_) << "|" << (normflpresinc_inf_) << "|" << IO::endl;
+      CORE::IO::cout << "|" << (normstrinc_l2_ / ns_) << "|" << (normflvelinc_l2_ / nfv_) << "|"
+                     << (normflpresinc_l2_ / nfp_) << "|" << (normstrinc_inf_) << "|"
+                     << (normflvelinc_inf_) << "|" << (normflpresinc_inf_) << "|" << CORE::IO::endl;
       break;
     case INPAR::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
@@ -2566,7 +2573,7 @@ void FSI::MonolithicXFEM::read_restart(int step)
 
   // read Lagrange multiplier (ie forces onto the structure, Robin-type forces
   // consisting of fluid forces and the Nitsche penalty term contribution)
-  IO::DiscretizationReader reader = IO::DiscretizationReader(
+  CORE::IO::DiscretizationReader reader = CORE::IO::DiscretizationReader(
       StructurePoro()->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
   for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
        coupit != coup_man_.end(); ++coupit)

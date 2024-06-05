@@ -1144,14 +1144,15 @@ void SCATRA::ScaTraTimIntImpl::output_to_gmsh(const int step, const double time)
   const bool screen_out = true;
 
   // create Gmsh postprocessing file
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_scalar",
-      DiscWriter()->Output()->FileName(), step, 500, screen_out, discret_->Comm().MyPID());
+  const std::string filename =
+      CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_scalar",
+          DiscWriter()->Output()->FileName(), step, 500, screen_out, discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   //  {
   //    // add 'View' to Gmsh postprocessing file
   //    gmshfilecontent << "View \" " << "Phin \" {" << std::endl;
   //    // draw scalar field 'Phindtp' for every element
-  //    IO::GMSH::ScalarFieldToGmsh(discret_,phin_,gmshfilecontent);
+  //    CORE::IO::GMSH::ScalarFieldToGmsh(discret_,phin_,gmshfilecontent);
   //    gmshfilecontent << "};" << std::endl;
   //  }
   {
@@ -1159,21 +1160,21 @@ void SCATRA::ScaTraTimIntImpl::output_to_gmsh(const int step, const double time)
     gmshfilecontent << "View \" "
                     << "Phinp \" {" << std::endl;
     // draw scalar field 'Phinp' for every element
-    IO::GMSH::ScalarFieldToGmsh(discret_, phinp_, gmshfilecontent);
+    CORE::IO::GMSH::ScalarFieldToGmsh(discret_, phinp_, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
   //  {
   //    // add 'View' to Gmsh postprocessing file
   //    gmshfilecontent << "View \" " << "Phidtn \" {" << std::endl;
   //    // draw scalar field 'Phindtn' for every element
-  //    IO::GMSH::ScalarFieldToGmsh(discret_,phidtn_,gmshfilecontent);
+  //    CORE::IO::GMSH::ScalarFieldToGmsh(discret_,phidtn_,gmshfilecontent);
   //    gmshfilecontent << "};" << std::endl;
   //  }
   //  {
   //    // add 'View' to Gmsh postprocessing file
   //    gmshfilecontent << "View \" " << "Phidtnp \" {" << std::endl;
   //    // draw scalar field 'Phindtp' for every element
-  //    IO::GMSH::ScalarFieldToGmsh(discret_,phidtnp_,gmshfilecontent);
+  //    CORE::IO::GMSH::ScalarFieldToGmsh(discret_,phidtnp_,gmshfilecontent);
   //    gmshfilecontent << "};" << std::endl;
   //  }
   {
@@ -1188,7 +1189,7 @@ void SCATRA::ScaTraTimIntImpl::output_to_gmsh(const int step, const double time)
       FOUR_C_THROW("Cannot extract convective velocity field from discretization");
 
     // draw vector field 'Convective Velocity' for every element
-    IO::GMSH::VectorFieldDofBasedToGmsh(discret_, convel, gmshfilecontent, NdsVel());
+    CORE::IO::GMSH::VectorFieldDofBasedToGmsh(discret_, convel, gmshfilecontent, NdsVel());
     gmshfilecontent << "};" << std::endl;
   }
   gmshfilecontent.close();
@@ -1225,7 +1226,7 @@ void SCATRA::ScaTraTimIntImpl::output_flux(Teuchos::RCP<Epetra_MultiVector> flux
   if (nurbsdis != nullptr)
   {
     Teuchos::RCP<Epetra_Vector> normalflux = Teuchos::rcp(((*flux)(0)), false);
-    output_->WriteVector("normalflux", normalflux, IO::dofvector);
+    output_->WriteVector("normalflux", normalflux, CORE::IO::dofvector);
     return;  // leave here
   }
 
@@ -1265,7 +1266,7 @@ void SCATRA::ScaTraTimIntImpl::output_flux(Teuchos::RCP<Epetra_MultiVector> flux
       err += fluxk->ReplaceMyValue(i, 2, zvalue);
       if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
     }
-    output_->WriteVector(name, fluxk, IO::nodevector);
+    output_->WriteVector(name, fluxk, CORE::IO::nodevector);
   }
 }  // ScaTraTimIntImpl::OutputFlux
 
@@ -1565,7 +1566,8 @@ void SCATRA::ScaTraTimIntImpl::AccessVreman(Teuchos::RCP<FLD::Vreman> vrem)
 /*----------------------------------------------------------------------*
  | read restart data                                         fang 01/17 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::read_restart(const int step, Teuchos::RCP<IO::InputControl> input)
+void SCATRA::ScaTraTimIntImpl::read_restart(
+    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
 {
   // read restart data associated with meshtying strategy
   strategy_->read_restart(step, input);

@@ -95,7 +95,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::write_restart() const
 }
 
 void PARTICLEINTERACTION::ParticleInteractionDEM::read_restart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
+    const std::shared_ptr<CORE::IO::DiscretizationReader> reader)
 {
   // call base class function
   ParticleInteractionBase::read_restart(reader);
@@ -261,7 +261,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::setup_particle_interaction_wri
     particleinteractionwriter_->register_specific_runtime_csv_writer("particle-energy");
 
     // get specific runtime csv writer
-    IO::RuntimeCsvWriter* runtime_csv_writer =
+    CORE::IO::RuntimeCsvWriter* runtime_csv_writer =
         particleinteractionwriter_->get_specific_runtime_csv_writer("particle-energy");
 
     // register all data vectors
@@ -569,7 +569,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::evaluate_particle_energy() con
   }
 
   // get specific runtime csv writer
-  IO::RuntimeCsvWriter* runtime_csv_writer =
+  CORE::IO::RuntimeCsvWriter* runtime_csv_writer =
       particleinteractionwriter_->get_specific_runtime_csv_writer("particle-energy");
 
   // append data vector

@@ -131,9 +131,9 @@ void CONTACT::AUG::Potential::Compute()
 
   isvalid_.potential_ = true;
 
-  IO::cout(IO::debug) << "\n*****************************************************\n";
-  IO::cout(IO::debug) << __LINE__ << " - " << __PRETTY_FUNCTION__ << IO::endl;
-  potdata_.print(IO::cout.os(IO::debug), *this);
+  CORE::IO::cout(CORE::IO::debug) << "\n*****************************************************\n";
+  CORE::IO::cout(CORE::IO::debug) << __LINE__ << " - " << __PRETTY_FUNCTION__ << CORE::IO::endl;
+  potdata_.print(CORE::IO::cout.os(CORE::IO::debug), *this);
 }
 
 /*----------------------------------------------------------------------------*
@@ -161,10 +161,10 @@ void CONTACT::AUG::Potential::ComputeLin(const Epetra_Vector& dir)
 
   isvalid_.linearization_ = true;
 
-  IO::cout(IO::debug) << "\n*****************************************************\n";
-  IO::cout(IO::debug) << __LINE__ << " - " << __PRETTY_FUNCTION__ << IO::endl;
-  lindata_.print(IO::cout.os(IO::debug), *this);
-  IO::cout(IO::debug) << "\n\n";
+  CORE::IO::cout(CORE::IO::debug) << "\n*****************************************************\n";
+  CORE::IO::cout(CORE::IO::debug) << __LINE__ << " - " << __PRETTY_FUNCTION__ << CORE::IO::endl;
+  lindata_.print(CORE::IO::cout.os(CORE::IO::debug), *this);
+  CORE::IO::cout(CORE::IO::debug) << "\n\n";
 }
 
 /*----------------------------------------------------------------------------*

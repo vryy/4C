@@ -129,7 +129,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::set_state(const Epetra_Vector& x)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlphaLieGroup::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
   // write modified acceleration vector
@@ -140,7 +140,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::read_restart(IO::DiscretizationReader& ioreader)
+void STR::IMPLICIT::GenAlphaLieGroup::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   ioreader.ReadVector(accn_mod_, "accn_mod");

@@ -20,8 +20,9 @@ FOUR_C_NAMESPACE_OPEN
 namespace CORE::GEOMETRICSEARCH
 {
   GeometricSearchVisualization::GeometricSearchVisualization(
-      IO::VisualizationParameters parameters, const Epetra_Comm& comm, std::string base_output_name)
-      : IO::VisualizationManager(std::move(parameters), comm, std::move(base_output_name))
+      CORE::IO::VisualizationParameters parameters, const Epetra_Comm& comm,
+      std::string base_output_name)
+      : CORE::IO::VisualizationManager(std::move(parameters), comm, std::move(base_output_name))
   {
     my_rank_ = comm.MyPID();
     this->get_visualization_data().RegisterCellData<int>("element_id", 1);

@@ -2021,10 +2021,10 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::get_deriv1
     std::unordered_map<int, Deriv1stMap>& error_jac) const
 {
   // for the complete policy the error is zero
-  IO::cout << "LINE " << __LINE__ << " -- " << __FUNCTION__
-           << ": "
-              "There is no error for the complete variational approach."
-           << IO::endl;
+  CORE::IO::cout << "LINE " << __LINE__ << " -- " << __FUNCTION__
+                 << ": "
+                    "There is no error for the complete variational approach."
+                 << CORE::IO::endl;
   error_ma.clear();
   error_jac.clear();
 }

@@ -722,7 +722,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::read_restart(int step)
   {
     Teuchos::RCP<Epetra_Vector> lambdafull =
         Teuchos::rcp(new Epetra_Vector(*structure_field()->dof_row_map(), true));
-    IO::DiscretizationReader reader = IO::DiscretizationReader(
+    CORE::IO::DiscretizationReader reader = CORE::IO::DiscretizationReader(
         structure_field()->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
     reader.ReadVector(lambdafull, "fsilambda");
     lambda_ = structure_field()->Interface()->ExtractFSICondVector(lambdafull);
@@ -968,7 +968,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::recover_lagrange_multiplier()
 
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::handle_fluid_dof_map_change_in_newton()
 {
-  if (Comm().MyPID() == 0) IO::cout << " New Map!! " << IO::endl;
+  if (Comm().MyPID() == 0) CORE::IO::cout << " New Map!! " << CORE::IO::endl;
 
   // save the old x_sum
   Teuchos::RCP<Epetra_Vector> x_sum_n = CORE::LINALG::CreateVector(*dof_row_map(), true);

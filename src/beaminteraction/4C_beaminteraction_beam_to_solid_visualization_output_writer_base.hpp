@@ -55,7 +55,7 @@ namespace BEAMINTERACTION
      */
     BeamToSolidVisualizationOutputWriterBase(const std::string& base_output_name,
         Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
-        IO::VisualizationParameters visualization_params);
+        CORE::IO::VisualizationParameters visualization_params);
 
     /**
      * \brief Destructor.
@@ -107,7 +107,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params_;
 
     //! visualization parameters
-    const IO::VisualizationParameters visualization_params_;
+    const CORE::IO::VisualizationParameters visualization_params_;
   };
 
 }  // namespace BEAMINTERACTION

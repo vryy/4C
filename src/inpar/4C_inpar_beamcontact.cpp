@@ -12,7 +12,7 @@
 
 #include "4C_inpar_beamcontact.hpp"
 
-#include "4C_io_condition_definition.hpp"
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -174,7 +174,7 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
  *
  */
 void INPAR::BEAMCONTACT::SetValidConditions(
-    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
@@ -182,10 +182,11 @@ void INPAR::BEAMCONTACT::SetValidConditions(
   {
     std::string condition_name = "BeamToBeamContact";
 
-    Teuchos::RCP<ConditionDefinition> beam_to_beam_contact_condition =
-        Teuchos::rcp(new ConditionDefinition("BEAM INTERACTION/BEAM TO BEAM CONTACT CONDITIONS",
-            condition_name, "Beam-to-beam contact conditions", CORE::Conditions::BeamToBeamContact,
-            true, CORE::Conditions::geometry_type_line));
+    Teuchos::RCP<CORE::Conditions::ConditionDefinition> beam_to_beam_contact_condition =
+        Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+            "BEAM INTERACTION/BEAM TO BEAM CONTACT CONDITIONS", condition_name,
+            "Beam-to-beam contact conditions", CORE::Conditions::BeamToBeamContact, true,
+            CORE::Conditions::geometry_type_line));
     beam_to_beam_contact_condition->AddComponent(
         Teuchos::rcp(new INPUT::SeparatorComponent("COUPLING_ID")));
     beam_to_beam_contact_condition->AddComponent(

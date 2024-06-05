@@ -11,7 +11,7 @@
 
 #include "4C_inpar_structure.hpp"
 
-#include "4C_io_condition_definition.hpp"
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_io_geometry_type.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -328,7 +328,8 @@ namespace INPAR
       // where the geometry comes from
       setStringToIntegralParameter<int>("GEOMETRY", "full", "How the geometry is specified",
           tuple<std::string>("full", "box", "file"),
-          tuple<int>(IO::geometry_full, IO::geometry_box, IO::geometry_file), &sdyn);
+          tuple<int>(CORE::IO::geometry_full, CORE::IO::geometry_box, CORE::IO::geometry_file),
+          &sdyn);
 
       setStringToIntegralParameter<int>("MIDTIME_ENERGY_TYPE", "vague",
           "Specify the mid-averaging type for the structural energy contributions",
@@ -373,7 +374,8 @@ namespace INPAR
 
 
 
-    void SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+    void SetValidConditions(
+        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
     {
       using namespace INPUT;
 
@@ -382,13 +384,13 @@ namespace INPAR
       // structural Robin spring dashpot boundary condition (spring and dashpot in parallel) - mhv
       // 08/16
 
-      auto robinspringdashpotsurf =
-          Teuchos::rcp(new ConditionDefinition("DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS",
+      auto robinspringdashpotsurf = Teuchos::rcp(
+          new CORE::Conditions::ConditionDefinition("DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS",
               "RobinSpringDashpot", "Robin Spring Dashpot", CORE::Conditions::RobinSpringDashpot,
               true, CORE::Conditions::geometry_type_surface));
 
-      auto robinspringdashpotpoint =
-          Teuchos::rcp(new ConditionDefinition("DESIGN POINT ROBIN SPRING DASHPOT CONDITIONS",
+      auto robinspringdashpotpoint = Teuchos::rcp(
+          new CORE::Conditions::ConditionDefinition("DESIGN POINT ROBIN SPRING DASHPOT CONDITIONS",
               "RobinSpringDashpot", "Robin Spring Dashpot", CORE::Conditions::RobinSpringDashpot,
               true, CORE::Conditions::geometry_type_point));
 
@@ -454,8 +456,8 @@ namespace INPAR
       // surface coupling for spring dashpot DIRECTION cursurfnormal
       // pfaller Apr15
 
-      Teuchos::RCP<ConditionDefinition> springdashpotcoupcond =
-          Teuchos::rcp(new ConditionDefinition(
+      Teuchos::RCP<CORE::Conditions::ConditionDefinition> springdashpotcoupcond =
+          Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
               "DESIGN SURF ROBIN SPRING DASHPOT COUPLING CONDITIONS", "RobinSpringDashpotCoupling",
               "RobinSpring Dashpot Coupling", CORE::Conditions::RobinSpringDashpotCoupling, true,
               CORE::Conditions::geometry_type_surface));
@@ -468,9 +470,10 @@ namespace INPAR
       /*--------------------------------------------------------------------*/
       // surfactant
 
-      Teuchos::RCP<ConditionDefinition> surfactant = Teuchos::rcp(new ConditionDefinition(
-          "SURFACTANT CONDITIONS", "SurfaceStress", "Surface Stress (surfactant)",
-          CORE::Conditions::Surfactant, true, CORE::Conditions::geometry_type_surface));
+      Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfactant =
+          Teuchos::rcp(new CORE::Conditions::ConditionDefinition("SURFACTANT CONDITIONS",
+              "SurfaceStress", "Surface Stress (surfactant)", CORE::Conditions::Surfactant, true,
+              CORE::Conditions::geometry_type_surface));
 
       surfactant->AddComponent(Teuchos::rcp(new INPUT::IntComponent("funct", {0, true, true})));
       INPUT::AddNamedReal(surfactant, "k1xCbulk");

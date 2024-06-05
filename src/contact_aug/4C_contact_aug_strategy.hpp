@@ -761,7 +761,8 @@ namespace CONTACT
       void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override{};
 
       //! Read the restart information and adjust the members accordingly
-      void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis,
+      void DoReadRestart(CORE::IO::DiscretizationReader& reader,
+          Teuchos::RCP<const Epetra_Vector> dis,
           Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
       /*! \brief Reset the internal state variables [derived]
@@ -1094,7 +1095,7 @@ namespace CONTACT
       /*! \brief Write contact force output
        *
        *  \author hiermeier \date 12/17 */
-      void WriteOutput(IO::DiscretizationWriter& writer) const override;
+      void WriteOutput(CORE::IO::DiscretizationWriter& writer) const override;
 
       /*! @name Auxiliary routines, debugging and visualization methods
        *        (all these methods are defined in the contact_augmented_strategy_tools.cpp) */

@@ -53,7 +53,7 @@ namespace STR
     /** \brief Abstract class for all time integration strategies
      *
      *  \author Michael Hiermeier */
-    class Base : public ADAPTER::StructureNew, IO::EveryIterationWriterInterface
+    class Base : public ADAPTER::StructureNew, CORE::IO::EveryIterationWriterInterface
     {
       friend class ADAPTER::StructureTimeAda;
 
@@ -504,7 +504,7 @@ namespace STR
       /// Output writer related routines (file and screen output)
       /// @{
       /// Access output object
-      Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() override
+      Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() override
       {
         return data_io().GetOutputPtr();
       }
@@ -822,10 +822,11 @@ namespace STR
       void output_state();
 
       /** \brief output of the current state */
-      void output_state(IO::DiscretizationWriter& iowriter, bool write_owner) const;
+      void output_state(CORE::IO::DiscretizationWriter& iowriter, bool write_owner) const;
 
       /** \brief output of the debug state */
-      void OutputDebugState(IO::DiscretizationWriter& iowriter, bool write_owner) const override;
+      void OutputDebugState(
+          CORE::IO::DiscretizationWriter& iowriter, bool write_owner) const override;
 
       /// output during runtime
       void runtime_output_state();
@@ -834,7 +835,7 @@ namespace STR
       void output_reaction_forces();
 
       /// output element volumes
-      void output_element_volume(IO::DiscretizationWriter& iowriter) const;
+      void output_element_volume(CORE::IO::DiscretizationWriter& iowriter) const;
 
       /// output stress and/or strain state
       void output_stress_strain();

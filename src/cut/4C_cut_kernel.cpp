@@ -193,13 +193,13 @@ std::vector<int> CORE::GEO::CUT::KERNEL::CheckConvexity(const std::vector<Point*
       bool isline = IsOnLine(pt1, pt2, pt3);
       if (isline)
       {
-        IO::cout << "the points are\n";
+        CORE::IO::cout << "the points are\n";
         for (unsigned i = 0; i < ptlist.size(); i++)
         {
           Point* ptx = ptlist[i];
           double coox[3];
           ptx->Coordinates(coox);
-          IO::cout << coox[0] << "\t" << coox[1] << "\t" << coox[2] << "\n";
+          CORE::IO::cout << coox[0] << "\t" << coox[1] << "\t" << coox[2] << "\n";
         }
         FOUR_C_THROW("Inline checking for facets not done before calling this");
       }
@@ -544,13 +544,13 @@ bool CORE::GEO::CUT::KERNEL::PtInsideQuad(std::vector<Point*> quad, Point* check
   int concsize = concavePts.size();
   if (concsize > 1)
   {
-    IO::cout << "The points of the failing Quad are\n";
+    CORE::IO::cout << "The points of the failing Quad are\n";
     for (unsigned i = 0; i < 4; i++)
     {
       Point* pt = quad[i];
       double x[3];
       pt->Coordinates(x);
-      IO::cout << x[0] << "\t" << x[1] << "\t" << x[2] << "\n";
+      CORE::IO::cout << x[0] << "\t" << x[1] << "\t" << x[2] << "\n";
     }
     FOUR_C_THROW("Quad has more than 1 concave pt --> Selfcut");
   }

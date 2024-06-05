@@ -62,10 +62,10 @@ namespace XFEM
     void Update(double scaling) override;
 
     //! Write Output (For restart or write results on the interface)
-    void Output(IO::DiscretizationWriter& writer) override;
+    void Output(CORE::IO::DiscretizationWriter& writer) override;
 
     //! Read Restart (For lambda_)
-    void read_restart(IO::DiscretizationReader& reader) override;
+    void read_restart(CORE::IO::DiscretizationReader& reader) override;
 
    private:
     //! Get Timeface on the interface (for OST this is 1/(theta dt))

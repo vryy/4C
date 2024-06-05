@@ -649,7 +649,7 @@ void CONTACT::AUG::Interface::assemble_d_lm_nw_gap_lin_matrix(
 void CONTACT::AUG::Interface::assemble_active_gap_vectors(
     Epetra_Vector& aWGapVec, Epetra_Vector& wGapVec) const
 {
-  IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << IO::endl;
+  CORE::IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << CORE::IO::endl;
 
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -1318,20 +1318,20 @@ bool CONTACT::AUG::Interface::set_node_initially_active(
   if (node_init_active)
   {
     cnode.Active() = true;
-    IO::cout(IO::debug) << "Node #" << std::setw(5) << cnode.Id()
-                        << " is set initially active via the condition line.\n";
+    CORE::IO::cout(CORE::IO::debug) << "Node #" << std::setw(5) << cnode.Id()
+                                    << " is set initially active via the condition line.\n";
   }
   else if (init_contact_by_gap)
   {
     set_node_initially_active_by_gap(cnode);
     if (cnode.Active())
-      IO::cout(IO::debug) << "Node #" << std::setw(5) << cnode.Id()
-                          << " is set initially active by gap.\n";
+      CORE::IO::cout(CORE::IO::debug)
+          << "Node #" << std::setw(5) << cnode.Id() << " is set initially active by gap.\n";
     else
-      IO::cout(IO::debug) << "Node #" << std::setw(5) << cnode.Id()
-                          << " is not set initially active by gap, "
-                             "due to a too larger positive gap ["
-                          << cnode.AugData().GetWGap() << "].\n";
+      CORE::IO::cout(CORE::IO::debug) << "Node #" << std::setw(5) << cnode.Id()
+                                      << " is not set initially active by gap, "
+                                         "due to a too larger positive gap ["
+                                      << cnode.AugData().GetWGap() << "].\n";
   }
 
   return cnode.Active();

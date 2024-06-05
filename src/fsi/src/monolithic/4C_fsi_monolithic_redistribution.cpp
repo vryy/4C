@@ -246,9 +246,9 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
       Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
-  Teuchos::RCP<IO::DiscretizationWriter> structureoutput = structuredis->Writer();
-  Teuchos::RCP<IO::DiscretizationWriter> fluidoutput = fluiddis->Writer();
-  Teuchos::RCP<IO::DiscretizationWriter> aleoutput = aledis->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> structureoutput = structuredis->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> fluidoutput = fluiddis->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> aleoutput = aledis->Writer();
 
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
@@ -468,9 +468,9 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const INPAR::FSI::R
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
       Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
-  Teuchos::RCP<IO::DiscretizationWriter> structureoutput = structuredis->Writer();
-  Teuchos::RCP<IO::DiscretizationWriter> fluidoutput = fluiddis->Writer();
-  Teuchos::RCP<IO::DiscretizationWriter> aleoutput = aledis->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> structureoutput = structuredis->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> fluidoutput = fluiddis->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> aleoutput = aledis->Writer();
 
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 

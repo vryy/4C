@@ -35,14 +35,14 @@ MAT::ELASTIC::PAR::CoupTransverselyIsotropic::CoupTransverselyIsotropic(
 
 void MAT::ELASTIC::PAR::CoupTransverselyIsotropic::Print() const
 {
-  IO::cout << "--- Material parameters of CoupTransverselyIsotropic\n";
-  IO::cout << "ALPHA           = " << alpha_ << IO::endl;
-  IO::cout << "BETA            = " << beta_ << IO::endl;
-  IO::cout << "GAMMA           = " << gamma_ << IO::endl;
-  IO::cout << "ANGLE           = " << angle_ << IO::endl;
-  IO::cout << "GLOBAL FIBER ID = " << fiber_gid_ << IO::endl;
-  IO::cout << "INIT            = " << init_ << IO::endl;
-  IO::cout << "----------------------------------------------------\n";
+  CORE::IO::cout << "--- Material parameters of CoupTransverselyIsotropic\n";
+  CORE::IO::cout << "ALPHA           = " << alpha_ << CORE::IO::endl;
+  CORE::IO::cout << "BETA            = " << beta_ << CORE::IO::endl;
+  CORE::IO::cout << "GAMMA           = " << gamma_ << CORE::IO::endl;
+  CORE::IO::cout << "ANGLE           = " << angle_ << CORE::IO::endl;
+  CORE::IO::cout << "GLOBAL FIBER ID = " << fiber_gid_ << CORE::IO::endl;
+  CORE::IO::cout << "INIT            = " << init_ << CORE::IO::endl;
+  CORE::IO::cout << "----------------------------------------------------\n";
 }
 
 MAT::ELASTIC::CoupTransverselyIsotropic::CoupTransverselyIsotropic(my_params* params)

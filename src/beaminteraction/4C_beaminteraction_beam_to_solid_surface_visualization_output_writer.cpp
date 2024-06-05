@@ -39,7 +39,8 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
-    BeamToSolidSurfaceVisualizationOutputWriter(IO::VisualizationParameters visualization_params)
+    BeamToSolidSurfaceVisualizationOutputWriter(
+        CORE::IO::VisualizationParameters visualization_params)
     : isinit_(false),
       issetup_(false),
       output_params_ptr_(Teuchos::null),
@@ -185,7 +186,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_
   // Get the time step and time for the output file. If output is desired at every iteration, the
   // values are padded. The runtime output is written when the time step is already set to the next
   // step.
-  auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
+  auto [output_time, output_step] = CORE::IO::GetTimeAndTimeStepIndexForOutput(
       visualization_params_, beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN());
   write_output_beam_to_solid_surface(beam_contact, output_step, output_time);
 }
@@ -200,8 +201,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_
 
   if (output_params_ptr_->get_output_every_iteration())
   {
-    auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(visualization_params_,
-        beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN(), i_iteration);
+    auto [output_time, output_step] =
+        CORE::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_,
+            beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN(), i_iteration);
     write_output_beam_to_solid_surface(beam_contact, output_step, output_time);
   }
 }

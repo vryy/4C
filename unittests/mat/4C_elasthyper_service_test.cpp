@@ -114,7 +114,7 @@ namespace
     // added here as the setup of the anisotropy is not trivial.
 
     // Create parameter of IsoNeoHooke material
-    IO::InputParameterContainer iso_neo_hooke_data;
+    CORE::IO::InputParameterContainer iso_neo_hooke_data;
     iso_neo_hooke_data.Add("MUE", 1.3);
 
     auto iso_neo_hooke_params =

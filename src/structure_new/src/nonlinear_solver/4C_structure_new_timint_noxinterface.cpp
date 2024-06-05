@@ -469,7 +469,7 @@ double STR::TIMINT::NoxInterface::GetModelValue(const Epetra_Vector& x, const Ep
     case NOX::NLN::MeritFunction::mrtfct_lagrangian:
     case NOX::NLN::MeritFunction::mrtfct_energy:
     {
-      IO::cout(IO::debug) << __LINE__ << " - " << __FUNCTION__ << "\n";
+      CORE::IO::cout(CORE::IO::debug) << __LINE__ << " - " << __FUNCTION__ << "\n";
       int_ptr_->get_total_mid_time_str_energy(x);
       omval = int_ptr_->GetModelValue(x);
 
@@ -546,7 +546,8 @@ double STR::TIMINT::NoxInterface::get_linearized_energy_model_terms(
           int_ptr_->assemble_force(str_gradient, &constraint_models);
           str_gradient.Dot(dir, &lin_val);
 
-          IO::cout(IO::debug) << "LinEnergy   D_{d} (Energy) = " << lin_val << IO::endl;
+          CORE::IO::cout(CORE::IO::debug)
+              << "LinEnergy   D_{d} (Energy) = " << lin_val << CORE::IO::endl;
 
           break;
         }

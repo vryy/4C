@@ -39,11 +39,11 @@ namespace DRT
   class Discretization;
 }  // namespace DRT
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class DiscretizationVisualizationWriterMesh;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace FLD
 {
@@ -61,7 +61,7 @@ namespace FLD
     TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
         const Teuchos::RCP<CORE::LINALG::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<IO::DiscretizationWriter>& output);
+        const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output);
 
 
     void Init() override = 0;
@@ -247,7 +247,7 @@ namespace FLD
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
-    const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() override { return output_; }
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& DiscWriter() override { return output_; }
     Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
@@ -720,11 +720,11 @@ namespace FLD
     Teuchos::RCP<Teuchos::ParameterList> params_;
 
     //! output writer
-    Teuchos::RCP<IO::DiscretizationWriter> output_;
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;
 
 
     /// runtime output writer
-    Teuchos::RCP<IO::DiscretizationVisualizationWriterMesh> runtime_output_writer_;
+    Teuchos::RCP<CORE::IO::DiscretizationVisualizationWriterMesh> runtime_output_writer_;
 
     /// runtime output parameter
     DRT::ELEMENTS::FluidRuntimeOutputParams runtime_output_params_;

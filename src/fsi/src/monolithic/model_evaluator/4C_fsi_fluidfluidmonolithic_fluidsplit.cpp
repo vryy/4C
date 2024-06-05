@@ -52,7 +52,7 @@ void FSI::FluidFluidMonolithicFluidSplit::update()
   // time to relax the ALE-mesh?
   if (fluid_field()->IsAleRelaxationStep(Step()))
   {
-    if (Comm().MyPID() == 0) IO::cout << "Relaxing Ale" << IO::endl;
+    if (Comm().MyPID() == 0) CORE::IO::cout << "Relaxing Ale" << CORE::IO::endl;
 
     ale_field()->Solve();
     fluid_field()->apply_mesh_displacement(ale_to_fluid(ale_field()->Dispnp()));
@@ -155,7 +155,7 @@ void FSI::FluidFluidMonolithicFluidSplit::read_restart(int step)
   {
     Teuchos::RCP<Epetra_Vector> lambdaemb = Teuchos::rcp(
         new Epetra_Vector(*(fluid_field()->x_fluid_fluid_map_extractor()->FluidMap()), true));
-    IO::DiscretizationReader reader = IO::DiscretizationReader(
+    CORE::IO::DiscretizationReader reader = CORE::IO::DiscretizationReader(
         fluid_field()->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
     reader.ReadVector(lambdaemb, "fsilambda");
     // Insert into vector containing the whole merged fluid DOF

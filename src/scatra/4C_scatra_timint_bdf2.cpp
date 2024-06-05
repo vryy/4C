@@ -27,7 +27,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 SCATRA::TimIntBDF2::TimIntBDF2(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output),
       theta_(1.0),
       phinm_(Teuchos::null),
@@ -301,19 +302,19 @@ void SCATRA::TimIntBDF2::write_restart() const
 
 /*----------------------------------------------------------------------*
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::read_restart(const int step, Teuchos::RCP<IO::InputControl> input)
+void SCATRA::TimIntBDF2::read_restart(const int step, Teuchos::RCP<CORE::IO::InputControl> input)
 {
   // call base class routine
   ScaTraTimIntImpl::read_restart(step, input);
 
-  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
   {
-    reader = Teuchos::rcp(new IO::DiscretizationReader(
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
   }
   else
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
   time_ = reader->ReadDouble("time");
   step_ = reader->ReadInt("step");
 

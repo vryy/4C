@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationReader;
 }
@@ -91,7 +91,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] reader discretization reader
      */
-    void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader);
 
     /*!
      * \brief get reference to affiliation pair data

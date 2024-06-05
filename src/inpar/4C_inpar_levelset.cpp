@@ -12,8 +12,8 @@
 
 #include "4C_inpar_levelset.hpp"
 
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_inpar_scatra.hpp"
-#include "4C_io_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -197,15 +197,15 @@ void INPAR::LEVELSET::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
 
 void INPAR::LEVELSET::SetValidConditions(
-    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
   /*--------------------------------------------------------------------*/
   // Taylor Galerkin outflow Boundaries for level set transport equation
 
-  Teuchos::RCP<ConditionDefinition> surfOutflowTaylorGalerkin =
-      Teuchos::rcp(new ConditionDefinition("TAYLOR GALERKIN OUTFLOW SURF CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfOutflowTaylorGalerkin = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("TAYLOR GALERKIN OUTFLOW SURF CONDITIONS",
           "TaylorGalerkinOutflow", "Surface Taylor Galerkin Outflow",
           CORE::Conditions::TaylorGalerkinOutflow, true, CORE::Conditions::geometry_type_surface));
 
@@ -213,11 +213,11 @@ void INPAR::LEVELSET::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
 
-  Teuchos::RCP<ConditionDefinition> surfneumanninflowTaylorGalerkin =
-      Teuchos::rcp(new ConditionDefinition("TAYLOR GALERKIN NEUMANN INFLOW SURF CONDITIONS",
-          "TaylorGalerkinNeumannInflow", "Surface Taylor Galerkin Neumann Inflow",
-          CORE::Conditions::TaylorGalerkinNeumannInflow, true,
-          CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfneumanninflowTaylorGalerkin =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "TAYLOR GALERKIN NEUMANN INFLOW SURF CONDITIONS", "TaylorGalerkinNeumannInflow",
+          "Surface Taylor Galerkin Neumann Inflow", CORE::Conditions::TaylorGalerkinNeumannInflow,
+          true, CORE::Conditions::geometry_type_surface));
 
   condlist.push_back(surfneumanninflowTaylorGalerkin);
 
@@ -225,9 +225,10 @@ void INPAR::LEVELSET::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Characteristic Galerkin Boundaries for LevelSet-reinitialization
 
-  Teuchos::RCP<ConditionDefinition> surfreinitializationtaylorgalerkin =
-      Teuchos::rcp(new ConditionDefinition("REINITIALIZATION TAYLOR GALERKIN SURF CONDITIONS",
-          "ReinitializationTaylorGalerkin", "Surface reinitialization Taylor Galerkin",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfreinitializationtaylorgalerkin =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "REINITIALIZATION TAYLOR GALERKIN SURF CONDITIONS", "ReinitializationTaylorGalerkin",
+          "Surface reinitialization Taylor Galerkin",
           CORE::Conditions::ReinitializationTaylorGalerkin, true,
           CORE::Conditions::geometry_type_surface));
 
@@ -236,13 +237,13 @@ void INPAR::LEVELSET::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // level-set condition for contact points
 
-  Teuchos::RCP<ConditionDefinition> linelscontact =
-      Teuchos::rcp(new ConditionDefinition("DESIGN LINE LEVEL SET CONTACT CONDITION", "LsContact",
-          "level-set condition for contact points", CORE::Conditions::LsContact, false,
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linelscontact = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN LINE LEVEL SET CONTACT CONDITION",
+          "LsContact", "level-set condition for contact points", CORE::Conditions::LsContact, false,
           CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<ConditionDefinition> pointlscontact =
-      Teuchos::rcp(new ConditionDefinition("DESIGN POINT LEVEL SET CONTACT CONDITION", "LsContact",
-          "level-set condition for contact points", CORE::Conditions::LsContact, false,
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointlscontact = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN POINT LEVEL SET CONTACT CONDITION",
+          "LsContact", "level-set condition for contact points", CORE::Conditions::LsContact, false,
           CORE::Conditions::geometry_type_point));
 
   condlist.push_back(linelscontact);

@@ -27,7 +27,7 @@ namespace SCATRA
         Teuchos::RCP<CORE::LINALG::Solver> solver,                //!< linear solver
         Teuchos::RCP<Teuchos::ParameterList> params,              //!< parameter list
         Teuchos::RCP<Teuchos::ParameterList> extraparams,         //!< supplementary parameter list
-        Teuchos::RCP<IO::DiscretizationWriter> output,            //!< output writer
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output,      //!< output writer
         const int probnum = 0                                     //!< global problem number
     );
 
@@ -58,7 +58,7 @@ namespace SCATRA
     void Update() override;
 
     void read_restart(
-        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
 
     Teuchos::RCP<Epetra_Vector> Phiaf() override { return Teuchos::null; }
 
@@ -91,8 +91,8 @@ namespace SCATRA
             phidtn,  //!< time derivative of micro-scale state vector at old time step
         Teuchos::RCP<Epetra_Vector>
             phidtnp,  //!< time derivative of micro-scale state vector at new time step
-        Teuchos::RCP<Epetra_Vector> hist,               //!< micro-scale history vector
-        Teuchos::RCP<IO::DiscretizationWriter> output,  //!< micro-scale discretization writer
+        Teuchos::RCP<Epetra_Vector> hist,                     //!< micro-scale history vector
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output,  //!< micro-scale discretization writer
         const std::vector<double>&
             phinp_macro,   //!< values of state variables at macro-scale Gauss point
         const int step,    //!< time step

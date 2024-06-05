@@ -48,7 +48,7 @@ namespace CORE::GEOMETRICSEARCH
 
     /*! \brief verbosity level of the geometric search algorithm
      */
-    IO::Verbositylevel verbosity_;
+    CORE::IO::Verbositylevel verbosity_;
 
    private:
     double beam_radius_extension_factor_;

@@ -344,7 +344,7 @@ void CONTACT::AUG::Strategy::redistribute_cn()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::DoReadRestart(IO::DiscretizationReader& reader,
+void CONTACT::AUG::Strategy::DoReadRestart(CORE::IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   CONTACT::AbstractStrategy::DoReadRestart(reader, dis, cparams_ptr);
@@ -1081,11 +1081,11 @@ void CONTACT::AUG::Strategy::add_contributions_to_constr_rhs(Epetra_Vector& augC
   // Add active constraints in normal direction:
   CORE::LINALG::AssembleMyVector(0.0, augConstrRhs, 1.0, *data().WGapPtr());
 
-  if (IO::cout.requested_output_level() >= IO::debug)
+  if (CORE::IO::cout.requested_output_level() >= CORE::IO::debug)
   {
     double wgap_nrm2 = 0.0;
     data().WGapPtr()->Norm2(&wgap_nrm2);
-    IO::cout << __FUNCTION__ << " [wgap-norm2] = " << wgap_nrm2 << IO::endl;
+    CORE::IO::cout << __FUNCTION__ << " [wgap-norm2] = " << wgap_nrm2 << CORE::IO::endl;
   }
 
   // Add inactive constraints
@@ -1467,7 +1467,7 @@ void CONTACT::AUG::Strategy::compute_contact_stresses()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::WriteOutput(IO::DiscretizationWriter& writer) const
+void CONTACT::AUG::Strategy::WriteOutput(CORE::IO::DiscretizationWriter& writer) const
 {
   Teuchos::RCP<Epetra_Vector> augfs_lm = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   Teuchos::RCP<Epetra_Vector> augfs_g = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
@@ -1497,7 +1497,8 @@ void CONTACT::AUG::Strategy::WriteOutput(IO::DiscretizationWriter& writer) const
     CORE::LINALG::Export(*irow_node_owners, str_row_node_owners);
   }
 
-  writer.WriteVector("contactowner", Teuchos::rcpFromRef(str_row_node_owners), IO::nodevector);
+  writer.WriteVector(
+      "contactowner", Teuchos::rcpFromRef(str_row_node_owners), CORE::IO::nodevector);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1516,11 +1517,12 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Strategy::GetRhsBlockPtr(
     {
       vec_ptr = data().StrContactRhsPtr();
 
-      if (IO::cout.requested_output_level() >= IO::debug)
+      if (CORE::IO::cout.requested_output_level() >= CORE::IO::debug)
       {
         double vec_nrm2 = 0.0;
         vec_ptr->Norm2(&vec_nrm2);
-        IO::cout << __FUNCTION__ << " [CONTACT::VecBlockType::displ] = " << vec_nrm2 << IO::endl;
+        CORE::IO::cout << __FUNCTION__ << " [CONTACT::VecBlockType::displ] = " << vec_nrm2
+                       << CORE::IO::endl;
       }
 
       break;
@@ -1528,12 +1530,12 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Strategy::GetRhsBlockPtr(
     case CONTACT::VecBlockType::constraint:
     {
       vec_ptr = data().ConstrRhsPtr();
-      if (IO::cout.requested_output_level() >= IO::debug)
+      if (CORE::IO::cout.requested_output_level() >= CORE::IO::debug)
       {
         double vec_nrm2 = 0.0;
         vec_ptr->Norm2(&vec_nrm2);
-        IO::cout << __FUNCTION__ << " [CONTACT::VecBlockType::constraint] = " << vec_nrm2
-                 << IO::endl;
+        CORE::IO::cout << __FUNCTION__ << " [CONTACT::VecBlockType::constraint] = " << vec_nrm2
+                       << CORE::IO::endl;
       }
 
       break;
@@ -1843,11 +1845,11 @@ void CONTACT::AUG::Strategy::eval_weighted_gap_gradient_error(CONTACT::ParamsInt
         data().nodal_gradient_error_ma_proj();
 
     L2ErrorNormPerNode(grad_error_ma, grad_error_ma_per_node);
-    IO::cout(IO::standard) << "Nodal gradient error: projected parametric "
-                              "master coordinate\n";
+    CORE::IO::cout(CORE::IO::standard) << "Nodal gradient error: projected parametric "
+                                          "master coordinate\n";
     for (auto& ge_per_node : grad_error_ma_per_node)
-      IO::cout(IO::standard) << "GID #" << ge_per_node.first << ", e = " << ge_per_node.second
-                             << IO::endl;
+      CORE::IO::cout(CORE::IO::standard)
+          << "GID #" << ge_per_node.first << ", e = " << ge_per_node.second << CORE::IO::endl;
   }
 
   // --- Nodal gradient error due to the slave jacobian determinant
@@ -1856,10 +1858,10 @@ void CONTACT::AUG::Strategy::eval_weighted_gap_gradient_error(CONTACT::ParamsInt
         data().nodal_gradient_error_jacobian();
 
     L2ErrorNormPerNode(grad_error_jac, grad_error_jac_per_node);
-    IO::cout(IO::standard) << "Nodal gradient error: jacobian\n";
+    CORE::IO::cout(CORE::IO::standard) << "Nodal gradient error: jacobian\n";
     for (auto& ge_per_node : grad_error_jac_per_node)
-      IO::cout(IO::standard) << "GID #" << ge_per_node.first << ", e = " << ge_per_node.second
-                             << IO::endl;
+      CORE::IO::cout(CORE::IO::standard)
+          << "GID #" << ge_per_node.first << ", e = " << ge_per_node.second << CORE::IO::endl;
   }
 
   // --- total gradient error (master proj + slave jacobian)
@@ -1872,7 +1874,7 @@ void CONTACT::AUG::Strategy::eval_weighted_gap_gradient_error(CONTACT::ParamsInt
     total_error /= num_gactivenodes;
     total_error = std::sqrt(total_error);
 
-    IO::cout(IO::standard) << "total_error = " << total_error << IO::endl;
+    CORE::IO::cout(CORE::IO::standard) << "total_error = " << total_error << CORE::IO::endl;
   }
 
   cparams.ClearAll(CORE::GEN::AnyDataContainer::DataType::unordered_map);

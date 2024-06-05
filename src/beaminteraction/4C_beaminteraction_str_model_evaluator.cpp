@@ -115,9 +115,9 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   ia_discret_ = discloner->create_matching_discretization(
       discret_ptr_, "ia_structure", true, true, false, true);
   // create discretization writer
-  ia_discret_->SetWriter(Teuchos::rcp(
-      new IO::DiscretizationWriter(ia_discret_, GLOBAL::Problem::Instance()->OutputControlFile(),
-          GLOBAL::Problem::Instance()->spatial_approximation_type())));
+  ia_discret_->SetWriter(Teuchos::rcp(new CORE::IO::DiscretizationWriter(ia_discret_,
+      GLOBAL::Problem::Instance()->OutputControlFile(),
+      GLOBAL::Problem::Instance()->spatial_approximation_type())));
 
   // init data container
   ia_state_ptr_ = Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteractionDataState());
@@ -677,14 +677,14 @@ bool STR::MODELEVALUATOR::BeamInteraction::assemble_jacobian(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
 
   int const stepn = GState().GetStepN();
   double const timen = GState().GetTimeN();
-  Teuchos::RCP<IO::DiscretizationWriter> ia_writer = ia_discret_->Writer();
-  Teuchos::RCP<IO::DiscretizationWriter> bin_writer = bindis_->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> ia_writer = ia_discret_->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> bin_writer = bindis_->Writer();
 
   // write restart of ia_discret
   ia_writer->WriteMesh(stepn, timen);
@@ -708,7 +708,7 @@ void STR::MODELEVALUATOR::BeamInteraction::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::read_restart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::BeamInteraction::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
 
@@ -721,14 +721,14 @@ void STR::MODELEVALUATOR::BeamInteraction::read_restart(IO::DiscretizationReader
     (*sme_iter)->PreReadRestart();
 
   // read interaction discretization
-  IO::DiscretizationReader ia_reader(ia_discret_, input_control_file, stepn);
+  CORE::IO::DiscretizationReader ia_reader(ia_discret_, input_control_file, stepn);
   // includes fill_complete()
   ia_reader.ReadHistoryData(stepn);
 
   // rebuild bin discret correctly in case crosslinker were present
   // Fixme: do just read history data like with ia discret
   // read correct nodes
-  IO::DiscretizationReader bin_reader(bindis_, input_control_file, stepn);
+  CORE::IO::DiscretizationReader bin_reader(bindis_, input_control_file, stepn);
   bin_reader.ReadNodesOnly(stepn);
   bindis_->fill_complete(false, false, false);
 
@@ -841,9 +841,11 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
 
     if (g_state().GetMyRank() == 0)
     {
-      IO::cout(IO::verbose) << "\n************************************************\n" << IO::endl;
-      IO::cout(IO::verbose) << "Complete redistribution was done " << IO::endl;
-      IO::cout(IO::verbose) << "\n************************************************\n" << IO::endl;
+      CORE::IO::cout(CORE::IO::verbose) << "\n************************************************\n"
+                                        << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose) << "Complete redistribution was done " << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose) << "\n************************************************\n"
+                                        << CORE::IO::endl;
     }
   }
   else if (binning_redist)
@@ -854,9 +856,11 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
 
     if (g_state().GetMyRank() == 0)
     {
-      IO::cout(IO::verbose) << "\n************************************************\n" << IO::endl;
-      IO::cout(IO::verbose) << " binning redistribution was done " << IO::endl;
-      IO::cout(IO::verbose) << "\n************************************************\n" << IO::endl;
+      CORE::IO::cout(CORE::IO::verbose) << "\n************************************************\n"
+                                        << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose) << " binning redistribution was done " << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose) << "\n************************************************\n"
+                                        << CORE::IO::endl;
     }
   }
 
@@ -923,9 +927,11 @@ bool STR::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistribution_
   // some verbose screen output
   if (g_state().GetMyRank() == 0)
   {
-    IO::cout(IO::debug) << " half interaction distance " << half_interaction_distance_ << IO::endl;
-    IO::cout(IO::debug) << " gmaxdisincr " << gmaxdisincr << IO::endl;
-    IO::cout(IO::debug) << " half min bin size " << 0.5 * binstrategy_->GetMinBinSize() << IO::endl;
+    CORE::IO::cout(CORE::IO::debug)
+        << " half interaction distance " << half_interaction_distance_ << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::debug) << " gmaxdisincr " << gmaxdisincr << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::debug)
+        << " half min bin size " << 0.5 * binstrategy_->GetMinBinSize() << CORE::IO::endl;
   }
 
   return ((half_interaction_distance_ + gmaxdisincr) > (0.5 * binstrategy_->GetMinBinSize()));
@@ -964,7 +970,8 @@ void STR::MODELEVALUATOR::BeamInteraction::determine_optional_quantity()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::OutputStepState(IO::DiscretizationWriter& iowriter) const
+void STR::MODELEVALUATOR::BeamInteraction::OutputStepState(
+    CORE::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
 
@@ -1166,17 +1173,20 @@ void STR::MODELEVALUATOR::BeamInteraction::print_binning_info_to_screen() const
       discret_vec, disnp_vec, XAABB, false);
   if (GState().GetMyRank() == 0)
   {
-    IO::cout(IO::verbose) << " \n---------------------------------------------------------- "
-                          << IO::endl;
-    IO::cout(IO::verbose) << " chosen/computed cutoff radius                      : "
-                          << binstrategy_->GetMinBinSize() << IO::endl;
-    IO::cout(IO::verbose) << " largest edge length of largest element xaabb       : "
-                          << bin_size_lower_bound << IO::endl;
-    IO::cout(IO::verbose) << "DOMAINBOUNDINGBOX containing all elements of input discretization:\n "
-                          << XAABB(0, 0) << " " << XAABB(1, 0) << " " << XAABB(2, 0) << " "
-                          << XAABB(0, 1) << " " << XAABB(1, 1) << " " << XAABB(2, 1) << IO::endl;
-    IO::cout(IO::verbose) << " ----------------------------------------------------------\n "
-                          << IO::endl;
+    CORE::IO::cout(CORE::IO::verbose)
+        << " \n---------------------------------------------------------- " << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::verbose)
+        << " chosen/computed cutoff radius                      : " << binstrategy_->GetMinBinSize()
+        << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::verbose)
+        << " largest edge length of largest element xaabb       : " << bin_size_lower_bound
+        << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::verbose)
+        << "DOMAINBOUNDINGBOX containing all elements of input discretization:\n " << XAABB(0, 0)
+        << " " << XAABB(1, 0) << " " << XAABB(2, 0) << " " << XAABB(0, 1) << " " << XAABB(1, 1)
+        << " " << XAABB(2, 1) << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::verbose)
+        << " ----------------------------------------------------------\n " << CORE::IO::endl;
   }
 }
 
@@ -1188,37 +1198,66 @@ void STR::MODELEVALUATOR::BeamInteraction::Logo() const
 
   if (myrank_ == 0)
   {
-    IO::cout << "\n****************************************************************" << IO::endl;
-    IO::cout << "*                                                              *" << IO::endl;
-    IO::cout << "*          Welcome to the Beam Interaction Model Evaluator     *" << IO::endl;
-    IO::cout << "*                                                              *" << IO::endl;
-    IO::cout << "****************************************************************" << IO::endl;
-    IO::cout << "                                                                  " << IO::endl;
-    IO::cout << "                                                                  " << IO::endl;
-    IO::cout << "                      0=========================0                 " << IO::endl;
-    IO::cout << "                    //|   \\            /       /||                " << IO::endl;
-    IO::cout << "                   // |    \\ |       |/       //||                " << IO::endl;
-    IO::cout << "                  //  |  /  \\|       /       // ||                " << IO::endl;
-    IO::cout << "                 //   |  \\   \\   /  /|\\     //  ||                " << IO::endl;
-    IO::cout << "                //    |  /   |\\ /  / | \\   //   ||                " << IO::endl;
-    IO::cout << "               //     |  \\   | \\     |  \\ //  / ||                " << IO::endl;
-    IO::cout << "              //  \\  /|  /   |/      |   //  /  ||                " << IO::endl;
-    IO::cout << "              0=========================0 \\ /   ||                " << IO::endl;
-    IO::cout << "             ||    /\\ |____          |  || \\    ||                " << IO::endl;
-    IO::cout << "             ||   /  \\|    \\   ------   ||/ \\   ||                " << IO::endl;
-    IO::cout << "             ||  /    |                 ||      ||                " << IO::endl;
-    IO::cout << "             || /     0----------/------||------0-                " << IO::endl;
-    IO::cout << "             ||      /   /       \\      ||     //                 " << IO::endl;
-    IO::cout << "             ||     /___/  \\     /    / ||    //                  " << IO::endl;
-    IO::cout << "             ||    /        \\    \\   /  ||   //                   " << IO::endl;
-    IO::cout << "             ||   /  \\/\\/\\/  \\   /  /   ||  //                    "
-             << IO::endl;
-    IO::cout << "             ||  /      /     \\  \\ /    || //                     " << IO::endl;
-    IO::cout << "             || /      /         /      ||//                      " << IO::endl;
-    IO::cout << "             ||/                       /||/                       " << IO::endl;
-    IO::cout << "              0=========================0                         " << IO::endl;
-    IO::cout << "                                                                     " << IO::endl;
-    IO::cout << "                                                                     " << IO::endl;
+    CORE::IO::cout << "\n****************************************************************"
+                   << CORE::IO::endl;
+    CORE::IO::cout << "*                                                              *"
+                   << CORE::IO::endl;
+    CORE::IO::cout << "*          Welcome to the Beam Interaction Model Evaluator     *"
+                   << CORE::IO::endl;
+    CORE::IO::cout << "*                                                              *"
+                   << CORE::IO::endl;
+    CORE::IO::cout << "****************************************************************"
+                   << CORE::IO::endl;
+    CORE::IO::cout << "                                                                  "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "                                                                  "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "                      0=========================0                 "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "                    //|   \\            /       /||                "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "                   // |    \\ |       |/       //||                "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "                  //  |  /  \\|       /       // ||                "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "                 //   |  \\   \\   /  /|\\     //  ||                "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "                //    |  /   |\\ /  / | \\   //   ||                "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "               //     |  \\   | \\     |  \\ //  / ||                "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "              //  \\  /|  /   |/      |   //  /  ||                "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "              0=========================0 \\ /   ||                "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "             ||    /\\ |____          |  || \\    ||                "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "             ||   /  \\|    \\   ------   ||/ \\   ||                "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "             ||  /    |                 ||      ||                "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "             || /     0----------/------||------0-                "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "             ||      /   /       \\      ||     //                 "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "             ||     /___/  \\     /    / ||    //                  "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "             ||    /        \\    \\   /  ||   //                   "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "             ||   /  \\/\\/\\/  \\   /  /   ||  //                    "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "             ||  /      /     \\  \\ /    || //                     "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "             || /      /         /      ||//                      "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "             ||/                       /||/                       "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "              0=========================0                         "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "                                                                     "
+                   << CORE::IO::endl;
+    CORE::IO::cout << "                                                                     "
+                   << CORE::IO::endl;
   }
 }
 

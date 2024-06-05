@@ -66,8 +66,8 @@ namespace ART
       /*!
       \brief Standard Constructor
       */
-      ArtJunctionWrapper(Teuchos::RCP<DRT::Discretization> actdis, IO::DiscretizationWriter &output,
-          Teuchos::ParameterList &params, double dta);
+      ArtJunctionWrapper(Teuchos::RCP<DRT::Discretization> actdis,
+          CORE::IO::DiscretizationWriter &output, Teuchos::ParameterList &params, double dta);
 
       /*!
       \brief Destructor
@@ -108,7 +108,7 @@ namespace ART
       Teuchos::RCP<DRT::Discretization> discret_;
 
       //! the output writer
-      IO::DiscretizationWriter &output_;
+      CORE::IO::DiscretizationWriter &output_;
 
     };  // class ArtJunctionWrapper
 
@@ -133,9 +133,9 @@ namespace ART
       /*!
       \brief Standard Constructor
      */
-      ArtJunctionBc(Teuchos::RCP<DRT::Discretization> actdis, IO::DiscretizationWriter &output,
-          std::vector<CORE::Conditions::Condition *> conds, std::vector<int> IOart_flag, double dta,
-          int condid, int numcond);
+      ArtJunctionBc(Teuchos::RCP<DRT::Discretization> actdis,
+          CORE::IO::DiscretizationWriter &output, std::vector<CORE::Conditions::Condition *> conds,
+          std::vector<int> IOart_flag, double dta, int condid, int numcond);
 
       /*!
       \brief Empty Constructor
@@ -215,7 +215,7 @@ namespace ART
       Teuchos::RCP<DRT::Discretization> discret_;
 
       //! the output writer
-      IO::DiscretizationWriter &output_;
+      CORE::IO::DiscretizationWriter &output_;
 
       //! the vector defining whethe an element is inlet or outlet
       std::vector<int> io_art_flag_;

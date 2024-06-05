@@ -172,9 +172,9 @@ int STR::TimAda::Integrate()
       // adjust step-size and prepare repetition of current step
       if (not accepted)
       {
-        IO::cout << "Repeating step with stepsize = " << stpsiznew << IO::endl;
-        IO::cout << "- - - - - - - - - - - - - - - - - - - - - - - - -"
-                 << " - - - - - - - - - - - - - - -" << IO::endl;
+        CORE::IO::cout << "Repeating step with stepsize = " << stpsiznew << CORE::IO::endl;
+        CORE::IO::cout << "- - - - - - - - - - - - - - - - - - - - - - - - -"
+                       << " - - - - - - - - - - - - - - -" << CORE::IO::endl;
 
         stepsize_ = stpsiznew;
 

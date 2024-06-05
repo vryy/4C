@@ -40,7 +40,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Return the container holding the general output parameters
      */
-    const IO::VisualizationParameters& get_visualization_parameters() const
+    const CORE::IO::VisualizationParameters& get_visualization_parameters() const
     {
       return visualization_parameters_;
     }
@@ -100,7 +100,7 @@ namespace BEAMINTERACTION
     bool issetup_;
 
     //! General visualization parameters
-    IO::VisualizationParameters visualization_parameters_;
+    CORE::IO::VisualizationParameters visualization_parameters_;
 
     /// output interval regarding steps: write output every INTERVAL_STEPS steps
     int output_interval_steps_;

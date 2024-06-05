@@ -3178,7 +3178,7 @@ void SCATRA::MeshtyingStrategyS2I::write_restart() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::read_restart(
-    const int step, Teuchos::RCP<IO::InputControl> input) const
+    const int step, Teuchos::RCP<CORE::IO::InputControl> input) const
 {
   // only relevant for monolithic or semi-implicit evaluation of scatra-scatra interface layer
   // growth
@@ -3186,13 +3186,13 @@ void SCATRA::MeshtyingStrategyS2I::read_restart(
       intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_semi_implicit)
   {
     // initialize reader
-    Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+    Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
     if (input == Teuchos::null)
-      reader = Teuchos::rcp(new IO::DiscretizationReader(
+      reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
           scatratimint_->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step));
     else
-      reader =
-          Teuchos::rcp(new IO::DiscretizationReader(scatratimint_->discretization(), input, step));
+      reader = Teuchos::rcp(
+          new CORE::IO::DiscretizationReader(scatratimint_->discretization(), input, step));
 
     // read state vector of discrete scatra-scatra interface layer thicknesses
     reader->ReadVector(growthn_, "growthn");

@@ -28,11 +28,11 @@ namespace CORE::LINALG
   class MapExtractor;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace FS3I
 {
@@ -288,10 +288,10 @@ namespace FS3I
     Teuchos::RCP<const Epetra_Vector> GetMeanValue(const std::string type) const;
 
     /// Write restart of mean manager
-    void write_restart(Teuchos::RCP<IO::DiscretizationWriter> fluidwriter) const;
+    void write_restart(Teuchos::RCP<CORE::IO::DiscretizationWriter> fluidwriter) const;
 
     /// Read restart of mean manager
-    void read_restart(IO::DiscretizationReader& fluidreader);
+    void read_restart(CORE::IO::DiscretizationReader& fluidreader);
 
    private:
     /// weighted sum of all prior wall shear stresses

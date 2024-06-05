@@ -4,12 +4,10 @@ set(_dependencies
     # cmake-format: sortable
     config
     core
-    fiber
     fluid
     fluid_ele
     global_data
     inpar
-    io
     lib
     mat
     nurbs_discret

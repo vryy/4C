@@ -20,15 +20,15 @@ its parameters and conditions.
 #include "4C_config.hpp"
 
 #include "4C_comm_utils.hpp"
+#include "4C_discretization_condition_definition.hpp"
+#include "4C_discretization_fem_general_element_definition.hpp"
 #include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_validconditions.hpp"
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_inpar_validparameters.hpp"
-#include "4C_io_condition_definition.hpp"
 #include "4C_io_dat_file_utils.hpp"
-#include "4C_io_elementdefinition.hpp"
 #include "4C_pre_exodus_readbc.hpp"
 #include "4C_pre_exodus_reader.hpp"
 #include "4C_pre_exodus_validate.hpp"
@@ -144,13 +144,13 @@ namespace
 
     // print validconditions as proposal
     defaultbc << "-----------------------------------------VALIDCONDITIONS" << std::endl;
-    Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> condlist =
+    Teuchos::RCP<std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>> condlist =
         INPUT::ValidConditions();
     INPUT::PrintEmptyConditionDefinitions(defaultbc, *condlist);
 
     // print valid element lines as proposal (parobjects have to be registered for doing this!)
     defaultbc << std::endl << std::endl;
-    INPUT::ElementDefinition ed;
+    CORE::Elements::ElementDefinition ed;
     ed.print_element_dat_header_to_stream(defaultbc);
 
     // close default bc specification file
@@ -232,13 +232,13 @@ int main(int argc, char** argv)
     if (datfile != "")
     {
       const std::string basename = datfile.substr(0, datfile.find_last_of(".")) + "_pre";
-      IO::cout.setup(
-          true, false, false, IO::standard, comm, 0, 0, basename);  // necessary setup of IO::cout
+      CORE::IO::cout.setup(true, false, false, CORE::IO::standard, comm, 0, 0,
+          basename);  // necessary setup of CORE::IO::cout
     }
     else
     {
-      IO::cout.setup(
-          true, false, false, IO::standard, comm, 0, 0, "xxx_pre");  // necessary setup of IO::cout
+      CORE::IO::cout.setup(true, false, false, CORE::IO::standard, comm, 0, 0,
+          "xxx_pre");  // necessary setup of CORE::IO::cout
     }
 
 
@@ -338,14 +338,14 @@ int main(int argc, char** argv)
 
       // get valid input materials
       {
-        Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> mlist =
+        Teuchos::RCP<std::vector<Teuchos::RCP<MAT::MaterialDefinition>>> mlist =
             INPUT::ValidMaterials();
         INPUT::PrintEmptyMaterialDefinitions(defaulthead, *mlist);
       }
 
       // print cloning material map default lines (right after the materials)
       const auto lines = CORE::FE::valid_cloning_material_map_lines();
-      IO::DatFileUtils::print_section(defaulthead, "CLONING MATERIAL MAP", lines);
+      CORE::IO::DatFileUtils::print_section(defaulthead, "CLONING MATERIAL MAP", lines);
 
       // print spatial functions
       defaulthead << "-------------------------------------------------------------FUNCT1"
@@ -361,7 +361,7 @@ int main(int argc, char** argv)
         CORE::UTILS::FunctionManager functionmanager;
         GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(functionmanager);
         const std::vector<INPUT::LineDefinition> flines = functionmanager.valid_function_lines();
-        IO::DatFileUtils::print_section(tmp, "FUNCT", flines);
+        CORE::IO::DatFileUtils::print_section(tmp, "FUNCT", flines);
         std::string tmpstring = tmp.str();
         std::string removeit =
             "--------------------------------------------------------------FUNCT\n";
@@ -376,7 +376,7 @@ int main(int argc, char** argv)
       // default result-test lines
       {
         const auto lines = GlobalLegacyModuleCallbacks().valid_result_description_lines();
-        IO::DatFileUtils::print_section(defaulthead, "RESULT DESCRIPTION", lines);
+        CORE::IO::DatFileUtils::print_section(defaulthead, "RESULT DESCRIPTION", lines);
       }
 
       // close default header file

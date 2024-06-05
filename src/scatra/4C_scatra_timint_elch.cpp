@@ -40,7 +40,8 @@ FOUR_C_NAMESPACE_OPEN
 SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output),
       elchparams_(params),
       equpot_(CORE::UTILS::IntegralValue<INPAR::ELCH::EquPot>(*elchparams_, "EQUPOT")),
@@ -849,7 +850,7 @@ void SCATRA::ScaTraTimIntElch::output_problem_specific()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::read_restart_problem_specific(
-    const int step, IO::DiscretizationReader& reader)
+    const int step, CORE::IO::DiscretizationReader& reader)
 {
   if (isale_) reader.ReadVector(trueresidual_, "trueresidual");
 

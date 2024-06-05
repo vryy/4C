@@ -26,7 +26,8 @@ SCATRA::TimIntCardiacMonodomainOST::TimIntCardiacMonodomainOST(
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       TimIntCardiacMonodomain(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntOneStepTheta(actdis, solver, sctratimintparams, extraparams, output)
@@ -82,17 +83,17 @@ void SCATRA::TimIntCardiacMonodomainOST::write_restart() const
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainOST::read_restart(
-    const int step, Teuchos::RCP<IO::InputControl> input)
+    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
 {
   // Call function from baseclass
   TimIntOneStepTheta::read_restart(step, input);
 
-  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
   else
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
 
   // Cardiac Monodomain specific
   reader->ReadVector(activation_time_np_, "activation_time_np");
@@ -122,7 +123,8 @@ SCATRA::TimIntCardiacMonodomainBDF2::TimIntCardiacMonodomainBDF2(
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       TimIntCardiacMonodomain(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntBDF2(actdis, solver, sctratimintparams, extraparams, output)
@@ -179,17 +181,17 @@ void SCATRA::TimIntCardiacMonodomainBDF2::write_restart() const
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainBDF2::read_restart(
-    const int step, Teuchos::RCP<IO::InputControl> input)
+    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
 {
   // Call function from baseclass
   TimIntBDF2::read_restart(step, input);
 
-  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
   else
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
 
   // Cardiac Monodomain specific
   reader->ReadVector(activation_time_np_, "activation_time_np");
@@ -207,7 +209,8 @@ SCATRA::TimIntCardiacMonodomainGenAlpha::TimIntCardiacMonodomainGenAlpha(
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       TimIntCardiacMonodomain(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntGenAlpha(actdis, solver, sctratimintparams, extraparams, output)
@@ -264,12 +267,13 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::write_restart() const
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainGenAlpha::read_restart(
-    const int step, Teuchos::RCP<IO::InputControl> input)
+    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
 {
   // Call function from baseclass
   TimIntGenAlpha::read_restart(step, input);
 
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
   // Cardiac Monodomain specific
   reader.ReadVector(activation_time_np_, "activation_time_np");

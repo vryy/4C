@@ -21,7 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 SCATRA::ScaTraTimIntPoroMulti::ScaTraTimIntPoroMulti(Teuchos::RCP<DRT::Discretization> dis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output), L2_projection_(false)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
@@ -138,7 +139,7 @@ void SCATRA::ScaTraTimIntPoroMulti::output_state()
       FOUR_C_THROW("Cannot extract displacement field from discretization");
 
     const auto dispnp_multi = convert_dof_vector_to_componentwise_node_vector(dispnp, NdsDisp());
-    output_->WriteVector("dispnp", dispnp_multi, IO::nodevector);
+    output_->WriteVector("dispnp", dispnp_multi, CORE::IO::nodevector);
   }
 
   if (has_external_force_)
@@ -148,12 +149,12 @@ void SCATRA::ScaTraTimIntPoroMulti::output_state()
     const auto external_force = discret_->GetState(nds_vel, "external_force");
     const auto output_external_force =
         convert_dof_vector_to_componentwise_node_vector(external_force, NdsVel());
-    output_->WriteVector("external_force", output_external_force, IO::nodevector);
+    output_->WriteVector("external_force", output_external_force, CORE::IO::nodevector);
 
     const auto mobility = discret_->GetState(nds_vel, "intrinsic_mobility");
     const auto output_intrinsic_mobility =
         convert_dof_vector_to_componentwise_node_vector(mobility, NdsVel());
-    output_->WriteVector("intrinsic_mobility", output_intrinsic_mobility, IO::nodevector);
+    output_->WriteVector("intrinsic_mobility", output_intrinsic_mobility, CORE::IO::nodevector);
   }
 }  // ScaTraTimIntImpl::output_state
 
@@ -233,7 +234,7 @@ void SCATRA::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
         }
       }
     }
-    output_->WriteVector("oxypartpress", oxypartpress, IO::nodevector);
+    output_->WriteVector("oxypartpress", oxypartpress, CORE::IO::nodevector);
   }
   return;
 }
@@ -244,7 +245,8 @@ void SCATRA::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
 SCATRA::ScaTraTimIntPoroMultiOST::ScaTraTimIntPoroMultiOST(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntPoroMulti(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntOneStepTheta(actdis, solver, sctratimintparams, extraparams, output)
@@ -287,7 +289,8 @@ SCATRA::ScaTraTimIntPoroMultiBDF2::ScaTraTimIntPoroMultiBDF2(
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntPoroMulti(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntBDF2(actdis, solver, sctratimintparams, extraparams, output)
@@ -331,7 +334,8 @@ SCATRA::ScaTraTimIntPoroMultiGenAlpha::ScaTraTimIntPoroMultiGenAlpha(
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntPoroMulti(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntGenAlpha(actdis, solver, sctratimintparams, extraparams, output)
@@ -374,7 +378,8 @@ SCATRA::ScaTraTimIntPoroMultiStationary::ScaTraTimIntPoroMultiStationary(
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntPoroMulti(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntStationary(actdis, solver, sctratimintparams, extraparams, output)

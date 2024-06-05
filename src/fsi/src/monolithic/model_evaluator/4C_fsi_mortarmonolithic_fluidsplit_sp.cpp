@@ -1295,7 +1295,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::read_restart(int step)
   // read Lagrange multiplier into fluid map
   Teuchos::RCP<Epetra_Vector> lambdafull =
       Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(), true));
-  IO::DiscretizationReader reader = IO::DiscretizationReader(
+  CORE::IO::DiscretizationReader reader = CORE::IO::DiscretizationReader(
       fluid_field()->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
   reader.ReadVector(lambdafull, "fsilambda");
   auto lag_mult_old_on_fluid_map = fluid_field()->Interface()->ExtractFSICondVector(lambdafull);

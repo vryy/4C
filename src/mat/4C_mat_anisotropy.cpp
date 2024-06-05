@@ -11,7 +11,7 @@
 #include "4C_mat_anisotropy.hpp"
 
 #include "4C_comm_parobject.hpp"
-#include "4C_fiber_nodal_fiber_holder.hpp"
+#include "4C_discretization_fem_general_fiber_node_holder.hpp"
 #include "4C_mat_anisotropy_extension.hpp"
 #include "4C_mat_anisotropy_utils.hpp"
 #include "4C_mat_service.hpp"
@@ -122,7 +122,7 @@ void MAT::Anisotropy::read_anisotropy_from_parameter_list(const Teuchos::Paramet
 {
   if (params.isParameter("fiberholder"))
   {
-    const auto& fiberHolder = params.get<DRT::FIBER::NodalFiberHolder>("fiberholder");
+    const auto& fiberHolder = params.get<CORE::Nodes::NodalFiberHolder>("fiberholder");
 
     gp_fibers_.resize(numgp_);
 

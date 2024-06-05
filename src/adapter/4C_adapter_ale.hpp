@@ -31,7 +31,7 @@ namespace DRT
   class ResultTest;
 }  // namespace DRT
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }

@@ -15,9 +15,9 @@
 #include "4C_global_legacy_module.hpp"
 #include "4C_io_dat_file_utils.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_io_utils_reader.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_result_test.hpp"
+#include "4C_utils_string.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
@@ -264,7 +264,7 @@ namespace RTD
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void WriteMaterialReference(
-      std::ostream &stream, const std::vector<Teuchos::RCP<INPUT::MaterialDefinition>> &matlist)
+      std::ostream &stream, const std::vector<Teuchos::RCP<MAT::MaterialDefinition>> &matlist)
   {
     WriteLinktarget(stream, "materialsreference");
     write_header(stream, 0, "Material reference");
@@ -291,15 +291,16 @@ namespace RTD
 
     const std::vector<INPUT::LineDefinition> lines = CORE::FE::valid_cloning_material_map_lines();
     std::stringstream cloningMatStream;
-    IO::DatFileUtils::print_section(cloningMatStream, "CLONING MATERIAL MAP", lines);
-    const std::vector<std::string> cloningMatList = DRT::UTILS::Split(cloningMatStream.str(), "\n");
+    CORE::IO::DatFileUtils::print_section(cloningMatStream, "CLONING MATERIAL MAP", lines);
+    const std::vector<std::string> cloningMatList =
+        CORE::UTILS::Split(cloningMatStream.str(), "\n");
 
     WriteCode(stream, cloningMatList);
   }
 
 
   void WriteSingleMaterialReadTheDocs(
-      std::ostream &stream, const Teuchos::RCP<INPUT::MaterialDefinition> material)
+      std::ostream &stream, const Teuchos::RCP<MAT::MaterialDefinition> material)
   {
     /* Each entry consists of a number of fields:
     - header
@@ -391,7 +392,7 @@ namespace RTD
         }
         fullname += name;
         std::string linktarget = boost::algorithm::replace_all_copy(fullname, "/", "_");
-        linktarget = Teuchos::StrUtils::removeAllSpaces(DRT::UTILS::ToLower(linktarget));
+        linktarget = Teuchos::StrUtils::removeAllSpaces(CORE::UTILS::ToLower(linktarget));
 
         if (entry.isList())  // it is a section header
         {
@@ -443,8 +444,8 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteConditionsReference(
-      std::ostream &stream, const std::vector<Teuchos::RCP<INPUT::ConditionDefinition>> &condlist)
+  void WriteConditionsReference(std::ostream &stream,
+      const std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>> &condlist)
   {
     WriteLinktarget(stream, "prescribedconditionreference");
     write_header(stream, 0, "Prescribed Condition Reference");
@@ -457,7 +458,7 @@ namespace RTD
 
 
   void WriteSingleConditionReadTheDocs(
-      std::ostream &stream, const Teuchos::RCP<INPUT::ConditionDefinition> condition)
+      std::ostream &stream, const Teuchos::RCP<CORE::Conditions::ConditionDefinition> condition)
   {
     /* Each entry consists of a number of fields:
     - Part 1: link target and header
@@ -471,7 +472,7 @@ namespace RTD
 
     std::string sectionname = condition->SectionName();
     const std::string sectionlinktarget =
-        Teuchos::StrUtils::removeAllSpaces(DRT::UTILS::ToLower(sectionname));
+        Teuchos::StrUtils::removeAllSpaces(CORE::UTILS::ToLower(sectionname));
     //
     // boundary condition header
     //
@@ -708,9 +709,9 @@ namespace RTD
           "The result of the simulation with respect to specific quantities at concrete points "
           "can be tested against particular values with a given tolerance.");
       std::stringstream resultDescriptionStream;
-      IO::DatFileUtils::print_section(resultDescriptionStream, "RESULT DESCRIPTION", lines);
+      CORE::IO::DatFileUtils::print_section(resultDescriptionStream, "RESULT DESCRIPTION", lines);
       const std::vector<std::string> resultDescriptionList =
-          DRT::UTILS::Split(resultDescriptionStream.str(), "\n");
+          CORE::UTILS::Split(resultDescriptionStream.str(), "\n");
       WriteCode(stream, resultDescriptionList);
     }
     //
@@ -726,8 +727,8 @@ namespace RTD
       WriteParagraph(
           stream, "Definition of functions for various cases, mainly boundary conditions");
       std::stringstream functionStream;
-      IO::DatFileUtils::print_section(functionStream, "FUNCT", lines);
-      const std::vector<std::string> functionList = DRT::UTILS::Split(functionStream.str(), "\n");
+      CORE::IO::DatFileUtils::print_section(functionStream, "FUNCT", lines);
+      const std::vector<std::string> functionList = CORE::UTILS::Split(functionStream.str(), "\n");
       WriteCode(stream, functionList);
     }
   }

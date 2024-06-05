@@ -25,7 +25,7 @@ namespace CORE::LINALG
   class SparseOperator;
 }  // namespace CORE::LINALG
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -44,7 +44,7 @@ namespace ADAPTER
     /// Constructor
     FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
         Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /** \brief Pass in additional contributions from coupling terms for the system matrix
      *

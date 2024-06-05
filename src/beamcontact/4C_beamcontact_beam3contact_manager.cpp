@@ -436,8 +436,8 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
     t_end = Teuchos::Time::wallTime() - t_start;
     Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
     if (!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
-      IO::cout(IO::standard) << "      OctTree Search (Contact): " << t_end << " seconds"
-                             << IO::endl;
+      CORE::IO::cout(CORE::IO::standard)
+          << "      OctTree Search (Contact): " << t_end << " seconds" << CORE::IO::endl;
   }
   //**********************************************************************
   // Contact: brute-force search
@@ -450,8 +450,8 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
     t_end = Teuchos::Time::wallTime() - t_start;
     Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
     if (!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
-      IO::cout(IO::standard) << "      Brute Force Search (Contact): " << t_end << " seconds"
-                             << IO::endl;
+      CORE::IO::cout(CORE::IO::standard)
+          << "      Brute Force Search (Contact): " << t_end << " seconds" << CORE::IO::endl;
   }
 
   t_start = Teuchos::Time::wallTime();
@@ -472,8 +472,8 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
       double t_end = Teuchos::Time::wallTime() - t_start;
       Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
       if (!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
-        IO::cout(IO::standard) << "      OctTree Search (Potential): " << t_end << " seconds"
-                               << IO::endl;
+        CORE::IO::cout(CORE::IO::standard)
+            << "      OctTree Search (Potential): " << t_end << " seconds" << CORE::IO::endl;
     }
     //**********************************************************************
     // Potential-based interaction: brute-force search
@@ -487,8 +487,8 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
       double t_end = Teuchos::Time::wallTime() - t_start;
       Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
       if (!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
-        IO::cout(IO::standard) << "      Brute Force Search (Potential): " << t_end << " seconds"
-                               << IO::endl;
+        CORE::IO::cout(CORE::IO::standard)
+            << "      Brute Force Search (Potential): " << t_end << " seconds" << CORE::IO::endl;
     }
 
     fill_potential_pairs_vectors(elementpairspot);
@@ -524,7 +524,8 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
 
   t_end = Teuchos::Time::wallTime() - t_start;
   if (!pdiscret_.Comm().MyPID())
-    IO::cout(IO::debug) << "      Pair management: " << t_end << " seconds. " << IO::endl;
+    CORE::IO::cout(CORE::IO::debug)
+        << "      Pair management: " << t_end << " seconds. " << CORE::IO::endl;
   t_start = Teuchos::Time::wallTime();
 
   // evaluate all element pairs (BTB, BTSOL, BTSPH; Contact and Potential)
@@ -532,7 +533,8 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
 
   t_end = Teuchos::Time::wallTime() - t_start;
   if (!pdiscret_.Comm().MyPID())
-    IO::cout(IO::debug) << "      Evaluate Contact Pairs: " << t_end << " seconds. " << IO::endl;
+    CORE::IO::cout(CORE::IO::debug)
+        << "      Evaluate Contact Pairs: " << t_end << " seconds. " << CORE::IO::endl;
   double sumproc_evaluationtime = 0.0;
   Comm().SumAll(&t_end, &sumproc_evaluationtime, 1);
   contactevaluationtime_ += sumproc_evaluationtime;
@@ -576,7 +578,8 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
 
   t_end = Teuchos::Time::wallTime() - t_start;
   if (!pdiscret_.Comm().MyPID())
-    IO::cout(IO::debug) << "      Post-manage Pairs: " << t_end << " seconds. " << IO::endl;
+    CORE::IO::cout(CORE::IO::debug)
+        << "      Post-manage Pairs: " << t_end << " seconds. " << CORE::IO::endl;
 
   return;
 }
@@ -1435,7 +1438,8 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
   pdiscret_.Comm().SumAll(&numpairsthisproc, &numpairs, 1);
 
   if (pdiscret_.Comm().MyPID() == 0)
-    IO::cout(IO::standard) << "\t Total number of BTB contact pairs:     " << numpairs << IO::endl;
+    CORE::IO::cout(CORE::IO::standard)
+        << "\t Total number of BTB contact pairs:     " << numpairs << CORE::IO::endl;
 
   if (btsol_)
   {
@@ -1445,8 +1449,8 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
     pdiscret_.Comm().SumAll(&numpairsthisproc, &numpairs, 1);
 
     if (pdiscret_.Comm().MyPID() == 0)
-      IO::cout(IO::standard) << "\t Total number of BTSOL contact pairs:    " << numpairs
-                             << IO::endl;
+      CORE::IO::cout(CORE::IO::standard)
+          << "\t Total number of BTSOL contact pairs:    " << numpairs << CORE::IO::endl;
   }
 }
 
@@ -3255,29 +3259,37 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
   Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
   if (Comm().MyPID() == 0 && ioparams.get<int>("STDOUTEVRY", 0))
   {
-    IO::cout(IO::debug)
-        << IO::endl
+    CORE::IO::cout(CORE::IO::debug)
+        << CORE::IO::endl
         << "      ***********************************BTB************************************"
-        << IO::endl;
-    IO::cout(IO::debug) << "      Penalty parameter                = " << currentpp_ << IO::endl;
-    IO::cout(IO::debug) << "      Minimal current Gap              = " << minallgap << IO::endl;
-    IO::cout(IO::debug) << "      Minimal current rel. Gap         = " << minallrelgap << IO::endl;
-    IO::cout(IO::debug) << "      Current Constraint Norm          = " << constrnorm_ << IO::endl;
-    IO::cout(IO::debug) << "      Maximal current Gap              = " << maxallgap << IO::endl;
-    IO::cout(IO::debug) << "      Maximal current rel. Gap         = " << maxallrelgap << IO::endl;
+        << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::debug)
+        << "      Penalty parameter                = " << currentpp_ << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::debug)
+        << "      Minimal current Gap              = " << minallgap << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::debug)
+        << "      Minimal current rel. Gap         = " << minallrelgap << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::debug)
+        << "      Current Constraint Norm          = " << constrnorm_ << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::debug)
+        << "      Maximal current Gap              = " << maxallgap << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::debug)
+        << "      Maximal current rel. Gap         = " << maxallrelgap << CORE::IO::endl;
 
     if ((int)btsolpairs_.size())
     {
-      IO::cout(IO::debug)
-          << IO::endl
+      CORE::IO::cout(CORE::IO::debug)
+          << CORE::IO::endl
           << "      ***********************************BTSOL**********************************"
-          << IO::endl;
-      IO::cout(IO::debug) << "      BTSOL-Penalty parameter     = " << btspp_ << IO::endl;
-      IO::cout(IO::debug) << "      Current Constraint Norm   = " << btsolconstrnorm_ << IO::endl;
+          << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::debug)
+          << "      BTSOL-Penalty parameter     = " << btspp_ << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::debug)
+          << "      Current Constraint Norm   = " << btsolconstrnorm_ << CORE::IO::endl;
     }
-    IO::cout(IO::debug)
+    CORE::IO::cout(CORE::IO::debug)
         << "      **************************************************************************"
-        << IO::endl;
+        << CORE::IO::endl;
   }
 
   return;
@@ -3306,9 +3318,10 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
     // begin output
     if (Comm().MyPID() == 0)
     {
-      IO::cout(IO::verbose) << "\n    Active contact "
-                               "set------------------------------------------------------------\n";
-      IO::cout(IO::verbose)
+      CORE::IO::cout(CORE::IO::verbose)
+          << "\n    Active contact "
+             "set------------------------------------------------------------\n";
+      CORE::IO::cout(CORE::IO::verbose)
           << "    ID1            ID2              T xi       eta      angle    gap         force\n";
     }
     Comm().Barrier();
@@ -3431,22 +3444,19 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
               numepc++;
             }
 
-            IO::cout(IO::verbose) << "    " << std::setw(5) << std::left << id1 << "("
-                                  << std::setw(3) << std::right << segmentids[j].first + 1 << "/"
-                                  << std::setw(3) << numsegments.first << ")"
-                                  << " " << std::setw(5) << std::left << id2 << "(" << std::setw(3)
-                                  << std::right << segmentids[j].second + 1 << "/" << std::setw(3)
-                                  << numsegments.second << ")"
-                                  << "   " << types[j] << " " << std::setw(9) << std::left
-                                  << std::setprecision(2) << closestpoints[j].first << std::setw(9)
-                                  << std::left << std::setprecision(2) << closestpoints[j].second
-                                  << std::setw(9) << std::left << std::setprecision(3)
-                                  << angles[j] / M_PI * 180.0 << std::setw(12) << std::left
-                                  << std::scientific << gaps[j] << std::setw(12) << std::left
-                                  << std::scientific << forces[j] << std::setprecision(6)
-                                  << std::resetiosflags(std::ios::scientific) << std::right
-                                  << IO::endl
-                                  << IO::flush;
+            CORE::IO::cout(CORE::IO::verbose)
+                << "    " << std::setw(5) << std::left << id1 << "(" << std::setw(3) << std::right
+                << segmentids[j].first + 1 << "/" << std::setw(3) << numsegments.first << ")"
+                << " " << std::setw(5) << std::left << id2 << "(" << std::setw(3) << std::right
+                << segmentids[j].second + 1 << "/" << std::setw(3) << numsegments.second << ")"
+                << "   " << types[j] << " " << std::setw(9) << std::left << std::setprecision(2)
+                << closestpoints[j].first << std::setw(9) << std::left << std::setprecision(2)
+                << closestpoints[j].second << std::setw(9) << std::left << std::setprecision(3)
+                << angles[j] / M_PI * 180.0 << std::setw(12) << std::left << std::scientific
+                << gaps[j] << std::setw(12) << std::left << std::scientific << forces[j]
+                << std::setprecision(6) << std::resetiosflags(std::ios::scientific) << std::right
+                << CORE::IO::endl
+                << CORE::IO::flush;
           }
         }
       }
@@ -3559,57 +3569,64 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
     Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
     if (Comm().MyPID() == 0 && ioparams.get<int>("STDOUTEVRY", 0))
     {
-      IO::cout(IO::standard) << "\n    Number of Point-to-Point Contact Pairs: " << sumpro_numperpc
-                             << IO::endl;
-      IO::cout(IO::verbose) << "    Number of Point Contacts in Transition Range: "
-                            << sumpro_numperpc_transitions << IO::endl;
-      IO::cout(IO::standard) << "    Number of Line-to-Line Contact Pairs: " << sumpro_numparc
-                             << IO::endl;
-      IO::cout(IO::standard) << "    Number of Endpoint Contact Pairs: " << sumpro_numepc
-                             << IO::endl;
+      CORE::IO::cout(CORE::IO::standard)
+          << "\n    Number of Point-to-Point Contact Pairs: " << sumpro_numperpc << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "    Number of Point Contacts in Transition Range: " << sumpro_numperpc_transitions
+          << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::standard)
+          << "    Number of Line-to-Line Contact Pairs: " << sumpro_numparc << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::standard)
+          << "    Number of Endpoint Contact Pairs: " << sumpro_numepc << CORE::IO::endl;
 
-      IO::cout(IO::verbose) << "    Minimal contact angle: " << sumpro_minangle << IO::endl;
-      IO::cout(IO::verbose) << "    Maximal contact angle: " << sumpro_maxangle << IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "    Minimal contact angle: " << sumpro_minangle << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "    Maximal contact angle: " << sumpro_maxangle << CORE::IO::endl;
 
-      IO::cout(IO::verbose) << "    Minimal current Point-to-Point gap: " << sumpro_mincpgap
-                            << IO::endl;
-      IO::cout(IO::verbose) << "    Minimal current Line-to-Line gap: " << sumpro_mingpgap
-                            << IO::endl;
-      IO::cout(IO::verbose) << "    Minimal current Endpoint gap: " << sumpro_minepgap << IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "    Minimal current Point-to-Point gap: " << sumpro_mincpgap << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "    Minimal current Line-to-Line gap: " << sumpro_mingpgap << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "    Minimal current Endpoint gap: " << sumpro_minepgap << CORE::IO::endl;
 
-      IO::cout(IO::standard) << "    Minimal total Point-to-Point Gap = " << mintotalsimgap_cp_
-                             << IO::endl;
-      IO::cout(IO::standard) << "    Minimal total Line-to-Line Gap   = " << mintotalsimgap_gp_
-                             << IO::endl;
-      IO::cout(IO::standard) << "    Minimal total Endpoint Gap       = " << mintotalsimgap_ep_
-                             << IO::endl;
-      IO::cout(IO::verbose) << "    Minimal total rel. Gap           = " << mintotalsimrelgap_
-                            << IO::endl;
-      IO::cout(IO::verbose) << "    Minimal total unconv. Gap        = " << mintotalsimunconvgap_
-                            << IO::endl;
+      CORE::IO::cout(CORE::IO::standard)
+          << "    Minimal total Point-to-Point Gap = " << mintotalsimgap_cp_ << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::standard)
+          << "    Minimal total Line-to-Line Gap   = " << mintotalsimgap_gp_ << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::standard)
+          << "    Minimal total Endpoint Gap       = " << mintotalsimgap_ep_ << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "    Minimal total rel. Gap           = " << mintotalsimrelgap_ << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "    Minimal total unconv. Gap        = " << mintotalsimunconvgap_ << CORE::IO::endl;
 
-      IO::cout(IO::debug) << "    Maximal current Point-to-Point gap: " << sumpro_maxcpgap
-                          << IO::endl;
-      IO::cout(IO::debug) << "    Maximal current Line-to-Line gap: " << sumpro_maxgpgap
-                          << IO::endl;
-      IO::cout(IO::debug) << "    Maximal current Endpoint gap: " << sumpro_maxepgap << IO::endl;
+      CORE::IO::cout(CORE::IO::debug)
+          << "    Maximal current Point-to-Point gap: " << sumpro_maxcpgap << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::debug)
+          << "    Maximal current Line-to-Line gap: " << sumpro_maxgpgap << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::debug)
+          << "    Maximal current Endpoint gap: " << sumpro_maxepgap << CORE::IO::endl;
 
-      IO::cout(IO::debug) << "    Maximal total Point-to-Point Gap = " << maxtotalsimgap_cp_
-                          << IO::endl;
-      IO::cout(IO::debug) << "    Maximal total Line-to-Line Gap   = " << maxtotalsimgap_gp_
-                          << IO::endl;
-      IO::cout(IO::debug) << "    Maximal total Endpoint Gap       = " << maxtotalsimgap_ep_
-                          << IO::endl;
-      IO::cout(IO::debug) << "    Maximal total rel. Gap           = " << maxtotalsimrelgap_
-                          << IO::endl;
+      CORE::IO::cout(CORE::IO::debug)
+          << "    Maximal total Point-to-Point Gap = " << maxtotalsimgap_cp_ << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::debug)
+          << "    Maximal total Line-to-Line Gap   = " << maxtotalsimgap_gp_ << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::debug)
+          << "    Maximal total Endpoint Gap       = " << maxtotalsimgap_ep_ << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::debug)
+          << "    Maximal total rel. Gap           = " << maxtotalsimrelgap_ << CORE::IO::endl;
 
-      IO::cout(IO::debug) << "    global_kappa_max_: " << global_kappa_max_ << IO::endl;
-      IO::cout(IO::debug) << "    contactevaluationtime_: " << contactevaluationtime_ << IO::endl;
+      CORE::IO::cout(CORE::IO::debug)
+          << "    global_kappa_max_: " << global_kappa_max_ << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::debug)
+          << "    contactevaluationtime_: " << contactevaluationtime_ << CORE::IO::endl;
     }
 
     // end output
     Comm().Barrier();
-    if (Comm().MyPID() == 0) IO::cout(IO::standard) << IO::endl;
+    if (Comm().MyPID() == 0) CORE::IO::cout(CORE::IO::standard) << CORE::IO::endl;
   }
   return;
 }
@@ -5036,7 +5053,7 @@ bool CONTACT::Beam3cmanager::close_midpoint_distance(const CORE::Elements::Eleme
 /*----------------------------------------------------------------------*
  | read contact force for restart  meier 02/15|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::read_restart(IO::DiscretizationReader& reader)
+void CONTACT::Beam3cmanager::read_restart(CORE::IO::DiscretizationReader& reader)
 {
   reader.ReadVector(fcold_, "fcold");
   reader.ReadVector(dis_old_, "dis_old");
@@ -5062,7 +5079,7 @@ void CONTACT::Beam3cmanager::read_restart(IO::DiscretizationReader& reader)
 /*----------------------------------------------------------------------*
  | write contact force for restart  meier 02/15|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::write_restart(Teuchos::RCP<IO::DiscretizationWriter> output)
+void CONTACT::Beam3cmanager::write_restart(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
 {
   write_restart(*output);
 
@@ -5072,7 +5089,7 @@ void CONTACT::Beam3cmanager::write_restart(Teuchos::RCP<IO::DiscretizationWriter
 /*----------------------------------------------------------------------*
  | write contact force for restart  meier 02/15|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::write_restart(IO::DiscretizationWriter& output)
+void CONTACT::Beam3cmanager::write_restart(CORE::IO::DiscretizationWriter& output)
 {
   output.WriteVector("fcold", fcold_);
   output.WriteVector("dis_old", dis_old_);

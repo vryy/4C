@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 #include "4C_inpar_sti.hpp"
 
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_inpar_scatra.hpp"
-#include "4C_io_condition_definition.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -107,7 +107,8 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 /*------------------------------------------------------------------------*
  | set valid conditions for scatra-thermo interaction          fang 10/16 |
  *------------------------------------------------------------------------*/
-void INPAR::STI::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+void INPAR::STI::SetValidConditions(
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 

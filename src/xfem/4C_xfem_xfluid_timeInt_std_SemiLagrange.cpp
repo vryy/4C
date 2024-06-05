@@ -68,21 +68,22 @@ void XFEM::XfluidSemiLagrange::compute(
     case FRS1FGI1_:
     {
       if (myrank_ == 0)
-        IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGI1_ ..." << IO::flush;
+        CORE::IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGI1_ ..." << CORE::IO::flush;
       reset_state(TimeIntData::basicStd_, TimeIntData::currSL_);
       break;
     }
     case FRSNot1_:
     {
       if (myrank_ == 0)
-        IO::cout << "\nXFLUID_SemiLagrange::compute: case FRSNot1_ ..." << IO::flush;
+        CORE::IO::cout << "\nXFLUID_SemiLagrange::compute: case FRSNot1_ ..." << CORE::IO::flush;
       reset_state(TimeIntData::doneStd_, TimeIntData::currSL_);
       break;
     }
     case FRS1FGINot1_:
     {
       if (myrank_ == 0)
-        IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGINot1_ ..." << IO::flush;
+        CORE::IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGINot1_ ..."
+                       << CORE::IO::flush;
       reinitialize_data();
       reset_state(TimeIntData::basicStd_, TimeIntData::currSL_);
       reset_state(TimeIntData::doneStd_, TimeIntData::currSL_);
@@ -95,13 +96,15 @@ void XFEM::XfluidSemiLagrange::compute(
 
 
 #ifdef DEBUG_SEMILAGRANGE
-  IO::cout << "\n----------------------------------------------------------------------------------"
-              "------- ";
-  IO::cout << "\nReconstruct data with SEMILAGRANGEAN algorithm for " << timeIntData_->size()
-           << " dofsets ";
-  IO::cout << "\n----------------------------------------------------------------------------------"
-              "------- "
-           << IO::endl;
+  CORE::IO::cout
+      << "\n----------------------------------------------------------------------------------"
+         "------- ";
+  CORE::IO::cout << "\nReconstruct data with SEMILAGRANGEAN algorithm for " << timeIntData_->size()
+                 << " dofsets ";
+  CORE::IO::cout
+      << "\n----------------------------------------------------------------------------------"
+         "------- "
+      << CORE::IO::endl;
 #endif
 
   /*----------------------------------------------------*
@@ -120,9 +123,9 @@ void XFEM::XfluidSemiLagrange::compute(
     if (!global_newton_finished(counter))
     {
 #ifdef DEBUG_SEMILAGRANGE
-      IO::cout << "\n==============================================";
-      IO::cout << "\n CONTINUE GLOBAL NEWTON (" << counter << ") on proc " << myrank_;
-      IO::cout << "\n==============================================" << IO::endl;
+      CORE::IO::cout << "\n==============================================";
+      CORE::IO::cout << "\n CONTINUE GLOBAL NEWTON (" << counter << ") on proc " << myrank_;
+      CORE::IO::cout << "\n==============================================" << CORE::IO::endl;
 #endif
 
       // loop over all nodes (their std-dofsets) that have been chosen for SEMI-Lagrangean
@@ -131,7 +134,7 @@ void XFEM::XfluidSemiLagrange::compute(
            data != timeIntData_->end(); data++)
       {
 #ifdef DEBUG_SEMILAGRANGE
-        IO::cout << "\n\t * STD-SL algorithm for node " << data->node_.Id();
+        CORE::IO::cout << "\n\t * STD-SL algorithm for node " << data->node_.Id();
 #endif
 
         //------------------------------------
@@ -191,13 +194,13 @@ void XFEM::XfluidSemiLagrange::compute(
             data->initial_ele_owner_ = myrank_;
 
 #ifdef DEBUG_SEMILAGRANGE
-            IO::cout << "\n\t\t -> Initial point found in element " << data->initial_eid_;
+            CORE::IO::cout << "\n\t\t -> Initial point found in element " << data->initial_eid_;
 #endif
           }
         }
 
 #ifdef DEBUG_SEMILAGRANGE
-        IO::cout << "\n\t\t -> start with start point approximation: " << data->startpoint_;
+        CORE::IO::cout << "\n\t\t -> start with start point approximation: " << data->startpoint_;
 #endif
 
         if (data->state_ ==
@@ -226,7 +229,8 @@ void XFEM::XfluidSemiLagrange::compute(
           if (elefound)
           {
 #ifdef DEBUG_SEMILAGRANGE
-            IO::cout << "\n\t\t\t ... start point approximation found in element: " << ele->Id();
+            CORE::IO::cout << "\n\t\t\t ... start point approximation found in element: "
+                           << ele->Id();
 #endif
             //----------------------------------------------
             CORE::Elements::Element* initial_ele = nullptr;
@@ -295,7 +299,8 @@ void XFEM::XfluidSemiLagrange::compute(
                 ele, xi, nds_curr, *dofset_old_, vel, vel_deriv, pres, pres_deriv, veln_, false);
 
 #ifdef DEBUG_SEMILAGRANGE
-            IO::cout << "\n\t\t\t ... computed velocity at start point approximation: " << vel;
+            CORE::IO::cout << "\n\t\t\t ... computed velocity at start point approximation: "
+                           << vel;
 #endif
 
             //----------------------------------------------------------------------------------------
@@ -376,8 +381,9 @@ void XFEM::XfluidSemiLagrange::compute(
               data->state_ = TimeIntData::failedSL_;
 
 #ifdef DEBUG_SEMILAGRANGE
-              IO::cout << " <<< WARNING: newton iteration to find start value did not converge! >>>"
-                       << IO::endl;
+              CORE::IO::cout
+                  << " <<< WARNING: newton iteration to find start value did not converge! >>>"
+                  << CORE::IO::endl;
 #endif
             }  // not converged in max_iter
           }    // if(elefound)
@@ -393,7 +399,8 @@ void XFEM::XfluidSemiLagrange::compute(
             else  // all procs searched -> point not in domain
             {
               data->state_ = TimeIntData::failedSL_;
-              IO::cout << " <<< WARNING! Lagrangian start point not in domain! >>>" << IO::endl;
+              CORE::IO::cout << " <<< WARNING! Lagrangian start point not in domain! >>>"
+                             << CORE::IO::endl;
             }
           }  // end if elefound
         }
@@ -415,9 +422,9 @@ void XFEM::XfluidSemiLagrange::compute(
 #ifdef DEBUG_SEMILAGRANGE
     if (procDone)
     {
-      IO::cout << "\n==============================================";
-      IO::cout << "\n FINISHED GLOBAL NEWTON on proc " << myrank_;
-      IO::cout << "\n==============================================" << IO::endl;
+      CORE::IO::cout << "\n==============================================";
+      CORE::IO::cout << "\n FINISHED GLOBAL NEWTON on proc " << myrank_;
+      CORE::IO::cout << "\n==============================================" << CORE::IO::endl;
     }
 #endif
 
@@ -427,9 +434,9 @@ void XFEM::XfluidSemiLagrange::compute(
     if (procDone)
     {
 #ifdef DEBUG_SEMILAGRANGE
-      IO::cout << "\n-------------------------------------------------";
-      IO::cout << "\n\t\t\t !!!!!!!!!! procDone!!!!!!!!";
-      IO::cout << "\n-------------------------------------------------" << IO::endl;
+      CORE::IO::cout << "\n-------------------------------------------------";
+      CORE::IO::cout << "\n\t\t\t !!!!!!!!!! procDone!!!!!!!!";
+      CORE::IO::cout << "\n-------------------------------------------------" << CORE::IO::endl;
 #endif
       break;
     }
@@ -487,7 +494,7 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
 )
 {
 #ifdef DEBUG_SEMILAGRANGE
-  IO::cout << "\n\t\t -> XFLUID_SemiLagrange::newton_loop" << IO::endl;
+  CORE::IO::cout << "\n\t\t -> XFLUID_SemiLagrange::newton_loop" << CORE::IO::endl;
 #endif
 
   const int nsd = 3;  // 3 dimensions for a 3d fluid element
@@ -515,7 +522,8 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
   while (data->counter_ < newton_max_iter_)  // newton loop
   {
 #ifdef DEBUG_SEMILAGRANGE
-    IO::cout << "\n\t\t\t newton_loop(" << data->counter_ << "): residuum " << residuum << IO::endl;
+    CORE::IO::cout << "\n\t\t\t newton_loop(" << data->counter_ << "): residuum " << residuum
+                   << CORE::IO::endl;
 #endif
 
     data->counter_ += 1;
@@ -532,7 +540,7 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
     if (elefound)  // element of data->startpoint_ at this processor
     {
 #ifdef DEBUG_SEMILAGRANGE
-      IO::cout << "\n\t\t\t\t ... elefound " << ele->Id();
+      CORE::IO::cout << "\n\t\t\t\t ... elefound " << ele->Id();
 #endif
 
       CORE::Elements::Element* initial_ele = nullptr;
@@ -587,7 +595,7 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
 
 
 #ifdef DEBUG_SEMILAGRANGE
-      IO::cout << "\n\t\t\t ... computed velocity at start point approximation: " << vel;
+      CORE::IO::cout << "\n\t\t\t ... computed velocity at start point approximation: " << vel;
 #endif
 
       //-------------------------------------------------------
@@ -610,10 +618,10 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
             data->accepted_ = true;
 
 #ifdef DEBUG_SEMILAGRANGE
-            IO::cout << "\n\t*******************************";
-            IO::cout << "\n\t    newton_loop: converged!";
-            IO::cout << "\n\t  LAGRANGEAN ORIGIN ACCEPTED";
-            IO::cout << "\n\t*******************************" << IO::endl;
+            CORE::IO::cout << "\n\t*******************************";
+            CORE::IO::cout << "\n\t    newton_loop: converged!";
+            CORE::IO::cout << "\n\t  LAGRANGEAN ORIGIN ACCEPTED";
+            CORE::IO::cout << "\n\t*******************************" << CORE::IO::endl;
 #endif
           }
           else
@@ -621,10 +629,10 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
             data->accepted_ = false;
 
 #ifdef DEBUG_SEMILAGRANGE
-            IO::cout << "\n\t*******************************";
-            IO::cout << "\n\t    newton_loop: converged!";
-            IO::cout << "\n\t  LAGRANGEAN ORIGIN NOT (!!!) ACCEPTED";
-            IO::cout << "\n\t*******************************" << IO::endl;
+            CORE::IO::cout << "\n\t*******************************";
+            CORE::IO::cout << "\n\t    newton_loop: converged!";
+            CORE::IO::cout << "\n\t  LAGRANGEAN ORIGIN NOT (!!!) ACCEPTED";
+            CORE::IO::cout << "\n\t*******************************" << CORE::IO::endl;
 #endif
           }
 
@@ -640,10 +648,10 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
             data->accepted_ = true;
 
 #ifdef DEBUG_SEMILAGRANGE
-            IO::cout << "\n\t*******************************";
-            IO::cout << "\n\t    newton_loop: converged!";
-            IO::cout << "\n\t  LAGRANGEAN ORIGIN ACCEPTED";
-            IO::cout << "\n\t*******************************" << IO::endl;
+            CORE::IO::cout << "\n\t*******************************";
+            CORE::IO::cout << "\n\t    newton_loop: converged!";
+            CORE::IO::cout << "\n\t  LAGRANGEAN ORIGIN ACCEPTED";
+            CORE::IO::cout << "\n\t*******************************" << CORE::IO::endl;
 #endif
           }
           else
@@ -651,10 +659,10 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
             data->accepted_ = false;
 
 #ifdef DEBUG_SEMILAGRANGE
-            IO::cout << "\n\t*******************************";
-            IO::cout << "\n\t    newton_loop: converged!";
-            IO::cout << "\n\t  LAGRANGEAN ORIGIN NOT (!!!) ACCEPTED";
-            IO::cout << "\n\t*******************************" << IO::endl;
+            CORE::IO::cout << "\n\t*******************************";
+            CORE::IO::cout << "\n\t    newton_loop: converged!";
+            CORE::IO::cout << "\n\t  LAGRANGEAN ORIGIN NOT (!!!) ACCEPTED";
+            CORE::IO::cout << "\n\t*******************************" << CORE::IO::endl;
 #endif
           }
 
@@ -669,9 +677,9 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
     else  // element of data->startpoint_ not at this processor
     {
 #ifdef DEBUG_SEMILAGRANGE
-      IO::cout
+      CORE::IO::cout
           << "\t <<< !!! element not found on this proc -> stop Newton loop on this proc !!! >>>"
-          << IO::endl;
+          << CORE::IO::endl;
 #endif
       break;  // stop newton loop on this proc
     }
@@ -683,9 +691,10 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
   // did newton iteration converge?
   if (data->counter_ == newton_max_iter_)
   {
-    IO::cout << "\t <<< WARNING: newton iteration for finding start value not converged for point "
-                "!!! >>>"
-             << IO::endl;
+    CORE::IO::cout
+        << "\t <<< WARNING: newton iteration for finding start value not converged for point "
+           "!!! >>>"
+        << CORE::IO::endl;
   }
 #endif
 
@@ -707,7 +716,7 @@ void XFEM::XfluidSemiLagrange::newton_iter(
 )
 {
 #ifdef DEBUG_SEMILAGRANGE
-  IO::cout << "\n\t\t\t\t ... new iteration";
+  CORE::IO::cout << "\n\t\t\t\t ... new iteration";
 #endif
 
   const int nsd = 3;  // 3 dimensions for a 3d fluid element
@@ -742,8 +751,8 @@ void XFEM::XfluidSemiLagrange::newton_iter(
   for (int i = 0; i < nsd; i++) data->startpoint_(i) += incr(i);
 
 #ifdef DEBUG_SEMILAGRANGE
-  IO::cout << "\n\t\t\t\t ... new approximate startvalue is " << data->startpoint_(0) << " "
-           << data->startpoint_(1) << " " << data->startpoint_(2) << IO::endl;
+  CORE::IO::cout << "\n\t\t\t\t ... new approximate startvalue is " << data->startpoint_(0) << " "
+                 << data->startpoint_(1) << " " << data->startpoint_(2) << CORE::IO::endl;
 #endif
 
   // find the element the new approximation lies in
@@ -792,18 +801,21 @@ bool XFEM::XfluidSemiLagrange::continue_for_changing_side(
     // the new newton step is within the same element and has the same nds-vector(same cell set)
     // but changed the side, then we are at the tip of a thin structure -> failed
 #ifdef DEBUG_SEMILAGRANGE
-    IO::cout << "\n "
-                "----------------------------------------------------------------------------------"
-                "-------------";
-    IO::cout << "\n <<< Startpoint approximation moved within one fld-vc, but the trace intersects "
-                "the side >>>";
-    IO::cout << "\n                          CHANGED SIDE ";
-    IO::cout
+    CORE::IO::cout
+        << "\n "
+           "----------------------------------------------------------------------------------"
+           "-------------";
+    CORE::IO::cout
+        << "\n <<< Startpoint approximation moved within one fld-vc, but the trace intersects "
+           "the side >>>";
+    CORE::IO::cout << "\n                          CHANGED SIDE ";
+    CORE::IO::cout
         << "\n Newton stopped! We are at the tip of a thin structure! -> leave newton loop >>>";
-    IO::cout << "\n "
-                "----------------------------------------------------------------------------------"
-                "-------------"
-             << IO::endl;
+    CORE::IO::cout
+        << "\n "
+           "----------------------------------------------------------------------------------"
+           "-------------"
+        << CORE::IO::endl;
 #endif
     data->state_ = TimeIntData::failedSL_;
 
@@ -824,9 +836,10 @@ bool XFEM::XfluidSemiLagrange::continue_for_changing_side(
   {
     // within the newton the element and the side have changed
 #ifdef DEBUG_SEMILAGRANGE
-    IO::cout << " <<< Newton for lagrangian origin can not be continued, iteration changed the "
-                "side and the element! -> leave newton loop >>>"
-             << IO::endl;
+    CORE::IO::cout
+        << " <<< Newton for lagrangian origin can not be continued, iteration changed the "
+           "side and the element! -> leave newton loop >>>"
+        << CORE::IO::endl;
 #endif
     data->state_ = TimeIntData::failedSL_;
 
@@ -854,9 +867,11 @@ void XFEM::XfluidSemiLagrange::get_data_for_not_converged_nodes()
     if (data->state_ == TimeIntData::failedSL_)
     {
 #ifdef DEBUG_SEMILAGRANGE
-      IO::cout << "P " << myrank_ << " WARNING: failedSL -> alternative algo!" << IO::endl;
-      IO::cout << "P " << myrank_ << " node " << data->node_.Id() << IO::endl;
-      IO::cout << "P " << myrank_ << " use initial point: " << data->initialpoint_ << IO::endl;
+      CORE::IO::cout << "P " << myrank_ << " WARNING: failedSL -> alternative algo!"
+                     << CORE::IO::endl;
+      CORE::IO::cout << "P " << myrank_ << " node " << data->node_.Id() << CORE::IO::endl;
+      CORE::IO::cout << "P " << myrank_ << " use initial point: " << data->initialpoint_
+                     << CORE::IO::endl;
 #endif
 
       // Initialization
@@ -1212,9 +1227,9 @@ void XFEM::XfluidSemiLagrange::back_tracking(
 )
 {
 #ifdef DEBUG_SEMILAGRANGE
-  IO::cout << "\n==============================================";
-  IO::cout << "\n BACK-TRACKING on proc " << myrank_;
-  IO::cout << "\n==============================================" << IO::endl;
+  CORE::IO::cout << "\n==============================================";
+  CORE::IO::cout << "\n BACK-TRACKING on proc " << myrank_;
+  CORE::IO::cout << "\n==============================================" << CORE::IO::endl;
 #endif
 
 
@@ -1257,10 +1272,10 @@ void XFEM::XfluidSemiLagrange::back_tracking(
   {
     lagrangeanOrigin = data->initialpoint_;  // use the initial guess for the Lagrangean origin
 
-    IO::cout << "\n\tWARNING: Proc " << myrank_
-             << ": SEMI-LAGRANGEAN algorithm: used the initial-guess instead of the real "
-                "Lagrangean origin for node "
-             << data->node_.Id() << IO::endl;
+    CORE::IO::cout << "\n\tWARNING: Proc " << myrank_
+                   << ": SEMI-LAGRANGEAN algorithm: used the initial-guess instead of the real "
+                      "Lagrangean origin for node "
+                   << data->node_.Id() << CORE::IO::endl;
   }
   else
     FOUR_C_THROW("backTrackingType not implemented");
@@ -1452,7 +1467,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
   transportVeln.Multiply(nodevel, shapeFcn);
 
 #ifdef DEBUG_SEMILAGRANGE
-  IO::cout << "\t transportVeln\t" << transportVeln << IO::endl;
+  CORE::IO::cout << "\t transportVeln\t" << transportVeln << CORE::IO::endl;
 #endif
 
   //---------------------------------------------------------------------------------
@@ -1471,7 +1486,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
     if (denominator > 1e-15) deltaT = numerator / denominator;  // else deltaT = 0 as initialized
 
 #ifdef DEBUG_SEMILAGRANGE
-    IO::cout << " \t recomputed modified pseudo time-step size: " << deltaT << IO::endl;
+    CORE::IO::cout << " \t recomputed modified pseudo time-step size: " << deltaT << CORE::IO::endl;
 #endif
   }
   else
@@ -1512,11 +1527,11 @@ void XFEM::XfluidSemiLagrange::back_tracking(
     presValues[index] = pres(0);
 
 #ifdef DEBUG_SEMILAGRANGE
-    IO::cout << "\n***********************************************";
-    IO::cout << "\n           RECONSTRUCTED VALUES for node " << (data->node_).Id();
-    IO::cout << "\nvelocity entry in vector \t" << index << "\t " << vel;
-    IO::cout << "pressure entry in vector \t" << index << "\t " << pres(0);
-    IO::cout << "\n***********************************************" << IO::endl;
+    CORE::IO::cout << "\n***********************************************";
+    CORE::IO::cout << "\n           RECONSTRUCTED VALUES for node " << (data->node_).Id();
+    CORE::IO::cout << "\nvelocity entry in vector \t" << index << "\t " << vel;
+    CORE::IO::cout << "pressure entry in vector \t" << index << "\t " << pres(0);
+    CORE::IO::cout << "\n***********************************************" << CORE::IO::endl;
 #endif
   }  // loop over vectors to be set
 
@@ -1544,7 +1559,7 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
 
 
 #ifdef DEBUG_SEMILAGRANGE
-  IO::cout << "\n\t\t\t ... get_nodal_dof_set";
+  CORE::IO::cout << "\n\t\t\t ... get_nodal_dof_set";
 #endif
 
 
@@ -1574,8 +1589,9 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
           cell->Position() == CORE::GEO::CUT::Point::outside)
       {
 #ifdef DEBUG_SEMILAGRANGE
-        IO::cout << "\n\t\t\t -> Position of point w.r.t volumecell is "
-                 << cell->IsThisPointInside(x) << " \t cell pos = " << cell->Position() << IO::endl;
+        CORE::IO::cout << "\n\t\t\t -> Position of point w.r.t volumecell is "
+                       << cell->IsThisPointInside(x) << " \t cell pos = " << cell->Position()
+                       << CORE::IO::endl;
 #endif
         nds = cell->NodalDofSet();
 
@@ -1587,12 +1603,12 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
         vc = cell;
 
 #ifdef DEBUG_SEMILAGRANGE
-        IO::cout << "nds-vector ";
+        CORE::IO::cout << "nds-vector ";
         for (int i = 0; i < (int)nds.size(); i++)
         {
-          IO::cout << " " << nds[i];
+          CORE::IO::cout << " " << nds[i];
         }
-        IO::cout << "\n";
+        CORE::IO::cout << "\n";
 #endif
 
         return;
@@ -1603,8 +1619,9 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
                (cell->Position() == CORE::GEO::CUT::Point::inside))
       {
 #ifdef DEBUG_SEMILAGRANGE
-        IO::cout << "\n\t\t\t -> Position of point w.r.t volumecell is "
-                 << cell->IsThisPointInside(x) << " \t cell pos = " << cell->Position() << IO::endl;
+        CORE::IO::cout << "\n\t\t\t -> Position of point w.r.t volumecell is "
+                       << cell->IsThisPointInside(x) << " \t cell pos = " << cell->Position()
+                       << CORE::IO::endl;
 #endif
         // do not return before all the other vcs have been tested, maybe a fluid-cell with
         // onBoundary can be found
@@ -1614,8 +1631,8 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
       {
         // the point does not lie inside this vc !
         // #ifdef DEBUG_SEMILAGRANGE
-        //        IO::cout << "\n\t\t\t -> Position of cell " << cell->Position() << " and
-        //        IsThisPointInside "<< cell->IsThisPointInside(x) << IO::endl;
+        //        CORE::IO::cout << "\n\t\t\t -> Position of cell " << cell->Position() << " and
+        //        IsThisPointInside "<< cell->IsThisPointInside(x) << CORE::IO::endl;
         // #endif
       }
     }
@@ -1625,12 +1642,12 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
       CORE::GEO::CUT::plain_volumecell_set cells;
       e->GetVolumeCells(cells);
 
-      IO::cout << "point: " << x << IO::endl;
+      CORE::IO::cout << "point: " << x << CORE::IO::endl;
       for (CORE::GEO::CUT::plain_volumecell_set::iterator cell_it = cells.begin();
            cell_it != cells.end(); cell_it++)
       {
         CORE::GEO::CUT::VolumeCell* cell = *cell_it;
-        IO::cout << "vc-pos: " << cell->Position() << IO::endl;
+        CORE::IO::cout << "vc-pos: " << cell->Position() << CORE::IO::endl;
       }
 
       FOUR_C_THROW(
@@ -1642,16 +1659,17 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
     {
       nds.clear();
 #ifdef DEBUG_SEMILAGRANGE
-      IO::cout << "\n\t\t\t -> Position of point inside structure and not onBoundary of other "
-                  "fluid-vcs -> reset nds to empty vector"
-               << IO::endl;
+      CORE::IO::cout
+          << "\n\t\t\t -> Position of point inside structure and not onBoundary of other "
+             "fluid-vcs -> reset nds to empty vector"
+          << CORE::IO::endl;
 #endif
 
       return;
     }
 
-    IO::cout << "error: coordinates of point x " << x << " number of volumecells: " << cells.size()
-             << IO::endl;
+    CORE::IO::cout << "error: coordinates of point x " << x
+                   << " number of volumecells: " << cells.size() << CORE::IO::endl;
     FOUR_C_THROW(
         "there is no volume cell in element %d which contains point with coordinates (%f,%f,%f) -> "
         "void element???",
@@ -1906,9 +1924,9 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
 void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
 {
 #ifdef DEBUG_SEMILAGRANGE
-  IO::cout << "\n\t=============================";
-  IO::cout << "\n\t  export Iteration Data  ";
-  IO::cout << "\n\t=============================" << IO::endl;
+  CORE::IO::cout << "\n\t=============================";
+  CORE::IO::cout << "\n\t  export Iteration Data  ";
+  CORE::IO::cout << "\n\t=============================" << CORE::IO::endl;
 #endif
 
   const int nsd = 3;  // 3 dimensions for a 3d fluid element

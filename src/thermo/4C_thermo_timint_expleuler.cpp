@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 THR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : TimIntExpl(ioparams, tdynparams, xparams, actdis, solver, output),
       fextn_(Teuchos::null),
       fintn_(Teuchos::null)
@@ -181,7 +181,7 @@ void THR::TimIntExplEuler::ReadRestartForce()
 /*----------------------------------------------------------------------*
  | read restart forces                                       dano 07/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntExplEuler::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+void THR::TimIntExplEuler::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
 {
   // do nothing
   return;

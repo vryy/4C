@@ -11,7 +11,6 @@ set(_dependencies
     fsi
     global_data
     inpar
-    io
     lib
     mortar
     structure

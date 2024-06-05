@@ -2064,7 +2064,7 @@ void CONTACT::AbstractStrategy::DoWriteRestart(
 /*----------------------------------------------------------------------*
  |  read restart information for contact                      popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
+void CONTACT::AbstractStrategy::DoReadRestart(CORE::IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   // check whether this is a restart with contact of a previously

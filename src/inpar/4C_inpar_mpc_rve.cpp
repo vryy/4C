@@ -9,8 +9,8 @@
 
 #include "4C_inpar_mpc_rve.hpp"
 
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_inpar_validparameters.hpp"
-#include "4C_io_condition_definition.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 // set the mpc specific parameters
@@ -37,13 +37,13 @@ void INPAR::RVE_MPC::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
 
 // set mpc specific conditions
 void INPAR::RVE_MPC::SetValidConditions(
-    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
   // ================================================================================================
-  Teuchos::RCP<ConditionDefinition> rve_lineperiodic_condition =
-      Teuchos::rcp(new ConditionDefinition("DESIGN LINE PERIODIC RVE 2D BOUNDARY CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> rve_lineperiodic_condition = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN LINE PERIODIC RVE 2D BOUNDARY CONDITIONS",
           "LinePeriodicRve", "definition of edges forming 2D periodic boundary conditions",
           CORE::Conditions::LineRvePeriodic, false, CORE::Conditions::geometry_type_line));
 
@@ -56,8 +56,8 @@ void INPAR::RVE_MPC::SetValidConditions(
   condlist.push_back(rve_lineperiodic_condition);
 
   // ================================================================================================
-  Teuchos::RCP<ConditionDefinition> rve_surfperiodic_condition =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SURF PERIODIC RVE 3D BOUNDARY CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> rve_surfperiodic_condition = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN SURF PERIODIC RVE 3D BOUNDARY CONDITIONS",
           "SurfacePeriodicRve", "definition of surfaces forming 3D periodic boundary conditions",
           CORE::Conditions::SurfaceRvePeriodic, false, CORE::Conditions::geometry_type_surface));
 
@@ -70,8 +70,9 @@ void INPAR::RVE_MPC::SetValidConditions(
   condlist.push_back(rve_surfperiodic_condition);
 
   // ================================================================================================
-  Teuchos::RCP<ConditionDefinition> rve_cornerpoint_condition = Teuchos::rcp(
-      new ConditionDefinition("DESIGN POINT PERIODIC RVE 2D BOUNDARY REFERENCE CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> rve_cornerpoint_condition =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN POINT PERIODIC RVE 2D BOUNDARY REFERENCE CONDITIONS",
           "PointPeriodicRveReferenceNode",
           "definition of reference points defining the reference vector of the periodic boundary"
           "condition -  only required if RVE_REFERENCE_POINTS = automatic",
@@ -88,11 +89,14 @@ void INPAR::RVE_MPC::SetValidConditions(
   condlist.push_back(rve_cornerpoint_condition);
 
   // ================================================================================================
-  Teuchos::RCP<ConditionDefinition> linear_ce = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN POINT COUPLED DOF EQUATION CONDITIONS", "PointLinearCoupledEquation",
-      "definition of the term of a linear couple equation coupling different degrees of freedom in "
-      "2d",
-      CORE::Conditions::PointLinearCoupledEquation, false, CORE::Conditions::geometry_type_point));
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linear_ce =
+      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          "DESIGN POINT COUPLED DOF EQUATION CONDITIONS", "PointLinearCoupledEquation",
+          "definition of the term of a linear couple equation coupling different degrees of "
+          "freedom in "
+          "2d",
+          CORE::Conditions::PointLinearCoupledEquation, false,
+          CORE::Conditions::geometry_type_point));
 
   linear_ce->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("EQUATION")));
 

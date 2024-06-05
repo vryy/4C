@@ -497,7 +497,7 @@ void STR::MODELEVALUATOR::Meshtying::remove_condensed_contributions_from_rhs(Epe
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Meshtying::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   if (mesh_relocation_ != Teuchos::null)
     iowriter.WriteVector("mesh_relocation", mesh_relocation_);
@@ -511,7 +511,7 @@ void STR::MODELEVALUATOR::Meshtying::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::read_restart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::Meshtying::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map(), true));
   ioreader.ReadVector(mesh_relocation_, "mesh_relocation");

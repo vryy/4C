@@ -51,7 +51,7 @@ namespace DRT
   class ResultTest;
 }  // namespace DRT
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -320,7 +320,7 @@ namespace ADAPTER
     virtual void StatisticsOutput() = 0;
 
     /// access to output
-    virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() = 0;
+    virtual const Teuchos::RCP<CORE::IO::DiscretizationWriter>& DiscWriter() = 0;
 
     /// access to map extractor for velocity and pressure
     virtual Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() = 0;

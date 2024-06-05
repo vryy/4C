@@ -569,7 +569,7 @@ namespace XFEM
                               ///< and used to set for each cutter element
 
     //! Output specific
-    Teuchos::RCP<IO::DiscretizationWriter> cutter_output_;
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> cutter_output_;
 
 
     ///------------------------

@@ -346,8 +346,8 @@ namespace CORE::COMM
     MPI_Comm_compare(mpi_gcomm, mpi_lcomm, &result);
     if (result == 0)
     {
-      IO::cout << "WARNING:: Vectors " << name
-               << " cannot be compared because second 4C run is missing" << IO::endl;
+      CORE::IO::cout << "WARNING:: Vectors " << name
+                     << " cannot be compared because second 4C run is missing" << CORE::IO::endl;
       return false;
     }
 
@@ -431,8 +431,8 @@ namespace CORE::COMM
       }
       if (maxdiff <= tol)
       {
-        IO::cout << "compared vectors " << name << " of length: " << mylength
-                 << " which are identical." << IO::endl;
+        CORE::IO::cout << "compared vectors " << name << " of length: " << mylength
+                       << " which are identical." << CORE::IO::endl;
         result = 1;
       }
     }
@@ -489,8 +489,8 @@ namespace CORE::COMM
     MPI_Comm_compare(mpi_gcomm, mpi_lcomm, &result);
     if (result == 0)
     {
-      IO::cout << "WARNING:: Matrices " << name
-               << " cannot be compared because second 4C run is missing" << IO::endl;
+      CORE::IO::cout << "WARNING:: Matrices " << name
+                     << " cannot be compared because second 4C run is missing" << CORE::IO::endl;
       return false;
     }
 
@@ -595,8 +595,8 @@ namespace CORE::COMM
               iscolindex == 0 ? "row" : "col", name, data_indices[i], receivebuf_indices[i]);
         }
       }
-      IO::cout << "indices of compared matrices " << name << " of length: " << mylength
-               << " are identical." << IO::endl;
+      CORE::IO::cout << "indices of compared matrices " << name << " of length: " << mylength
+                     << " are identical." << CORE::IO::endl;
 
       // compare data: values
       lengthRecv = 0;
@@ -635,8 +635,8 @@ namespace CORE::COMM
       }
       if (maxdiff <= tol)
       {
-        IO::cout << "values of compared matrices " << name << " of length: " << mylength
-                 << " are identical." << IO::endl;
+        CORE::IO::cout << "values of compared matrices " << name << " of length: " << mylength
+                       << " are identical." << CORE::IO::endl;
       }
     }
     else if (myglobalrank == gcomm->NumProc() - 1)

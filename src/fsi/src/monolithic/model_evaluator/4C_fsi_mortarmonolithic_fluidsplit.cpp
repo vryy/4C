@@ -1534,8 +1534,8 @@ void FSI::MortarMonolithicFluidSplit::read_restart(int step)
   {
     Teuchos::RCP<Epetra_Vector> lambdafull =
         Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(), true));
-    IO::DiscretizationReader reader =
-        IO::DiscretizationReader(fluid_field()->discretization(), input_control_file, step);
+    CORE::IO::DiscretizationReader reader =
+        CORE::IO::DiscretizationReader(fluid_field()->discretization(), input_control_file, step);
     reader.ReadVector(lambdafull, "fsilambda");
     lambdaold_ = fluid_field()->Interface()->ExtractFSICondVector(lambdafull);
     // Note: the above is normally enough. However, we can use the restart in order to periodically
@@ -1547,8 +1547,8 @@ void FSI::MortarMonolithicFluidSplit::read_restart(int step)
 
   if (aleproj_ != INPAR::FSI::ALEprojection_none)
   {
-    IO::DiscretizationReader reader =
-        IO::DiscretizationReader(fluid_field()->discretization(), input_control_file, step);
+    CORE::IO::DiscretizationReader reader =
+        CORE::IO::DiscretizationReader(fluid_field()->discretization(), input_control_file, step);
     reader.ReadVector(iprojdisp_, "slideALE");
     reader.ReadVector(iprojdispinc_, "slideALEincr");
     slideale_->read_restart(reader);

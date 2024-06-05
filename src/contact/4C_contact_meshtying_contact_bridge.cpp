@@ -110,7 +110,7 @@ MORTAR::StrategyBase& CONTACT::MeshtyingContactBridge::GetStrategy() const
  |  PostprocessTractions                                     farah 06/14|
  *----------------------------------------------------------------------*/
 void CONTACT::MeshtyingContactBridge::postprocess_quantities(
-    Teuchos::RCP<IO::DiscretizationWriter>& output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter>& output)
 {
   // contact
   if (HaveContact()) ContactManager()->postprocess_quantities(*output);
@@ -158,7 +158,7 @@ void CONTACT::MeshtyingContactBridge::Recover(Teuchos::RCP<Epetra_Vector> disi)
 /*----------------------------------------------------------------------*
  |  Recover lagr. mult and slave displ                       farah 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::read_restart(IO::DiscretizationReader& reader,
+void CONTACT::MeshtyingContactBridge::read_restart(CORE::IO::DiscretizationReader& reader,
     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
 {
   // contact
@@ -174,7 +174,7 @@ void CONTACT::MeshtyingContactBridge::read_restart(IO::DiscretizationReader& rea
  |  Write restart                                            farah 06/14|
  *----------------------------------------------------------------------*/
 void CONTACT::MeshtyingContactBridge::write_restart(
-    Teuchos::RCP<IO::DiscretizationWriter>& output, bool forcedrestart)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool forcedrestart)
 {
   // contact
   if (HaveContact()) ContactManager()->write_restart(*output, forcedrestart);

@@ -81,13 +81,13 @@ namespace STR
 
       //! [derived]
       void write_restart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override
+          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override
       {
         return;
       };
 
       //! [derived]
-      void read_restart(IO::DiscretizationReader& ioreader) override { return; };
+      void read_restart(CORE::IO::DiscretizationReader& ioreader) override { return; };
 
       //! [derived]
       void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
@@ -125,7 +125,7 @@ namespace STR
       void determine_optional_quantity() override { return; };
 
       //! [derived]
-      void OutputStepState(IO::DiscretizationWriter& iowriter) const override { return; };
+      void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override { return; };
 
       //! derived
       void ResetStepState() override { return; };

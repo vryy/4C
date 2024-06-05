@@ -41,7 +41,7 @@ namespace CORE::LINALG
   class SparseMatrix;
 }  // namespace CORE::LINALG
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -129,8 +129,8 @@ namespace STRUMULTI
     \brief Write output and (possibly) restart
 
     */
-    void Output(Teuchos::RCP<IO::DiscretizationWriter> output, const double time, const int istep,
-        const double dt);
+    void Output(Teuchos::RCP<CORE::IO::DiscretizationWriter> output, const double time,
+        const int istep, const double dt);
 
     /*!
     \brief Determine toggle vector identifying prescribed boundary dofs

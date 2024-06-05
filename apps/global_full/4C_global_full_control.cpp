@@ -56,8 +56,8 @@ void ntam(int argc, char *argv[])
   ti = walltime_in_seconds() - t0;
   if (gcomm->MyPID() == 0)
   {
-    IO::cout << "\nTotal CPU Time for INPUT:       " << std::setw(10) << std::setprecision(3)
-             << std::scientific << ti << " sec \n\n";
+    CORE::IO::cout << "\nTotal CPU Time for INPUT:       " << std::setw(10) << std::setprecision(3)
+                   << std::scientific << ti << " sec \n\n";
   }
 
   /*--------------------------------------------------calculation phase */
@@ -68,7 +68,7 @@ void ntam(int argc, char *argv[])
   tc = walltime_in_seconds() - t0;
   if (gcomm->MyPID() == 0)
   {
-    IO::cout << "\nTotal CPU Time for CALCULATION: " << std::setw(10) << std::setprecision(3)
-             << std::scientific << tc << " sec \n\n";
+    CORE::IO::cout << "\nTotal CPU Time for CALCULATION: " << std::setw(10) << std::setprecision(3)
+                   << std::scientific << tc << " sec \n\n";
   }
 }

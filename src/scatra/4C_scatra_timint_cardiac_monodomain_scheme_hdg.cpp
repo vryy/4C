@@ -26,7 +26,8 @@ SCATRA::TimIntCardiacMonodomainHDG::TimIntCardiacMonodomainHDG(
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       TimIntCardiacMonodomain(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntHDG(actdis, solver, sctratimintparams, extraparams, output)
@@ -118,7 +119,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::output_state()
       material_internal_state_np_component_ =
           Teuchos::rcp((*material_internal_state_np_)(k), false);
       output_->WriteVector("mat_int_state_hdg" + temp.str(), material_internal_state_np_component_,
-          IO::elementvector);
+          CORE::IO::elementvector);
     }
   }
 
@@ -148,7 +149,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::write_problem_specific_output(
           (*activation_time_interpol_)[k] <= dta_ * 0.9)
         (*activation_time_interpol_)[k] = time_;
     }
-    output_->WriteVector("activation_time_np_hdg", activation_time_interpol_, IO::nodevector);
+    output_->WriteVector("activation_time_np_hdg", activation_time_interpol_, CORE::IO::nodevector);
   }
 }
 
@@ -221,7 +222,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::project_material()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainHDG::read_restart(
-    const int step, Teuchos::RCP<IO::InputControl> input)
+    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
 {
   // Call function from base class
   SCATRA::TimIntHDG::read_restart(step, input);

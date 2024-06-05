@@ -410,8 +410,8 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::check_penetration(std:
   const double penbound = get_penetration_bound();
 
 #ifdef DEBUG_COMBO_STRATEGY
-  IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << IO::endl;
-  IO::cout << "max_awgap = " << min_awgap << " | penbound = " << penbound << IO::endl;
+  CORE::IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << CORE::IO::endl;
+  CORE::IO::cout << "max_awgap = " << min_awgap << " | penbound = " << penbound << CORE::IO::endl;
 #endif
 
   const bool pen_check = (max_abs_awgap < penbound);

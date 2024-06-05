@@ -25,7 +25,7 @@ ADAPTER::AlgorithmBase::AlgorithmBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : comm_(comm), printscreen_(GLOBAL::Problem::Instance()->IOParams().get<int>("STDOUTEVRY"))
 {
-  if (comm_.MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, timeparams);
+  if (comm_.MyPID() == 0) INPUT::PrintDefaultParameters(CORE::IO::cout, timeparams);
 
   step_ = 0;
   time_ = 0.;
@@ -50,11 +50,11 @@ void ADAPTER::AlgorithmBase::print_header()
 {
   if (Comm().MyPID() == 0 and printscreen_ and (step_ % printscreen_ == 0))
   {
-    IO::cout << "\n"
-             << method_ << "\n"
-             << "TIME:  " << std::scientific << time_ << "/" << std::scientific << maxtime_
-             << "     DT = " << std::scientific << dt_ << "     STEP = " << std::setw(4) << step_
-             << "/" << std::setw(4) << nstep_ << "\n\n";
+    CORE::IO::cout << "\n"
+                   << method_ << "\n"
+                   << "TIME:  " << std::scientific << time_ << "/" << std::scientific << maxtime_
+                   << "     DT = " << std::scientific << dt_ << "     STEP = " << std::setw(4)
+                   << step_ << "/" << std::setw(4) << nstep_ << "\n\n";
   }
 }
 

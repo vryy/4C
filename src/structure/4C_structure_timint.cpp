@@ -59,15 +59,15 @@ FOUR_C_NAMESPACE_OPEN
 /* print tea time logo */
 void STR::TimInt::Logo()
 {
-  IO::cout << "Welcome to Structural Time Integration " << IO::endl;
-  IO::cout << "     __o__                          __o__" << IO::endl;
-  IO::cout << "__  /-----\\__                  __  /-----\\__" << IO::endl;
-  IO::cout << "\\ \\/       \\ \\    |       \\    \\ \\/       \\ \\" << IO::endl;
-  IO::cout << " \\ |  tea  | |    |-------->    \\ |  tea  | |" << IO::endl;
-  IO::cout << "  \\|       |_/    |       /      \\|       |_/" << IO::endl;
-  IO::cout << "    \\_____/   ._                   \\_____/   ._ _|_ /|" << IO::endl;
-  IO::cout << "              | |                            | | |   |" << IO::endl;
-  IO::cout << IO::endl;
+  CORE::IO::cout << "Welcome to Structural Time Integration " << CORE::IO::endl;
+  CORE::IO::cout << "     __o__                          __o__" << CORE::IO::endl;
+  CORE::IO::cout << "__  /-----\\__                  __  /-----\\__" << CORE::IO::endl;
+  CORE::IO::cout << "\\ \\/       \\ \\    |       \\    \\ \\/       \\ \\" << CORE::IO::endl;
+  CORE::IO::cout << " \\ |  tea  | |    |-------->    \\ |  tea  | |" << CORE::IO::endl;
+  CORE::IO::cout << "  \\|       |_/    |       /      \\|       |_/" << CORE::IO::endl;
+  CORE::IO::cout << "    \\_____/   ._                   \\_____/   ._ _|_ /|" << CORE::IO::endl;
+  CORE::IO::cout << "              | |                            | | |   |" << CORE::IO::endl;
+  CORE::IO::cout << CORE::IO::endl;
 }
 
 /*----------------------------------------------------------------------*/
@@ -76,7 +76,7 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : discret_(actdis),
       facediscret_(Teuchos::null),
       myrank_(actdis->Comm().MyPID()),
@@ -1704,7 +1704,8 @@ void STR::TimInt::reset_step()
 /* Read and set restart values */
 void STR::TimInt::read_restart(const int step)
 {
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   if (step != reader.ReadInt("step")) FOUR_C_THROW("Time step on file not equal to given step");
 
   step_ = step;
@@ -1762,7 +1763,8 @@ void STR::TimInt::SetRestart(int step, double time, Teuchos::RCP<Epetra_Vector> 
 /* Read and set restart state */
 void STR::TimInt::ReadRestartState()
 {
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
 
   reader.ReadVector(disn_, "displacement");
   dis_->UpdateSteps(*disn_);
@@ -1809,7 +1811,7 @@ void STR::TimInt::read_restart_constraint()
 {
   if (conman_->HaveConstraint())
   {
-    IO::DiscretizationReader reader(
+    CORE::IO::DiscretizationReader reader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
     double uzawatemp = reader.ReadDouble("uzawaparameter");
     consolv_->SetUzawaParameter(uzawatemp);
@@ -1824,7 +1826,7 @@ void STR::TimInt::read_restart_cardiovascular0_d()
 {
   if (cardvasc0dman_->have_cardiovascular0_d())
   {
-    IO::DiscretizationReader reader(
+    CORE::IO::DiscretizationReader reader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
     cardvasc0dman_->read_restart(reader, (*time_)[0]);
   }
@@ -1836,7 +1838,7 @@ void STR::TimInt::read_restart_spring_dashpot()
 {
   if (springman_->HaveSpringDashpot())
   {
-    IO::DiscretizationReader reader(
+    CORE::IO::DiscretizationReader reader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
     springman_->read_restart(reader, (*time_)[0]);
   }
@@ -1854,7 +1856,8 @@ void STR::TimInt::read_restart_contact_meshtying()
   // Thus, both dis_ (current displacement state) and zero_ are handed
   // in and contact / meshtying managers choose the correct state.
   //**********************************************************************
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
 
   if (have_contact_meshtying()) cmtbridge_->read_restart(reader, (*dis_)(0), zeros_);
 }
@@ -1865,7 +1868,7 @@ void STR::TimInt::read_restart_beam_contact()
 {
   if (HaveBeamContact())
   {
-    IO::DiscretizationReader reader(
+    CORE::IO::DiscretizationReader reader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
     beamcman_->read_restart(reader);
   }
@@ -2047,7 +2050,7 @@ void STR::TimInt::write_gmsh_struc_output_step()
 {
   if (not gmsh_out_) return;
 
-  const std::string filename = IO::GMSH::GetFileName(
+  const std::string filename = CORE::IO::GMSH::GetFileName(
       "struct", discret_->Writer()->Output()->FileName(), stepn_, false, myrank_);
   std::ofstream gmshfilecontent(filename.c_str());
 
@@ -2055,7 +2058,7 @@ void STR::TimInt::write_gmsh_struc_output_step()
   gmshfilecontent << "View \" "
                   << "struct displacement \" {" << std::endl;
   // draw vector field 'struct displacement' for every element
-  IO::GMSH::VectorFieldDofBasedToGmsh(discret_, Dispn(), gmshfilecontent, 0, true);
+  CORE::IO::GMSH::VectorFieldDofBasedToGmsh(discret_, Dispn(), gmshfilecontent, 0, true);
   gmshfilecontent << "};" << std::endl;
 }
 
@@ -2167,8 +2170,8 @@ void STR::TimInt::output_restart(bool& datawritten)
   // info dedicated to user's eyes staring at standard out
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
   {
-    IO::cout << "====== Restart for field '" << discret_->Name() << "' written in step " << step_
-             << IO::endl;
+    CORE::IO::cout << "====== Restart for field '" << discret_->Name() << "' written in step "
+                   << step_ << CORE::IO::endl;
   }
 }
 
@@ -2287,8 +2290,8 @@ void STR::TimInt::add_restart_to_output_state()
   // info dedicated to user's eyes staring at standard out
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
   {
-    IO::cout << "====== Restart for field '" << discret_->Name() << "' written in step " << step_
-             << IO::endl;
+    CORE::IO::cout << "====== Restart for field '" << discret_->Name() << "' written in step "
+                   << step_ << CORE::IO::endl;
   }
 }
 
@@ -3042,7 +3045,7 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
     break;
     case INPAR::STR::divcont_repeat_step:
     {
-      IO::cout << "Nonlinear solver failed to converge repeat time step" << IO::endl;
+      CORE::IO::cout << "Nonlinear solver failed to converge repeat time step" << CORE::IO::endl;
 
       // reset step (e.g. quantities on element level)
       reset_step();
@@ -3052,11 +3055,11 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
     break;
     case INPAR::STR::divcont_halve_step:
     {
-      IO::cout << "Nonlinear solver failed to converge at time t= " << timen_
-               << ". Divide timestep in half. "
-               << "Old time step: " << (*dt_)[0] << IO::endl
-               << "New time step: " << 0.5 * (*dt_)[0] << IO::endl
-               << IO::endl;
+      CORE::IO::cout << "Nonlinear solver failed to converge at time t= " << timen_
+                     << ". Divide timestep in half. "
+                     << "Old time step: " << (*dt_)[0] << CORE::IO::endl
+                     << "New time step: " << 0.5 * (*dt_)[0] << CORE::IO::endl
+                     << CORE::IO::endl;
 
       // halve the time step size
       (*dt_)[0] = (*dt_)[0] * 0.5;
@@ -3075,11 +3078,11 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
       // maximal possible refinementlevel
       const int maxdivconrefinementlevel = 10;
       const int maxstepmax = 1000000;
-      IO::cout << "Nonlinear solver failed to converge at time t= " << timen_
-               << ". Divide timestep in half. "
-               << "Old time step: " << (*dt_)[0] << IO::endl
-               << "New time step: " << 0.5 * (*dt_)[0] << IO::endl
-               << IO::endl;
+      CORE::IO::cout << "Nonlinear solver failed to converge at time t= " << timen_
+                     << ". Divide timestep in half. "
+                     << "Old time step: " << (*dt_)[0] << CORE::IO::endl
+                     << "New time step: " << 0.5 * (*dt_)[0] << CORE::IO::endl
+                     << CORE::IO::endl;
 
       // halve the time step size
       (*dt_)[0] = (*dt_)[0] * 0.5;
@@ -3123,9 +3126,9 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
       else
         rand_tsfac_ = randnum * 1.48 + 0.51;
       if (myrank_ == 0)
-        IO::cout << "Nonlinear solver failed to converge: modifying time-step size by random "
-                    "number between 0.51 and 1.99 -> here: "
-                 << rand_tsfac_ << " !" << IO::endl;
+        CORE::IO::cout << "Nonlinear solver failed to converge: modifying time-step size by random "
+                          "number between 0.51 and 1.99 -> here: "
+                       << rand_tsfac_ << " !" << CORE::IO::endl;
       // multiply time-step size by random number
       (*dt_)[0] = (*dt_)[0] * rand_tsfac_;
       // update maximum number of time steps
@@ -3150,17 +3153,18 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
     case INPAR::STR::divcont_repeat_simulation:
     {
       if (nonlinsoldiv == INPAR::STR::conv_nonlin_fail)
-        IO::cout << "Nonlinear solver failed to converge and DIVERCONT = "
-                    "repeat_simulation, hence leaving structural time integration "
-                 << IO::endl;
+        CORE::IO::cout << "Nonlinear solver failed to converge and DIVERCONT = "
+                          "repeat_simulation, hence leaving structural time integration "
+                       << CORE::IO::endl;
       else if (nonlinsoldiv == INPAR::STR::conv_lin_fail)
-        IO::cout << "Linear solver failed to converge and DIVERCONT = "
-                    "repeat_simulation, hence leaving structural time integration "
-                 << IO::endl;
+        CORE::IO::cout << "Linear solver failed to converge and DIVERCONT = "
+                          "repeat_simulation, hence leaving structural time integration "
+                       << CORE::IO::endl;
       else if (nonlinsoldiv == INPAR::STR::conv_ele_fail)
-        IO::cout << "Element failure in form of a negative Jacobian determinant and DIVERCONT = "
-                    "repeat_simulation, hence leaving structural time integration "
-                 << IO::endl;
+        CORE::IO::cout
+            << "Element failure in form of a negative Jacobian determinant and DIVERCONT = "
+               "repeat_simulation, hence leaving structural time integration "
+            << CORE::IO::endl;
       return nonlinsoldiv;  // so that time loop will be aborted
     }
     break;
@@ -3178,19 +3182,21 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
         {
           if (cardvasc0dman_->Get_k_ptc() == 0.0)
           {
-            IO::cout << "Nonlinear solver failed to converge at time t= " << timen_
-                     << ". Increase PTC parameter. "
-                     << "Old PTC parameter: " << cardvasc0dman_->Get_k_ptc() << IO::endl
-                     << "New PTC parameter: " << sum + cardvasc0dman_->Get_k_ptc() << IO::endl
-                     << IO::endl;
+            CORE::IO::cout << "Nonlinear solver failed to converge at time t= " << timen_
+                           << ". Increase PTC parameter. "
+                           << "Old PTC parameter: " << cardvasc0dman_->Get_k_ptc() << CORE::IO::endl
+                           << "New PTC parameter: " << sum + cardvasc0dman_->Get_k_ptc()
+                           << CORE::IO::endl
+                           << CORE::IO::endl;
           }
           else
           {
-            IO::cout << "Nonlinear solver failed to converge at time t= " << timen_
-                     << ". Increase PTC parameter. "
-                     << "Old PTC parameter: " << cardvasc0dman_->Get_k_ptc() << IO::endl
-                     << "New PTC parameter: " << fac * cardvasc0dman_->Get_k_ptc() << IO::endl
-                     << IO::endl;
+            CORE::IO::cout << "Nonlinear solver failed to converge at time t= " << timen_
+                           << ". Increase PTC parameter. "
+                           << "Old PTC parameter: " << cardvasc0dman_->Get_k_ptc() << CORE::IO::endl
+                           << "New PTC parameter: " << fac * cardvasc0dman_->Get_k_ptc()
+                           << CORE::IO::endl
+                           << CORE::IO::endl;
           }
         }
         // increase PTC factor
@@ -3201,9 +3207,10 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
         {
           if (myrank_ == 0)
           {
-            IO::cout << "Nonlinear solver still did not converge. Slightly adapt penalty parameter "
-                        "for contact."
-                     << IO::endl;
+            CORE::IO::cout
+                << "Nonlinear solver still did not converge. Slightly adapt penalty parameter "
+                   "for contact."
+                << CORE::IO::endl;
           }
 
           cmtbridge_->GetStrategy().ModifyPenalty();

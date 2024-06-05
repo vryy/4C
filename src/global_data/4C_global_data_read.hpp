@@ -21,36 +21,36 @@ namespace GLOBAL
 {
   /// setup the discretizations
   void ReadFields(
-      GLOBAL::Problem& problem, INPUT::DatFileReader& reader, const bool readmesh = true);
+      GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader, const bool readmesh = true);
 
-  void ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadMicroFields(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader);
 
   /// set up supporting processors for micro-scale discretizations
   void ReadMicrofieldsNPsupport(GLOBAL::Problem& problem);
 
   /// read global parameters
-  void ReadParameter(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadParameter(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader);
 
   /// input of contact constitutive laws
-  void ReadContactConstitutiveLaws(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadContactConstitutiveLaws(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader);
 
   /// input of materials
-  void ReadMaterials(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadMaterials(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader);
 
   /// setup map between materials of original and cloned elements
-  void ReadCloningMaterialMap(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadCloningMaterialMap(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader);
 
   /// input of conditions
-  void ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadConditions(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader);
 
   /// input of result tests
-  void ReadResult(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadResult(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader);
 
   /// input of knots for isogeometric analysis
-  void ReadKnots(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadKnots(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader);
 
   /// input of particles
-  void ReadParticles(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadParticles(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader);
 }  // namespace GLOBAL
 
 FOUR_C_NAMESPACE_CLOSE

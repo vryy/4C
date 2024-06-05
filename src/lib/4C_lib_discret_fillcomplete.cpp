@@ -67,10 +67,12 @@ int DRT::Discretization::fill_complete(
   // print information to screen
   if (myrank == 0)
   {
-    IO::cout(IO::verbose)
-        << "\n+--------------------------------------------------------------------+" << IO::endl;
-    IO::cout(IO::verbose) << "| fill_complete() on discretization " << std::setw(34) << std::left
-                          << Name() << std::setw(1) << std::right << "|" << IO::endl;
+    CORE::IO::cout(CORE::IO::verbose)
+        << "\n+--------------------------------------------------------------------+"
+        << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::verbose)
+        << "| fill_complete() on discretization " << std::setw(34) << std::left << Name()
+        << std::setw(1) << std::right << "|" << CORE::IO::endl;
   }
 
   // set all maps to Teuchos::null
@@ -103,9 +105,9 @@ int DRT::Discretization::fill_complete(
   {
     if (myrank == 0)
     {
-      IO::cout(IO::verbose)
+      CORE::IO::cout(CORE::IO::verbose)
           << "| assign_degrees_of_freedom() ...                                       |"
-          << IO::endl;
+          << CORE::IO::endl;
     }
     assign_degrees_of_freedom(0);
   }
@@ -115,8 +117,9 @@ int DRT::Discretization::fill_complete(
   {
     if (myrank == 0)
     {
-      IO::cout(IO::verbose)
-          << "| initialize_elements() ...                                           |" << IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "| initialize_elements() ...                                           |"
+          << CORE::IO::endl;
     }
     initialize_elements();
   }
@@ -126,8 +129,9 @@ int DRT::Discretization::fill_complete(
   {
     if (myrank == 0)
     {
-      IO::cout(IO::verbose)
-          << "| boundary_conditions_geometry() ...                                   |" << IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "| boundary_conditions_geometry() ...                                   |"
+          << CORE::IO::endl;
     }
 
     boundary_conditions_geometry();
@@ -135,8 +139,9 @@ int DRT::Discretization::fill_complete(
 
   if (myrank == 0)
   {
-    IO::cout(IO::verbose)
-        << "+--------------------------------------------------------------------+" << IO::endl;
+    CORE::IO::cout(CORE::IO::verbose)
+        << "+--------------------------------------------------------------------+"
+        << CORE::IO::endl;
   }
 
   return 0;

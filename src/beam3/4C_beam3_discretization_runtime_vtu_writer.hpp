@@ -70,7 +70,7 @@ class BeamDiscretizationRuntimeOutputWriter
  public:
   /// Constructor
   BeamDiscretizationRuntimeOutputWriter(
-      IO::VisualizationParameters parameters, const Epetra_Comm& comm);
+      CORE::IO::VisualizationParameters parameters, const Epetra_Comm& comm);
 
   /// Destructor
   virtual ~BeamDiscretizationRuntimeOutputWriter() = default;
@@ -287,7 +287,7 @@ class BeamDiscretizationRuntimeOutputWriter
   std::vector<int> num_cells_per_element_;
 
   //! the actual vtu writer object that additionally stores the geometry and result data
-  Teuchos::RCP<IO::VisualizationManager> visualization_manager_;
+  Teuchos::RCP<CORE::IO::VisualizationManager> visualization_manager_;
 
   //! flag indicating whether to use absolute positions for point coordinates
   // false: use reference position

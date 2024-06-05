@@ -42,11 +42,11 @@ namespace BINSTRATEGY
   class BinningStrategy;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace IO
+}  // namespace CORE::IO
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -120,7 +120,7 @@ namespace PARTICLEENGINE
      * \param[in]  reader          discretization reader
      * \param[out] particlestoread particle objects read in from restart
      */
-    void read_restart(const std::shared_ptr<IO::DiscretizationReader> reader,
+    void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader,
         std::vector<ParticleObjShrdPtr>& particlestoread) const;
 
     /*!
@@ -364,7 +364,7 @@ namespace PARTICLEENGINE
 
     LocalIndexTupleShrdPtr get_local_index_in_specific_container(int globalid) const override;
 
-    std::shared_ptr<IO::DiscretizationWriter> get_bin_discretization_writer() const override;
+    std::shared_ptr<CORE::IO::DiscretizationWriter> get_bin_discretization_writer() const override;
 
     /*!
      * \brief relate all particles to all processors
@@ -435,7 +435,7 @@ namespace PARTICLEENGINE
      *
      * \return discretization reader
      */
-    std::shared_ptr<IO::DiscretizationReader> BinDisReader(int restartstep) const;
+    std::shared_ptr<CORE::IO::DiscretizationReader> BinDisReader(int restartstep) const;
 
     int get_number_of_particles() const override;
 

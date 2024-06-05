@@ -113,7 +113,7 @@ void porofluidmultiphase_dyn(int restart)
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis->Writer();
   output->WriteMesh(0, 0.0);
 
   // -------------------------------------------------------------------

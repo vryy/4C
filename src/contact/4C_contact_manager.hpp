@@ -81,7 +81,7 @@ namespace CONTACT
     \param output (in): IO::discretization writer for restart
     \param forcedrestart (in): Force writing of restart data?
     */
-    void write_restart(IO::DiscretizationWriter& output, bool forcedrestart = false) final;
+    void write_restart(CORE::IO::DiscretizationWriter& output, bool forcedrestart = false) final;
 
     /*!
     \brief Read restart information for contact
@@ -97,7 +97,7 @@ namespace CONTACT
     \param zero (in)  : global dof zero vector
 
     */
-    void read_restart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
+    void read_restart(CORE::IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Epetra_Vector> zero) final;
 
     /*!
@@ -106,7 +106,7 @@ namespace CONTACT
     \param output (in): IO::discretization writer for restart
 
     */
-    void postprocess_quantities(IO::DiscretizationWriter& output) final;
+    void postprocess_quantities(CORE::IO::DiscretizationWriter& output) final;
 
     //! [derived]
     void postprocess_quantities_per_interface(

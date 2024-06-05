@@ -7,7 +7,6 @@ set(_dependencies
     core
     global_data
     inpar
-    io
     lib
     mortar
     solver_nonlin_nox

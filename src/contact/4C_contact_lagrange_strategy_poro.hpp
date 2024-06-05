@@ -53,7 +53,8 @@ namespace CONTACT
 
     //! @name Evaluation methods
 
-    void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis,
+    void DoReadRestart(CORE::IO::DiscretizationReader& reader,
+        Teuchos::RCP<const Epetra_Vector> dis,
         Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
     /*! \brief Setup this strategy object (maps, vectors, etc.)

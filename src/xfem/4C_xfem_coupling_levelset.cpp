@@ -202,9 +202,9 @@ void XFEM::LevelSetCoupling::prepare_cutter_output()
 
   if (cutter_output_ == Teuchos::null)
   {
-    cutter_dis_->SetWriter(Teuchos::rcp(
-        new IO::DiscretizationWriter(cutter_dis_, GLOBAL::Problem::Instance()->OutputControlFile(),
-            GLOBAL::Problem::Instance()->spatial_approximation_type())));
+    cutter_dis_->SetWriter(Teuchos::rcp(new CORE::IO::DiscretizationWriter(cutter_dis_,
+        GLOBAL::Problem::Instance()->OutputControlFile(),
+        GLOBAL::Problem::Instance()->spatial_approximation_type())));
   }
 
   bg_output_ = bg_dis_->Writer();
@@ -315,8 +315,9 @@ void XFEM::LevelSetCoupling::GmshOutput(const std::string& filename_base, const 
   std::ostringstream filename_base_fsi;
   filename_base_fsi << filename_base << "_levelset";
 
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_fsi.str(),
-      cutter_output_->Output()->FileName(), step, gmsh_step_diff, gmsh_debug_out_screen, myrank_);
+  const std::string filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+      filename_base_fsi.str(), cutter_output_->Output()->FileName(), step, gmsh_step_diff,
+      gmsh_debug_out_screen, myrank_);
 
   std::ofstream gmshfilecontent(filename.c_str());
 
@@ -325,7 +326,7 @@ void XFEM::LevelSetCoupling::GmshOutput(const std::string& filename_base, const 
     gmshfilecontent << "View \" "
                     << "SOLcutter-phi \" {" << std::endl;
     // draw vector field 'force' for every node
-    IO::GMSH::ScalarFieldDofBasedToGmsh(
+    CORE::IO::GMSH::ScalarFieldDofBasedToGmsh(
         cutter_dis_, cutter_phinp_, cutter_nds_phi_, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
@@ -334,7 +335,7 @@ void XFEM::LevelSetCoupling::GmshOutput(const std::string& filename_base, const 
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
                     << "SOLcutter-smoothedgradphi \" {" << std::endl;
-    IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
+    CORE::IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
         cutter_dis_, gradphinp_smoothed_node_, gmshfilecontent, cutter_nds_phi_);
     gmshfilecontent << "};" << std::endl;
   }
@@ -351,17 +352,18 @@ void XFEM::LevelSetCoupling::read_restart(const int step, const int lsc_idx)
   //  FOUR_C_THROW is removed.");
 
   //-------- boundary discretization
-  IO::DiscretizationReader boundaryreader(
+  CORE::IO::DiscretizationReader boundaryreader(
       cutter_dis_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
   const double time = boundaryreader.ReadDouble("time");
 
   if (myrank_ == 0)
   {
-    IO::cout << "            RESTART IS PERFORMED FROM FUNCTION IN INPUT FILE!                  "
-             << IO::endl;
-    IO::cout << "read_restart for Level Set Cut in Xfluid (time=" << time << " ; step=" << step
-             << ")" << IO::endl;
+    CORE::IO::cout
+        << "            RESTART IS PERFORMED FROM FUNCTION IN INPUT FILE!                  "
+        << CORE::IO::endl;
+    CORE::IO::cout << "read_restart for Level Set Cut in Xfluid (time=" << time
+                   << " ; step=" << step << ")" << CORE::IO::endl;
   }
 
   SetLevelSetField(time);
@@ -1004,7 +1006,7 @@ XFEM::LevelSetCouplingBC::LevelSetCouplingBC(
  *----------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingBC::PrepareSolve()
 {
-  if (myrank_ == 0) IO::cout << "\t set level-set field, time " << time_ << IO::endl;
+  if (myrank_ == 0) CORE::IO::cout << "\t set level-set field, time " << time_ << CORE::IO::endl;
 
   has_interface_moved_ = SetLevelSetField(time_);
   return;

@@ -126,8 +126,6 @@ elemag/                    @baci/team_scatra
 
 fbi/                       @baci/team_fsi
 
-fiber/                     @baci/team_discretization
-
 fluid/                     @baci/team_fluid
 fluid/4C_fluid_timint_poro*   @baci/team_poro @baci/team_fluid
 
@@ -184,7 +182,6 @@ inpar/4C_inpar_validcontactconstitutivelaw*            @baci/team_contact
 inpar/4C_inpar_validmaterials*                         @baci/team_material
 
 io/                        @baci/team_input @baci/team_output
-io/4C_io_material*              @baci/team_material
 
 levelset/                  @baci/team_fluid
 

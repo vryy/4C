@@ -29,7 +29,7 @@ namespace SCATRA
         Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
 
 
     /// initialize time-integration scheme
@@ -40,7 +40,7 @@ namespace SCATRA
 
     /// read restart data
     void read_restart(
-        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
 
     /// redistribute the scatra discretization and vectors according to nodegraph
     void Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph);

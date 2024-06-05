@@ -27,11 +27,11 @@ namespace DRT
   class Discretization;
 }  // namespace DRT
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace CORE::LINALG
 {
@@ -121,7 +121,7 @@ namespace CONTACT
 
     \param[in] output Output writer of structure discretization to write results to disk
     */
-    void postprocess_quantities(Teuchos::RCP<IO::DiscretizationWriter>& output);
+    void postprocess_quantities(Teuchos::RCP<CORE::IO::DiscretizationWriter>& output);
 
     /*!
     \brief Write results for visualization separately for each meshtying/contact interface
@@ -136,7 +136,7 @@ namespace CONTACT
     \brief read restart
 
     */
-    void read_restart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
+    void read_restart(CORE::IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Epetra_Vector> zero);
     /*!
     \brief recover lagr. mult. for contact/meshtying and slave displ for mesht.
@@ -175,7 +175,8 @@ namespace CONTACT
     @oaram[in] forcedrestart Force to write restart data
 
     */
-    void write_restart(Teuchos::RCP<IO::DiscretizationWriter>& output, bool forcedrestart = false);
+    void write_restart(
+        Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool forcedrestart = false);
 
    private:
     //! don't want cctor (= operator impossible anyway for abstract class)

@@ -51,7 +51,7 @@ namespace DRT
   class ResultTest;
 }  // namespace DRT
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -77,7 +77,7 @@ namespace ELEMAG
     ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG>& actdis,
         const Teuchos::RCP<CORE::LINALG::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<IO::DiscretizationWriter>& output);
+        const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output);
 
     /// Virtual destructor.
     virtual ~ElemagTimeInt() = default;
@@ -300,7 +300,7 @@ namespace ELEMAG
     Teuchos::RCP<DRT::DiscretizationHDG> discret_;
     Teuchos::RCP<CORE::LINALG::Solver> solver_;
     Teuchos::RCP<Teuchos::ParameterList> params_;
-    Teuchos::RCP<IO::DiscretizationWriter> output_;
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;
 
     INPAR::ELEMAG::DynamicType elemagdyna_;  /// time integration scheme
 

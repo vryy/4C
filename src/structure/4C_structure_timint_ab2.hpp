@@ -44,10 +44,10 @@ namespace STR
         const Teuchos::ParameterList& sdynparams,        //!< input parameters
         const Teuchos::ParameterList& xparams,           //!< extra flags
         // const Teuchos::ParameterList& ab2params,  //!< AB2 flags
-        Teuchos::RCP<DRT::Discretization> actdis,          //!< current discretisation
-        Teuchos::RCP<CORE::LINALG::Solver> solver,         //!< the solver
-        Teuchos::RCP<CORE::LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
-        Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
+        Teuchos::RCP<DRT::Discretization> actdis,            //!< current discretisation
+        Teuchos::RCP<CORE::LINALG::Solver> solver,           //!< the solver
+        Teuchos::RCP<CORE::LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Copy constructor
@@ -166,7 +166,7 @@ namespace STR
     void ReadRestartForce() override;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) override;
+    void WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output) override;
 
     //@}
 

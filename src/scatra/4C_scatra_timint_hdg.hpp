@@ -29,7 +29,7 @@ namespace SCATRA
         const Teuchos::RCP<CORE::LINALG::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<Teuchos::ParameterList>& extraparams,
-        Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
 
     //! setup
     void Setup() override;
@@ -57,7 +57,7 @@ namespace SCATRA
 
     //! read restart
     void read_restart(
-        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
 
     //! set the initial scalar field phi
     void SetInitialField(const INPAR::SCATRA::InitialField init,  //!< type of initial field

@@ -43,8 +43,8 @@ namespace CORE::MAT::PAR
   /// Legacy container for read-in materials
   ///
   /// This object stores the validated material parameters as
-  /// IO::InputParameterContainer.
-  class Material : public IO::InputParameterContainer
+  /// CORE::IO::InputParameterContainer.
+  class Material : public CORE::IO::InputParameterContainer
   {
    public:
     /// @name life span
@@ -56,8 +56,8 @@ namespace CORE::MAT::PAR
     );
 
     /// Copy the input_data into this object.
-    Material(
-        int id, CORE::Materials::MaterialType type, const IO::InputParameterContainer& input_data);
+    Material(int id, CORE::Materials::MaterialType type,
+        const CORE::IO::InputParameterContainer& input_data);
 
     /// Default constructor without information from the input lines.
     Material() = default;
@@ -123,7 +123,7 @@ namespace CORE::MAT::PAR
     /**
      * Access to the raw input data.
      */
-    const IO::InputParameterContainer& raw_parameters() const { return *raw_parameters_; }
+    const CORE::IO::InputParameterContainer& raw_parameters() const { return *raw_parameters_; }
 
    protected:
     /*! \brief

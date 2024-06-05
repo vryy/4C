@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 THR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : TimIntImpl(ioparams, tdynparams, xparams, actdis, solver, output),
       fint_(Teuchos::null),
       fintn_(Teuchos::null),
@@ -256,7 +256,7 @@ void THR::TimIntStatics::ReadRestartForce()
 /*----------------------------------------------------------------------*
  | write internal and external forces for restart            dano 07/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+void THR::TimIntStatics::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
 {
   // do nothing
   return;

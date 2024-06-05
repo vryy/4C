@@ -187,8 +187,8 @@ void PARTICLEINTERACTION::DEMContact::check_critical_time_step() const
 
   // checks time step
   if (dt_ > dt_crit)
-    IO::cout << "Warning: time step " << dt_ << " larger than critical time step " << dt_crit << "!"
-             << IO::endl;
+    CORE::IO::cout << "Warning: time step " << dt_ << " larger than critical time step " << dt_crit
+                   << "!" << CORE::IO::endl;
 }
 
 void PARTICLEINTERACTION::DEMContact::add_force_and_moment_contribution()
@@ -844,7 +844,7 @@ void PARTICLEINTERACTION::DEMContact::evaluate_particle_wall_contact()
   if (writeinteractionoutput)
   {
     // get specific runtime output writer
-    IO::VisualizationManager* visualization_manager =
+    CORE::IO::VisualizationManager* visualization_manager =
         particleinteractionwriter_->get_specific_runtime_output_writer("particle-wall-contact");
     auto& visualization_data = visualization_manager->get_visualization_data();
 

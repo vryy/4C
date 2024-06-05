@@ -56,7 +56,7 @@ STR::IMPLICIT::PreStress::PreStress() : absolute_displacement_norm_(1e9)
 
 
 void STR::IMPLICIT::PreStress::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
 
@@ -101,7 +101,8 @@ void STR::IMPLICIT::PreStress::post_update()
   if (IsMulfActive(global_state().GetTimeN()))
 
   {
-    if (global_state().GetMyRank() == 0) IO::cout << "====== Resetting Displacements" << IO::endl;
+    if (global_state().GetMyRank() == 0)
+      CORE::IO::cout << "====== Resetting Displacements" << CORE::IO::endl;
     // This is a MULF step, hence we do not update the displacements at the end of the
     // timestep. This is achieved by resetting the displacements, velocities and
     // accelerations.
@@ -114,9 +115,9 @@ void STR::IMPLICIT::PreStress::post_update()
     // Print prestress status update
     if (global_state().GetMyRank() == 0)
     {
-      IO::cout << "====== Iterative Prestress Status" << IO::endl;
-      IO::cout << "abs-dis-inf-norm:                    " << absolute_displacement_norm_
-               << IO::endl;
+      CORE::IO::cout << "====== Iterative Prestress Status" << CORE::IO::endl;
+      CORE::IO::cout << "abs-dis-inf-norm:                    " << absolute_displacement_norm_
+                     << CORE::IO::endl;
     }
   }
 }
@@ -136,9 +137,9 @@ bool STR::IMPLICIT::PreStress::EarlyStopping() const
   {
     if (global_state().GetMyRank() == 0)
     {
-      IO::cout << "Prestress is converged. Stopping simulation." << IO::endl;
-      IO::cout << "abs-dis-inf-norm:                    " << absolute_displacement_norm_
-               << IO::endl;
+      CORE::IO::cout << "Prestress is converged. Stopping simulation." << CORE::IO::endl;
+      CORE::IO::cout << "abs-dis-inf-norm:                    " << absolute_displacement_norm_
+                     << CORE::IO::endl;
     }
     return true;
   }

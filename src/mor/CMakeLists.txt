@@ -6,7 +6,6 @@ set(_dependencies
     config
     core
     global_data
-    io
     lib
     )
 

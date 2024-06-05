@@ -25,11 +25,11 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationVisualizationWriterMesh;
   class DiscretizationReader;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace PARTICLEWALL
 {
@@ -99,7 +99,7 @@ namespace PARTICLEWALL
     std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate_;
 
     //! vtu writer object
-    std::unique_ptr<IO::DiscretizationVisualizationWriterMesh> runtime_vtuwriter_;
+    std::unique_ptr<CORE::IO::DiscretizationVisualizationWriterMesh> runtime_vtuwriter_;
   };
 
 }  // namespace PARTICLEWALL

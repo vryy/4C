@@ -28,7 +28,7 @@ namespace CORE::LINALG
   class MapExtractor;
 }  // namespace CORE::LINALG
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -55,7 +55,7 @@ namespace ADAPTER
     /// Constructor
     FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
         Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
     void Init() override;
@@ -235,7 +235,7 @@ namespace ADAPTER
     //! @name local copies of input parameters
     Teuchos::RCP<DRT::Discretization> dis_;
     Teuchos::RCP<Teuchos::ParameterList> params_;
-    Teuchos::RCP<IO::DiscretizationWriter> output_;
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;
     bool dirichletcond_;
     //@}
 

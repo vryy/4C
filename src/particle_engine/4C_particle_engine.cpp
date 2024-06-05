@@ -91,7 +91,7 @@ void PARTICLEENGINE::ParticleEngine::Setup(
 void PARTICLEENGINE::ParticleEngine::write_restart(const int step, const double time) const
 {
   // get bin discretization writer
-  std::shared_ptr<IO::DiscretizationWriter> binwriter =
+  std::shared_ptr<CORE::IO::DiscretizationWriter> binwriter =
       Teuchos::get_shared_ptr(binstrategy_->BinDiscret()->Writer());
 
   binwriter->NewStep(step, time);
@@ -108,7 +108,7 @@ void PARTICLEENGINE::ParticleEngine::write_restart(const int step, const double 
 }
 
 void PARTICLEENGINE::ParticleEngine::read_restart(
-    const std::shared_ptr<IO::DiscretizationReader> reader,
+    const std::shared_ptr<CORE::IO::DiscretizationReader> reader,
     std::vector<ParticleObjShrdPtr>& particlestoread) const
 {
   // read particle data
@@ -281,8 +281,8 @@ void PARTICLEENGINE::ParticleEngine::erase_particles_outside_bounding_box(
 
   // short screen output
   if (numparticlesoutside)
-    IO::cout << "on processor " << myrank_ << " removed " << numparticlesoutside
-             << " particle(s) being outside the computational domain!" << IO::endl;
+    CORE::IO::cout << "on processor " << myrank_ << " removed " << numparticlesoutside
+                   << " particle(s) being outside the computational domain!" << CORE::IO::endl;
 }
 
 void PARTICLEENGINE::ParticleEngine::DistributeParticles(
@@ -692,7 +692,7 @@ PARTICLEENGINE::ParticleEngine::get_local_index_in_specific_container(int global
   return globalidIt->second;
 }
 
-std::shared_ptr<IO::DiscretizationWriter>
+std::shared_ptr<CORE::IO::DiscretizationWriter>
 PARTICLEENGINE::ParticleEngine::get_bin_discretization_writer() const
 {
   return Teuchos::get_shared_ptr(binstrategy_->BinDiscret()->Writer());
@@ -876,10 +876,10 @@ void PARTICLEENGINE::ParticleEngine::distance_between_particles(
   }
 }
 
-std::shared_ptr<IO::DiscretizationReader> PARTICLEENGINE::ParticleEngine::BinDisReader(
+std::shared_ptr<CORE::IO::DiscretizationReader> PARTICLEENGINE::ParticleEngine::BinDisReader(
     int restartstep) const
 {
-  return std::make_shared<IO::DiscretizationReader>(
+  return std::make_shared<CORE::IO::DiscretizationReader>(
       binstrategy_->BinDiscret(), GLOBAL::Problem::Instance()->InputControlFile(), restartstep);
 }
 
@@ -1369,8 +1369,8 @@ void PARTICLEENGINE::ParticleEngine::check_particles_at_boundaries(
 
   // short screen output
   if (numparticlesoutside)
-    IO::cout << "on processor " << myrank_ << " removed " << numparticlesoutside
-             << " particle(s) being outside the computational domain!" << IO::endl;
+    CORE::IO::cout << "on processor " << myrank_ << " removed " << numparticlesoutside
+                   << " particle(s) being outside the computational domain!" << CORE::IO::endl;
 }
 
 void PARTICLEENGINE::ParticleEngine::determine_particles_to_be_distributed(
@@ -1478,8 +1478,8 @@ void PARTICLEENGINE::ParticleEngine::determine_particles_to_be_distributed(
 
   // short screen output
   if (numparticlesoutside)
-    IO::cout << "on processor " << myrank_ << " removed " << numparticlesoutside
-             << " particle(s) being outside the computational domain!" << IO::endl;
+    CORE::IO::cout << "on processor " << myrank_ << " removed " << numparticlesoutside
+                   << " particle(s) being outside the computational domain!" << CORE::IO::endl;
 
   // clear after all particles are prepared for distribution
   particlestodistribute.clear();

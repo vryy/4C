@@ -76,7 +76,7 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis->Writer();
   output->WriteMesh(0, 0.0);
 
   // -------------------------------------------------------------------
@@ -84,7 +84,7 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   const Teuchos::ParameterList& artdyn = problem->arterial_dynamic_params();
 
-  if (actdis->Comm().MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, artdyn);
+  if (actdis->Comm().MyPID() == 0) INPUT::PrintDefaultParameters(CORE::IO::cout, artdyn);
 
   // -------------------------------------------------------------------
   // create a solver

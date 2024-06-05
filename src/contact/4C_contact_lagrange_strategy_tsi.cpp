@@ -1028,7 +1028,7 @@ void CONTACT::LagrangeStrategyTsi::DoWriteRestart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategyTsi::DoReadRestart(IO::DiscretizationReader& reader,
+void CONTACT::LagrangeStrategyTsi::DoReadRestart(CORE::IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   bool restartwithcontact = CORE::UTILS::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");

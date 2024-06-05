@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output,
-    const int probnum)
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output, const int probnum)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output, probnum),
       theta_(params_->get<double>("THETA")),
       fsphinp_(Teuchos::null)
@@ -323,19 +323,20 @@ void SCATRA::TimIntOneStepTheta::write_restart() const
 
 /*----------------------------------------------------------------------*
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::read_restart(const int step, Teuchos::RCP<IO::InputControl> input)
+void SCATRA::TimIntOneStepTheta::read_restart(
+    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
 {
   // call base class routine
   ScaTraTimIntImpl::read_restart(step, input);
 
-  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
   {
-    reader = Teuchos::rcp(new IO::DiscretizationReader(
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
   }
   else
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
 
   time_ = reader->ReadDouble("time");
   step_ = reader->ReadInt("step");
@@ -415,7 +416,7 @@ void SCATRA::TimIntOneStepTheta::post_calc_initial_time_derivative()
 void SCATRA::TimIntOneStepTheta::set_state(Teuchos::RCP<Epetra_Vector> phin,
     Teuchos::RCP<Epetra_Vector> phinp, Teuchos::RCP<Epetra_Vector> phidtn,
     Teuchos::RCP<Epetra_Vector> phidtnp, Teuchos::RCP<Epetra_Vector> hist,
-    Teuchos::RCP<IO::DiscretizationWriter> output, const std::vector<double>& phinp_macro,
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output, const std::vector<double>& phinp_macro,
     const int step, const double time)
 {
   phin_ = phin;

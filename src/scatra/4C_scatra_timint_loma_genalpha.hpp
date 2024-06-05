@@ -31,7 +31,7 @@ namespace SCATRA
         Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
 
 
     /// initialize time integration scheme
@@ -57,7 +57,7 @@ namespace SCATRA
 
     /// read restart data
     void read_restart(
-        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
 
     /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
     double ThermPressAf() override { return thermpressaf_; }

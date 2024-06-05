@@ -222,7 +222,7 @@ void STR::PREDICT::Generic::Print() const
   if (gstate_ptr_->GetMyRank() == 0 and iodata_ptr_->get_print2_screen_every_n_step() and
       gstate_ptr_->GetStepN() % iodata_ptr_->get_print2_screen_every_n_step() == 0)
   {
-    IO::cout << "=== Structural predictor: " << Name().c_str() << " ===" << IO::endl;
+    CORE::IO::cout << "=== Structural predictor: " << Name().c_str() << " ===" << CORE::IO::endl;
   }
 }
 

@@ -93,7 +93,7 @@ void STR::MODELEVALUATOR::Structure::Setup()
   {
     if (g_in_output().get_runtime_output_params() != Teuchos::null)
     {
-      visualization_params_ = IO::VisualizationParametersFactory(
+      visualization_params_ = CORE::IO::VisualizationParametersFactory(
           GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
           *GLOBAL::Problem::Instance()->OutputControlFile(), g_state().GetTimeN());
 
@@ -598,7 +598,7 @@ void STR::MODELEVALUATOR::Structure::init_output_runtime_structure()
   const auto discretization = Teuchos::rcp_dynamic_cast<const DRT::Discretization>(
       const_cast<STR::MODELEVALUATOR::Structure*>(this)->discret_ptr(), true);
   vtu_writer_ptr_ = Teuchos::rcp(
-      new IO::DiscretizationVisualizationWriterMesh(discretization, visualization_params_,
+      new CORE::IO::DiscretizationVisualizationWriterMesh(discretization, visualization_params_,
           [](const CORE::Elements::Element* element)
           {
             // Skip beam elements which live in the same discretization but use a different output
@@ -651,7 +651,7 @@ void STR::MODELEVALUATOR::Structure::write_time_step_output_runtime_structure() 
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
   CORE::LINALG::Export(*GState().GetVelN(), *veln_col);
 
-  auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
+  auto [output_time, output_step] = CORE::IO::GetTimeAndTimeStepIndexForOutput(
       visualization_params_, GState().GetTimeN(), GState().GetStepN());
   write_output_runtime_structure(disn_col, veln_col, output_step, output_time);
 }
@@ -671,7 +671,7 @@ void STR::MODELEVALUATOR::Structure::write_iteration_output_runtime_structure() 
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
   CORE::LINALG::Export(*GState().GetVelNp(), *velnp_col);
 
-  auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
+  auto [output_time, output_step] = CORE::IO::GetTimeAndTimeStepIndexForOutput(
       visualization_params_, GState().GetTimeN(), GState().GetStepN(), EvalData().GetNlnIter());
   write_output_runtime_structure(disnp_col, velnp_col, output_step, output_time);
 }
@@ -1026,7 +1026,7 @@ void STR::MODELEVALUATOR::Structure::write_time_step_output_runtime_beams() cons
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
   CORE::LINALG::Export(*GState().GetDisN(), *disn_col);
 
-  auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
+  auto [output_time, output_step] = CORE::IO::GetTimeAndTimeStepIndexForOutput(
       visualization_params_, GState().GetTimeN(), GState().GetStepN());
   write_output_runtime_beams(disn_col, output_step, output_time);
 }
@@ -1043,7 +1043,7 @@ void STR::MODELEVALUATOR::Structure::write_iteration_output_runtime_beams() cons
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
   CORE::LINALG::Export(*GState().GetDisNp(), *disnp_col);
 
-  auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
+  auto [output_time, output_step] = CORE::IO::GetTimeAndTimeStepIndexForOutput(
       visualization_params_, GState().GetTimeN(), GState().GetStepN(), EvalData().GetNlnIter());
   write_output_runtime_beams(disnp_col, output_step, output_time);
 }
@@ -1232,7 +1232,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_neumann(Teuchos::ParameterList& p,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // write forces
   iowriter.WriteVector("fstructure_old", GState().GetFstructureOld());
@@ -1245,7 +1245,7 @@ void STR::MODELEVALUATOR::Structure::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::read_restart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::Structure::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   // read structural force vector
@@ -1420,7 +1420,7 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
   if (isDuringPrestressing && prestress_type == INPAR::STR::PreStress::mulf)
   {
     if (discret().Comm().MyPID() == 0)
-      IO::cout << "====== Entering PRESTRESSING update" << IO::endl;
+      CORE::IO::cout << "====== Entering PRESTRESSING update" << CORE::IO::endl;
 
     // Choose special update action for elements in case of MULF
     eval_data().SetActionType(CORE::Elements::struct_update_prestress);
@@ -1671,7 +1671,7 @@ bool STR::MODELEVALUATOR::Structure::determine_element_volumes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::OutputStepState(IO::DiscretizationWriter& iowriter) const
+void STR::MODELEVALUATOR::Structure::OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
 

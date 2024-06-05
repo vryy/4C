@@ -45,18 +45,18 @@ void CORE::REBALANCE::RebalanceDiscretizationsByBinning(
   {
     if (comm.MyPID() == 0)
     {
-      IO::cout(IO::verbose) << "+---------------------------------------------------------------"
-                            << IO::endl;
-      IO::cout(IO::verbose) << "| Rebalance discretizations using Binning Strategy ...          "
-                            << IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "+---------------------------------------------------------------" << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "| Rebalance discretizations using Binning Strategy ...          " << CORE::IO::endl;
       for (const auto& curr_dis : vector_of_discretizations)
       {
         if (!curr_dis->Filled()) FOUR_C_THROW("fill_complete(false,false,false) was not called");
-        IO::cout(IO::verbose) << "| Rebalance discretization " << std::setw(11) << curr_dis->Name()
-                              << IO::endl;
+        CORE::IO::cout(CORE::IO::verbose)
+            << "| Rebalance discretization " << std::setw(11) << curr_dis->Name() << CORE::IO::endl;
       }
-      IO::cout(IO::verbose) << "+---------------------------------------------------------------"
-                            << IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "+---------------------------------------------------------------" << CORE::IO::endl;
     }
 
     std::vector<Teuchos::RCP<Epetra_Map>> stdelecolmap;
@@ -93,12 +93,15 @@ void CORE::REBALANCE::GhostDiscretizationOnAllProcs(
 
   if (com->MyPID() == 0)
   {
-    IO::cout(IO::verbose)
-        << "+-----------------------------------------------------------------------+" << IO::endl;
-    IO::cout(IO::verbose) << "|   Ghost discretization " << std::setw(11) << distobeghosted->Name()
-                          << " redundantly on all procs ...       |" << IO::endl;
-    IO::cout(IO::verbose)
-        << "+-----------------------------------------------------------------------+" << IO::endl;
+    CORE::IO::cout(CORE::IO::verbose)
+        << "+-----------------------------------------------------------------------+"
+        << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::verbose)
+        << "|   Ghost discretization " << std::setw(11) << distobeghosted->Name()
+        << " redundantly on all procs ...       |" << CORE::IO::endl;
+    CORE::IO::cout(CORE::IO::verbose)
+        << "+-----------------------------------------------------------------------+"
+        << CORE::IO::endl;
   }
 
   std::vector<int> allproc(com->NumProc());
@@ -178,15 +181,15 @@ void CORE::REBALANCE::MatchNodalDistributionOfMatchingDiscretizations(
     // print to screen
     if (com->MyPID() == 0)
     {
-      IO::cout(IO::verbose)
+      CORE::IO::cout(CORE::IO::verbose)
           << "+---------------------------------------------------------------------------+"
-          << IO::endl;
-      IO::cout(IO::verbose) << "|   Match nodal distribution of discr. " << std::setw(11)
-                            << dis_to_rebalance.Name() << "to discr. " << std::setw(11)
-                            << dis_template.Name() << " ... |" << IO::endl;
-      IO::cout(IO::verbose)
+          << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "|   Match nodal distribution of discr. " << std::setw(11) << dis_to_rebalance.Name()
+          << "to discr. " << std::setw(11) << dis_template.Name() << " ... |" << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
           << "+---------------------------------------------------------------------------+"
-          << IO::endl;
+          << CORE::IO::endl;
     }
 
     ////////////////////////////////////////
@@ -237,15 +240,15 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingDiscretizations(
     // print to screen
     if (com->MyPID() == 0)
     {
-      IO::cout(IO::verbose)
+      CORE::IO::cout(CORE::IO::verbose)
           << "+-----------------------------------------------------------------------------+"
-          << IO::endl;
-      IO::cout(IO::verbose) << "|   Match element distribution of discr. " << std::setw(11)
-                            << dis_to_rebalance.Name() << "to discr. " << std::setw(11)
-                            << dis_template.Name() << " ... |" << IO::endl;
-      IO::cout(IO::verbose)
+          << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "|   Match element distribution of discr. " << std::setw(11) << dis_to_rebalance.Name()
+          << "to discr. " << std::setw(11) << dis_template.Name() << " ... |" << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
           << "+-----------------------------------------------------------------------------+"
-          << IO::endl;
+          << CORE::IO::endl;
     }
 
     ////////////////////////////////////////
@@ -323,20 +326,22 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
     // print to screen
     if (com->MyPID() == 0)
     {
-      IO::cout(IO::verbose)
+      CORE::IO::cout(CORE::IO::verbose)
           << "+-----------------------------------------------------------------------------+"
-          << IO::endl;
-      IO::cout(IO::verbose) << "|   Match element distribution of discr. " << std::setw(11)
-                            << dis_to_rebalance.Name() << "                          |" << IO::endl;
-      IO::cout(IO::verbose) << "|   Condition : " << std::setw(35) << condname_rebalance
-                            << "                           |" << IO::endl;
-      IO::cout(IO::verbose) << "|   to template discr. " << std::setw(11) << dis_template.Name()
-                            << "                                            |" << IO::endl;
-      IO::cout(IO::verbose) << "|   Condition : " << std::setw(35) << condname_template
-                            << "                           |" << IO::endl;
-      IO::cout(IO::verbose)
+          << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "|   Match element distribution of discr. " << std::setw(11) << dis_to_rebalance.Name()
+          << "                          |" << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose) << "|   Condition : " << std::setw(35) << condname_rebalance
+                                        << "                           |" << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
+          << "|   to template discr. " << std::setw(11) << dis_template.Name()
+          << "                                            |" << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose) << "|   Condition : " << std::setw(35) << condname_template
+                                        << "                           |" << CORE::IO::endl;
+      CORE::IO::cout(CORE::IO::verbose)
           << "+-----------------------------------------------------------------------------+"
-          << IO::endl;
+          << CORE::IO::endl;
     }
 
     // create vectors for element matching

@@ -432,8 +432,8 @@ void SCATRA::LEVELSET::Intersection::export_interface(
   if (myrank == 0) source = numproc - 1;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  IO::cout << "proc " << myrank << " interface pieces for " << myinterface.size()
-           << " elements available before export" << IO::endl;
+  CORE::IO::cout << "proc " << myrank << " interface pieces for " << myinterface.size()
+                 << " elements available before export" << CORE::IO::endl;
 #endif
 
   CORE::COMM::PackBuffer data;
@@ -457,8 +457,8 @@ void SCATRA::LEVELSET::Intersection::export_interface(
     lengthSend[0] = dataSend.size();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-    IO::cout << "--- sending " << lengthSend[0] << " bytes: from proc " << myrank << " to proc "
-             << dest << IO::endl;
+    CORE::IO::cout << "--- sending " << lengthSend[0] << " bytes: from proc " << myrank
+                   << " to proc " << dest << CORE::IO::endl;
 #endif
 
     // send length of the data to be received ...
@@ -480,8 +480,8 @@ void SCATRA::LEVELSET::Intersection::export_interface(
     exporter.Wait(req_data);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-    IO::cout << "--- receiving " << lengthRecv[0] << " bytes: to proc " << myrank << " from proc "
-             << source << IO::endl;
+    CORE::IO::cout << "--- receiving " << lengthRecv[0] << " bytes: to proc " << myrank
+                   << " from proc " << source << CORE::IO::endl;
 #endif
 
     //-----------------------------------------------
@@ -508,8 +508,8 @@ void SCATRA::LEVELSET::Intersection::export_interface(
     comm.Barrier();
   }
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  IO::cout << "proc " << myrank << " interface pieces for " << myinterface.size()
-           << " elements available after export" << IO::endl;
+  CORE::IO::cout << "proc " << myrank << " interface pieces for " << myinterface.size()
+                 << " elements available after export" << CORE::IO::endl;
 #endif
 }
 

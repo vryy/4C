@@ -13,14 +13,10 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
-
-namespace INPUT
-{
-  class ConditionDefinition;
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -44,7 +40,8 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set specific ssti conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist);
+    void SetValidConditions(
+        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace SSTI
 }  // namespace INPAR

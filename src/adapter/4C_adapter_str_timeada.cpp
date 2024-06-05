@@ -135,7 +135,7 @@ void ADAPTER::StructureTimeAda::setup_time_ada()
     stm_->read_restart(restart);
     timeinitial_ = stm_->TimeOld();
     timestepinitial_ = stm_->StepOld();
-    IO::DiscretizationReader ioreader(
+    CORE::IO::DiscretizationReader ioreader(
         stm_->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), timestepinitial_);
     stepsizepre_ = ioreader.ReadDouble("next_delta_time");
     time_ = timeinitial_;
@@ -367,7 +367,7 @@ void ADAPTER::StructureTimeAda::size_for_output()
 void ADAPTER::StructureTimeAda::Output(bool forced_writerestart)
 {
   STR::TIMINT::BaseDataIO& dataio = stm_->data_io();
-  Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio.GetOutputPtr();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output_ptr = dataio.GetOutputPtr();
 
   StructureWrapper::Output(forced_writerestart);
   output_ptr->WriteDouble("next_delta_time", stepsize_);
@@ -569,11 +569,11 @@ INPAR::STR::ConvergenceStatus ADAPTER::StructureTimeAda::PerformErrorAction(
     case INPAR::STR::divcont_halve_step:
       if (myrank == 0)
       {
-        IO::cout << "Nonlinear solver failed to converge at time t= " << stm_->GetTimeNp()
-                 << ". Divide timestep in half. "
-                 << "Old time step: " << stepsize_ << IO::endl
-                 << "New time step: " << 0.5 * stepsize_ << IO::endl
-                 << IO::endl;
+        CORE::IO::cout << "Nonlinear solver failed to converge at time t= " << stm_->GetTimeNp()
+                       << ". Divide timestep in half. "
+                       << "Old time step: " << stepsize_ << CORE::IO::endl
+                       << "New time step: " << 0.5 * stepsize_ << CORE::IO::endl
+                       << CORE::IO::endl;
       }
 
       stepsizenew = 0.5 * stepsize_;
@@ -582,11 +582,12 @@ INPAR::STR::ConvergenceStatus ADAPTER::StructureTimeAda::PerformErrorAction(
     case INPAR::STR::divcont_continue:
       if (myrank == 0)
       {
-        IO::cout << "\n WARNING: We are continuing your simulation although the nonlinear solver\n"
-                    " did not converge in the current time step. We rely on the error estimator "
-                    "to \n"
-                    "give a good step size."
-                 << IO::endl;
+        CORE::IO::cout
+            << "\n WARNING: We are continuing your simulation although the nonlinear solver\n"
+               " did not converge in the current time step. We rely on the error estimator "
+               "to \n"
+               "give a good step size."
+            << CORE::IO::endl;
       }
 
       return INPAR::STR::conv_success;  // Do not surprise. We enforce successful

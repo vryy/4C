@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 FLD::TimIntHDG::TimIntHDG(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntGenAlpha(actdis, solver, params, output, alefluid),
       timealgoset_(INPAR::FLUID::timeint_afgenalpha),
@@ -540,10 +540,10 @@ void FLD::TimIntHDG::Output()
     getNodeVectorsHDG(*discret_, intvelnp_, velnp_,
         params_->get<int>("number of velocity degrees of freedom"), interpolatedVelocity_,
         interpolatedPressure_, traceVel, cellPres);
-    output_->WriteVector("velnp_hdg", interpolatedVelocity_, IO::nodevector);
-    output_->WriteVector("pressure_hdg", interpolatedPressure_, IO::nodevector);
-    output_->WriteVector("tracevel_hdg", traceVel, IO::nodevector);
-    output_->WriteVector("pressure_avg", cellPres, IO::elementvector);
+    output_->WriteVector("velnp_hdg", interpolatedVelocity_, CORE::IO::nodevector);
+    output_->WriteVector("pressure_hdg", interpolatedPressure_, CORE::IO::nodevector);
+    output_->WriteVector("tracevel_hdg", traceVel, CORE::IO::nodevector);
+    output_->WriteVector("pressure_avg", cellPres, CORE::IO::elementvector);
 
     if (step_ == upres_ or step_ == 0) output_->WriteElementData(true);
 

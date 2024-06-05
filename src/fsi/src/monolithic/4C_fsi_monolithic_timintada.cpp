@@ -227,9 +227,9 @@ void FSI::Monolithic::timeloop_ada_dt(
       {
         if (Comm().MyPID() == 0)
         {
-          IO::cout << "Time Step has already been calculated with minimum step size"
-                   << " --> continue with next time step!"
-                   << "\n";
+          CORE::IO::cout << "Time Step has already been calculated with minimum step size"
+                         << " --> continue with next time step!"
+                         << "\n";
         }
 
         accepted_ = true;
@@ -243,10 +243,10 @@ void FSI::Monolithic::timeloop_ada_dt(
           {
             if (Comm().MyPID() == 0)
             {
-              IO::cout << "adaptstep_ = " << adaptstepmax
-                       << " --> Max. number of adaption iterations is reached:"
-                       << " continuing with next time step! "
-                       << "\n";
+              CORE::IO::cout << "adaptstep_ = " << adaptstepmax
+                             << " --> Max. number of adaption iterations is reached:"
+                             << " continuing with next time step! "
+                             << "\n";
             }
           }
           else if (is_ada_solver() and not(erroraction_ == FSI::Monolithic::erroraction_none or
@@ -265,8 +265,8 @@ void FSI::Monolithic::timeloop_ada_dt(
 
           if (Comm().MyPID() == 0)
           {
-            IO::cout << "Repeat current time step with dt = " << Dt() << " based on " << adareason_
-                     << ".\n";
+            CORE::IO::cout << "Repeat current time step with dt = " << Dt() << " based on "
+                           << adareason_ << ".\n";
           }
         }
       }
@@ -301,8 +301,8 @@ void FSI::Monolithic::prepare_adaptive_time_step()
 
   if (Comm().MyPID() == 0)
   {
-    IO::cout << "\n"
-             << "+++++++++++++++++++++++++++++NEW TIME STEP+++++++++++++++++++++++++++++";
+    CORE::IO::cout << "\n"
+                   << "+++++++++++++++++++++++++++++NEW TIME STEP+++++++++++++++++++++++++++++";
   }
 
   return;
@@ -314,9 +314,9 @@ void FSI::Monolithic::print_header_repeated_step() const
 {
   if (adaptstep_ != 0 and Comm().MyPID() == 0)
   {
-    IO::cout << IO::endl
-             << "__________REAPEATING TIME STEP " << Step() << " WITH DT = " << Dt() << " FOR THE "
-             << adaptstep_ << ". TIME__________" << IO::endl;
+    CORE::IO::cout << CORE::IO::endl
+                   << "__________REAPEATING TIME STEP " << Step() << " WITH DT = " << Dt()
+                   << " FOR THE " << adaptstep_ << ". TIME__________" << CORE::IO::endl;
   }
 }
 
@@ -393,25 +393,25 @@ void FSI::Monolithic::print_adaptivity_summary() const
   {
     if (Dt() != dt_past(1))  // only if time step size has changed
     {
-      IO::cout << "\n"
-               << "New time step size " << Dt() << " is based on " << adareason_ << ".\n";
+      CORE::IO::cout << "\n"
+                     << "New time step size " << Dt() << " is based on " << adareason_ << ".\n";
     }
 
     if (dtminused_)
     {
-      IO::cout << "Time step " << Step() << " has been done with minimum time step size."
-               << " No further refinement possible. Go to next time step.\n";
+      CORE::IO::cout << "Time step " << Step() << " has been done with minimum time step size."
+                     << " No further refinement possible. Go to next time step.\n";
     }
 
     if (not step_not_accepted())
     {
-      IO::cout << "Time step " << Step() << " has been accepted after " << adaptstep_ - 1
-               << " repetitions."
-               << "\n";
+      CORE::IO::cout << "Time step " << Step() << " has been accepted after " << adaptstep_ - 1
+                     << " repetitions."
+                     << "\n";
     }
     else
     {
-      IO::cout << "Time step " << Step() << " will be repeated with dt = " << Dt() << ".\n";
+      CORE::IO::cout << "Time step " << Step() << " will be repeated with dt = " << Dt() << ".\n";
     }
   }
 

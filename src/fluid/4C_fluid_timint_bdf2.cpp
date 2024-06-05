@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 FLD::TimIntBDF2::TimIntBDF2(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid), theta_(1.0)
 {
   return;

@@ -21,11 +21,11 @@ namespace ADAPTER
   class Coupling;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class OutputControl;
   class DiscretizationWriter;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace DRT
 {
@@ -69,10 +69,10 @@ namespace FSI
       Teuchos::RCP<CORE::ADAPTER::Coupling> coup_;
 
       /// current control file
-      Teuchos::RCP<IO::OutputControl> control_;
+      Teuchos::RCP<CORE::IO::OutputControl> control_;
 
       /// writer to control file
-      Teuchos::RCP<IO::DiscretizationWriter> writer_;
+      Teuchos::RCP<CORE::IO::DiscretizationWriter> writer_;
 
       /// internal FSI iteration count
       int itnum_;
@@ -111,10 +111,10 @@ namespace FSI
       std::string name_;
 
       /// current control file
-      Teuchos::RCP<IO::OutputControl> control_;
+      Teuchos::RCP<CORE::IO::OutputControl> control_;
 
       /// writer to control file
-      Teuchos::RCP<IO::DiscretizationWriter> writer_;
+      Teuchos::RCP<CORE::IO::DiscretizationWriter> writer_;
 
       /// internal FSI iteration count
       int itnum_;

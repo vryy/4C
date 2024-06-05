@@ -88,7 +88,7 @@ namespace
       params_lin.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_lin);
 
       // create InelasticDefgradLinScalarIso object initialize container for material parameters
-      IO::InputParameterContainer inelastic_defgrad_scalar_data;
+      CORE::IO::InputParameterContainer inelastic_defgrad_scalar_data;
       inelastic_defgrad_scalar_data.Add("SCALAR1", 1);
       inelastic_defgrad_scalar_data.Add("SCALAR1_MolarGrowthFac", growth_fac);
       inelastic_defgrad_scalar_data.Add("SCALAR1_RefConc", ref_conc);
@@ -106,7 +106,7 @@ namespace
       lin_scalar_iso_->pre_evaluate(params_lin, 0);
 
       // create InelasticDefgradLinScalarAniso object initialize container for material parameters
-      IO::InputParameterContainer inelastic_defgrad_lin_scalar_aniso_data;
+      CORE::IO::InputParameterContainer inelastic_defgrad_lin_scalar_aniso_data;
       inelastic_defgrad_lin_scalar_aniso_data.Add("SCALAR1", 1);
       inelastic_defgrad_lin_scalar_aniso_data.Add("SCALAR1_MolarGrowthFac", growth_fac);
       inelastic_defgrad_lin_scalar_aniso_data.Add("SCALAR1_RefConc", ref_conc);
@@ -135,7 +135,7 @@ namespace
       // set up material to be added to problem instance
       const int matid(1);
 
-      IO::InputParameterContainer electrode_data;
+      CORE::IO::InputParameterContainer electrode_data;
       // add dummy parameters to electrode material
       electrode_data.Add("DIFF_COEF_CONC_DEP_FUNCT", 0);
       electrode_data.Add("DIFF_COEF_TEMP_SCALE_FUNCT", 0);
@@ -179,7 +179,7 @@ namespace
       params_poly.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_poly);
 
       // initialize container for material parameters
-      IO::InputParameterContainer inelastic_defgrad_poly_intercal_frac_data;
+      CORE::IO::InputParameterContainer inelastic_defgrad_poly_intercal_frac_data;
 
       inelastic_defgrad_poly_intercal_frac_data.Add("MATID", matid);
       inelastic_defgrad_poly_intercal_frac_data.Add("SCALAR1", 1);
@@ -213,7 +213,7 @@ namespace
 
       // create InelasticDefgradPolyIntercalFracAniso object initialize container for material
       // parameters
-      IO::InputParameterContainer inelastic_defgrad_poly_intercal_frac_aniso_data;
+      CORE::IO::InputParameterContainer inelastic_defgrad_poly_intercal_frac_aniso_data;
       inelastic_defgrad_poly_intercal_frac_aniso_data.Add("MATID", matid);
       inelastic_defgrad_poly_intercal_frac_aniso_data.Add("SCALAR1", 1);
       inelastic_defgrad_poly_intercal_frac_aniso_data.Add("SCALAR1_RefConc", ref_conc);
@@ -243,7 +243,7 @@ namespace
       poly_intercal_frac_aniso_->pre_evaluate(params_poly, 0);
 
       // create InelasticDefgradLinTempIso object initialize container for material parameters
-      IO::InputParameterContainer inelastic_defgrad_temp_iso_data;
+      CORE::IO::InputParameterContainer inelastic_defgrad_temp_iso_data;
       inelastic_defgrad_temp_iso_data.Add("MATID", matid);
       inelastic_defgrad_temp_iso_data.Add("RefTemp", 298.0);
       inelastic_defgrad_temp_iso_data.Add("Temp_GrowthFac", 1.0e-3);

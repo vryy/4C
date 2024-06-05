@@ -27,7 +27,7 @@ namespace
    protected:
     void SetUp() override
     {
-      IO::InputParameterContainer container;
+      CORE::IO::InputParameterContainer container;
       container.Add("YOUNG", 1.0);
       container.Add("NUE", 0.25);
       container.Add("DENS", 0.0);

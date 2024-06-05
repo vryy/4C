@@ -113,7 +113,7 @@ bool STR::IMPLICIT::Statics::assemble_force(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Statics::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
 
@@ -130,7 +130,7 @@ void STR::IMPLICIT::Statics::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::read_restart(IO::DiscretizationReader& ioreader)
+void STR::IMPLICIT::Statics::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   ModelEval().read_restart(ioreader);
@@ -328,7 +328,7 @@ double STR::IMPLICIT::Statics::GetModelValue(const Epetra_Vector& x)
   global_state().GetFextNp()->Dot(disnp, &ext_energy_np);
   const double total = int_energy_np - ext_energy_np;
 
-  std::ostream& os = IO::cout.os(IO::debug);
+  std::ostream& os = CORE::IO::cout.os(CORE::IO::debug);
   os << __LINE__ << __PRETTY_FUNCTION__ << "\n";
   os << "internal/strain energy       = " << int_energy_np << "\n"
      << "external energy              = " << ext_energy_np << "\n";

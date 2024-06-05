@@ -25,7 +25,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationReader;
 }
@@ -222,7 +222,7 @@ namespace UTILS
     /*!
      \brief Read restart information
     */
-    void read_restart(IO::DiscretizationReader& reader, const double& time);
+    void read_restart(CORE::IO::DiscretizationReader& reader, const double& time);
 
     /*!
      \brief Return structural input parameter list

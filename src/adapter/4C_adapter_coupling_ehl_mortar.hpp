@@ -34,11 +34,11 @@ namespace CORE::LINALG
   class MapExtractor;
 }  // namespace CORE::LINALG
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace ADAPTER
 {
@@ -106,8 +106,8 @@ namespace ADAPTER
     Teuchos::RCP<CORE::LINALG::SparseMatrix> assemble_surf_grad_deriv(
         const Teuchos::RCP<const Epetra_Vector> x);
 
-    virtual void write_restart(IO::DiscretizationWriter& output);
-    virtual void read_restart(IO::DiscretizationReader& reader);
+    virtual void write_restart(CORE::IO::DiscretizationWriter& output);
+    virtual void read_restart(CORE::IO::DiscretizationReader& reader);
     void create_active_slip_toggle(Teuchos::RCP<Epetra_Vector>* active,
         Teuchos::RCP<Epetra_Vector>* slip, Teuchos::RCP<Epetra_Vector>* active_old = nullptr);
     void CreateForceVec(Teuchos::RCP<Epetra_Vector>& n, Teuchos::RCP<Epetra_Vector>& t);

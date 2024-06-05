@@ -43,7 +43,7 @@ namespace BEAMINTERACTION
    * files to disc, i.e. one file that will be opened with ParaView. The data that can be stored, is
    * point geometry, cell connected to the points, point data and cell data.
    */
-  class BeamToSolidOutputWriterVisualization : public IO::VisualizationManager
+  class BeamToSolidOutputWriterVisualization : public CORE::IO::VisualizationManager
   {
    public:
     /**
@@ -52,7 +52,7 @@ namespace BEAMINTERACTION
      * @param visualization_output_params (in) Global visualization parameter pointer.
      */
     BeamToSolidOutputWriterVisualization(const std::string& writer_full_name,
-        IO::VisualizationParameters visualization_params,
+        CORE::IO::VisualizationParameters visualization_params,
         Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params);
 
     /**

@@ -840,8 +840,9 @@ namespace CORE::FE
     }
     if (comm.MyPID() == 0)
     {
-      IO::cout << "Created discretization " << targetdis->Name() << " as a clone of discretization "
-               << sourcedis->Name() << " in...." << time.totalElapsedTime(true) << " secs\n\n";
+      CORE::IO::cout << "Created discretization " << targetdis->Name()
+                     << " as a clone of discretization " << sourcedis->Name() << " in...."
+                     << time.totalElapsedTime(true) << " secs\n\n";
     }
     return;
   };  // CloneDiscretization
@@ -877,11 +878,11 @@ namespace CORE::FE
     }
     if (comm.MyPID() == 0)
     {
-      IO::cout << "Created discretization " << targetdis_ptr->Name()
-               << " as a clone from the condition(s) with ID(s)=";
-      for (unsigned int i = 0; i < conds.size(); ++i) IO::cout << " " << conds[i]->Id();
-      IO::cout << " of the discretization " << sourcedis_ptr->Name() << " in...."
-               << time.totalElapsedTime(true) << " secs\n\n";
+      CORE::IO::cout << "Created discretization " << targetdis_ptr->Name()
+                     << " as a clone from the condition(s) with ID(s)=";
+      for (unsigned int i = 0; i < conds.size(); ++i) CORE::IO::cout << " " << conds[i]->Id();
+      CORE::IO::cout << " of the discretization " << sourcedis_ptr->Name() << " in...."
+                     << time.totalElapsedTime(true) << " secs\n\n";
     }
     return;
   };  // CloneDiscretizationFromCondition
@@ -911,10 +912,10 @@ namespace CORE::FE
     }
     if (comm.MyPID() == 0)
     {
-      IO::cout << "Created discretization " << targetdis.Name()
-               << " as a clone from the condition \"" << condname.c_str()
-               << "\" of the discretization " << sourcedis.Name() << " in...."
-               << time.totalElapsedTime(true) << " secs\n\n";
+      CORE::IO::cout << "Created discretization " << targetdis.Name()
+                     << " as a clone from the condition \"" << condname.c_str()
+                     << "\" of the discretization " << sourcedis.Name() << " in...."
+                     << time.totalElapsedTime(true) << " secs\n\n";
     }
     return;
   };  // CloneDiscretizationFromCondition

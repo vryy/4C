@@ -39,9 +39,10 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
       {
         const CORE::Elements::Element* actele = dis->lColElement(i);
         if (curr_pos == nullptr)
-          IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
+          CORE::IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
         else
-          IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
+          CORE::IO::GMSH::elementAtCurrentPositionToStream(
+              double(actele->Id()), actele, *curr_pos, s);
       };
     }
     else
@@ -51,9 +52,10 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
       {
         const CORE::Elements::Element* actele = dis->lRowElement(i);
         if (curr_pos == nullptr)
-          IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
+          CORE::IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
         else
-          IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
+          CORE::IO::GMSH::elementAtCurrentPositionToStream(
+              double(actele->Id()), actele, *curr_pos, s);
       };
     }
     s << "};\n";
@@ -84,7 +86,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
           pos(1) = x(1);
           pos(2) = x(2);
         }
-        IO::GMSH::cellWithScalarToStream(CORE::FE::CellType::point1, actnode->Id(), pos, s);
+        CORE::IO::GMSH::cellWithScalarToStream(CORE::FE::CellType::point1, actnode->Id(), pos, s);
       }
     }
     else
@@ -109,7 +111,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
           pos(1) = x(1);
           pos(2) = x(2);
         }
-        IO::GMSH::cellWithScalarToStream(CORE::FE::CellType::point1, actnode->Id(), pos, s);
+        CORE::IO::GMSH::cellWithScalarToStream(CORE::FE::CellType::point1, actnode->Id(), pos, s);
       }
     }
     s << "};\n";
@@ -134,9 +136,10 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
         {
           const CORE::Elements::Element* actele = xdis->lColFace(i);
           if (curr_pos == nullptr)
-            IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
+            CORE::IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
           else
-            IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
+            CORE::IO::GMSH::elementAtCurrentPositionToStream(
+                double(actele->Id()), actele, *curr_pos, s);
         };
       }
       else
@@ -146,9 +149,10 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
         {
           const CORE::Elements::Element* actele = xdis->lRowFace(i);
           if (curr_pos == nullptr)
-            IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
+            CORE::IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
           else
-            IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
+            CORE::IO::GMSH::elementAtCurrentPositionToStream(
+                double(actele->Id()), actele, *curr_pos, s);
         };
       }
       s << "};\n";

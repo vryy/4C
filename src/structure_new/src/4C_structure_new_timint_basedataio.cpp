@@ -74,7 +74,7 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
 {
   // We have to call Setup() after Init()
   issetup_ = false;
@@ -149,7 +149,7 @@ void STR::TIMINT::BaseDataIO::Setup()
   // safety check
   FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
 
-  if (outputeveryiter_) writer_every_iter_ = Teuchos::rcp(new IO::EveryIterationWriter());
+  if (outputeveryiter_) writer_every_iter_ = Teuchos::rcp(new CORE::IO::EveryIterationWriter());
 
   issetup_ = true;
 }
@@ -164,7 +164,7 @@ void STR::TIMINT::BaseDataIO::check_init_setup() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataIO::init_setup_every_iteration_writer(
-    IO::EveryIterationWriterInterface* interface, Teuchos::ParameterList& p_nox)
+    CORE::IO::EveryIterationWriterInterface* interface, Teuchos::ParameterList& p_nox)
 {
   if (not outputeveryiter_) return;
 
@@ -286,7 +286,7 @@ void STR::TIMINT::BaseDataIO::set_last_written_results(const int step)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::WriteOutputEveryIteration(
-    IO::EveryIterationWriter& every_iter_writer)
+    CORE::IO::EveryIterationWriter& every_iter_writer)
     : every_iter_writer_(every_iter_writer)
 {
   /* empty */

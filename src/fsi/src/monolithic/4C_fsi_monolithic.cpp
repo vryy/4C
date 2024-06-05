@@ -754,8 +754,9 @@ void FSI::Monolithic::NonLinErrorCheck()
         // Notify user about non-converged nonlinear solver, but do not abort the simulation
         if (Comm().MyPID() == 0)
         {
-          IO::cout << "\n*** Nonlinear solver did not converge in " << noxiter_
-                   << " iterations in time step " << Step() << ". Continue ..." << IO::endl;
+          CORE::IO::cout << "\n*** Nonlinear solver did not converge in " << noxiter_
+                         << " iterations in time step " << Step() << ". Continue ..."
+                         << CORE::IO::endl;
         }
         break;
       }
@@ -776,9 +777,9 @@ void FSI::Monolithic::NonLinErrorCheck()
         // Notify user about non-converged nonlinear solver, but do not abort the simulation
         if (Comm().MyPID() == 0)
         {
-          IO::cout << IO::endl
-                   << "*** Nonlinear solver did not converge in " << noxiter_
-                   << " iterations. Halve the time step size." << IO::endl;
+          CORE::IO::cout << CORE::IO::endl
+                         << "*** Nonlinear solver did not converge in " << noxiter_
+                         << " iterations. Halve the time step size." << CORE::IO::endl;
         }
         break;
       }
@@ -799,9 +800,10 @@ void FSI::Monolithic::NonLinErrorCheck()
         // Notify user about non-converged nonlinear solver, but do not abort the simulation
         if (Comm().MyPID() == 0)
         {
-          IO::cout << IO::endl
-                   << "*** Nonlinear solver did not converge in " << noxiter_
-                   << " iterations. Revert the time step size to the previous one." << IO::endl;
+          CORE::IO::cout << CORE::IO::endl
+                         << "*** Nonlinear solver did not converge in " << noxiter_
+                         << " iterations. Revert the time step size to the previous one."
+                         << CORE::IO::endl;
         }
         break;
       }

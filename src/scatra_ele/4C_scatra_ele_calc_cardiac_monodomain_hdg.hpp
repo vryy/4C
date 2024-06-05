@@ -14,6 +14,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_fem_general_fiber_node_holder.hpp"
 #include "4C_discretization_fem_general_utils_polynomial.hpp"
 #include "4C_scatra_ele_calc_hdg.hpp"
 #include "4C_scatra_ele_hdg.hpp"
@@ -124,6 +125,19 @@ namespace DRT
       //! project material field for Tet elements, because quadrature not working for higher order
       //! polynomials with Intrepid
       int project_material_field_tet(const CORE::Elements::Element* ele);
+
+      /*!
+       * @brief Setup cardiac fibers. If the fiber direction fiber1 is directly given, it is
+       * returned. Otherwise, the fiber will be calculated with the RAD-AXI-CIR coordinate system
+       * and the helix and transversal angles
+       *
+       * @tparam dim space dimension of the problem
+       * @param fibers Fiber data projected
+       * @param f Cardiac fiber direction setup from the fiber or coordinate system data
+       */
+      template <std::size_t dim>
+      void setup_cardiac_fibers(const CORE::Nodes::NodalFiberHolder& fibers,
+          std::vector<CORE::LINALG::Matrix<dim, 1>>& f);
 
       /// polynomial space for element interior for various Gauss Points for the evaluation of the
       /// material

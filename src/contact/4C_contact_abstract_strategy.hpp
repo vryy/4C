@@ -1419,7 +1419,8 @@ namespace CONTACT
 
     virtual void SetParentState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec,
         const Teuchos::RCP<DRT::Discretization> dis){
-        /* standard contact methods don't need the corresponding bulk element */};
+        /* standard contact methods don't need the corresponding bulk element */
+    };
 
     /*! \brief Update contact at end of time step
 
@@ -1444,7 +1445,7 @@ namespace CONTACT
     @param dis Displacement vector of the solid field
     */
     void DoReadRestart(
-        IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) override
+        CORE::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) override
     {
       DoReadRestart(reader, dis, Teuchos::null);
     };
@@ -1456,7 +1457,7 @@ namespace CONTACT
     @param dis Displacement vector of the solid field
     @param cparams_ptr ??
     */
-    virtual void DoReadRestart(IO::DiscretizationReader& reader,
+    virtual void DoReadRestart(CORE::IO::DiscretizationReader& reader,
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
 
     //!@}
@@ -1467,7 +1468,7 @@ namespace CONTACT
     /*! \brief Write strategy specific output
      *
      *  \param(in) writer: output writer */
-    virtual void WriteOutput(IO::DiscretizationWriter& writer) const { return; }
+    virtual void WriteOutput(CORE::IO::DiscretizationWriter& writer) const { return; }
 
     /*! \brief Compute interface forces and moments
      *

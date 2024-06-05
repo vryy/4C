@@ -123,7 +123,7 @@ void STR::EXPLICIT::CentrDiff::add_visco_mass_contributions(CORE::LINALG::Sparse
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::CentrDiff::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
   // write dynamic forces
@@ -135,7 +135,7 @@ void STR::EXPLICIT::CentrDiff::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::read_restart(IO::DiscretizationReader& ioreader)
+void STR::EXPLICIT::CentrDiff::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   ioreader.ReadVector(finertian_ptr_, "finert");

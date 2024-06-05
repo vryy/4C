@@ -32,9 +32,9 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 BeamDiscretizationRuntimeOutputWriter::BeamDiscretizationRuntimeOutputWriter(
-    IO::VisualizationParameters parameters, const Epetra_Comm& comm)
+    CORE::IO::VisualizationParameters parameters, const Epetra_Comm& comm)
     : visualization_manager_(Teuchos::rcp(
-          new IO::VisualizationManager(std::move(parameters), comm, "structure-beams"))),
+          new CORE::IO::VisualizationManager(std::move(parameters), comm, "structure-beams"))),
       use_absolute_positions_(true)
 {
   // empty constructor
@@ -507,7 +507,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_ghosting_information(
 {
   const auto only_select_beam_elements = [](const CORE::Elements::Element* ele)
   { return dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele); };
-  IO::append_element_ghosting_information(
+  CORE::IO::append_element_ghosting_information(
       *discretization_, *visualization_manager_, only_select_beam_elements);
 }
 

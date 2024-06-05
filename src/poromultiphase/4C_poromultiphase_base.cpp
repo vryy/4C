@@ -81,7 +81,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<IO::DiscretizationWriter> output = fluiddis->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = fluiddis->Writer();
   output->WriteMesh(0, 0.0);
 
   // -------------------------------------------------------------------

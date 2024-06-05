@@ -49,11 +49,11 @@ output.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationReader;
   class DiscretizationWriter;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace FLD
 {
@@ -124,12 +124,12 @@ namespace FLD
     \brief Input of statistics data after restart
     */
 
-    void read_restart(IO::DiscretizationReader& reader);
+    void read_restart(CORE::IO::DiscretizationReader& reader);
 
     /*!
     \brief Write output file of statistics data to allow restart
     */
-    void write_restart(IO::DiscretizationWriter& writer);
+    void write_restart(CORE::IO::DiscretizationWriter& writer);
 
    protected:
     /*!

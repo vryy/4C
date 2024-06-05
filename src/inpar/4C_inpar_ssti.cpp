@@ -10,9 +10,9 @@
 
 #include "4C_inpar_ssti.hpp"
 
+#include "4C_discretization_condition_definition.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_scatra.hpp"
-#include "4C_io_condition_definition.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_utils_parameter_list.hpp"
@@ -138,18 +138,18 @@ void INPAR::SSTI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void INPAR::SSTI::SetValidConditions(
-    std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)
+    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace INPUT;
 
   /*--------------------------------------------------------------------*/
   // set Scalar-Structure-Thermo interaction interface meshtying condition
-  Teuchos::RCP<ConditionDefinition> linesstiinterfacemeshtying =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SSTI INTERFACE MESHTYING LINE CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linesstiinterfacemeshtying = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN SSTI INTERFACE MESHTYING LINE CONDITIONS",
           "SSTIInterfaceMeshtying", "SSTI Interface Meshtying",
           CORE::Conditions::SSTIInterfaceMeshtying, true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<ConditionDefinition> surfsstiinterfacemeshtying =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SSTI INTERFACE MESHTYING SURF CONDITIONS",
+  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfsstiinterfacemeshtying = Teuchos::rcp(
+      new CORE::Conditions::ConditionDefinition("DESIGN SSTI INTERFACE MESHTYING SURF CONDITIONS",
           "SSTIInterfaceMeshtying", "SSTI Interface Meshtying",
           CORE::Conditions::SSTIInterfaceMeshtying, true, CORE::Conditions::geometry_type_surface));
 

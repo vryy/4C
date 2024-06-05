@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace IO
+namespace CORE::IO
 {
   class Pstream;
 }
@@ -35,7 +35,7 @@ namespace INPUT
   Teuchos::RCP<const Teuchos::ParameterList> ValidParameters();
 
   /// print all parameters that have a default value
-  void PrintDefaultParameters(IO::Pstream& stream, const Teuchos::ParameterList& list);
+  void PrintDefaultParameters(CORE::IO::Pstream& stream, const Teuchos::ParameterList& list);
 
   /// print flag sections of dat file with given list
   void PrintDatHeader(std::ostream& stream, const Teuchos::ParameterList& list,

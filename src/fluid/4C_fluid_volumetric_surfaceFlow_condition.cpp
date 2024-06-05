@@ -109,7 +109,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::Output(IO::DiscretizationWriter& output)
+void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::Output(CORE::IO::DiscretizationWriter& output)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
@@ -132,7 +132,8 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::Output(IO::DiscretizationWri
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::read_restart(IO::DiscretizationReader& reader)
+void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::read_restart(
+    CORE::IO::DiscretizationReader& reader)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
@@ -851,7 +852,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::output(
-    IO::DiscretizationWriter& output, std::string ds_condname, int condnum)
+    CORE::IO::DiscretizationWriter& output, std::string ds_condname, int condnum)
 {
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
@@ -885,7 +886,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::output(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::read_restart(
-    IO::DiscretizationReader& reader, std::string ds_condname, int condnum)
+    CORE::IO::DiscretizationReader& reader, std::string ds_condname, int condnum)
 {
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
@@ -2085,7 +2086,7 @@ void FLD::UTILS::TotalTractionCorrector::update_residual(Teuchos::RCP<Epetra_Vec
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::TotalTractionCorrector::Output(IO::DiscretizationWriter& output)
+void FLD::UTILS::TotalTractionCorrector::Output(CORE::IO::DiscretizationWriter& output)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
@@ -2108,7 +2109,7 @@ void FLD::UTILS::TotalTractionCorrector::Output(IO::DiscretizationWriter& output
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::TotalTractionCorrector::read_restart(IO::DiscretizationReader& reader)
+void FLD::UTILS::TotalTractionCorrector::read_restart(CORE::IO::DiscretizationReader& reader)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 

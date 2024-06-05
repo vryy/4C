@@ -22,7 +22,7 @@ POROFLUIDMULTIPHASE::TimIntOneStepTheta::TimIntOneStepTheta(
     Teuchos::RCP<DRT::Discretization> dis,  //!< discretization
     const int linsolvernumber,              //!< number of linear solver
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
-    Teuchos::RCP<IO::DiscretizationWriter> output  //!< output writer
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< output writer
     )
     : TimIntImpl(dis, linsolvernumber, probparams, poroparams, output),
       theta_(poroparams.get<double>("THETA"))
@@ -176,8 +176,8 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::read_restart(const int step)
   // call base class
   POROFLUIDMULTIPHASE::TimIntImpl::read_restart(step);
 
-  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
-  reader = Teuchos::rcp(new IO::DiscretizationReader(
+  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
+  reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
       discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
 
   time_ = reader->ReadDouble("time");

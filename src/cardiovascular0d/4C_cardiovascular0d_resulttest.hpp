@@ -30,7 +30,7 @@ namespace UTILS
   class Cardiovascular0DManager;
 }  // namespace UTILS
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }

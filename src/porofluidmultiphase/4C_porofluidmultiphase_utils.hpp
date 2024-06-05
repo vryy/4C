@@ -72,12 +72,12 @@ namespace POROFLUIDMULTIPHASE
     /// create solution algorithm depending on input file
     Teuchos::RCP<ADAPTER::PoroFluidMultiphase> CreateAlgorithm(
         INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme
-            timintscheme,                              //!< time discretization scheme
-        Teuchos::RCP<DRT::Discretization> dis,         //!< discretization
-        const int linsolvernumber,                     //!< number of linear solver
-        const Teuchos::ParameterList& probparams,      //!< parameter list of global problem
-        const Teuchos::ParameterList& poroparams,      //!< paramter list of poro problem
-        Teuchos::RCP<IO::DiscretizationWriter> output  //!< output writer
+            timintscheme,                                    //!< time discretization scheme
+        Teuchos::RCP<DRT::Discretization> dis,               //!< discretization
+        const int linsolvernumber,                           //!< number of linear solver
+        const Teuchos::ParameterList& probparams,            //!< parameter list of global problem
+        const Teuchos::ParameterList& poroparams,            //!< paramter list of poro problem
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< output writer
     );
 
     /**

@@ -456,7 +456,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::read_restart(int restart)
     // call base class
     POROMULTIPHASE::PoroMultiPhaseBase::read_restart(restart);
 
-    IO::DiscretizationReader reader(
+    CORE::IO::DiscretizationReader reader(
         fluid_field()->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), restart);
     if (restart != reader.ReadInt("step"))
       FOUR_C_THROW("Time step on file not equal to given step");

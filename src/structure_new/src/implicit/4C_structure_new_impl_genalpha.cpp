@@ -232,7 +232,7 @@ double STR::IMPLICIT::GenAlpha::GetModelValue(const Epetra_Vector& x)
 
   const double total = kin_energy_incr + int_energy_np + disNp_forcesN - ext_energy_np;
 
-  std::ostream& os = IO::cout.os(IO::debug);
+  std::ostream& os = CORE::IO::cout.os(CORE::IO::debug);
   os << __LINE__ << __PRETTY_FUNCTION__ << "\n";
   os << "kin_energy_incr              = " << kin_energy_incr << "\n"
      << "int_energy * (1-af)          = " << int_energy_np << "\n"
@@ -404,7 +404,7 @@ void STR::IMPLICIT::GenAlpha::add_visco_mass_contributions(CORE::LINALG::SparseO
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlpha::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
   // write dynamic forces
@@ -416,7 +416,7 @@ void STR::IMPLICIT::GenAlpha::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::read_restart(IO::DiscretizationReader& ioreader)
+void STR::IMPLICIT::GenAlpha::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   ioreader.ReadVector(finertian_ptr_, "finert");

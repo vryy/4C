@@ -29,7 +29,7 @@ namespace CORE::LINALG
   class MapExtractor;
 }  // namespace CORE::LINALG
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -108,7 +108,7 @@ namespace ADAPTER
     const Teuchos::RCP<DRT::Discretization>& discretization() override;
 
     // return discretization writer of embedded fluid discretization (for special purpose output)
-    const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() override { return output_; }
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& DiscWriter() override { return output_; }
 
     /// get map extractor for background/embedded fluid
     Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> const& x_fluid_fluid_map_extractor();

@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -152,7 +152,8 @@ namespace PARTICLEENGINE
      *
      * \return bin discretization writer
      */
-    virtual std::shared_ptr<IO::DiscretizationWriter> get_bin_discretization_writer() const = 0;
+    virtual std::shared_ptr<CORE::IO::DiscretizationWriter> get_bin_discretization_writer()
+        const = 0;
 
     /*!
      * \brief relate all particles to all processors

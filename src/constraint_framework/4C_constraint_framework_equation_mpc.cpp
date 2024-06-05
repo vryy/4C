@@ -61,8 +61,8 @@ void CONSTRAINTS::SUBMODELEVALUATOR::MultiPointConstraintEquationBase::SetFirstR
 CONSTRAINTS::SUBMODELEVALUATOR::LinearCoupledEquation::LinearCoupledEquation(
     int id, const std::vector<int>& dofs, std::vector<double> coefficients)
 {
-  IO::cout(IO::debug) << "\nLinear coupled equation saved (ID: " << id << ")\n ";
-  IO::cout(IO::debug) << " 0 = ";  // #Todo
+  CORE::IO::cout(CORE::IO::debug) << "\nLinear coupled equation saved (ID: " << id << ")\n ";
+  CORE::IO::cout(CORE::IO::debug) << " 0 = ";  // #Todo
 
   SetFirstRowId(id);
 
@@ -71,9 +71,9 @@ CONSTRAINTS::SUBMODELEVALUATOR::LinearCoupledEquation::LinearCoupledEquation(
     TermData term = {coefficients[i], id, dofs[i]};
     equation_data_.emplace_back(term);
 
-    IO::cout(IO::debug) << " + " << coefficients[i] << " * d" << dofs[i];
+    CORE::IO::cout(CORE::IO::debug) << " + " << coefficients[i] << " * d" << dofs[i];
   }
-  IO::cout(IO::debug) << IO::endl;
+  CORE::IO::cout(CORE::IO::debug) << CORE::IO::endl;
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

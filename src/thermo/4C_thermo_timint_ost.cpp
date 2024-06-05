@@ -35,7 +35,7 @@ void THR::TimIntOneStepTheta::VerifyCoeff()
 THR::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : TimIntImpl(ioparams, tdynparams, xparams, actdis, solver, output),
       theta_(tdynparams.sublist("ONESTEPTHETA").get<double>("THETA")),
       tempt_(Teuchos::null),
@@ -353,7 +353,8 @@ void THR::TimIntOneStepTheta::UpdateStepElement()
  *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::ReadRestartForce()
 {
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
   reader.ReadVector(fext_, "fexternal");
   reader.ReadVector(fint_, "fint");
   reader.ReadVector(fcap_, "fcap");
@@ -366,7 +367,7 @@ void THR::TimIntOneStepTheta::ReadRestartForce()
 /*----------------------------------------------------------------------*
  | write internal and external forces for restart            dano 07/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntOneStepTheta::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+void THR::TimIntOneStepTheta::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
 {
   output->WriteVector("fexternal", fext_);
   output->WriteVector("fint", fint_);

@@ -20,7 +20,7 @@ void INPUT::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
     std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& contactconstitutivlawlist)
 {
   const std::string sectionname = "Contact Constitutive Law";
-  IO::DatFileUtils::print_section_header(stream, sectionname);
+  CORE::IO::DatFileUtils::print_section_header(stream, sectionname);
 
   for (unsigned i = 0; i < contactconstitutivlawlist.size(); ++i)
   {

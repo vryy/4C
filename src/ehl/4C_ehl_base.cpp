@@ -114,7 +114,7 @@ void EHL::Base::read_restart(int restart)
     mortaradapter_->Integrate(structure_->Dispnp(), Dt());
     heightold_ = mortaradapter_->Nodal_Gap();
 
-    IO::DiscretizationReader reader(lubrication_->LubricationField()->discretization(),
+    CORE::IO::DiscretizationReader reader(lubrication_->LubricationField()->discretization(),
         GLOBAL::Problem::Instance()->InputControlFile(), restart);
     mortaradapter_->read_restart(reader);
   }
@@ -730,8 +730,8 @@ void EHL::Base::output(bool forced_writerestart)
   structure_field()->Output(forced_writerestart);
 
   // Additional output on structure field
-  structure_field()->DiscWriter()->WriteVector(
-      "fluid_force", EvaluateFluidForce(lubrication_->LubricationField()->Prenp()), IO::dofvector);
+  structure_field()->DiscWriter()->WriteVector("fluid_force",
+      EvaluateFluidForce(lubrication_->LubricationField()->Prenp()), CORE::IO::dofvector);
 
   if (dry_contact_)
   {
@@ -745,8 +745,8 @@ void EHL::Base::output(bool forced_writerestart)
         Teuchos::rcp(new Epetra_Vector(*structure_field()->discretization()->NodeRowMap()));
     CORE::LINALG::Export(*active_toggle, *active);
     CORE::LINALG::Export(*slip_toggle, *slip);
-    structure_field()->DiscWriter()->WriteVector("active", active, IO::dofvector);
-    structure_field()->DiscWriter()->WriteVector("slip", slip, IO::dofvector);
+    structure_field()->DiscWriter()->WriteVector("active", active, CORE::IO::dofvector);
+    structure_field()->DiscWriter()->WriteVector("slip", slip, CORE::IO::dofvector);
   }
   if (dry_contact_)
   {
@@ -758,8 +758,8 @@ void EHL::Base::output(bool forced_writerestart)
         Teuchos::rcp(new Epetra_Vector(*structure_field()->discretization()->dof_row_map()));
     CORE::LINALG::Export(*n, *ne);
     CORE::LINALG::Export(*t, *te);
-    structure_field()->DiscWriter()->WriteVector("normal_contact", ne, IO::dofvector);
-    structure_field()->DiscWriter()->WriteVector("tangential_contact", te, IO::dofvector);
+    structure_field()->DiscWriter()->WriteVector("normal_contact", ne, CORE::IO::dofvector);
+    structure_field()->DiscWriter()->WriteVector("tangential_contact", te, CORE::IO::dofvector);
   }
 
   //=============================
@@ -790,11 +790,11 @@ void EHL::Base::output(bool forced_writerestart)
         Teuchos::rcp(new Epetra_Vector(*ada_lubPres_to_lubDisp_->SlaveDofMap()));
     CORE::LINALG::Export(*height, *height_ex);
     Teuchos::RCP<Epetra_Vector> h1 = ada_lubPres_to_lubDisp_->SlaveToMaster(height_ex);
-    lubrication_->LubricationField()->DiscWriter()->WriteVector("height", h1, IO::dofvector);
+    lubrication_->LubricationField()->DiscWriter()->WriteVector("height", h1, CORE::IO::dofvector);
 
     if (inf_gap_toggle_lub_ != Teuchos::null)
       lubrication_->LubricationField()->DiscWriter()->WriteVector(
-          "no_gap_DBC", inf_gap_toggle_lub_, IO::dofvector);
+          "no_gap_DBC", inf_gap_toggle_lub_, CORE::IO::dofvector);
 
     // output for viscosity
 
@@ -827,7 +827,8 @@ void EHL::Base::output(bool forced_writerestart)
 
     Teuchos::RCP<Epetra_Vector> v1 = ada_lubPres_to_lubDisp_->SlaveToMaster(visc_vec_ex);
 
-    lubrication_->LubricationField()->DiscWriter()->WriteVector("viscosity", v1, IO::dofvector);
+    lubrication_->LubricationField()->DiscWriter()->WriteVector(
+        "viscosity", v1, CORE::IO::dofvector);
   }
 
   // reset states

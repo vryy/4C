@@ -35,7 +35,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& timepa
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       theta_(sdynparams.sublist("ONESTEPTHETA").get<double>("THETA")),
       dist_(Teuchos::null),
@@ -73,9 +73,9 @@ void STR::TimIntOneStepTheta::Init(const Teuchos::ParameterList& timeparams,
   if (myrank_ == 0)
   {
     VerifyCoeff();
-    IO::cout << "with one-step-theta" << IO::endl
-             << "   theta = " << theta_ << IO::endl
-             << IO::endl;
+    CORE::IO::cout << "with one-step-theta" << CORE::IO::endl
+                   << "   theta = " << theta_ << CORE::IO::endl
+                   << CORE::IO::endl;
   }
 
   // have a nice day
@@ -702,7 +702,8 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
 /* read restart forces */
 void STR::TimIntOneStepTheta::ReadRestartForce()
 {
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
   reader.ReadVector(fext_, "fexternal");
   reader.ReadVector(fint_, "fint");
   reader.ReadVector(finert_, "finert");
@@ -714,7 +715,7 @@ void STR::TimIntOneStepTheta::ReadRestartForce()
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void STR::TimIntOneStepTheta::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+void STR::TimIntOneStepTheta::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
 {
   output->WriteVector("fexternal", fext_);
   output->WriteVector("fint", fint_);

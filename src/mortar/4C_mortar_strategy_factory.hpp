@@ -33,11 +33,11 @@ namespace CORE::Elements
   class Element;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationReader;
   class DiscretizationWriter;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace STR
 {

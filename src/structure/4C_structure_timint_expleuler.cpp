@@ -26,7 +26,7 @@ STR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : TimIntExpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       modexpleuler_(CORE::UTILS::IntegralValue<int>(sdynparams, "MODIFIEDEXPLEULER") == 1),
       fextn_(Teuchos::null),
@@ -289,7 +289,7 @@ void STR::TimIntExplEuler::ReadRestartForce() { return; }
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void STR::TimIntExplEuler::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+void STR::TimIntExplEuler::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
 {
   return;
 }

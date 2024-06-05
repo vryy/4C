@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
     const std::string coupling_name,                      // name of the FSI coupling condition
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : FluidWrapper(fluid),  // the XFluid object is set as fluid_ in the FluidWrapper
       fpsiinterface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
       coupling_name_(coupling_name),

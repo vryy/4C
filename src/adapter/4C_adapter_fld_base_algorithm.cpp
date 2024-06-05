@@ -125,7 +125,7 @@ void ADAPTER::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis->Writer();
   output->WriteMesh(0, 0.0);
 
   // -------------------------------------------------------------------
@@ -135,7 +135,7 @@ void ADAPTER::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
   // const Teuchos::ParameterList& probsize = GLOBAL::Problem::Instance()->ProblemSizeParams();
   // const Teuchos::ParameterList& ioflags  = GLOBAL::Problem::Instance()->IOParams();
 
-  if (actdis->Comm().MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, fdyn);
+  if (actdis->Comm().MyPID() == 0) INPUT::PrintDefaultParameters(CORE::IO::cout, fdyn);
 
   // -------------------------------------------------------------------
   // create a solver
@@ -1273,14 +1273,14 @@ void ADAPTER::FluidBaseAlgorithm::setup_inflow_fluid(
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<IO::DiscretizationWriter> output = discret->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = discret->Writer();
 
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
   const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
 
-  if (discret->Comm().MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, fdyn);
+  if (discret->Comm().MyPID() == 0) INPUT::PrintDefaultParameters(CORE::IO::cout, fdyn);
 
   // -------------------------------------------------------------------
   // create a solver

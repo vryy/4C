@@ -173,8 +173,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   template <typename MaterialParameter>
-  std::unique_ptr<CORE::MAT::PAR::Parameter> make_parameter_impl(
-      int id, CORE::Materials::MaterialType type, const IO::InputParameterContainer& input_data)
+  std::unique_ptr<CORE::MAT::PAR::Parameter> make_parameter_impl(int id,
+      CORE::Materials::MaterialType type, const CORE::IO::InputParameterContainer& input_data)
   {
     static_assert(std::is_base_of_v<CORE::MAT::PAR::Parameter, MaterialParameter>);
     auto legacy_material_wrapper =
@@ -203,7 +203,7 @@ Teuchos::RCP<CORE::MAT::Material> MAT::Factory(int matnum)
 }
 
 std::unique_ptr<CORE::MAT::PAR::Parameter> MAT::make_parameter(
-    int id, CORE::Materials::MaterialType type, const IO::InputParameterContainer& input_data)
+    int id, CORE::Materials::MaterialType type, const CORE::IO::InputParameterContainer& input_data)
 {
   switch (type)
   {

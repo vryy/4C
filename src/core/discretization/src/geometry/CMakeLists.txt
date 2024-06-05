@@ -5,7 +5,6 @@ set(_dependencies
     config
     core
     cut
-    io
     lib
     )
 

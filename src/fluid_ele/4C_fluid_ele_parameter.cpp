@@ -302,13 +302,16 @@ void DRT::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
   {
     if (myrank == 0)
     {
-      IO::cout << "+-------------------------------------------------------------------------------"
-                  "---+\n";
-      IO::cout << " Edge-based stabilization: all residual-based stabilization terms are switched "
-                  "off!\n";
-      IO::cout << "+-------------------------------------------------------------------------------"
-                  "---+\n"
-               << IO::endl;
+      CORE::IO::cout
+          << "+-------------------------------------------------------------------------------"
+             "---+\n";
+      CORE::IO::cout
+          << " Edge-based stabilization: all residual-based stabilization terms are switched "
+             "off!\n";
+      CORE::IO::cout
+          << "+-------------------------------------------------------------------------------"
+             "---+\n"
+          << CORE::IO::endl;
     }
     //---------------------------------
     // if edge-based stabilization is selected, all residual-based stabilization terms
@@ -341,13 +344,16 @@ void DRT::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
 
     if (myrank == 0)
     {
-      IO::cout << "+-------------------------------------------------------------------------------"
-                  "---+\n";
-      IO::cout << " Polynomial pressure projection: no residual-based, in particular no convective "
-                  "stabilization! \n";
-      IO::cout << "+-------------------------------------------------------------------------------"
-                  "---+\n"
-               << IO::endl;
+      CORE::IO::cout
+          << "+-------------------------------------------------------------------------------"
+             "---+\n";
+      CORE::IO::cout
+          << " Polynomial pressure projection: no residual-based, in particular no convective "
+             "stabilization! \n";
+      CORE::IO::cout
+          << "+-------------------------------------------------------------------------------"
+             "---+\n"
+          << CORE::IO::endl;
     }
     //---------------------------------
     // if polynomial pressure projection stabilization is selected, all
@@ -373,14 +379,16 @@ void DRT::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
   {
     if (myrank == 0)
     {
-      IO::cout << "+-------------------------------------------------------------------------------"
-                  "---+\n";
-      IO::cout << "+                                   WARNING\n";
-      IO::cout << " No stabilization selected: all stabilization terms are switched off!\n";
-      IO::cout << "                            4C says: Good luck!\n";
-      IO::cout << "+-------------------------------------------------------------------------------"
-                  "---+\n"
-               << IO::endl;
+      CORE::IO::cout
+          << "+-------------------------------------------------------------------------------"
+             "---+\n";
+      CORE::IO::cout << "+                                   WARNING\n";
+      CORE::IO::cout << " No stabilization selected: all stabilization terms are switched off!\n";
+      CORE::IO::cout << "                            4C says: Good luck!\n";
+      CORE::IO::cout
+          << "+-------------------------------------------------------------------------------"
+             "---+\n"
+          << CORE::IO::endl;
     }
     pspg_ = false;
     supg_ = false;

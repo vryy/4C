@@ -217,7 +217,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::assemble_jacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::LagPenConstraint::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   iowriter.WriteVector("lagrmultiplier", constrman_->GetLagrMultVector());
   iowriter.WriteVector("refconval", constrman_->GetRefBaseValues());
@@ -225,7 +225,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::read_restart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::LagPenConstraint::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   double time_n = g_state().GetTimeN();
   constrman_->read_restart(ioreader, time_n);
@@ -293,7 +293,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::determine_optional_quantity()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::LagPenConstraint::OutputStepState(
-    IO::DiscretizationWriter& iowriter) const
+    CORE::IO::DiscretizationWriter& iowriter) const
 {
   // nothing to do
 }

@@ -25,11 +25,11 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace IO
+}  // namespace CORE::IO
 
 namespace DRT
 {
@@ -109,7 +109,7 @@ namespace MORTAR
     //! @{
 
     //! Write interface quantities for postprocessing
-    virtual void postprocess_quantities(IO::DiscretizationWriter& output) = 0;
+    virtual void postprocess_quantities(CORE::IO::DiscretizationWriter& output) = 0;
 
     /*!
     \brief Write results for visualization separately for each meshtying/contact interface
@@ -122,11 +122,12 @@ namespace MORTAR
         Teuchos::RCP<Teuchos::ParameterList> outputParams) = 0;
 
     //! Read restart data from disk
-    virtual void read_restart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Epetra_Vector> zero) = 0;
+    virtual void read_restart(CORE::IO::DiscretizationReader& reader,
+        Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero) = 0;
 
     //! Write restart data to disk
-    virtual void write_restart(IO::DiscretizationWriter& output, bool forcedrestart = false) = 0;
+    virtual void write_restart(
+        CORE::IO::DiscretizationWriter& output, bool forcedrestart = false) = 0;
 
     //! @}
 

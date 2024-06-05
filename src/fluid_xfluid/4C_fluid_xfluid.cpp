@@ -64,7 +64,7 @@ FLD::XFluid::XFluid(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<DRT::Discretization>& levelset_coupdis,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       xdiscret_(Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(actdis, true)),
       xfluid_timint_check_interfacetips_(true),
@@ -1788,45 +1788,53 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_analyt
     {
       {
         std::cout.precision(8);
-        IO::cout << IO::endl
-                 << "---- error norm for analytical solution Nr. "
-                 << CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(*params_, "calculate error")
-                 << " ----------" << IO::endl;
-        IO::cout << "-------------- domain error norms -----------------------" << IO::endl;
-        IO::cout << "|| u - u_h ||_L2(Omega)                               =  " << dom_err_vel_L2
-                 << IO::endl;
-        IO::cout << "|| grad( u - u_h ) ||_L2(Omega)                       =  "
-                 << dom_err_vel_H1_semi << IO::endl;
-        IO::cout << "|| u - u_h ||_H1(Omega)                               =  " << dom_err_vel_H1
-                 << IO::endl;
-        IO::cout << "|| p - p_h ||_L2(Omega)                               =  " << dom_err_pre_L2
-                 << IO::endl;
-        IO::cout << "---------sigma-,viscosity-scaled domain error norms -----" << IO::endl;
-        IO::cout << "|| nu^(+1/2) grad( u - u_h ) ||_L2(Omega)             =  "
-                 << dom_err_vel_H1_semi_nu_scaled << IO::endl;
-        IO::cout << "|| nu^(-1/2) (p - p_h) ||_L2(Omega)                   =  "
-                 << dom_err_pre_L2_nu_scaled << IO::endl;
-        IO::cout << "|| sigma^(+1/2) ( u - u_h ) ||_L2(Omega)              =  "
-                 << dom_err_vel_L2_sigma_scaled << IO::endl;
-        IO::cout << "|| Phi^(+1/2) (p - p_h) ||_L2(Omega)                  =  "
-                 << dom_err_pre_L2_Phi_scaled << IO::endl;
-        IO::cout << "---------------------------------------------------------" << IO::endl;
-        IO::cout << "-------------- interface/boundary error norms -----------" << IO::endl;
-        IO::cout << "|| nu^(+1/2) (u - u*) ||_H1/2(Gamma)                  =  "
-                 << interf_err_Honehalf << IO::endl;
-        IO::cout << "|| nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)        =  "
-                 << interf_err_Hmonehalf_u << IO::endl;
-        IO::cout << "|| nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)              =  "
-                 << interf_err_Hmonehalf_p << IO::endl;
-        IO::cout << "|| (u*n)_inflow (u - u*) ||_L2(Gamma)                 =  " << interf_err_inflow
-                 << IO::endl;
-        IO::cout << "|| (sigma*h+|u|+nu/h)^(+1/2) (u - u*)*n ||_L2(Gamma)  =  "
-                 << interf_err_mass_cons << IO::endl;
-        IO::cout << "---------------------------------------------------------" << IO::endl;
-        IO::cout << "-------------- Error on Functionals from solution  ------------" << IO::endl;
-        IO::cout << " | sin(x) ( u,x - u,x exact ) |                       = " << functional
-                 << IO::endl;
-        IO::cout << "---------------------------------------------------------" << IO::endl;
+        CORE::IO::cout << CORE::IO::endl
+                       << "---- error norm for analytical solution Nr. "
+                       << CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(
+                              *params_, "calculate error")
+                       << " ----------" << CORE::IO::endl;
+        CORE::IO::cout << "-------------- domain error norms -----------------------"
+                       << CORE::IO::endl;
+        CORE::IO::cout << "|| u - u_h ||_L2(Omega)                               =  "
+                       << dom_err_vel_L2 << CORE::IO::endl;
+        CORE::IO::cout << "|| grad( u - u_h ) ||_L2(Omega)                       =  "
+                       << dom_err_vel_H1_semi << CORE::IO::endl;
+        CORE::IO::cout << "|| u - u_h ||_H1(Omega)                               =  "
+                       << dom_err_vel_H1 << CORE::IO::endl;
+        CORE::IO::cout << "|| p - p_h ||_L2(Omega)                               =  "
+                       << dom_err_pre_L2 << CORE::IO::endl;
+        CORE::IO::cout << "---------sigma-,viscosity-scaled domain error norms -----"
+                       << CORE::IO::endl;
+        CORE::IO::cout << "|| nu^(+1/2) grad( u - u_h ) ||_L2(Omega)             =  "
+                       << dom_err_vel_H1_semi_nu_scaled << CORE::IO::endl;
+        CORE::IO::cout << "|| nu^(-1/2) (p - p_h) ||_L2(Omega)                   =  "
+                       << dom_err_pre_L2_nu_scaled << CORE::IO::endl;
+        CORE::IO::cout << "|| sigma^(+1/2) ( u - u_h ) ||_L2(Omega)              =  "
+                       << dom_err_vel_L2_sigma_scaled << CORE::IO::endl;
+        CORE::IO::cout << "|| Phi^(+1/2) (p - p_h) ||_L2(Omega)                  =  "
+                       << dom_err_pre_L2_Phi_scaled << CORE::IO::endl;
+        CORE::IO::cout << "---------------------------------------------------------"
+                       << CORE::IO::endl;
+        CORE::IO::cout << "-------------- interface/boundary error norms -----------"
+                       << CORE::IO::endl;
+        CORE::IO::cout << "|| nu^(+1/2) (u - u*) ||_H1/2(Gamma)                  =  "
+                       << interf_err_Honehalf << CORE::IO::endl;
+        CORE::IO::cout << "|| nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)        =  "
+                       << interf_err_Hmonehalf_u << CORE::IO::endl;
+        CORE::IO::cout << "|| nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)              =  "
+                       << interf_err_Hmonehalf_p << CORE::IO::endl;
+        CORE::IO::cout << "|| (u*n)_inflow (u - u*) ||_L2(Gamma)                 =  "
+                       << interf_err_inflow << CORE::IO::endl;
+        CORE::IO::cout << "|| (sigma*h+|u|+nu/h)^(+1/2) (u - u*)*n ||_L2(Gamma)  =  "
+                       << interf_err_mass_cons << CORE::IO::endl;
+        CORE::IO::cout << "---------------------------------------------------------"
+                       << CORE::IO::endl;
+        CORE::IO::cout << "-------------- Error on Functionals from solution  ------------"
+                       << CORE::IO::endl;
+        CORE::IO::cout << " | sin(x) ( u,x - u,x exact ) |                       = " << functional
+                       << CORE::IO::endl;
+        CORE::IO::cout << "---------------------------------------------------------"
+                       << CORE::IO::endl;
       }
 
       // append error of the last time step to the error file
@@ -2124,60 +2132,62 @@ void FLD::XFluid::print_stabilization_details() const
 
     //---------------------------------------------------------------------------------------------
 
-    IO::cout
+    CORE::IO::cout
         << "+------------------------------------------------------------------------------------+"
-        << IO::endl;
-    IO::cout << "                              INTERFACE-STABILIZATION                       \n"
-             << IO::endl;
-    IO::cout << "Stabilization type:      " << interfstabparams->get<std::string>("COUPLING_METHOD")
-             << "\n";
+        << CORE::IO::endl;
+    CORE::IO::cout
+        << "                              INTERFACE-STABILIZATION                       \n"
+        << CORE::IO::endl;
+    CORE::IO::cout << "Stabilization type:      "
+                   << interfstabparams->get<std::string>("COUPLING_METHOD") << "\n";
 
     if (coupling_method_ == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
         coupling_method_ == INPAR::XFEM::Hybrid_LM_viscous_stress)
-      IO::cout << "HYBRID_LM_L2_PROJ:       "
-               << interfstabparams->get<std::string>("HYBRID_LM_L2_PROJ") << "\n";
+      CORE::IO::cout << "HYBRID_LM_L2_PROJ:       "
+                     << interfstabparams->get<std::string>("HYBRID_LM_L2_PROJ") << "\n";
 
     if (coupling_method_ == INPAR::XFEM::Nitsche)
     {
-      IO::cout << "NIT_STAB_FAC:                      "
-               << interfstabparams->get<double>("NIT_STAB_FAC") << "\n";
-      IO::cout << "VISC_STAB_TRACE_ESTIMATE:          "
-               << interfstabparams->get<std::string>("VISC_STAB_TRACE_ESTIMATE") << "\n";
-      IO::cout << "VISC_STAB_HK:                      "
-               << interfstabparams->get<std::string>("VISC_STAB_HK") << "\n";
+      CORE::IO::cout << "NIT_STAB_FAC:                      "
+                     << interfstabparams->get<double>("NIT_STAB_FAC") << "\n";
+      CORE::IO::cout << "VISC_STAB_TRACE_ESTIMATE:          "
+                     << interfstabparams->get<std::string>("VISC_STAB_TRACE_ESTIMATE") << "\n";
+      CORE::IO::cout << "VISC_STAB_HK:                      "
+                     << interfstabparams->get<std::string>("VISC_STAB_HK") << "\n";
     }
 
     if (coupling_method_ != INPAR::XFEM::Hybrid_LM_Cauchy_stress)
-      IO::cout << "VISC_ADJOINT_SYMMETRY:             "
-               << interfstabparams->get<std::string>("VISC_ADJOINT_SYMMETRY") << "\n";
+      CORE::IO::cout << "VISC_ADJOINT_SYMMETRY:             "
+                     << interfstabparams->get<std::string>("VISC_ADJOINT_SYMMETRY") << "\n";
 
-    IO::cout << "MASS_CONSERVATION_COMBO:           "
-             << interfstabparams->get<std::string>("MASS_CONSERVATION_COMBO") << "\n";
-    IO::cout << "MASS_CONSERVATION_SCALING:         "
-             << interfstabparams->get<std::string>("MASS_CONSERVATION_SCALING") << "\n";
+    CORE::IO::cout << "MASS_CONSERVATION_COMBO:           "
+                   << interfstabparams->get<std::string>("MASS_CONSERVATION_COMBO") << "\n";
+    CORE::IO::cout << "MASS_CONSERVATION_SCALING:         "
+                   << interfstabparams->get<std::string>("MASS_CONSERVATION_SCALING") << "\n";
 
-    IO::cout << "GHOST_PENALTY_STAB:                "
-             << interfstabparams->get<std::string>("GHOST_PENALTY_STAB") << "\n";
-    IO::cout << "GHOST_PENALTY_TRANSIENT_STAB:      "
-             << interfstabparams->get<std::string>("GHOST_PENALTY_TRANSIENT_STAB") << "\n";
-    IO::cout << "GHOST_PENALTY_FAC:                 "
-             << interfstabparams->get<double>("GHOST_PENALTY_FAC") << "\n";
-    IO::cout << "GHOST_PENALTY_TRANSIENT_FAC:       "
-             << interfstabparams->get<double>("GHOST_PENALTY_TRANSIENT_FAC") << "\n";
-    IO::cout << "GHOST_PENALTY_2nd_STAB:            "
-             << interfstabparams->get<std::string>("GHOST_PENALTY_2nd_STAB") << "\n";
-    IO::cout << "GHOST_PENALTY_2nd_STAB_NORMAL:     "
-             << interfstabparams->get<std::string>("GHOST_PENALTY_2nd_STAB_NORMAL") << "\n";
+    CORE::IO::cout << "GHOST_PENALTY_STAB:                "
+                   << interfstabparams->get<std::string>("GHOST_PENALTY_STAB") << "\n";
+    CORE::IO::cout << "GHOST_PENALTY_TRANSIENT_STAB:      "
+                   << interfstabparams->get<std::string>("GHOST_PENALTY_TRANSIENT_STAB") << "\n";
+    CORE::IO::cout << "GHOST_PENALTY_FAC:                 "
+                   << interfstabparams->get<double>("GHOST_PENALTY_FAC") << "\n";
+    CORE::IO::cout << "GHOST_PENALTY_TRANSIENT_FAC:       "
+                   << interfstabparams->get<double>("GHOST_PENALTY_TRANSIENT_FAC") << "\n";
+    CORE::IO::cout << "GHOST_PENALTY_2nd_STAB:            "
+                   << interfstabparams->get<std::string>("GHOST_PENALTY_2nd_STAB") << "\n";
+    CORE::IO::cout << "GHOST_PENALTY_2nd_STAB_NORMAL:     "
+                   << interfstabparams->get<std::string>("GHOST_PENALTY_2nd_STAB_NORMAL") << "\n";
 
 
-    IO::cout << "CONV_STAB_SCALING:                 "
-             << interfstabparams->get<std::string>("CONV_STAB_SCALING") << "\n";
+    CORE::IO::cout << "CONV_STAB_SCALING:                 "
+                   << interfstabparams->get<std::string>("CONV_STAB_SCALING") << "\n";
 
-    IO::cout << "IS_PSEUDO_2D:                      "
-             << interfstabparams->get<std::string>("IS_PSEUDO_2D") << "\n";
-    IO::cout << "+---------------------------------------------------------------------------------"
-                "---+\n"
-             << IO::endl;
+    CORE::IO::cout << "IS_PSEUDO_2D:                      "
+                   << interfstabparams->get<std::string>("IS_PSEUDO_2D") << "\n";
+    CORE::IO::cout
+        << "+---------------------------------------------------------------------------------"
+           "---+\n"
+        << CORE::IO::endl;
   }
 }
 
@@ -2259,7 +2269,8 @@ void FLD::XFluid::TimeLoop()
  *------------------------------------------------------------------------------------------------*/
 void FLD::XFluid::prepare_time_step()
 {
-  if (myrank_ == 0) IO::cout << "prepare_time_step (FLD::XFluid::prepare_time_step) " << IO::endl;
+  if (myrank_ == 0)
+    CORE::IO::cout << "prepare_time_step (FLD::XFluid::prepare_time_step) " << CORE::IO::endl;
 
   // -------------------------------------------------------------------
   //              reset counters used within timestep
@@ -3124,7 +3135,7 @@ void FLD::XFluid::TimeUpdate()
   if (timealgo_ == INPAR::FLUID::timeint_stationary) return;
 
 
-  if (myrank_ == 0) IO::cout << "FLD::XFluid::TimeUpdate " << IO::endl;
+  if (myrank_ == 0) CORE::IO::cout << "FLD::XFluid::TimeUpdate " << CORE::IO::endl;
 
   Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
@@ -3236,9 +3247,9 @@ void FLD::XFluid::cut_and_set_state_vectors()
   {
     // counter will be increased when the new state class is created
 
-    IO::cout << "======================================================\n";
-    IO::cout << "cut_and_set_state_vectors: state-class iterator: " << state_it_ + 1 << "\n";
-    IO::cout << "======================================================\n";
+    CORE::IO::cout << "======================================================\n";
+    CORE::IO::cout << "cut_and_set_state_vectors: state-class iterator: " << state_it_ + 1 << "\n";
+    CORE::IO::cout << "======================================================\n";
   }
 
 
@@ -3426,9 +3437,9 @@ bool FLD::XFluid::x_timint_check_for_monolithic_newton_restart(
   if (myrank_ == 0 and screen_out)
   {
     if (dofsets_changed)
-      IO::cout << " CHANGING DOFSETS in the last two iterations " << IO::endl;
+      CORE::IO::cout << " CHANGING DOFSETS in the last two iterations " << CORE::IO::endl;
     else
-      IO::cout << " NON-CHANGING DOFSETS in the last two iterations " << IO::endl;
+      CORE::IO::cout << " NON-CHANGING DOFSETS in the last two iterations " << CORE::IO::endl;
   }
 
   //---------------
@@ -3447,11 +3458,12 @@ bool FLD::XFluid::x_timint_check_for_monolithic_newton_restart(
   if (myrank_ == 0 and screen_out)
   {
     if (restart_necessary)
-      IO::cout << " RESTART of NEWTON necessary if not the first run after restarting/starting a "
-                  "timestep "
-               << IO::endl;
+      CORE::IO::cout
+          << " RESTART of NEWTON necessary if not the first run after restarting/starting a "
+             "timestep "
+          << CORE::IO::endl;
     else
-      IO::cout << " RESTART of NEWTON not necessary " << IO::endl;
+      CORE::IO::cout << " RESTART of NEWTON not necessary " << CORE::IO::endl;
   }
 
   return restart_necessary;
@@ -3493,7 +3505,7 @@ bool FLD::XFluid::x_timint_changed_dofsets(
 void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
 {
   //---------------------------------------------------------------
-  if (myrank_ == 0 and screen_out) IO::cout << "XFEM::TIMEINTEGRATION: ..." << IO::endl;
+  if (myrank_ == 0 and screen_out) CORE::IO::cout << "XFEM::TIMEINTEGRATION: ..." << CORE::IO::endl;
 
   //---------------------------------------------------------------
   if (timealgo_ != INPAR::FLUID::timeint_one_step_theta)
@@ -3542,7 +3554,7 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
 
   {
     if (myrank_ == 0 and screen_out)
-      IO::cout << "\t ...TransferVectorsToNewMap - TimeStepTransfer...";
+      CORE::IO::cout << "\t ...TransferVectorsToNewMap - TimeStepTransfer...";
 
     // --------------------------------------------
     // transfer of vectors from the old time step at the old interface position/dofset from t_n
@@ -3589,9 +3601,10 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
     if (!projection_success)
     {
       if (myrank_ == 0 and screen_out)
-        IO::cout << "Reassigment of single-dof time integration approach after projection FAILED "
-                    "in some cases."
-                 << IO::endl;
+        CORE::IO::cout
+            << "Reassigment of single-dof time integration approach after projection FAILED "
+               "in some cases."
+            << CORE::IO::endl;
 
       // we have nodes for which projection failed --> Correct the labels for those!
       x_timint_corrective_transfer_vectors_between_steps(xfluid_timeint, xfluid_timintapproach_,
@@ -3766,7 +3779,7 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
 
   {
     if (myrank_ == 0 and screen_out)
-      IO::cout << "\t ...TransferVectorsToNewMap - IncrementStepTransfer...";
+      CORE::IO::cout << "\t ...TransferVectorsToNewMap - IncrementStepTransfer...";
 
     // --------------------------------------------
     // transfer for the current iteration solution between last interface position of iteration i
@@ -3796,9 +3809,10 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
     if (!projection_success)
     {
       if (myrank_ == 0 and screen_out)
-        IO::cout << "Reassigment of single-dof time integration approach after projection FAILED "
-                    "in some cases."
-                 << IO::endl;
+        CORE::IO::cout
+            << "Reassigment of single-dof time integration approach after projection FAILED "
+               "in some cases."
+            << CORE::IO::endl;
 
       // we have nodes for which projection failed --> correct the labels for those!
       x_timint_corrective_transfer_vectors_between_steps(xfluid_timeint, xfluid_timintapproach_,
@@ -3862,9 +3876,10 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
       // How to perform a good prediction as startvalue when restarting the monolithic Newton is
       // required and simple copying is not possible???
 
-      IO::cout << "check, how we can get the best predicted velnpip when simple copying + ghost "
-                  "penalty is not sufficient! "
-               << IO::endl;
+      CORE::IO::cout
+          << "check, how we can get the best predicted velnpip when simple copying + ghost "
+             "penalty is not sufficient! "
+          << CORE::IO::endl;
 
       // in this case SEMILAGRANGE is probably not reasonable as it is a mapping within the same
       // timestep reconstruct the missing values purely via Ghost-Penalty? GP-Faces sufficient? ->
@@ -5069,23 +5084,24 @@ void FLD::XFluid::update_iter_incrementally(Teuchos::RCP<const Epetra_Vector> ve
 void FLD::XFluid::read_restart(int step)
 {
   //-------- fluid discretization
-  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  CORE::IO::DiscretizationReader reader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
   if (myrank_ == 0)
-    IO::cout << "read_restart for fluid dis (time=" << time_ << " ; step=" << step_ << ")"
-             << IO::endl;
+    CORE::IO::cout << "read_restart for fluid dis (time=" << time_ << " ; step=" << step_ << ")"
+                   << CORE::IO::endl;
 
   if (myrank_ == 0)
   {
-    IO::cout
+    CORE::IO::cout
         << "Warning: For Restart we Cut the configuration of the last time step with the final (in "
            "best case converged)"
         << " solution, without restart the configuration used would be one newton step ealier! --> "
            "This might lead to problems if the solution is no "
         << " converged an therefore the dofset coming from restart and during simulation differ!"
-        << IO::endl;
+        << CORE::IO::endl;
   }
 
   if (alefluid_)

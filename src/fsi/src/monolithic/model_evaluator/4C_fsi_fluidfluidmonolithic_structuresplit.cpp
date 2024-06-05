@@ -52,7 +52,7 @@ void FSI::FluidFluidMonolithicStructureSplit::update()
   // time to relax the ALE-mesh?
   if (fluid_field()->IsAleRelaxationStep(Step()))
   {
-    if (Comm().MyPID() == 0) IO::cout << "Relaxing Ale" << IO::endl;
+    if (Comm().MyPID() == 0) CORE::IO::cout << "Relaxing Ale" << CORE::IO::endl;
 
     ale_field()->Solve();
     fluid_field()->apply_mesh_displacement(ale_to_fluid(ale_field()->Dispnp()));

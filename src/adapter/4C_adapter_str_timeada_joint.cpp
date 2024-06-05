@@ -64,7 +64,7 @@ void ADAPTER::StructureTimeAdaJoint::setup_auxiliar()
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
   nox = problem->StructuralNoxParams();
   //
-  Teuchos::RCP<IO::DiscretizationWriter> output = stm_->discretization()->Writer();
+  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = stm_->discretization()->Writer();
   //
   Teuchos::RCP<STR::TIMINT::BaseDataIO> dataio = Teuchos::rcp(new STR::TIMINT::BaseDataIO());
   dataio->Init(*ioflags, adyn, *xparams, output);

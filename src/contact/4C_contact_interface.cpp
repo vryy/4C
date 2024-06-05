@@ -9426,7 +9426,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   }
 
   // Get the discretization writer and get ready for writing
-  RCP<IO::DiscretizationWriter> writer = idiscret_->Writer();
+  RCP<CORE::IO::DiscretizationWriter> writer = idiscret_->Writer();
 
   // Get output for this time step started
   {
@@ -9452,7 +9452,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     CORE::LINALG::Export(*disp, *iDisp);
 
     // Write the interface displacement field
-    writer->WriteVector("displacement", iDisp, IO::VectorType::dofvector);
+    writer->WriteVector("displacement", iDisp, CORE::IO::VectorType::dofvector);
   }
 
   // Write Lagrange multiplier field
@@ -9464,7 +9464,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     CORE::LINALG::Export(*lagMult, *iLagMult);
 
     // Write this interface's Lagrange multiplier field
-    writer->WriteVector("interfacetraction", iLagMult, IO::VectorType::dofvector);
+    writer->WriteVector("interfacetraction", iLagMult, CORE::IO::VectorType::dofvector);
   }
 
   // Write normal contact stress
@@ -9476,7 +9476,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     CORE::LINALG::Export(*normalStresses, *iNormalStresses);
 
     // Write this interface's normal contact stress field
-    writer->WriteVector("norcontactstress", iNormalStresses, IO::VectorType::dofvector);
+    writer->WriteVector("norcontactstress", iNormalStresses, CORE::IO::VectorType::dofvector);
   }
 
   // Write tangential contact stress
@@ -9488,7 +9488,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     CORE::LINALG::Export(*tangentialStresses, *iTangentialStresses);
 
     // Write this interface's normal contact stress field
-    writer->WriteVector("tancontactstress", iTangentialStresses, IO::VectorType::dofvector);
+    writer->WriteVector("tancontactstress", iTangentialStresses, CORE::IO::VectorType::dofvector);
   }
 
   // Write nodal forces of slave side
@@ -9500,7 +9500,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     CORE::LINALG::Export(*slaveforces, *forces);
 
     // Write to output
-    writer->WriteVector("slaveforces", forces, IO::VectorType::dofvector);
+    writer->WriteVector("slaveforces", forces, CORE::IO::VectorType::dofvector);
   }
 
   // Write nodal forces of master side
@@ -9512,7 +9512,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     CORE::LINALG::Export(*masterforces, *forces);
 
     // Write to output
-    writer->WriteVector("masterforces", forces, IO::VectorType::dofvector);
+    writer->WriteVector("masterforces", forces, CORE::IO::VectorType::dofvector);
   }
 
 
@@ -9525,7 +9525,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     RCP<Epetra_Vector> masterSlaveVec = CORE::LINALG::CreateVector(*nodeRowMap, true);
     CORE::LINALG::Export(*masterVec, *masterSlaveVec);
 
-    writer->WriteVector("slavemasternodes", masterSlaveVec, IO::VectorType::nodevector);
+    writer->WriteVector("slavemasternodes", masterSlaveVec, CORE::IO::VectorType::nodevector);
   }
 
   // Write active set
@@ -9547,7 +9547,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     RCP<Epetra_Vector> activesetexp = Teuchos::rcp(new Epetra_Vector(*(idiscret_->NodeRowMap())));
     CORE::LINALG::Export(*activeset, *activesetexp);
 
-    writer->WriteVector("activeset", activesetexp, IO::VectorType::nodevector);
+    writer->WriteVector("activeset", activesetexp, CORE::IO::VectorType::nodevector);
   }
 
   // Elements: element-based vector with '0' at slave elements and '1' at master elements
@@ -9559,7 +9559,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     RCP<Epetra_Vector> masterSlaveVec = CORE::LINALG::CreateVector(*eleRowMap, true);
     CORE::LINALG::Export(*masterVec, *masterSlaveVec);
 
-    writer->WriteVector("slavemasterelements", masterSlaveVec, IO::VectorType::elementvector);
+    writer->WriteVector("slavemasterelements", masterSlaveVec, CORE::IO::VectorType::elementvector);
   }
 
   // Write element owners
@@ -9570,7 +9570,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     for (int i = 0; i < idiscret_->ElementRowMap()->NumMyElements(); ++i)
       (*owner)[i] = idiscret_->lRowElement(i)->Owner();
 
-    writer->WriteVector("Owner", owner, IO::VectorType::elementvector);
+    writer->WriteVector("Owner", owner, CORE::IO::VectorType::elementvector);
   }
 }
 

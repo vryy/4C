@@ -211,7 +211,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::assemble_jacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Cardiovascular0D::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   iowriter.WriteVector("cv0d_df_np", cardvasc0dman_->Get0D_df_np());
   iowriter.WriteVector("cv0d_f_np", cardvasc0dman_->Get0D_f_np());
@@ -224,7 +224,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::read_restart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::Cardiovascular0D::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   double time_n = g_state().GetTimeN();
   cardvasc0dman_->read_restart(ioreader, time_n);
@@ -305,7 +305,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::determine_optional_quantity()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Cardiovascular0D::OutputStepState(
-    IO::DiscretizationWriter& iowriter) const
+    CORE::IO::DiscretizationWriter& iowriter) const
 {
   // nothing to do
   return;

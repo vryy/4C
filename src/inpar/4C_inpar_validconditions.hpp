@@ -15,6 +15,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition_definition.hpp"
+
 #include <Teuchos_Array.hpp>
 #include <Teuchos_RCP.hpp>
 
@@ -27,14 +29,12 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace INPUT
 {
-  class ConditionDefinition;
-
   /// construct list with all conditions and documentation
-  Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> ValidConditions();
+  Teuchos::RCP<std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>> ValidConditions();
 
   /// print all known condition sections without contents
-  void PrintEmptyConditionDefinitions(
-      std::ostream& stream, std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist);
+  void PrintEmptyConditionDefinitions(std::ostream& stream,
+      std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
 
 }  // namespace INPUT
 

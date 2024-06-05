@@ -12,7 +12,6 @@ set(_dependencies
     fsi
     global_data
     inpar
-    io
     lib
     poroelast
     poroelast_scatra

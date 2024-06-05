@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 FLD::TimIntPoroStat::TimIntPoroStat(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid)
+    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntStationary(actdis, solver, params, output, alefluid),
       TimIntPoro(actdis, solver, params, output, alefluid)

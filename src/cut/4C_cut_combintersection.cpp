@@ -36,7 +36,7 @@ void CORE::GEO::CUT::CombIntersection::Cut(bool screenoutput)
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- Cut_Intersection");
 
-  if (myrank_ == 0 and screenoutput) IO::cout << "\t * 4/6 Cut_Intersection ...";
+  if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\t * 4/6 Cut_Intersection ...";
 
   Mesh& m = NormalMesh();
 
@@ -50,38 +50,39 @@ void CORE::GEO::CUT::CombIntersection::Cut(bool screenoutput)
 //
 // find cut points with cut mesh
 #if EXTENDED_CUT_DEBUG_OUTPUT
-  if (myrank_ == 0 and screenoutput) IO::cout << "\t\t...Finding cut points";
+  if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\t\t...Finding cut points";
   double t_start = Teuchos::Time::wallTime();
 #endif
   m.find_cut_points();
 #if EXTENDED_CUT_DEBUG_OUTPUT
   double t_diff = Teuchos::Time::wallTime() - t_start;
   if (myrank_ == 0 and screenoutput)
-    IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
-  if (myrank_ == 0 and screenoutput) IO::cout << "\t\t...Finding cut lines" << IO::endl;
+    CORE::IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << CORE::IO::endl;
+  if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\t\t...Finding cut lines" << CORE::IO::endl;
   t_start = Teuchos::Time::wallTime();
 #endif
   m.MakeCutLines();
 #if EXTENDED_CUT_DEBUG_OUTPUT
   t_diff = Teuchos::Time::wallTime() - t_start;
   if (myrank_ == 0 and screenoutput)
-    IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
-  if (myrank_ == 0 and screenoutput) IO::cout << "\t\t...Finding cut facets" << IO::endl;
+    CORE::IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << CORE::IO::endl;
+  if (myrank_ == 0 and screenoutput)
+    CORE::IO::cout << "\t\t...Finding cut facets" << CORE::IO::endl;
   t_start = Teuchos::Time::wallTime();
 #endif
   m.MakeFacets();
 #if EXTENDED_CUT_DEBUG_OUTPUT
   t_diff = Teuchos::Time::wallTime() - t_start;
   if (myrank_ == 0 and screenoutput)
-    IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
-  if (myrank_ == 0 and screenoutput) IO::cout << "\t\t...Finding cut cells" << IO::endl;
+    CORE::IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << CORE::IO::endl;
+  if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\t\t...Finding cut cells" << CORE::IO::endl;
   t_start = Teuchos::Time::wallTime();
 #endif
   m.MakeVolumeCells();
 #if EXTENDED_CUT_DEBUG_OUTPUT
   t_diff = Teuchos::Time::wallTime() - t_start;
   if (myrank_ == 0 and screenoutput)
-    IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
+    CORE::IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << CORE::IO::endl;
 #endif
 }
 

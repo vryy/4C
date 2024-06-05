@@ -28,7 +28,7 @@ THR::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& ioparams,  //!< ioflag
     const Teuchos::ParameterList& xparams,                           //!< extra flags
     Teuchos::RCP<DRT::Discretization> actdis,                        //!< current discretisation
     Teuchos::RCP<CORE::LINALG::Solver> solver,                       //!< the solver
-    Teuchos::RCP<IO::DiscretizationWriter> output                    //!< the output
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output              //!< the output
     )
     : TimInt(ioparams, tdynparams, xparams, actdis, solver, output)
 {

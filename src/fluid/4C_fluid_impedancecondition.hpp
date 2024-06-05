@@ -28,11 +28,11 @@ namespace DRT
 {
   class Discretization;
 }  // namespace DRT
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationReader;
   class DiscretizationWriter;
-}  // namespace IO
+}  // namespace CORE::IO
 namespace CORE::LINALG
 {
   class MultiMapExtractor;
@@ -81,12 +81,12 @@ namespace FLD
       /*!
       \brief Wrapper for FluidImpedacnceBc::write_restart
       */
-      void write_restart(IO::DiscretizationWriter& output);
+      void write_restart(CORE::IO::DiscretizationWriter& output);
 
       /*!
       \brief Wrapper for FluidImpedacnceBc::read_restart
       */
-      void read_restart(IO::DiscretizationReader& reader);
+      void read_restart(CORE::IO::DiscretizationReader& reader);
 
       /*!
       \brief return vector of relative pressure errors of last cycle
@@ -161,12 +161,12 @@ namespace FLD
       /*!
       \brief write flowrates_ and flowratespos_ to result files
       */
-      void write_restart(IO::DiscretizationWriter& output, const int condnum);
+      void write_restart(CORE::IO::DiscretizationWriter& output, const int condnum);
 
       /*!
       \brief read flowrates_ and flowratespos_
       */
-      void read_restart(IO::DiscretizationReader& reader, const int condnum);
+      void read_restart(CORE::IO::DiscretizationReader& reader, const int condnum);
 
      private:
       /*!

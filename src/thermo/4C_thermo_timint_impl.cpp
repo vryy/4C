@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
     : TimInt(ioparams, tdynparams, xparams, actdis, solver, output),
       pred_(CORE::UTILS::IntegralValue<INPAR::THR::PredEnum>(tdynparams, "PREDICT")),
       itertype_(CORE::UTILS::IntegralValue<INPAR::THR::NonlinSolTech>(tdynparams, "NLNSOL")),
@@ -590,7 +590,8 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::newton_full_error_check()
   else if ((iter_ >= itermax_) and (divcontype_ == INPAR::THR::divcont_continue))
   {
     if (myrank_ == 0)
-      IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing" << IO::endl;
+      CORE::IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing"
+                     << CORE::IO::endl;
     return INPAR::THR::conv_success;
   }
   else if ((iter_ >= itermax_) and divcontype_ == INPAR::THR::divcont_halve_step)
@@ -638,11 +639,11 @@ void THR::TimIntImpl::halve_time_step()
   // remember number of iterations
   resetiter_ += iter_;
   if (Comm().MyPID() == 0)
-    IO::cout << "Nonlinear solver failed to converge in step " << Step()
-             << ". Divide timestep in half. "
-             << "Old time step: " << old_dt << IO::endl
-             << "New time step: " << new_dt << IO::endl
-             << IO::endl;
+    CORE::IO::cout << "Nonlinear solver failed to converge in step " << Step()
+                   << ". Divide timestep in half. "
+                   << "Old time step: " << old_dt << CORE::IO::endl
+                   << "New time step: " << new_dt << CORE::IO::endl
+                   << CORE::IO::endl;
 }
 
 /*-----------------------------------------------------------------------------*
@@ -665,7 +666,7 @@ void THR::TimIntImpl::check_for_time_step_increase()
       if (((NumStep() - Step()) % 2) == 0 and NumStep() != Step())
       {
         if (Comm().MyPID() == 0)
-          IO::cout << "Nonlinear solver successful. Double timestep size!" << IO::endl;
+          CORE::IO::cout << "Nonlinear solver successful. Double timestep size!" << CORE::IO::endl;
 
         // step up one refinement level
         divcontrefinelevel_--;

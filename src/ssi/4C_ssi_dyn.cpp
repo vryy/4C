@@ -129,7 +129,7 @@ void ssi_drt()
         flag_readscatra)
     {
       std::string filename = Teuchos::getNumericStringParameter(ssiparams, "SCATRA_FILENAME");
-      auto inputscatra = Teuchos::rcp(new IO::InputControl(filename, comm));
+      auto inputscatra = Teuchos::rcp(new CORE::IO::InputControl(filename, comm));
       problem->SetInputControlFile(inputscatra);
     }
 

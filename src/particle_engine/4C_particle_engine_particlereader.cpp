@@ -29,7 +29,8 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-INPUT::ParticleReader::ParticleReader(const INPUT::DatFileReader& reader, std::string sectionname)
+INPUT::ParticleReader::ParticleReader(
+    const CORE::IO::DatFileReader& reader, std::string sectionname)
     : reader_(reader), comm_(reader.Comm()), sectionname_(std::move(sectionname))
 {
   // empty constructor
@@ -51,7 +52,8 @@ void INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
   {
     Teuchos::Time time("", true);
 
-    if (!myrank && !reader_.MyOutputFlag()) IO::cout << "Read and create particles\n" << IO::flush;
+    if (!myrank && !reader_.MyOutputFlag())
+      CORE::IO::cout << "Read and create particles\n" << CORE::IO::flush;
 
     // read in the particles block-wise:
     // EITHER one block per processor so that the number of blocks is numproc

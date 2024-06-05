@@ -22,7 +22,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationVisualizationWriterMesh;
 }
@@ -289,7 +289,8 @@ namespace CORE::GEO
       double edgelength_[3];
 
       //! bounding box discretization runtime visualization writer
-      Teuchos::RCP<IO::DiscretizationVisualizationWriterMesh> visualization_output_writer_ptr_;
+      Teuchos::RCP<CORE::IO::DiscretizationVisualizationWriterMesh>
+          visualization_output_writer_ptr_;
     };
 
   }  // namespace MESHFREE

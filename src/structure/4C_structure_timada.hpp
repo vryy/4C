@@ -34,7 +34,7 @@ namespace CORE::LINALG
   class Solver;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -314,11 +314,11 @@ namespace STR
 
     //! @name General purpose algorithm members
     //@{
-    Teuchos::RCP<TimInt> sti_;                       //!< marching time integrator
-    Teuchos::RCP<DRT::Discretization> discret_;      //!< attached discretisation
-    int myrank_;                                     //!< processor ID
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;      //!< linear algebraic solver
-    Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
+    Teuchos::RCP<TimInt> sti_;                             //!< marching time integrator
+    Teuchos::RCP<DRT::Discretization> discret_;            //!< attached discretisation
+    int myrank_;                                           //!< processor ID
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;            //!< linear algebraic solver
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;  //!< binary output
     //@}
 
     //! @name Plain time integration constants

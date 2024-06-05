@@ -1056,7 +1056,7 @@ void FLD::TurbulenceStatisticsGeneralMean::add_to_total_time_average()
 //          Read previous statistics from a file (for restart)
 //
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics(IO::DiscretizationReader& input)
+void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics(CORE::IO::DiscretizationReader& input)
 {
   prev_n_ = input.ReadInt("num_steps_in_sample");
   prev_avg_time_ = input.ReadDouble("sampling_time");
@@ -1072,7 +1072,7 @@ void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics(IO::DiscretizationR
 //
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::read_old_statistics_sca_tra(
-    IO::DiscretizationReader& input)
+    CORE::IO::DiscretizationReader& input)
 {
   if (withscatra_)
   {
@@ -1087,7 +1087,8 @@ void FLD::TurbulenceStatisticsGeneralMean::read_old_statistics_sca_tra(
 //                 Write the statistics to a file
 //
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(IO::DiscretizationWriter& output)
+void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
+    CORE::IO::DiscretizationWriter& output)
 {
   // loop homogeneous directions, do averaging
   for (unsigned i = 0; i < homdir_.size(); ++i)
@@ -1319,7 +1320,7 @@ void FLD::TurbulenceStatisticsGeneralMean::AddScaTraResults(
 
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsGeneralMean::DoOutputForScaTra(
-    IO::DiscretizationWriter& output, int step)
+    CORE::IO::DiscretizationWriter& output, int step)
 {
   if (withscatra_)
   {

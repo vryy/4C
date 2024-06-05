@@ -17,7 +17,6 @@ set(_dependencies
     fsi
     global_data
     inpar
-    io
     levelset
     lib
     lubrication

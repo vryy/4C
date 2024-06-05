@@ -33,7 +33,7 @@ namespace CORE::LINALG
   class MapExtractor;
 }  // namespace CORE::LINALG
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
@@ -61,7 +61,7 @@ namespace ADAPTER
     XFluidFSI(Teuchos::RCP<Fluid> fluid,
         const std::string coupling_name,  // name of the FSI coupling condition
         Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<IO::DiscretizationWriter> output);
+        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
 
     /// initialize algorithm
     void Init() override;

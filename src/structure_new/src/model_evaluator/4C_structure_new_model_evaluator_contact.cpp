@@ -353,7 +353,7 @@ bool STR::MODELEVALUATOR::Contact::assemble_jacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Contact::write_restart(
-    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // clear cache of maps due to varying vector size
   iowriter.ClearMapCache();
@@ -381,7 +381,7 @@ void STR::MODELEVALUATOR::Contact::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::read_restart(IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::Contact::read_restart(CORE::IO::DiscretizationReader& ioreader)
 {
   eval_contact().SetActionType(MORTAR::eval_force_stiff);
   // reader strategy specific stuff
@@ -480,7 +480,7 @@ void STR::MODELEVALUATOR::Contact::determine_optional_quantity() {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iowriter) const
+void STR::MODELEVALUATOR::Contact::OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const
 {
   // no output in nitsche Strategy
   if (Strategy().IsNitsche()) return;
@@ -532,7 +532,7 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
     activesetexp->Update(1.0, *mactivesetexp, 1.0);
   }
 
-  iowriter.WriteVector("activeset", activesetexp, IO::nodevector);
+  iowriter.WriteVector("activeset", activesetexp, CORE::IO::nodevector);
 
   // *********************************************************************
   // contact tractions

@@ -23,10 +23,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPUT
+namespace CORE::IO
 {
   class DatFileReader;
-}  // namespace INPUT
+}  // namespace CORE::IO
 
 namespace DRT
 {
@@ -88,7 +88,7 @@ namespace CONTACT
        * \param[in] reader the actual dat file reader that has access to the dat file
        * \params[inout] mmap map mapping IDs to parameters of the contact constitutive model
        */
-      void Read(const GLOBAL::Problem& problem, INPUT::DatFileReader& reader,
+      void Read(const GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader,
           Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> bundle);
 
       /// print my DAT file section and possible contact constitutive laws

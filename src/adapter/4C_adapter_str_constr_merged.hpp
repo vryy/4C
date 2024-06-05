@@ -167,9 +167,9 @@ namespace ADAPTER
     Teuchos::RCP<DRT::Discretization> discret_;  ///< the discretization
     Teuchos::RCP<Teuchos::ParameterList>
         sdynparams_;  ///< dynamic control flags ... used, but could/should be circumvented
-    Teuchos::RCP<Teuchos::ParameterList> xparams_;   ///< eXtra input parameters
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;      ///< the linear solver
-    Teuchos::RCP<IO::DiscretizationWriter> output_;  ///< the output writer
+    Teuchos::RCP<Teuchos::ParameterList> xparams_;         ///< eXtra input parameters
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;            ///< the linear solver
+    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;  ///< the output writer
 
     //@}
 

@@ -34,7 +34,7 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // create a DatFileReader
-  INPUT::DatFileReader reader(datfile, comm, 0);
+  CORE::IO::DatFileReader reader(datfile, comm, 0);
 
   // read and validate dynamic and solver sections
   std::cout << "...Read parameters" << std::endl;

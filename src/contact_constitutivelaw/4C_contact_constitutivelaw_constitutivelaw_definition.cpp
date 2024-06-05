@@ -42,7 +42,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::AddComponent(Teuchos::RCP<INPUT::L
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const GLOBAL::Problem& problem,
-    INPUT::DatFileReader& reader, Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> bundle)
+    CORE::IO::DatFileReader& reader, Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> bundle)
 {
   std::string name = "--CONTACT CONSTITUTIVE LAWS";
   std::vector<const char*> section = reader.Section(name);
@@ -60,7 +60,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const GLOBAL::Problem& proble
       condline->seekp(0, condline->end);
       *condline << " ";
 
-      IO::LineParser parser("While reading 'CONTACT CONSTITUTIVE LAWS' section: ");
+      CORE::IO::LineParser parser("While reading 'CONTACT CONSTITUTIVE LAWS' section: ");
 
       parser.Consume(*condline, "LAW");
       const int id = parser.Read<int>(*condline);

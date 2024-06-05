@@ -410,8 +410,8 @@ double STR::Integrator::get_total_mid_time_str_energy(const Epetra_Vector& x)
   mt_energy_.kin_energy_np_ = EvalData().GetEnergyData(STR::kinetic_energy);
   global_state().GetFextNp()->Dot(*dis_avg, &mt_energy_.ext_energy_np_);
 
-  IO::cout(IO::debug) << __LINE__ << " -- " << __PRETTY_FUNCTION__ << "\n";
-  mt_energy_.Print(IO::cout.os(IO::debug));
+  CORE::IO::cout(CORE::IO::debug) << __LINE__ << " -- " << __PRETTY_FUNCTION__ << "\n";
+  mt_energy_.Print(CORE::IO::cout.os(CORE::IO::debug));
 
   return mt_energy_.GetTotal();
 }
@@ -448,7 +448,7 @@ bool STR::Integrator::determine_element_volumes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::OutputStepState(IO::DiscretizationWriter& iowriter) const
+void STR::Integrator::OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
   ModelEval().OutputStepState(iowriter);
@@ -456,7 +456,7 @@ void STR::Integrator::OutputStepState(IO::DiscretizationWriter& iowriter) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::MonitorDbc(IO::DiscretizationWriter& writer) const
+void STR::Integrator::MonitorDbc(CORE::IO::DiscretizationWriter& writer) const
 {
   monitor_dbc_ptr_->Execute(writer);
 }

@@ -35,7 +35,7 @@ namespace CORE::LINALG
   class Solver;
 }
 
-namespace IO
+namespace CORE::IO
 {
   class DiscretizationWriter;
 }
