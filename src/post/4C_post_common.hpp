@@ -25,9 +25,9 @@ specific output operations can be done by the elements themselves.
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_shape_function_type.hpp"
-#include "4C_global_data_enums.hpp"
 #include "4C_io_hdf.hpp"
 #include "4C_io_legacy_types.hpp"
+#include "4C_legacy_enum_definitions_problem_type.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 #include <Epetra_Map.h>
@@ -135,7 +135,7 @@ class PostProblem
   std::string input_dir() { return input_dir_; }
 
   //! returns type of the simulation
-  GLOBAL::ProblemType Problemtype() { return problemtype_; }
+  CORE::ProblemType Problemtype() { return problemtype_; }
 
   //! returns type of the spatial approximation (nurbs/polynomial)
   CORE::FE::ShapeFunctionType spatial_approximation_type() { return spatial_approx_; }
@@ -199,7 +199,7 @@ class PostProblem
   std::string filter_;
 
   //! type of the problem we post process
-  GLOBAL::ProblemType problemtype_;
+  CORE::ProblemType problemtype_;
 
   //! type of the spatial approximation of theproblem we post process
   CORE::FE::ShapeFunctionType spatial_approx_;

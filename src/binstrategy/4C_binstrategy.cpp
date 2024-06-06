@@ -68,7 +68,8 @@ void BINSTRATEGY::BinningStrategy::Init(
     std::vector<Teuchos::RCP<const Epetra_Vector>> disnp)
 {
   // create binning discretization
-  bindis_ = Teuchos::rcp(new DRT::Discretization("binning", comm_));
+  bindis_ =
+      Teuchos::rcp(new DRT::Discretization("binning", comm_, GLOBAL::Problem::Instance()->NDim()));
 
   // create discretization writer
   bindis_->SetWriter(Teuchos::rcp(
@@ -665,7 +666,8 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
   // create new discretization containing the bins as elements
   // -------------------------------------------------------------------------
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(bindis_->Comm().Clone());
-  visbindis_ = Teuchos::rcp(new DRT::Discretization("bins", com));
+  visbindis_ =
+      Teuchos::rcp(new DRT::Discretization("bins", com, GLOBAL::Problem::Instance()->NDim()));
   // create discretization writer
   visbindis_->SetWriter(Teuchos::rcp(new CORE::IO::DiscretizationWriter(visbindis_,
       GLOBAL::Problem::Instance()->OutputControlFile(),

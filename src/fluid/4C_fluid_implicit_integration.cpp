@@ -271,8 +271,8 @@ void FLD::FluidImplicitTimeInt::Init()
     // XWall: enrichment with spaldings law
     if (CORE::UTILS::IntegralValue<int>(params_->sublist("WALL MODEL"), "X_WALL"))
     {
-      if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::fsi ||
-          GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::fluid_ale)
+      if (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::fsi ||
+          GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::fluid_ale)
       {
         xwall_ = Teuchos::rcp(
             new XWallAleFSI(discret_, numdim_, params_, dbcmaps_, stressmanager_, dispnp_, gridv_));

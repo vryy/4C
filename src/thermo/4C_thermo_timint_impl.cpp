@@ -70,7 +70,7 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
   tempinc_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
 
   // setup mortar coupling
-  if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::thermo)
+  if (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::thermo)
   {
     CORE::Conditions::Condition* mrtrcond = actdis->GetCondition("Mortar");
     if (mrtrcond != nullptr)

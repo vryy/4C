@@ -173,10 +173,11 @@ namespace XFEM
     /*!
     \brief Standard Constructor
 
-    \param name (in): name of this discretization
-    \param comm (in): An epetra comm object associated with this discretization
+    \param name: name of this discretization
+    \param comm: Epetra comm object associated with this discretization
+    \param n_dim: number of space dimensions of this discretization
     */
-    DiscretizationXWall(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
+    DiscretizationXWall(const std::string name, Teuchos::RCP<Epetra_Comm> comm, unsigned int n_dim);
 
 
 

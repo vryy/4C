@@ -23,8 +23,9 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                             ager 11/14|
  |  comm             (in)  a communicator object                        |
  *----------------------------------------------------------------------*/
-XFEM::DiscretizationXFEM::DiscretizationXFEM(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
-    : DRT::DiscretizationFaces(name, comm),
+XFEM::DiscretizationXFEM::DiscretizationXFEM(
+    const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
+    : DRT::DiscretizationFaces(name, comm, n_dim),
       initialized_(false),
       initialfulldofrowmap_(Teuchos::null),
       initialpermdofrowmap_(Teuchos::null)

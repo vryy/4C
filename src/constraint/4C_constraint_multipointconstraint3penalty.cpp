@@ -220,7 +220,7 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
     // initialize a new discretization
     Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
     Teuchos::RCP<DRT::Discretization> newdis =
-        Teuchos::rcp(new DRT::Discretization(discret_name, com));
+        Teuchos::rcp(new DRT::Discretization(discret_name, com, actdisc->n_dim()));
     const int myrank = newdis->Comm().MyPID();
     std::set<int> rownodeset;
     std::set<int> colnodeset;

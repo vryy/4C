@@ -134,7 +134,7 @@ CORE::FE::DiscretizationCreatorBase::create_matching_discretization(
   // initialize identical clone discretization
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(sourcedis->Comm().Clone());
   Teuchos::RCP<DRT::Discretization> targetdis =
-      Teuchos::rcp(new DRT::Discretization(targetdisname, comm));
+      Teuchos::rcp(new DRT::Discretization(targetdisname, comm, sourcedis->n_dim()));
 
   // clone nodes
   for (int i = 0; i < sourcedis->NodeColMap()->NumMyElements(); ++i)

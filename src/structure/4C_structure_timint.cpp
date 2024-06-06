@@ -348,7 +348,7 @@ void STR::TimInt::create_all_solution_vectors()
   // displacements D_{n+1} at t_{n+1}
   disn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
-  if ((GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::struct_ale and
+  if ((GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::struct_ale and
           (GLOBAL::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0))
   {
     // material displacements Dm_{n+1} at t_{n+1}
@@ -526,9 +526,9 @@ void STR::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdynpa
     FOUR_C_THROW("Constraints and contact cannot be treated at the same time yet");
 
   // print messages for multifield problems (e.g FSI)
-  const GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+  const CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
   const std::string probname = GLOBAL::Problem::Instance()->ProblemName();
-  if (probtype != GLOBAL::ProblemType::structure && !myrank_)
+  if (probtype != CORE::ProblemType::structure && !myrank_)
   {
     // warnings
 #ifdef CONTACTPSEUDO2D

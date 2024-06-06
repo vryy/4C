@@ -500,8 +500,8 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
 {
   std::string aux_coup_disname("auxiliary_coupling_");
   aux_coup_disname += cond_dis_->Name();
-  aux_coup_dis_ = Teuchos::rcp(
-      new DRT::Discretization(aux_coup_disname, Teuchos::rcp(cond_dis_->Comm().Clone())));
+  aux_coup_dis_ = Teuchos::rcp(new DRT::Discretization(aux_coup_disname,
+      Teuchos::rcp(cond_dis_->Comm().Clone()), GLOBAL::Problem::Instance()->NDim()));
 
   // make the condition known to the auxiliary discretization
   // we use the same nodal ids and therefore we can just copy the conditions

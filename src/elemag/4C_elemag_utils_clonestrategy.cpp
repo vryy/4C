@@ -13,7 +13,7 @@
 
 #include "4C_elemag_ele.hpp"
 #include "4C_global_data.hpp"
-#include "4C_global_data_enums.hpp"
+#include "4C_legacy_enum_definitions_problem_type.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_parameter_base.hpp"

@@ -448,8 +448,8 @@ void PARTICLEWALL::WallHandlerBase::create_wall_discretization_runtime_vtu_write
 void PARTICLEWALL::WallHandlerBase::create_wall_discretization()
 {
   // create wall discretization
-  walldiscretization_ =
-      Teuchos::rcp(new DRT::Discretization("particlewalls", Teuchos::rcp(comm_.Clone())));
+  walldiscretization_ = Teuchos::rcp(new DRT::Discretization(
+      "particlewalls", Teuchos::rcp(comm_.Clone()), GLOBAL::Problem::Instance()->NDim()));
 
   // create wall discretization writer
   walldiscretization_->SetWriter(Teuchos::rcp(new CORE::IO::DiscretizationWriter(

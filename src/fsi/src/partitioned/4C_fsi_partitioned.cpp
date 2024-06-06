@@ -90,8 +90,8 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
 
   if ((CORE::UTILS::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
           1)  // matching meshes
-      and (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fsi_xfem) and
-      (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fbi))
+      and (GLOBAL::Problem::Instance()->GetProblemType() != CORE::ProblemType::fsi_xfem) and
+      (GLOBAL::Problem::Instance()->GetProblemType() != CORE::ProblemType::fbi))
   {
     matchingnodes_ = true;
     const int ndim = GLOBAL::Problem::Instance()->NDim();
@@ -104,8 +104,8 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
   }
   else if ((CORE::UTILS::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
                1)  // matching meshes coupled via XFEM
-           and (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::fsi_xfem) and
-           (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fbi))
+           and (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::fsi_xfem) and
+           (GLOBAL::Problem::Instance()->GetProblemType() != CORE::ProblemType::fbi))
   {
     matchingnodes_ = true;  // matching between structure and boundary dis! non-matching between
                             // boundary dis and fluid is handled bei XFluid itself
@@ -121,13 +121,13 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
     if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
       FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
   }
-  else if ((GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::fbi))
+  else if ((GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::fbi))
   {
     matchingnodes_ = true;
   }
   else if (CORE::UTILS::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
                0  // mortar coupling
-           and (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fsi_xfem))
+           and (GLOBAL::Problem::Instance()->GetProblemType() != CORE::ProblemType::fsi_xfem))
   {
     // coupling condition at the fsi interface: displacements (=number of spatial dimensions) are
     // coupled e.g.: 3D: coupleddof = [1, 1, 1]

@@ -129,10 +129,10 @@ CORE::LINALG::SolverParams NOX::NLN::CONTACT::LinearSystem::set_solver_options(
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", prec_maps[3]);
       // contact or contact/meshtying
       if (i_constr_prec_.begin()->first == NOX::NLN::sol_contact)
-        mueluParams.set<std::string>("GLOBAL::ProblemType", "contact");
+        mueluParams.set<std::string>("CORE::ProblemType", "contact");
       // only meshtying
       else if (i_constr_prec_.begin()->first == NOX::NLN::sol_meshtying)
-        mueluParams.set<std::string>("GLOBAL::ProblemType", "meshtying");
+        mueluParams.set<std::string>("CORE::ProblemType", "meshtying");
       else
         FOUR_C_THROW("Currently we support only a pure meshtying OR a pure contact problem!");
 

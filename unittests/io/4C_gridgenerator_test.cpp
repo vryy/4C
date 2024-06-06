@@ -50,7 +50,7 @@ namespace
       CreateMaterialInGlobalProblem();
       comm_ = Teuchos::rcp(new Epetra_SerialComm);
       CORE::IO::cout.setup(false, false, false, CORE::IO::standard, comm_, 0, 0, "dummyFilePrefix");
-      testdis_ = Teuchos::rcp(new DRT::Discretization("dummy", comm_));
+      testdis_ = Teuchos::rcp(new DRT::Discretization("dummy", comm_, 3));
     }
 
     void TearDown() override { CORE::IO::cout.close(); }

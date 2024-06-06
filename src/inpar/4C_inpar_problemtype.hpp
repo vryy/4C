@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_global_data_enums.hpp"
+#include "4C_legacy_enum_definitions_problem_type.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 #include <map>
@@ -29,10 +29,10 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// create map of problem name and problem type enum
-    std::map<std::string, GLOBAL::ProblemType> StringToProblemTypeMap();
+    std::map<std::string, CORE::ProblemType> StringToProblemTypeMap();
 
     /// return problem type enum for a given problem name
-    GLOBAL::ProblemType StringToProblemType(std::string name);
+    CORE::ProblemType StringToProblemType(std::string name);
 
 
   }  // namespace PROBLEMTYPE

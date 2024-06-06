@@ -138,7 +138,7 @@ namespace CORE::FE
       const Epetra_Map* sourcenoderowmap = sourcedis.NodeRowMap();
 
       Teuchos::RCP<DRT::Discretization> targetdis =
-          Teuchos::rcp(new DRT::Discretization(discret_name, com));
+          Teuchos::rcp(new DRT::Discretization(discret_name, com, sourcedis.n_dim()));
 
       // construct new elements
       for (std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator sourceele_iter =

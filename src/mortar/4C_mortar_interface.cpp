@@ -236,7 +236,8 @@ void MORTAR::Interface::create_interface_discretization()
   // Create the required type of discretization
   if (nurbs_)
   {
-    idiscret_ = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(dis_name.str(), comm));
+    idiscret_ = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(
+        dis_name.str(), comm, GLOBAL::Problem::Instance()->NDim()));
 
     /*
     Note: The NurbsDiscretization needs a Knotvector to be able to write output. This is probably
@@ -251,7 +252,8 @@ void MORTAR::Interface::create_interface_discretization()
   }
   else
   {
-    idiscret_ = Teuchos::rcp(new DRT::Discretization(dis_name.str(), comm));
+    idiscret_ = Teuchos::rcp(
+        new DRT::Discretization(dis_name.str(), comm, GLOBAL::Problem::Instance()->NDim()));
   }
 
   // Prepare discretization writer

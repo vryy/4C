@@ -39,7 +39,7 @@ FSI::FluidXFEMAlgorithm::FluidXFEMAlgorithm(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FSI::FluidXFEMAlgorithm::Timeloop()
 {
-  if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::fluid_xfem)
+  if (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::fluid_xfem)
   {
     if (Comm().MyPID() == 0)
       std::cout << "Integrate routine for MOVING INTERFACES"

@@ -152,7 +152,7 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
 
   Teuchos::RCP<DRT::Discretization> newdis =
-      Teuchos::rcp(new DRT::Discretization(discret_name, com));
+      Teuchos::rcp(new DRT::Discretization(discret_name, com, actdisc->n_dim()));
 
   if (!actdisc->Filled())
   {

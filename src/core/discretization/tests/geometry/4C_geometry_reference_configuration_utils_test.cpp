@@ -30,7 +30,7 @@ namespace
     {
       // create a discretization, to store the created elements and nodes
       testdis_ =
-          Teuchos::rcp(new DRT::Discretization("dummy", Teuchos::rcp(new Epetra_SerialComm)));
+          Teuchos::rcp(new DRT::Discretization("dummy", Teuchos::rcp(new Epetra_SerialComm), 3));
 
       // create hex8 element and store it in the test discretization
       const std::array<int, 8> nodeidshex8 = {0, 1, 2, 3, 4, 5, 6, 7};

@@ -309,12 +309,12 @@ void ADAPTER::StructureBaseAlgorithmNew::set_model_types(
   if (ccond.size())
   {
     // what's the current problem type?
-    GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+    CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
     // ToDo: once the new structural time integration can handle
     //       condensed contact formulations, the model_evaluator
     //       can have its contact model. For now, the TSI Lagrange
     //       strategy resides in the TSI algorithm.
-    if (probtype == GLOBAL::ProblemType::tsi)
+    if (probtype == CORE::ProblemType::tsi)
     {
       const Teuchos::ParameterList& contact = GLOBAL::Problem::Instance()->contact_dynamic_params();
       if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
@@ -393,22 +393,22 @@ void ADAPTER::StructureBaseAlgorithmNew::set_model_types(
   // get the problem instance
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   // what's the current problem type?
-  GLOBAL::ProblemType probtype = problem->GetProblemType();
+  CORE::ProblemType probtype = problem->GetProblemType();
   switch (probtype)
   {
-    case GLOBAL::ProblemType::fsi:
-    case GLOBAL::ProblemType::immersed_fsi:
-    case GLOBAL::ProblemType::fbi:
-    case GLOBAL::ProblemType::fsi_redmodels:
-    case GLOBAL::ProblemType::fsi_lung:
-    case GLOBAL::ProblemType::gas_fsi:
-    case GLOBAL::ProblemType::ac_fsi:
-    case GLOBAL::ProblemType::biofilm_fsi:
-    case GLOBAL::ProblemType::thermo_fsi:
-    case GLOBAL::ProblemType::fsi_xfem:
-    case GLOBAL::ProblemType::pasi:
-    case GLOBAL::ProblemType::ssi:
-    case GLOBAL::ProblemType::ssti:
+    case CORE::ProblemType::fsi:
+    case CORE::ProblemType::immersed_fsi:
+    case CORE::ProblemType::fbi:
+    case CORE::ProblemType::fsi_redmodels:
+    case CORE::ProblemType::fsi_lung:
+    case CORE::ProblemType::gas_fsi:
+    case CORE::ProblemType::ac_fsi:
+    case CORE::ProblemType::biofilm_fsi:
+    case CORE::ProblemType::thermo_fsi:
+    case CORE::ProblemType::fsi_xfem:
+    case CORE::ProblemType::pasi:
+    case CORE::ProblemType::ssi:
+    case CORE::ProblemType::ssti:
     {
       if (prbdyn_->INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
               "Partitioned Coupling Model"))
@@ -635,7 +635,7 @@ void ADAPTER::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
 {
   // get the problem instance and the problem type
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
-  GLOBAL::ProblemType probtype = problem->GetProblemType();
+  CORE::ProblemType probtype = problem->GetProblemType();
 
   // ---------------------------------------------------------------------------
   // show default parameters
@@ -712,8 +712,8 @@ void ADAPTER::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
   // ---------------------------------------------------------------------------
   switch (probtype)
   {
-    case GLOBAL::ProblemType::fsi:
-    case GLOBAL::ProblemType::fsi_redmodels:
+    case CORE::ProblemType::fsi:
+    case CORE::ProblemType::fsi_redmodels:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
       const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
@@ -806,18 +806,18 @@ void ADAPTER::StructureBaseAlgorithmNew::create_wrapper(Teuchos::RCP<STR::TIMINT
 {
   // get the problem instance and the problem type
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
-  GLOBAL::ProblemType probtype = problem->GetProblemType();
+  CORE::ProblemType probtype = problem->GetProblemType();
 
   switch (probtype)
   {
-    case GLOBAL::ProblemType::fsi:
-    case GLOBAL::ProblemType::fsi_redmodels:
-    case GLOBAL::ProblemType::fsi_lung:
-    case GLOBAL::ProblemType::gas_fsi:
-    case GLOBAL::ProblemType::ac_fsi:
-    case GLOBAL::ProblemType::biofilm_fsi:
-    case GLOBAL::ProblemType::thermo_fsi:
-    case GLOBAL::ProblemType::fsi_xfem:
+    case CORE::ProblemType::fsi:
+    case CORE::ProblemType::fsi_redmodels:
+    case CORE::ProblemType::fsi_lung:
+    case CORE::ProblemType::gas_fsi:
+    case CORE::ProblemType::ac_fsi:
+    case CORE::ProblemType::biofilm_fsi:
+    case CORE::ProblemType::thermo_fsi:
+    case CORE::ProblemType::fsi_xfem:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
       const int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
@@ -856,7 +856,7 @@ void ADAPTER::StructureBaseAlgorithmNew::create_wrapper(Teuchos::RCP<STR::TIMINT
       }
       break;
     }
-    case GLOBAL::ProblemType::fbi:
+    case CORE::ProblemType::fbi:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
       if (CORE::UTILS::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
@@ -866,30 +866,30 @@ void ADAPTER::StructureBaseAlgorithmNew::create_wrapper(Teuchos::RCP<STR::TIMINT
         FOUR_C_THROW("Only DirichletNeumann is implemented for FBI so far");
       break;
     }
-    case GLOBAL::ProblemType::immersed_fsi:
+    case CORE::ProblemType::immersed_fsi:
     {
       str_wrapper_ = Teuchos::rcp(new FSIStructureWrapperImmersed(ti_strategy));
       break;
     }
-    case GLOBAL::ProblemType::ssi:
-    case GLOBAL::ProblemType::ssti:
+    case CORE::ProblemType::ssi:
+    case CORE::ProblemType::ssti:
     {
       str_wrapper_ = Teuchos::rcp(new SSIStructureWrapper(ti_strategy));
       break;
     }
-    case GLOBAL::ProblemType::pasi:
+    case CORE::ProblemType::pasi:
     {
       str_wrapper_ = Teuchos::rcp(new PASIStructureWrapper(ti_strategy));
       break;
     }
-    case GLOBAL::ProblemType::redairways_tissue:
+    case CORE::ProblemType::redairways_tissue:
       str_wrapper_ = Teuchos::rcp(new StructureRedAirway(ti_strategy));
       break;
-    case GLOBAL::ProblemType::poroelast:
-    case GLOBAL::ProblemType::poroscatra:
-    case GLOBAL::ProblemType::fpsi:
-    case GLOBAL::ProblemType::fps3i:
-    case GLOBAL::ProblemType::fpsi_xfem:
+    case CORE::ProblemType::poroelast:
+    case CORE::ProblemType::poroscatra:
+    case CORE::ProblemType::fpsi:
+    case CORE::ProblemType::fps3i:
+    case CORE::ProblemType::fpsi_xfem:
     {
       const Teuchos::ParameterList& porodyn = problem->poroelast_dynamic_params();
       const INPAR::POROELAST::SolutionSchemeOverFields coupling =

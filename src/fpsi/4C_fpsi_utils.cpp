@@ -115,7 +115,7 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
   // setup of the discretizations, including clone strategy
 
   // choose cloning strategy depending on poroelast or scatra poroelast problem type
-  if (problem->GetProblemType() == GLOBAL::ProblemType::fps3i)
+  if (problem->GetProblemType() == CORE::ProblemType::fps3i)
   {
     POROELAST::UTILS::SetupPoro<POROELASTSCATRA::UTILS::PoroelastCloneStrategyforScatraElements>();
   }

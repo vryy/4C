@@ -303,9 +303,9 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
           Teuchos::null, Teuchos::null, Teuchos::null);
 
       // what's the current problem type? Is it a fps3i problem?
-      GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+      CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
 
-      if (probtype == GLOBAL::ProblemType::fps3i)
+      if (probtype == CORE::ProblemType::fps3i)
       {
         if (conductivity_ == 0.0)
         {

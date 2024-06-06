@@ -95,7 +95,7 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   // get the problem instance
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   // what's the current problem type?
-  GLOBAL::ProblemType probtype = problem->GetProblemType();
+  CORE::ProblemType probtype = problem->GetProblemType();
 
   // get mortar information
   std::vector<CORE::Conditions::Condition*> mtcond(0);
@@ -300,7 +300,7 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
    * \author mayr.mt \date 12/2013
    */
   // ---------------------------------------------------------------------------
-  if (probtype == GLOBAL::ProblemType::fsi or probtype == GLOBAL::ProblemType::fsi_redmodels)
+  if (probtype == CORE::ProblemType::fsi or probtype == CORE::ProblemType::fsi_redmodels)
   {
     const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
     const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
@@ -338,13 +338,13 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   {
     switch (probtype)
     {
-      case GLOBAL::ProblemType::structure:  // pure structural time adaptivity
+      case CORE::ProblemType::structure:  // pure structural time adaptivity
       {
         structure_ = Teuchos::rcp(new StructureTimIntAda(sta, tmpstr));
         break;
       }
-      case GLOBAL::ProblemType::fsi:  // structure based time adaptivity within an FSI simulation
-      case GLOBAL::ProblemType::fsi_redmodels:
+      case CORE::ProblemType::fsi:  // structure based time adaptivity within an FSI simulation
+      case CORE::ProblemType::fsi_redmodels:
       {
         if ((actdis->Comm()).MyPID() == 0)
           CORE::IO::cout << "Using StructureNOXCorrectionWrapper()..." << CORE::IO::endl;
@@ -370,13 +370,13 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   {
     switch (probtype)
     {
-      case GLOBAL::ProblemType::fsi:
-      case GLOBAL::ProblemType::fsi_redmodels:
-      case GLOBAL::ProblemType::fsi_lung:
-      case GLOBAL::ProblemType::gas_fsi:
-      case GLOBAL::ProblemType::ac_fsi:
-      case GLOBAL::ProblemType::biofilm_fsi:
-      case GLOBAL::ProblemType::thermo_fsi:
+      case CORE::ProblemType::fsi:
+      case CORE::ProblemType::fsi_redmodels:
+      case CORE::ProblemType::fsi_lung:
+      case CORE::ProblemType::gas_fsi:
+      case CORE::ProblemType::ac_fsi:
+      case CORE::ProblemType::biofilm_fsi:
+      case CORE::ProblemType::thermo_fsi:
       {
         const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
         const int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
@@ -406,28 +406,28 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
         }
       }
       break;
-      case GLOBAL::ProblemType::immersed_fsi:
+      case CORE::ProblemType::immersed_fsi:
       {
         structure_ = Teuchos::rcp(new FSIStructureWrapperImmersed(tmpstr));
       }
       break;
-      case GLOBAL::ProblemType::ssi:
-      case GLOBAL::ProblemType::ssti:
+      case CORE::ProblemType::ssi:
+      case CORE::ProblemType::ssti:
       {
         structure_ = Teuchos::rcp(new SSIStructureWrapper(tmpstr));
       }
       break;
-      case GLOBAL::ProblemType::redairways_tissue:
+      case CORE::ProblemType::redairways_tissue:
       {
         structure_ = Teuchos::rcp(new StructureRedAirway(tmpstr));
       }
       break;
-      case GLOBAL::ProblemType::poroelast:
-      case GLOBAL::ProblemType::poroscatra:
-      case GLOBAL::ProblemType::fpsi:
-      case GLOBAL::ProblemType::fps3i:
-      case GLOBAL::ProblemType::fpsi_xfem:
-      case GLOBAL::ProblemType::fsi_xfem:
+      case CORE::ProblemType::poroelast:
+      case CORE::ProblemType::poroscatra:
+      case CORE::ProblemType::fpsi:
+      case CORE::ProblemType::fps3i:
+      case CORE::ProblemType::fpsi_xfem:
+      case CORE::ProblemType::fsi_xfem:
       {
         const Teuchos::ParameterList& porodyn = problem->poroelast_dynamic_params();
         const INPAR::POROELAST::SolutionSchemeOverFields coupling =
@@ -448,7 +448,7 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
         }
       }
       break;
-      case GLOBAL::ProblemType::struct_ale:
+      case CORE::ProblemType::struct_ale:
       {
         structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpstr));
       }

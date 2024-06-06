@@ -142,7 +142,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   }
 
   // setup mortar coupling
-  if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::tsi)
+  if (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::tsi)
   {
     CORE::Conditions::Condition* mrtrcond =
         structure_field()->discretization()->GetCondition("MortarMulti");

@@ -25,7 +25,7 @@ void INPAR::PROBLEMTYPE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   Teuchos::ParameterList& type = list->sublist("PROBLEM TYP", false, "");
 
   {
-    using IntegerType = std::underlying_type_t<GLOBAL::ProblemType>;
+    using IntegerType = std::underlying_type_t<CORE::ProblemType>;
     Teuchos::Array<std::string> name;
     Teuchos::Array<IntegerType> label;
 
@@ -60,60 +60,60 @@ void INPAR::PROBLEMTYPE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::map<std::string, GLOBAL::ProblemType> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
+std::map<std::string, CORE::ProblemType> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
 {
-  static std::map<std::string, GLOBAL::ProblemType> string2prbtype;
+  static std::map<std::string, CORE::ProblemType> string2prbtype;
 
   if (string2prbtype.size() == 0)
   {
     // problem types in alphabetical order
-    string2prbtype["Ale"] = GLOBAL::ProblemType::ale;
-    string2prbtype["ArterialNetwork"] = GLOBAL::ProblemType::art_net;
-    string2prbtype["Atherosclerosis_Fluid_Structure_Interaction"] = GLOBAL::ProblemType::ac_fsi;
-    string2prbtype["Biofilm_Fluid_Structure_Interaction"] = GLOBAL::ProblemType::biofilm_fsi;
-    string2prbtype["Cardiac_Monodomain"] = GLOBAL::ProblemType::cardiac_monodomain;
-    string2prbtype["Elastohydrodynamic_Lubrication"] = GLOBAL::ProblemType::ehl;
-    string2prbtype["Electrochemistry"] = GLOBAL::ProblemType::elch;
-    string2prbtype["Electromagnetics"] = GLOBAL::ProblemType::elemag;
-    string2prbtype["Fluid"] = GLOBAL::ProblemType::fluid;
-    string2prbtype["Fluid_Ale"] = GLOBAL::ProblemType::fluid_ale;
-    string2prbtype["Fluid_Beam_Interaction"] = GLOBAL::ProblemType::fbi;
-    string2prbtype["Fluid_Freesurface"] = GLOBAL::ProblemType::freesurf;
-    string2prbtype["Fluid_Poro_Structure_Interaction_XFEM"] = GLOBAL::ProblemType::fpsi_xfem;
-    string2prbtype["Fluid_Porous_Structure_Interaction"] = GLOBAL::ProblemType::fpsi;
-    string2prbtype["Fluid_Porous_Structure_Scalar_Scalar_Interaction"] = GLOBAL::ProblemType::fps3i;
-    string2prbtype["Fluid_RedModels"] = GLOBAL::ProblemType::fluid_redmodels;
-    string2prbtype["Fluid_Structure_Interaction"] = GLOBAL::ProblemType::fsi;
-    string2prbtype["Fluid_Structure_Interaction_Lung"] = GLOBAL::ProblemType::fsi_lung;
-    string2prbtype["Fluid_Structure_Interaction_RedModels"] = GLOBAL::ProblemType::fsi_redmodels;
-    string2prbtype["Fluid_Structure_Interaction_XFEM"] = GLOBAL::ProblemType::fsi_xfem;
-    string2prbtype["Fluid_XFEM"] = GLOBAL::ProblemType::fluid_xfem;
-    string2prbtype["Fluid_XFEM_LevelSet"] = GLOBAL::ProblemType::fluid_xfem_ls;
-    string2prbtype["Gas_Fluid_Structure_Interaction"] = GLOBAL::ProblemType::gas_fsi;
-    string2prbtype["Immersed_FSI"] = GLOBAL::ProblemType::immersed_fsi;
-    string2prbtype["Level_Set"] = GLOBAL::ProblemType::level_set;
-    string2prbtype["Low_Mach_Number_Flow"] = GLOBAL::ProblemType::loma;
-    string2prbtype["Lubrication"] = GLOBAL::ProblemType::lubrication;
-    string2prbtype["NP_Supporting_Procs"] = GLOBAL::ProblemType::np_support;
-    string2prbtype["Particle"] = GLOBAL::ProblemType::particle;
-    string2prbtype["Particle_Structure_Interaction"] = GLOBAL::ProblemType::pasi;
-    string2prbtype["Polymer_Network"] = GLOBAL::ProblemType::polymernetwork;
-    string2prbtype["Poroelastic_scalar_transport"] = GLOBAL::ProblemType::poroscatra;
-    string2prbtype["Poroelasticity"] = GLOBAL::ProblemType::poroelast;
-    string2prbtype["Multiphase_Poroelasticity"] = GLOBAL::ProblemType::poromultiphase;
-    string2prbtype["Multiphase_Poroelasticity_ScaTra"] = GLOBAL::ProblemType::poromultiphasescatra;
-    string2prbtype["Multiphase_Porous_Flow"] = GLOBAL::ProblemType::porofluidmultiphase;
-    string2prbtype["RedAirways_Tissue"] = GLOBAL::ProblemType::redairways_tissue;
-    string2prbtype["ReducedDimensionalAirWays"] = GLOBAL::ProblemType::red_airways;
-    string2prbtype["Scalar_Thermo_Interaction"] = GLOBAL::ProblemType::sti;
-    string2prbtype["Scalar_Transport"] = GLOBAL::ProblemType::scatra;
-    string2prbtype["Structure"] = GLOBAL::ProblemType::structure;
-    string2prbtype["Structure_Ale"] = GLOBAL::ProblemType::struct_ale;
-    string2prbtype["Structure_Scalar_Interaction"] = GLOBAL::ProblemType::ssi;
-    string2prbtype["Structure_Scalar_Thermo_Interaction"] = GLOBAL::ProblemType::ssti;
-    string2prbtype["Thermo"] = GLOBAL::ProblemType::thermo;
-    string2prbtype["Thermo_Structure_Interaction"] = GLOBAL::ProblemType::tsi;
-    string2prbtype["Thermo_Fluid_Structure_Interaction"] = GLOBAL::ProblemType::thermo_fsi;
+    string2prbtype["Ale"] = CORE::ProblemType::ale;
+    string2prbtype["ArterialNetwork"] = CORE::ProblemType::art_net;
+    string2prbtype["Atherosclerosis_Fluid_Structure_Interaction"] = CORE::ProblemType::ac_fsi;
+    string2prbtype["Biofilm_Fluid_Structure_Interaction"] = CORE::ProblemType::biofilm_fsi;
+    string2prbtype["Cardiac_Monodomain"] = CORE::ProblemType::cardiac_monodomain;
+    string2prbtype["Elastohydrodynamic_Lubrication"] = CORE::ProblemType::ehl;
+    string2prbtype["Electrochemistry"] = CORE::ProblemType::elch;
+    string2prbtype["Electromagnetics"] = CORE::ProblemType::elemag;
+    string2prbtype["Fluid"] = CORE::ProblemType::fluid;
+    string2prbtype["Fluid_Ale"] = CORE::ProblemType::fluid_ale;
+    string2prbtype["Fluid_Beam_Interaction"] = CORE::ProblemType::fbi;
+    string2prbtype["Fluid_Freesurface"] = CORE::ProblemType::freesurf;
+    string2prbtype["Fluid_Poro_Structure_Interaction_XFEM"] = CORE::ProblemType::fpsi_xfem;
+    string2prbtype["Fluid_Porous_Structure_Interaction"] = CORE::ProblemType::fpsi;
+    string2prbtype["Fluid_Porous_Structure_Scalar_Scalar_Interaction"] = CORE::ProblemType::fps3i;
+    string2prbtype["Fluid_RedModels"] = CORE::ProblemType::fluid_redmodels;
+    string2prbtype["Fluid_Structure_Interaction"] = CORE::ProblemType::fsi;
+    string2prbtype["Fluid_Structure_Interaction_Lung"] = CORE::ProblemType::fsi_lung;
+    string2prbtype["Fluid_Structure_Interaction_RedModels"] = CORE::ProblemType::fsi_redmodels;
+    string2prbtype["Fluid_Structure_Interaction_XFEM"] = CORE::ProblemType::fsi_xfem;
+    string2prbtype["Fluid_XFEM"] = CORE::ProblemType::fluid_xfem;
+    string2prbtype["Fluid_XFEM_LevelSet"] = CORE::ProblemType::fluid_xfem_ls;
+    string2prbtype["Gas_Fluid_Structure_Interaction"] = CORE::ProblemType::gas_fsi;
+    string2prbtype["Immersed_FSI"] = CORE::ProblemType::immersed_fsi;
+    string2prbtype["Level_Set"] = CORE::ProblemType::level_set;
+    string2prbtype["Low_Mach_Number_Flow"] = CORE::ProblemType::loma;
+    string2prbtype["Lubrication"] = CORE::ProblemType::lubrication;
+    string2prbtype["NP_Supporting_Procs"] = CORE::ProblemType::np_support;
+    string2prbtype["Particle"] = CORE::ProblemType::particle;
+    string2prbtype["Particle_Structure_Interaction"] = CORE::ProblemType::pasi;
+    string2prbtype["Polymer_Network"] = CORE::ProblemType::polymernetwork;
+    string2prbtype["Poroelastic_scalar_transport"] = CORE::ProblemType::poroscatra;
+    string2prbtype["Poroelasticity"] = CORE::ProblemType::poroelast;
+    string2prbtype["Multiphase_Poroelasticity"] = CORE::ProblemType::poromultiphase;
+    string2prbtype["Multiphase_Poroelasticity_ScaTra"] = CORE::ProblemType::poromultiphasescatra;
+    string2prbtype["Multiphase_Porous_Flow"] = CORE::ProblemType::porofluidmultiphase;
+    string2prbtype["RedAirways_Tissue"] = CORE::ProblemType::redairways_tissue;
+    string2prbtype["ReducedDimensionalAirWays"] = CORE::ProblemType::red_airways;
+    string2prbtype["Scalar_Thermo_Interaction"] = CORE::ProblemType::sti;
+    string2prbtype["Scalar_Transport"] = CORE::ProblemType::scatra;
+    string2prbtype["Structure"] = CORE::ProblemType::structure;
+    string2prbtype["Structure_Ale"] = CORE::ProblemType::struct_ale;
+    string2prbtype["Structure_Scalar_Interaction"] = CORE::ProblemType::ssi;
+    string2prbtype["Structure_Scalar_Thermo_Interaction"] = CORE::ProblemType::ssti;
+    string2prbtype["Thermo"] = CORE::ProblemType::thermo;
+    string2prbtype["Thermo_Structure_Interaction"] = CORE::ProblemType::tsi;
+    string2prbtype["Thermo_Fluid_Structure_Interaction"] = CORE::ProblemType::thermo_fsi;
   }
 
   return string2prbtype;
@@ -121,14 +121,14 @@ std::map<std::string, GLOBAL::ProblemType> INPAR::PROBLEMTYPE::StringToProblemTy
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-GLOBAL::ProblemType INPAR::PROBLEMTYPE::StringToProblemType(std::string name)
+CORE::ProblemType INPAR::PROBLEMTYPE::StringToProblemType(std::string name)
 {
-  std::map<std::string, GLOBAL::ProblemType> map = StringToProblemTypeMap();
-  std::map<std::string, GLOBAL::ProblemType>::const_iterator i = map.find(name);
+  std::map<std::string, CORE::ProblemType> map = StringToProblemTypeMap();
+  std::map<std::string, CORE::ProblemType>::const_iterator i = map.find(name);
   if (i != map.end()) return i->second;
   FOUR_C_THROW("unsupported problem name '%s'", name.c_str());
 
-  return GLOBAL::ProblemType::none;
+  return CORE::ProblemType::none;
 }
 
 FOUR_C_NAMESPACE_CLOSE

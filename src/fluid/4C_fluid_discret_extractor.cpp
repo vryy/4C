@@ -56,14 +56,14 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       XFEM::DiscretizationXWall* xwall = dynamic_cast<XFEM::DiscretizationXWall*>(&*actdis);
       if (nullptr != xwall)
         childdiscret_ = Teuchos::rcp(new XFEM::DiscretizationXWall(
-            (std::string) "inflow", Teuchos::rcp(parentdiscret_->Comm().Clone())));
+            (std::string) "inflow", Teuchos::rcp(parentdiscret_->Comm().Clone()), actdis->n_dim()));
       else
         childdiscret_ = Teuchos::rcp(new DRT::Discretization(
-            (std::string) "inflow", Teuchos::rcp(parentdiscret_->Comm().Clone())));
+            (std::string) "inflow", Teuchos::rcp(parentdiscret_->Comm().Clone()), actdis->n_dim()));
     }
     else  // dummy discretization
       childdiscret_ = Teuchos::rcp(new DRT::Discretization(
-          (std::string) "none", Teuchos::rcp(parentdiscret_->Comm().Clone())));
+          (std::string) "none", Teuchos::rcp(parentdiscret_->Comm().Clone()), actdis->n_dim()));
 
     // get set of ids of all child nodes
     std::set<int> sepcondnodeset;

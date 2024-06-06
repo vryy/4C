@@ -11,10 +11,10 @@
 #include "4C_contact_utils_parallel.hpp"
 
 #include "4C_global_data.hpp"
-#include "4C_global_data_enums.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_mortar.hpp"
 #include "4C_inpar_structure.hpp"
+#include "4C_legacy_enum_definitions_problem_type.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -52,9 +52,9 @@ bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList
        */
       if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(contactParams, "ALGORITHM") ==
               INPAR::MORTAR::algorithm_mortar &&
-          (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::poroelast &&
-              GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::poroscatra &&
-              GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::struct_ale))
+          (GLOBAL::Problem::Instance()->GetProblemType() != CORE::ProblemType::poroelast &&
+              GLOBAL::Problem::Instance()->GetProblemType() != CORE::ProblemType::poroscatra &&
+              GLOBAL::Problem::Instance()->GetProblemType() != CORE::ProblemType::struct_ale))
         use_safe_ghosting_branch = true;
     }
     else

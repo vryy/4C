@@ -57,7 +57,7 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
   Teuchos::TimeMonitor monitor(*t);
 
   // what's the current problem type?
-  const GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+  const CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
 
   // ---------------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -108,7 +108,7 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
   adyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
   adyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
 
-  if (probtype == GLOBAL::ProblemType::fpsi)
+  if (probtype == CORE::ProblemType::fpsi)
   {
     // FPSI input parameters
     const Teuchos::ParameterList& fpsidyn = GLOBAL::Problem::Instance()->FPSIDynamicParams();
@@ -156,16 +156,16 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
    * problem-specific wrapper */
   switch (probtype)
   {
-    case GLOBAL::ProblemType::ale:
+    case CORE::ProblemType::ale:
     {
       ale_ = ale;
       break;
     }
-    case GLOBAL::ProblemType::fsi:
-    case GLOBAL::ProblemType::gas_fsi:
-    case GLOBAL::ProblemType::thermo_fsi:
-    case GLOBAL::ProblemType::ac_fsi:
-    case GLOBAL::ProblemType::biofilm_fsi:
+    case CORE::ProblemType::fsi:
+    case CORE::ProblemType::gas_fsi:
+    case CORE::ProblemType::thermo_fsi:
+    case CORE::ProblemType::ac_fsi:
+    case CORE::ProblemType::biofilm_fsi:
     {
       const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
       int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
@@ -212,7 +212,7 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
       }
       break;
     }
-    case GLOBAL::ProblemType::fsi_lung:
+    case CORE::ProblemType::fsi_lung:
     {
       const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
       int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
@@ -229,7 +229,7 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
       }
       break;
     }
-    case GLOBAL::ProblemType::fsi_redmodels:
+    case CORE::ProblemType::fsi_redmodels:
     {
       const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
       int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
@@ -263,23 +263,23 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
       }
       break;
     }
-    case GLOBAL::ProblemType::fpsi:
-    case GLOBAL::ProblemType::fps3i:
-    case GLOBAL::ProblemType::fsi_xfem:
-    case GLOBAL::ProblemType::fpsi_xfem:
+    case CORE::ProblemType::fpsi:
+    case CORE::ProblemType::fps3i:
+    case CORE::ProblemType::fsi_xfem:
+    case CORE::ProblemType::fpsi_xfem:
     {
       ale_ = Teuchos::rcp(new ADAPTER::AleFpsiWrapper(ale));
       break;
     }
-    case GLOBAL::ProblemType::struct_ale:
+    case CORE::ProblemType::struct_ale:
     {
       ale_ = Teuchos::rcp(new ADAPTER::AleWearWrapper(ale));
       break;
     }
-    case GLOBAL::ProblemType::freesurf:
-    case GLOBAL::ProblemType::fluid_ale:
-    case GLOBAL::ProblemType::elch:
-    case GLOBAL::ProblemType::fluid_xfem:
+    case CORE::ProblemType::freesurf:
+    case CORE::ProblemType::fluid_ale:
+    case CORE::ProblemType::elch:
+    case CORE::ProblemType::fluid_xfem:
     {
       ale_ = Teuchos::rcp(new ADAPTER::AleFluidWrapper(ale));
       break;

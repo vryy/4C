@@ -37,7 +37,7 @@ namespace
     {
       Teuchos::RCP<Epetra_SerialComm> comm =
           Teuchos::rcp<Epetra_SerialComm>(new Epetra_SerialComm());
-      discret_ = Teuchos::rcp(new DRT::Discretization("unit_test", comm));
+      discret_ = Teuchos::rcp(new DRT::Discretization("unit_test", comm, 3));
     }
 
     /**

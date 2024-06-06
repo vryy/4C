@@ -99,8 +99,7 @@ void SCATRA::MeshtyingStrategyStd::init_conv_check_strategy()
   if (scatratimint_->MicroScale())
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdMicroScale(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
-  else if (GLOBAL::Problem::Instance()->GetProblemType() ==
-           GLOBAL::ProblemType::poromultiphasescatra)
+  else if (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::poromultiphasescatra)
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyPoroMultiphaseScatra(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
   else

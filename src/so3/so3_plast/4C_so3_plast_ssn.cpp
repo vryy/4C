@@ -530,7 +530,7 @@ bool DRT::ELEMENTS::So3Plast<distype>::ReadElement(
   {
     if (distype != CORE::FE::CellType::hex8)
       FOUR_C_THROW("You may only choose the Gauss point number for SOLIDH8PLAST");
-    if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::tsi)
+    if (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::tsi)
       FOUR_C_THROW("You may not choose the Gauss point number in TSI problems");
 
     int ngp = 0;
@@ -661,7 +661,7 @@ bool DRT::ELEMENTS::So3Plast<distype>::ReadElement(
 
   Teuchos::ParameterList plparams = GLOBAL::Problem::Instance()->semi_smooth_plast_params();
   CORE::UTILS::AddEnumClassToParameterList(
-      "GLOBAL::ProblemType", GLOBAL::Problem::Instance()->GetProblemType(), plparams);
+      "CORE::ProblemType", GLOBAL::Problem::Instance()->GetProblemType(), plparams);
   ReadParameterList(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
 
 
@@ -770,9 +770,9 @@ void DRT::ELEMENTS::So3Plast<distype>::ReadParameterList(
   if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
     static_cast<MAT::PlasticElastHyper*>(Material().get())->GetParams(s, cpl);
 
-  GLOBAL::ProblemType probtype =
-      Teuchos::getIntegralValue<GLOBAL::ProblemType>(*plparams, "GLOBAL::ProblemType");
-  if (probtype == GLOBAL::ProblemType::tsi)
+  CORE::ProblemType probtype =
+      Teuchos::getIntegralValue<CORE::ProblemType>(*plparams, "CORE::ProblemType");
+  if (probtype == CORE::ProblemType::tsi)
     tsi_ = true;
   else
     tsi_ = false;

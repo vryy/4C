@@ -84,7 +84,7 @@ void GLOBAL::Problem::Done()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 GLOBAL::Problem::Problem()
-    : probtype_(GLOBAL::ProblemType::none), restartstep_(0), communicators_(Teuchos::null)
+    : probtype_(CORE::ProblemType::none), restartstep_(0), communicators_(Teuchos::null)
 {
   materials_ = Teuchos::rcp(new MAT::PAR::Bundle());
   contactconstitutivelaws_ = Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::Bundle());
@@ -93,15 +93,15 @@ GLOBAL::Problem::Problem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-GLOBAL::ProblemType GLOBAL::Problem::GetProblemType() const { return probtype_; }
+CORE::ProblemType GLOBAL::Problem::GetProblemType() const { return probtype_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::string GLOBAL::Problem::ProblemName() const
 {
-  std::map<std::string, GLOBAL::ProblemType> map = INPAR::PROBLEMTYPE::StringToProblemTypeMap();
-  std::map<std::string, GLOBAL::ProblemType>::const_iterator i;
+  std::map<std::string, CORE::ProblemType> map = INPAR::PROBLEMTYPE::StringToProblemTypeMap();
+  std::map<std::string, CORE::ProblemType>::const_iterator i;
 
   for (i = map.begin(); i != map.end(); ++i)
   {
@@ -310,7 +310,7 @@ void GLOBAL::Problem::SetRestartStep(int r) { restartstep_ = r; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::Problem::SetProblemType(GLOBAL::ProblemType targettype) { probtype_ = targettype; }
+void GLOBAL::Problem::SetProblemType(CORE::ProblemType targettype) { probtype_ = targettype; }
 
 
 void GLOBAL::Problem::SetFunctionManager(CORE::UTILS::FunctionManager&& function_manager_in)

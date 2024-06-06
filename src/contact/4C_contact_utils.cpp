@@ -280,12 +280,12 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
 
   // SAFETY CHECKS
   // read parameter list and problem type
-  const GLOBAL::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
+  const CORE::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
   const Teuchos::ParameterList& contact = GLOBAL::Problem::Instance()->contact_dynamic_params();
   const Teuchos::ParameterList& mortar = GLOBAL::Problem::Instance()->mortar_coupling_params();
 
   // XFSI is the only reason why you want this option (as the xfluid redistribution is different)
-  if (problemtype == GLOBAL::ProblemType::fsi_xfem || problemtype == GLOBAL::ProblemType::fpsi_xfem)
+  if (problemtype == CORE::ProblemType::fsi_xfem || problemtype == CORE::ProblemType::fpsi_xfem)
     Searchele_AllProc = true;
   else
     Searchele_AllProc = false;
@@ -322,10 +322,9 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
       }
     }
 
-    if ((problemtype != GLOBAL::ProblemType::structure) and
-        (problemtype != GLOBAL::ProblemType::fsi_xfem) and
-        (problemtype != GLOBAL::ProblemType::fpsi_xfem) and
-        (problemtype != GLOBAL::ProblemType::ssi))
+    if ((problemtype != CORE::ProblemType::structure) and
+        (problemtype != CORE::ProblemType::fsi_xfem) and
+        (problemtype != CORE::ProblemType::fpsi_xfem) and (problemtype != CORE::ProblemType::ssi))
       FOUR_C_THROW(
           "two half pass algorithm only implemented in structural, fsi/fpsi and ssi problems");
     if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
@@ -336,7 +335,7 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
       FOUR_C_THROW("two half pass algorithm only with harmonic weighting");
   }
 
-  if (!Two_half_pass && problemtype == GLOBAL::ProblemType::fsi_xfem)
+  if (!Two_half_pass && problemtype == CORE::ProblemType::fsi_xfem)
     FOUR_C_THROW("Nitsche FSI with Contact requires Two_half_pass which is not set!");
 
   if ((!Two_half_pass) && Check_nonsmooth_selfcontactsurface)

@@ -251,6 +251,11 @@ namespace CORE::Conditions
     return std::tie(lhs.type_, lhs.id_) < std::tie(rhs.type_, rhs.id_);
   }
 
+  //! Mapping of geometry type to its spatial dimensionality
+  const std::map<GeometryType, unsigned int> geometry_type_to_dim = {
+      std::make_pair(GeometryType::geometry_type_point, 0), std::make_pair(geometry_type_line, 1),
+      std::make_pair(geometry_type_surface, 2), std::make_pair(geometry_type_volume, 3)};
+
 }  // namespace CORE::Conditions
 
 
